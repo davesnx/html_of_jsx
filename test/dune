@@ -1,0 +1,5 @@
+(test
+ (name Test)
+ (libraries alcotest fmt html-jsx.lib)
+ (preprocess
+  (pps html-jsx.ppx)))

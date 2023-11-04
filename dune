@@ -1,0 +1,4 @@
+(dirs lib test demo)
+
+(documentation
+ (package html-jsx))

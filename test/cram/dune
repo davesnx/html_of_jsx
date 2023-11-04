@@ -1,0 +1,9 @@
+(cram
+ (package html-jsx)
+ (deps ppx.sh %{bin:jsx-ppx-standalone} %{bin:refmt} %{bin:ocamlformat}))
+
+(executable
+ (name standalone)
+ (modules standalone)
+ (public_name jsx-ppx-standalone)
+ (libraries html-jsx.ppx ppxlib))

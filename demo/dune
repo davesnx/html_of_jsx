@@ -1,0 +1,5 @@
+(executable
+ (name server)
+ (libraries dream html-jsx.lib lwt.unix)
+ (preprocess
+  (pps html-jsx.ppx lwt_ppx)))
