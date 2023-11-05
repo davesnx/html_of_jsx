@@ -7,8 +7,11 @@ module Styles = {
       "font-weight: 500",
       "font-size: calc((((((0.7rem + 0.13vw) * 1.25) * 1.25) * 1.25) * 1.25) * 1.25)",
       "letter-spacing: 0.8px;",
+      "line-height: 2;",
       ...heading,
     ]);
+
+  let small = "font-size: 0.8rem";
 
   let spacer = (~bottom=0, ~top=0, ~left=0, ~right=0, ()) =>
     join(
@@ -43,7 +46,14 @@ module Styles = {
 module Link = {
   let make = (~color, ~to_, ~bold=false, ~children, ()) => {
     let color = Printf.sprintf("color: %s;", color);
-    <a href=to_ style={Styles.join([color ] @ (bold ? ["font-weight: bold"] : []))}>
+    <a
+      href=to_
+      onmouseover="this.style.opacity='0.6'"
+      onmouseout="this.style.opacity='1'"
+      style={Styles.join(
+        [color, "text-decoration: underline"]
+        @ (bold ? ["font-weight: bold"] : []),
+      )}>
       children
     </a>;
   };
@@ -75,14 +85,19 @@ module Page = {
         </style>
         <script src="https://cdn.tailwindcss.com" />
       </head>
-      <body class_="flex items-center justify-center p-48">
-        <div class_="css-1ph5f11 edndw0j0">
-          <main class_="css-mnuiua e1a0yjcl0">
+      <body
+        class_="flex items-center justify-center"
+        style="padding-top: 7em; padding-left: 25%; padding-right: 25%;">
+        <div>
+          <main>
             <header style={Styles.stack(10)}>
               <div style={Styles.row(~spread=true, ~fullWidth=true, 100)}>
-                <a href="https://sancho.dev/" class_="css-cre123 eh99vtg1">
-                  <p class_="css-frpcvv edndw0j2"> {Jsx.text("@davesnx")} </p>
-                </a>
+                <Link
+                  color="grey" to_="https://github.com/davesnx/html_of_jsx">
+                  <p>
+                    {Jsx.text("https://github.com/davesnx/html_of_jsx")}
+                  </p>
+                </Link>
                 <div style={Styles.row(32)}>
                   <Link to_="https://sancho.dev/blog" color="grey">
                     {Jsx.text("blog")}
@@ -97,84 +112,48 @@ module Page = {
               </div>
             </header>
           </main>
-          <div class_="css-1qyitdn e1y96j372">
-            <main class_="css-mnuiua e1a0yjcl0">
-              <div class_="css-xiwenu e1y96j370">
+          <div>
+            <main class_="text-lg">
+              <div>
                 <div style={Styles.spacer(~bottom=32, ())}>
-                  <h1 style=Styles.h1> {Jsx.text("David Sancho")} </h1>
+                  <h1 style=Styles.h1> {Jsx.text("Html_of_jsx")} </h1>
                 </div>
                 <div>
                   <div>
-                    <p color="var(--c-body)" class_="css-tg7dnl e1yw4nh30">
-                      <span>
+                    <p>
+                      <span class_="font-semibold">
+                        {Jsx.text("html_of_jsx")}
+                      </span>
+                      <span class_="font-light">
                         {Jsx.text(
-                           "I'm a Software Engineer based in Barcelona, making cute software with ",
+                           " is an implementation of JSX designed to render HTML on the server, without React or anything else. It's a minimal library that allows you to write components of HTML in a declarative way.",
                          )}
                       </span>
-                      <a
-                        href="http://reasonml.github.io/"
-                        color="var(--c-body)"
-                        class_="css-4htwjz eh99vtg0">
-                        {Jsx.text("Reason")}
-                      </a>
-                      <span> {Jsx.text(" and ")} </span>
-                      <a
-                        href="https://ocaml.org/"
-                        color="var(--c-body)"
-                        class_="css-4htwjz eh99vtg0">
-                        {Jsx.text("OCaml")}
-                      </a>
-                      <span> {Jsx.text(". I co-host ")} </span>
-                      <a
-                        href="https://www.twitch.tv/emelletv"
-                        color="var(--c-body)"
-                        class_="css-4htwjz eh99vtg0">
-                        {Jsx.text("emelle.tv")}
-                      </a>
-                      <span>
-                        {Jsx.text("a talk show about these languages.")}
-                      </span>
                     </p>
                     <div style={Styles.spacer(~bottom=8, ())} />
-                    <p color="var(--c-body)" class_="css-cypsmt e1yw4nh30">
-                      {Jsx.text("I am currently working at ")}
-                      <a
-                        href="https://ahrefs.com/"
-                        color="var(--c-body)"
-                        class_="css-4htwjz eh99vtg0">
-                        {Jsx.text("Ahrefs")}
-                      </a>
-                      {Jsx.text(", building user interfaces and tools.")}
+                    <p>
+                      {Jsx.text("Check the ")}
+                      <Link
+                        bold=true to_="https://ahrefs.com/" color="lightblue">
+                        {Jsx.text("Documentation")}
+                      </Link>
                     </p>
                     <div style={Styles.spacer(~bottom=8, ())} />
-                    <p color="var(--c-body)" class_="css-cypsmt e1yw4nh30">
-                      {Jsx.text("You can read more about me on the ")}
-                      <a
-                        href="https://sancho.dev/about"
-                        color="var(--c-body)"
-                        class_="css-4htwjz eh99vtg0">
-                        {Jsx.text("about")}
-                      </a>
-                      {Jsx.text(" page.")}
-                    </p>
                   </div>
                 </div>
                 <div style={Styles.spacer(~bottom=28, ())} />
-                <div style={Styles.row(32)}>
-                  <Link color="lightskyblue" bold=true to_="https://twitter.com/davesnx">
-                    "Twitter"
-                  </Link>
-                  <Link color="lightgrey" bold=true to_="https://github.com/davesnx">
-                    "Github"
-                  </Link>
-                  <Link color="lightseagreen" bold=true to_="https://t.me/davesnx">
-                    "Telegram"
+                <div style=Styles.small>
+                  <Link
+                    color="lightskyblue"
+                    bold=true
+                    to_="https://twitter.com/davesnx">
+                    "Follow me on twttr "
                   </Link>
                   <Link
-                    color="lightcoral"
+                    color="lightgrey"
                     bold=true
-                    to_="https://www.strava.com/athletes/davesnx">
-                    "Strava"
+                    to_="https://github.com/davesnx">
+                    "or Github (counts double as internet points)"
                   </Link>
                 </div>
               </div>
