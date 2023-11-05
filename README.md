@@ -52,6 +52,20 @@ let component = (~name, ~children) => {
 Html_jsx.render(<component> {"This is a children!"} </component>)
 ```
 
+### Type-safe
+
+HTML attributes are type-checked and only valid attributes are allowed:
+
+```reason
+    <h1 noop=1> "Hello, world!" </h1>;
+    ^^^
+// Error: prop 'noop' isn't valid on a 'h1' element.
+
+    <h1 class_=1>{"Hello, world!"}</h1>
+               ^
+// Error: This expression has type int but an expression was expected of type string
+```
+
 ### Minimalistic
 
 Only 1 function to learn, `Html_jsx.render` the rest are your functions!
