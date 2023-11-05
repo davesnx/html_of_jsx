@@ -45,13 +45,12 @@ module Styles = {
 
 module Link = {
   let make = (~color, ~to_, ~bold=false, ~children, ()) => {
-    let color = Printf.sprintf("color: %s;", color);
     <a
       href=to_
       onmouseover="this.style.opacity='0.6'"
       onmouseout="this.style.opacity='1'"
       style={Styles.join(
-        [color, "text-decoration: underline"]
+        [Printf.sprintf("color: %s", color), "text-decoration: underline"]
         @ (bold ? ["font-weight: bold"] : []),
       )}>
       children
@@ -166,17 +165,26 @@ module Page = {
   };
 };
 
-let index = _request => {
-  let html = Html_of_jsx.render(<Page scripts=["/static/app.js"] />);
-  Dream.html(html);
-};
+module Httpd = Tiny_httpd;
 
-let interface =
-  switch (Sys.getenv_opt("SERVER_INTERFACE")) {
-  | Some(env) => env
-  | None => "localhost"
+let () = {
+  let server = Httpd.create();
+  Httpd.add_route_handler(
+    ~meth=`GET,
+    server,
+    Httpd.Route.(exact("hello") @/ string @/ return),
+    (_name, _req) => {
+      let html = Html_of_jsx.render(<Page scripts=["/static/app.js"] />);
+      Httpd.Response.make_string(Ok(html));
+    },
+  );
+  Printf.printf(
+    "listening on http://%s:%d\n%!",
+    Httpd.addr(server),
+    Httpd.port(server),
+  );
+  switch (Httpd.run(server)) {
+  | Ok () => ()
+  | Error(e) => raise(e)
   };
-
-let router = Dream.router([Dream.get("/", index)]);
-
-Dream.run(~port=8080, ~interface, router);
+};

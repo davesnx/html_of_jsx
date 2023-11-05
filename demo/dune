@@ -1,5 +1,5 @@
 (executable
  (name server)
- (libraries dream html_of_jsx.lib)
+ (libraries tiny_httpd html_of_jsx.lib)
  (preprocess
   (pps html_of_jsx.ppx)))
