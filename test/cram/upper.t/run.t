@@ -1,21 +1,21 @@
 
   $ ../ppx.sh --output re input.re
-  let upper = Upper.createElement();
-  let upper_prop = Upper.createElement(~count, ());
-  let upper_children_single = foo => Upper.createElement(~children=foo, ());
+  let upper = Upper.make();
+  let upper_prop = Upper.make(~count, ());
+  let upper_children_single = foo => Upper.make(~children=foo, ());
   let upper_children_multiple = (foo, bar) =>
-    Upper.createElement(~children=[foo, bar], ());
+    Upper.make(~children=[foo, bar], ());
   let upper_children =
-    Page.createElement(
+    Page.make(
       ~children=Jsx.node("h1", [], [Jsx.string("Yep")]),
       ~moreProps="hgalo",
       (),
     );
-  let upper_nested_module = Foo.Bar.createElement(~a=1, ~b="1", ());
-  let upper_child_expr = Div.createElement(~children=Jsx.int(1), ());
-  let upper_child_ident = Div.createElement(~children=lola, ());
+  let upper_nested_module = Foo.Bar.make(~a=1, ~b="1", ());
+  let upper_child_expr = Div.make(~children=Jsx.int(1), ());
+  let upper_child_ident = Div.make(~children=lola, ());
   let upper_all_kinds_of_props =
-    MyComponent.createElement(
+    MyComponent.make(
       ~children=Jsx.node("div", [], [Jsx.text("hello")]),
       ~booleanAttribute=true,
       ~stringAttribute="string",
@@ -25,4 +25,4 @@
       (),
     );
   let upper_ref_with_children =
-    FancyButton.createElement(~children=Jsx.node("div", [], []), ());
+    FancyButton.make(~children=Jsx.node("div", [], []), ());

@@ -267,6 +267,12 @@ let rewrite_jsx =
             | Pexp_ident { txt = Lident name; loc = name_loc }
               when is_html_element name ->
                 rewrite_node ~loc:name_loc name rest_of_args children
+            (* Reason adds `createElement` as default when an uppercase is found,
+               we change it back to make *)
+            | Pexp_ident
+                { txt = Ldot (modulePath, ("createElement" | "make")); loc } ->
+                let id = { loc; txt = Ldot (modulePath, "make") } in
+                rewrite_component ~loc:tag.pexp_loc id rest_of_args children
             | Pexp_ident id ->
                 rewrite_component ~loc:tag.pexp_loc id rest_of_args children
             | _ -> assert false)

@@ -61,8 +61,7 @@
   let lower_child_ident = Jsx.node("div", [], [lolaspa]);
   let lower_child_single = Jsx.node("div", [], [Jsx.node("div", [], [])]);
   let lower_children_multiple = (foo, bar) => lower(~children=[foo, bar], ());
-  let lower_child_with_upper_as_children =
-    Jsx.node("div", [], [App.createElement()]);
+  let lower_child_with_upper_as_children = Jsx.node("div", [], [App.make()]);
   let lower_children_nested =
     Jsx.node(
       "div",
