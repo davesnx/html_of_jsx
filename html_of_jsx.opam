@@ -16,7 +16,7 @@ depends: [
   "odoc" {with-doc}
   "ocamlformat" {= "0.26.1" & with-dev-setup}
   "ocaml-lsp-server" {with-dev-setup}
-  "dream" {with-dev-setup}
+  "dream"
 ]
 build: [
   ["dune" "subst"] {dev}

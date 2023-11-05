@@ -42,5 +42,5 @@
   (ocaml-lsp-server :with-dev-setup)
 
   ;; Demo deps
-  (dream :with-dev-setup)
+  dream
 ))
