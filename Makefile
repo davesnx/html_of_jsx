@@ -28,11 +28,11 @@ clean: ## Clean artifacts
 	$(DUNE) clean
 
 .PHONY: test
-test: ## Run the unit tests
+test: ## Run the tests
 	$(DUNE) build @runtest
 
 .PHONY: test-watch
-test-watch: ## Run the unit tests in watch mode
+test-watch: ## Run the tests in watch mode
 	$(DUNE) build @runtest -w
 
 .PHONY: test-promote
@@ -56,23 +56,11 @@ create-switch: ## Create opam switch
 	opam switch create . 5.1.0 --deps-only --with-test -y
 
 .PHONY: install
-install:
-	opam install . --deps-only --with-test # Install the new dependencies
+install: # Install dependencies
+	opam install . --deps-only --with-test
 
 .PHONY: init
 init: setup-githooks create-switch install ## Create a local dev enviroment
-
-.PHONY: ppx-test
-ppx-test: ## Run ppx tests
-	$(DUNE) runtest ppx
-
-.PHONY: ppx-test-watch
-ppx-test-watch: ## Run ppx tests in watch mode
-	$(DUNE) runtest ppx --watch
-
-.PHONY: lib-test
-lib-test: ## Run library tests
-	$(DUNE) exec test/test.exe
 
 .PHONY: demo
 demo: ## Run demo executable
