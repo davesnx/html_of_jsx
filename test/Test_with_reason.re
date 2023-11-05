@@ -79,7 +79,6 @@ let fragment = () => {
 };
 
 module Container = {
-  [@react.component]
   let make = (~children=?, ()) => {
     switch (children) {
     | Some(child) => <div> child </div>
@@ -87,6 +86,8 @@ module Container = {
     };
   };
 };
+
+let a = Container.make(~children=Jsx.node("span", [], []));
 
 let children_uppercase = () => {
   let component = <Container />;
@@ -177,26 +178,28 @@ let svg = () => {
 };
 
 module Component = {
-  let make = (~children: Jsx.element, ~cosas as _) => {
+  let make = (~children: Jsx.element, ~cosas as _, ()) => {
     <div> children </div>;
   };
 };
 
-/* let children_one_element = () => {
-     assert_string(
-       Html_of_jsx.render_element(<Component cosas=true> <span /> </Component>),
-       "<div><span></span></div>",
-     );
-   }; */
+let children_one_element = () => {
+  assert_string(
+    Html_of_jsx.render_element(<Component cosas=true> <span /> </Component>),
+    "<div><span></span></div>",
+  );
+};
 
-/* let children_multiple_elements = () => {
-     assert_string(
-       Html_of_jsx.render_element(
-         <Component cosas=false> <div> <span /> </div> <span /> </Component>,
-       ),
-       "<div><div><span></span></div><span></span></div>",
-     );
-   }; */
+let children_multiple_elements = () => {
+  assert_string(
+    Html_of_jsx.render_element(
+      <Component cosas=false>
+        <> <div> <span /> </div> <span /> </>
+      </Component>,
+    ),
+    "<div><div><span></span></div><span></span></div>",
+  );
+};
 
 let case = (title, fn) => Alcotest.test_case(title, `Quick, fn);
 
@@ -206,26 +209,26 @@ let assert_string = (left, right) =>
 module Text = {
   module Tag = {
     type t =
-      | H1;
+      | H1
+      | H2;
 
     let unwrap =
       fun
-      | H1 => "h1";
+      | H1 => "h1"
+      | H2 => "h2";
   };
 
-  [@react.component]
-  let make = (~tagType, ~children: Jsx.element) => {
+  let make = (~tagType, ~children: Jsx.element, ()) => {
     Jsx.node(tagType |> Tag.unwrap, [], [children]);
   };
 };
 
-/* let create_element_variadic = () => {
-     let component = <Text tagType=Text.Tag.H1> {Jsx.text("Hello")} </Text>;
-     assert_string(
-       Html_of_jsx.render_element(component),
-       "<h1 style=\"display:none\" class=\"foo\">Hello</h1>",
-     );
-   }; */
+let create_element_variadic = () => {
+  let component = <Text tagType=Text.Tag.H1> {Jsx.text("Hello")} </Text>;
+  assert_string(Html_of_jsx.render_element(component), "<h1>Hello</h1>");
+  let component = <Text tagType=Text.Tag.H2> {Jsx.text("Hello")} </Text>;
+  assert_string(Html_of_jsx.render_element(component), "<h2>Hello</h2>");
+};
 
 let aria_props = () => {
   let component =
@@ -266,9 +269,9 @@ let _ =
           case("test_children_uppercase", children_uppercase),
           case("test_children_lowercase", children_lowercase),
           case("event_onclick_inline_string", onclick_inline_string),
-          /* case("children_one_element", children_one_element), */
-          /* case("children_multiple_elements", children_multiple_elements), */
-          /* case("createElementVariadic", create_element_variadic), */
+          case("children_one_element", children_one_element),
+          case("children_multiple_elements", children_multiple_elements),
+          case("createElementVariadic", create_element_variadic),
           case("aria_props", aria_props),
         ],
       ),
