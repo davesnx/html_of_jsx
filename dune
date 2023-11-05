@@ -1,4 +1,4 @@
-(dirs lib test demo doc)
+(dirs lib test doc)
 
 (documentation
  (package html_of_jsx))
