@@ -129,7 +129,7 @@ let component: Jsx.element = <> <div class_="md:w-1/3" /> <div class_="md:w-2/3"
 Html_of_jsx.render(<component> {"This is a children!"} </component>)
 ]}
 
-{2 Works with [Reason https://reasonml.github.io]
+{2 Works with {{:https://reasonml.github.io} Reason}
 
 {[
 let component = (~name) => {
@@ -142,7 +142,7 @@ Html_of_jsx.render(<component />)
 ]}
 
 
-{2 Works with [https://github.com/}andreypopp/mlx]
+{2 Works with {{:https://github.com/andreypopp/mlx} mlx} (https://github.com/andreypopp/mlx)
 
 {[
 let component ~name =
