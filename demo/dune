@@ -1,5 +1,5 @@
 (executable
  (name server)
- (libraries dream html_of_jsx.lib lwt.unix)
+ (libraries dream html_of_jsx.lib)
  (preprocess
-  (pps html_of_jsx.ppx lwt_ppx)))
+  (pps html_of_jsx.ppx)))
