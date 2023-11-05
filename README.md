@@ -22,7 +22,7 @@ opan pin add html_of_jsx "https://github.com/davesnx/html_of_jsx"
 + (preprocess (pps html_of_jsx.ppx))
 ```
 
-### [Documentation](https://davesnx.github.io/html_of_jsx/html_of_jsx/index.html)
+## [Documentation](https://davesnx.github.io/html_of_jsx/html_of_jsx/index.html)
 
 Check the [Documentation](https://davesnx.github.io/html_of_jsx/html_of_jsx/index.html) to know more about the API and [features](https://davesnx.github.io/html_of_jsx/html_of_jsx/index.html#features).
 
