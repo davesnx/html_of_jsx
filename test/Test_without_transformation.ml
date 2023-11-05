@@ -18,8 +18,8 @@ let string_attributes =
   let a =
     Jsx.node "a"
       [
-        Attribute.String ("href", "google.html");
         Attribute.String ("target", "_blank");
+        Attribute.String ("href", "google.html");
       ]
       []
   in
@@ -41,7 +41,7 @@ let bool_attributes =
   in
   assert_string
     (Html_of_jsx.render_element a)
-    "<input type=\"checkbox\" name=\"cheese\" checked />"
+    "<input checked name=\"cheese\" type=\"checkbox\" />"
 
 let truthy_attributes =
   case "truthy_attributes" @@ fun () ->
@@ -80,7 +80,7 @@ let no_ignore_unkwnown_attributes_on_jsx =
   in
   assert_string
     (Html_of_jsx.render_element div)
-    "<div key=\"uniqueKeyId\" suppressContentEditableWarning></div>"
+    "<div suppressContentEditableWarning key=\"uniqueKeyId\"></div>"
 
 (* TODO: Fragments aren't supported yet *)
 (* let fragment () =
@@ -129,7 +129,7 @@ let encode_attributes =
   in
   assert_string
     (Html_of_jsx.render_element component)
-    "<div about=\"&#x27; &lt;\" data-user-path=\"what/the/path\">&amp; \
+    "<div data-user-path=\"what/the/path\" about=\"&#x27; &lt;\">&amp; \
      &quot;</div>"
 
 let make ~name () =
@@ -144,7 +144,7 @@ let event =
   case "event" @@ fun () ->
   assert_string
     (Html_of_jsx.render_element (make ~name:"json" ()))
-    "<button name=\"json\" onclick=\"doFunction('foo');\"></button>"
+    "<button onclick=\"doFunction('foo');\" name=\"json\"></button>"
 
 let className =
   case "className" @@ fun () ->
@@ -198,12 +198,12 @@ let render_svg =
   in
   assert_string
     (Html_of_jsx.render_element svg)
-    "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" \
-     width=\"24px\" height=\"24px\"><path d=\"M 5 3 C 3.9069372 3 3 3.9069372 \
-     3 5 L 3 19 C 3 20.093063 3.9069372 21 5 21 L 19 21 C 20.093063 21 21 \
-     20.093063 21 19 L 21 12 L 19 12 L 19 19 L 5 19 L 5 5 L 12 5 L 12 3 L 5 3 \
-     z M 14 3 L 14 5 L 17.585938 5 L 8.2929688 14.292969 L 9.7070312 15.707031 \
-     L 19 6.4140625 L 19 10 L 21 10 L 21 3 L 14 3 z\"></path></svg>"
+    "<svg height=\"24px\" width=\"24px\" viewBox=\"0 0 24 24\" \
+     xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M 5 3 C 3.9069372 3 3 \
+     3.9069372 3 5 L 3 19 C 3 20.093063 3.9069372 21 5 21 L 19 21 C 20.093063 \
+     21 21 20.093063 21 19 L 21 12 L 19 12 L 19 19 L 5 19 L 5 5 L 12 5 L 12 3 \
+     L 5 3 z M 14 3 L 14 5 L 17.585938 5 L 8.2929688 14.292969 L 9.7070312 \
+     15.707031 L 19 6.4140625 L 19 10 L 21 10 L 21 3 L 14 3 z\"></path></svg>"
 
 let tests =
   ( "render",

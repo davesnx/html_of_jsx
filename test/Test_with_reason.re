@@ -241,41 +241,33 @@ let aria_props = () => {
   );
 };
 
-let _ =
-  Alcotest.run(
-    "server-reason-react.ppx",
-    [
-      (
-        "renderToStaticMarkup",
-        [
-          case("div", tag),
-          case("div_empty_attr", empty_attribute),
-          case("div_bool_attr", bool_attribute),
-          case("input_bool_attrs", bool_attributes),
-          case("p_inner_html", innerhtml),
-          case("div_int_attr", int_attribute),
-          case("svg", svg),
-          case("style_attr", style_attribute),
-          case("link_as_attr", link_as_attribute),
-          case("int_opt_attr_some", int_opt_attribute_some),
-          case("int_opt_attr_none", int_opt_attribute_none),
-          case("string_opt_attr_some", string_opt_attribute_some),
-          case("string_opt_attr_none", string_opt_attribute_none),
-          case("bool_opt_attr_some", bool_opt_attribute_some),
-          case("bool_opt_attr_none", bool_opt_attribute_none),
-          case("style_opt_attr_some", style_opt_attribute_some),
-          case("style_opt_attr_none", style_opt_attribute_none),
-          case("test_fragment", fragment),
-          case("test_children_uppercase", children_uppercase),
-          case("test_children_lowercase", children_lowercase),
-          case("event_onclick_inline_string", onclick_inline_string),
-          case("children_one_element", children_one_element),
-          case("children_multiple_elements", children_multiple_elements),
-          case("createElementVariadic", create_element_variadic),
-          case("aria_props", aria_props),
-        ],
-      ),
-    ],
-  );
-
-let tests = ("Reason", []);
+let tests = (
+  "Reason",
+  [
+    case("div", tag),
+    case("div_empty_attr", empty_attribute),
+    case("div_bool_attr", bool_attribute),
+    case("input_bool_attrs", bool_attributes),
+    case("p_inner_html", innerhtml),
+    case("div_int_attr", int_attribute),
+    case("svg", svg),
+    case("style_attr", style_attribute),
+    case("link_as_attr", link_as_attribute),
+    case("int_opt_attr_some", int_opt_attribute_some),
+    case("int_opt_attr_none", int_opt_attribute_none),
+    case("string_opt_attr_some", string_opt_attribute_some),
+    case("string_opt_attr_none", string_opt_attribute_none),
+    case("bool_opt_attr_some", bool_opt_attribute_some),
+    case("bool_opt_attr_none", bool_opt_attribute_none),
+    case("style_opt_attr_some", style_opt_attribute_some),
+    case("style_opt_attr_none", style_opt_attribute_none),
+    case("test_fragment", fragment),
+    case("test_children_uppercase", children_uppercase),
+    case("test_children_lowercase", children_lowercase),
+    case("event_onclick_inline_string", onclick_inline_string),
+    case("children_one_element", children_one_element),
+    case("children_multiple_elements", children_multiple_elements),
+    case("createElementVariadic", create_element_variadic),
+    case("aria_props", aria_props),
+  ],
+);
