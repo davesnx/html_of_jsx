@@ -39,9 +39,6 @@ test-watch: ## Run the unit tests in watch mode
 test-promote: ## Updates snapshots and promotes it to correct
 	$(DUNE) build @runtest --auto-promote
 
-.PHONY: deps
-deps: $(opam_file) ## Alias to update the opam file and install the needed deps
-
 .PHONY: format
 format: ## Format the codebase with ocamlformat
 	$(DUNE) build @fmt --auto-promote
@@ -60,7 +57,6 @@ create-switch: ## Create opam switch
 
 .PHONY: install
 install:
-	$(DUNE) build @install
 	opam install . --deps-only --with-test # Install the new dependencies
 
 .PHONY: init

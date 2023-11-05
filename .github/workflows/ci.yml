@@ -55,9 +55,6 @@ jobs:
           dune-cache: true
           opam-disable-sandboxing: true
 
-      - name: Install deps
-        run: make install
-
       - name: Build
         run: make build
 
