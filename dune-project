@@ -38,9 +38,9 @@
   (ocamlformat
    (and
     (= 0.26.1)
-    :with-dev-setup))
-  (ocaml-lsp-server :with-dev-setup)
+    :with-test))
+  (ocaml-lsp-server :with-test)
 
   ;; Demo deps
-  dream
+  (dream :with-test)
 ))

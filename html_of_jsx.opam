@@ -14,9 +14,9 @@ depends: [
   "alcotest" {with-test}
   "fmt" {with-test}
   "odoc" {with-doc}
-  "ocamlformat" {= "0.26.1" & with-dev-setup}
-  "ocaml-lsp-server" {with-dev-setup}
-  "dream"
+  "ocamlformat" {= "0.26.1" & with-test}
+  "ocaml-lsp-server" {with-test}
+  "dream" {with-test}
 ]
 build: [
   ["dune" "subst"] {dev}
