@@ -26,3 +26,13 @@
     );
   let upper_ref_with_children =
     FancyButton.make(~children=Jsx.node("div", [], []), ());
+  let call =
+    Link.make(
+      ~children=Jsx.text("about"),
+      ~to_="https://sancho.dev/about",
+      ~color="grey",
+      (),
+    );
+  let component = (~name) =>
+    Jsx.node("div", [], [Jsx.node("h1", [], ["Hello, " ++ name ++ "!"])]);
+  Html_of_jsx.render(component());

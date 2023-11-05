@@ -5,7 +5,7 @@
       "div",
       List.filter_map(
         Fun.id,
-        [Some([@implicit_arity] Attribute.String("class", "": string))],
+        [Some([@implicit_arity] Jsx.Attribute.String("class", "": string))],
       ),
       [],
     );
@@ -16,7 +16,7 @@
         Fun.id,
         [
           Some(
-            Attribute.Style(
+            Jsx.Attribute.Style(
               Style.make(~backgroundColor="gainsboro", ()): string,
             ),
           ),
@@ -32,7 +32,8 @@
         [
           Option.map(
             v =>
-              [@implicit_arity] Attribute.String("tabIndex", string_of_int(v)),
+              [@implicit_arity]
+              Jsx.Attribute.String("tabIndex", string_of_int(v)),
             tabIndex: option(int),
           ),
         ],
@@ -47,11 +48,11 @@
         [
           Some(
             [@implicit_arity]
-            Attribute.String("href", "https://example.com": string),
+            Jsx.Attribute.String("href", "https://example.com": string),
           ),
           Some(
             [@implicit_arity]
-            Attribute.String("tabIndex", string_of_int(1: int)),
+            Jsx.Attribute.String("tabIndex", string_of_int(1: int)),
           ),
         ],
       ),
@@ -70,7 +71,7 @@
         [
           Some(
             [@implicit_arity]
-            Attribute.String("class", "flex-container": string),
+            Jsx.Attribute.String("class", "flex-container": string),
           ),
         ],
       ),
@@ -81,7 +82,8 @@
             Fun.id,
             [
               Some(
-                [@implicit_arity] Attribute.String("class", "sidebar": string),
+                [@implicit_arity]
+                Jsx.Attribute.String("class", "sidebar": string),
               ),
             ],
           ),
@@ -93,7 +95,7 @@
                 [
                   Some(
                     [@implicit_arity]
-                    Attribute.String("class", "title": string),
+                    Jsx.Attribute.String("class", "title": string),
                   ),
                 ],
               ),
@@ -105,7 +107,8 @@
                 Fun.id,
                 [
                   Some(
-                    [@implicit_arity] Attribute.String("class", "menu": string),
+                    [@implicit_arity]
+                    Jsx.Attribute.String("class", "menu": string),
                   ),
                 ],
               ),
@@ -127,14 +130,17 @@
                                  [
                                    Some(
                                      [@implicit_arity]
-                                     Attribute.Event(
+                                     Jsx.Attribute.Event(
                                        "onclick",
                                        "console.log": string,
                                      ),
                                    ),
                                    Some(
                                      [@implicit_arity]
-                                     Attribute.String("href", e.path: string),
+                                     Jsx.Attribute.String(
+                                       "href",
+                                       e.path: string,
+                                     ),
                                    ),
                                  ],
                                ),
@@ -159,7 +165,8 @@
         Fun.id,
         [
           Some(
-            [@implicit_arity] Attribute.String("class", "FancyButton": string),
+            [@implicit_arity]
+            Jsx.Attribute.String("class", "FancyButton": string),
           ),
         ],
       ),
@@ -171,7 +178,9 @@
       List.filter_map(
         Fun.id,
         [
-          Some([@implicit_arity] Attribute.String("translate", "yes": string)),
+          Some(
+            [@implicit_arity] Jsx.Attribute.String("translate", "yes": string),
+          ),
         ],
       ),
       [
@@ -181,7 +190,8 @@
             Fun.id,
             [
               Some(
-                [@implicit_arity] Attribute.String("id", "idpicture": string),
+                [@implicit_arity]
+                Jsx.Attribute.String("id", "idpicture": string),
               ),
             ],
           ),
@@ -192,32 +202,16 @@
                 Fun.id,
                 [
                   Some(
-                    [@implicit_arity] Attribute.String("id", "idimg": string),
+                    [@implicit_arity]
+                    Jsx.Attribute.String("id", "idimg": string),
                   ),
                   Some(
                     [@implicit_arity]
-                    Attribute.String("alt", "test picture/img.png": string),
+                    Jsx.Attribute.String("alt", "test picture/img.png": string),
                   ),
                   Some(
                     [@implicit_arity]
-                    Attribute.String("src", "picture/img.png": string),
-                  ),
-                ],
-              ),
-              [],
-            ),
-            Jsx.node(
-              "source",
-              List.filter_map(
-                Fun.id,
-                [
-                  Some(
-                    [@implicit_arity]
-                    Attribute.String("src", "picture/img1.webp": string),
-                  ),
-                  Some(
-                    [@implicit_arity]
-                    Attribute.String("type", "image/webp": string),
+                    Jsx.Attribute.String("src", "picture/img.png": string),
                   ),
                 ],
               ),
@@ -230,11 +224,28 @@
                 [
                   Some(
                     [@implicit_arity]
-                    Attribute.String("src", "picture/img2.jpg": string),
+                    Jsx.Attribute.String("src", "picture/img1.webp": string),
                   ),
                   Some(
                     [@implicit_arity]
-                    Attribute.String("type", "image/jpeg": string),
+                    Jsx.Attribute.String("type", "image/webp": string),
+                  ),
+                ],
+              ),
+              [],
+            ),
+            Jsx.node(
+              "source",
+              List.filter_map(
+                Fun.id,
+                [
+                  Some(
+                    [@implicit_arity]
+                    Jsx.Attribute.String("src", "picture/img2.jpg": string),
+                  ),
+                  Some(
+                    [@implicit_arity]
+                    Jsx.Attribute.String("type", "image/jpeg": string),
                   ),
                 ],
               ),
@@ -250,8 +261,8 @@
       List.filter_map(
         Fun.id,
         [
-          Some([@implicit_arity] Attribute.String("dy", "3 4": string)),
-          Some([@implicit_arity] Attribute.String("dx", "1 2": string)),
+          Some([@implicit_arity] Jsx.Attribute.String("dy", "3 4": string)),
+          Some([@implicit_arity] Jsx.Attribute.String("dx", "1 2": string)),
         ],
       ),
       [],

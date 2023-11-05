@@ -9,10 +9,10 @@ We need to output ML syntax here, otherwise refmt could not parse it.
       [
         Jsx.node "div"
           (List.filter_map Fun.id
-             [ Some (Attribute.String ("class", ("md:w-1/3" : string))) ])
+             [ Some (Jsx.Attribute.String ("class", ("md:w-1/3" : string))) ])
           [];
         Jsx.node "div"
           (List.filter_map Fun.id
-             [ Some (Attribute.String ("class", ("md:w-2/3" : string))) ])
+             [ Some (Jsx.Attribute.String ("class", ("md:w-2/3" : string))) ])
           [];
       ]
