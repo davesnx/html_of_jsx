@@ -1,3 +1,7 @@
+/** This is a demo of a HTTP server that demostrates the possibility of Html_of_jsx.
+  It uses `tiny_httpd` to keep the dependencies to a minimum */
+module Httpd = Tiny_httpd;
+
 module Styles = {
   let heading = ["margin: 0", "padding: 0"];
 
@@ -165,10 +169,10 @@ module Page = {
   };
 };
 
-module Httpd = Tiny_httpd;
-
 let () = {
   let server = Httpd.create();
+  let addr = Httpd.addr(server);
+  let port = Httpd.port(server);
   Httpd.add_route_handler(
     ~meth=`GET,
     server,
@@ -178,12 +182,11 @@ let () = {
       Httpd.Response.make_string(Ok(html));
     },
   );
-  Printf.printf(
-    "listening on http://%s:%d\n%!",
-    Httpd.addr(server),
-    Httpd.port(server),
-  );
-  switch (Httpd.run(server)) {
+  switch (
+    Httpd.run(server, ~after_init=() =>
+      Printf.printf("Listening on http://%s:%d\n%!", addr, port)
+    )
+  ) {
   | Ok () => ()
   | Error(e) => raise(e)
   };
