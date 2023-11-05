@@ -2,7 +2,7 @@
 (* This file is more like a spreadsheet, prefer to keep it with margin=300.
    Since @@@ocamlformat "margin=300" isn't possible, we disable it *)
 
-let ( & ) = List.append
+let ( & ) = List.append (* ( & ) comes from intersection *)
 
 type attributeType =
   | String
@@ -13,8 +13,6 @@ type attributeType =
   *)
   | BooleanishString
   | Style
-  | Ref
-  | InnerHtml
 
 type eventType =
   | Clipboard
@@ -34,7 +32,6 @@ type eventType =
   | Pointer
   | Inline
   | Drag
-(* _onclick *)
 
 type attribute = {
   type_ : attributeType;
@@ -67,166 +64,166 @@ let attributeAnchorTarget = String
 let globalEventHandlers =
   (* https://developer.mozilla.org/en-US/docs/Web/Events/Event_handlers *)
   [
-    Event { jsxName = "onCopy"; type_ = Clipboard };
-    Event { jsxName = "onCopyCapture"; type_ = Clipboard };
-    Event { jsxName = "onCut"; type_ = Clipboard };
-    Event { jsxName = "onCutCapture"; type_ = Clipboard };
-    Event { jsxName = "onPaste"; type_ = Clipboard };
-    Event { jsxName = "onPasteCapture"; type_ = Clipboard };
-    Event { jsxName = "onCompositionEnd"; type_ = Composition };
-    Event { jsxName = "onCompositionEndCapture"; type_ = Composition };
-    Event { jsxName = "onCompositionStart"; type_ = Composition };
-    Event { jsxName = "onCompositionStartCapture"; type_ = Composition };
-    Event { jsxName = "onCompositionUpdate"; type_ = Composition };
-    Event { jsxName = "onCompositionUpdateCapture"; type_ = Composition };
-    Event { jsxName = "onFocus"; type_ = Focus };
-    Event { jsxName = "onFocusCapture"; type_ = Focus };
-    Event { jsxName = "onBlur"; type_ = Focus };
-    Event { jsxName = "onBlurCapture"; type_ = Focus };
-    Event { jsxName = "onChange"; type_ = Form };
-    Event { jsxName = "onChangeCapture"; type_ = Form };
-    Event { jsxName = "onBeforeInput"; type_ = Form };
-    Event { jsxName = "onBeforeInputCapture"; type_ = Form };
-    Event { jsxName = "onInput"; type_ = Form };
-    Event { jsxName = "onInputCapture"; type_ = Form };
-    Event { jsxName = "onReset"; type_ = Form };
-    Event { jsxName = "onResetCapture"; type_ = Form };
-    Event { jsxName = "onSubmit"; type_ = Form };
-    Event { jsxName = "onSubmitCapture"; type_ = Form };
-    Event { jsxName = "onInvalid"; type_ = Form };
-    Event { jsxName = "onInvalidCapture"; type_ = Form };
-    Event { jsxName = "onLoad"; type_ = Media };
-    Event { jsxName = "onLoadCapture"; type_ = Media };
-    Event { jsxName = "onError"; type_ = Media };
-    Event { jsxName = "onErrorCapture"; type_ = Media };
-    Event { jsxName = "onKeyDown"; type_ = Keyboard };
-    Event { jsxName = "onKeyDownCapture"; type_ = Keyboard };
-    Event { jsxName = "onKeyPress"; type_ = Keyboard };
-    Event { jsxName = "onKeyPressCapture"; type_ = Keyboard };
-    Event { jsxName = "onKeyUp"; type_ = Keyboard };
-    Event { jsxName = "onKeyUpCapture"; type_ = Keyboard };
-    Event { jsxName = "onAbort"; type_ = Media };
-    Event { jsxName = "onAbortCapture"; type_ = Media };
-    Event { jsxName = "onCanPlay"; type_ = Media };
-    Event { jsxName = "onCanPlayCapture"; type_ = Media };
-    Event { jsxName = "onCanPlayThrough"; type_ = Media };
-    Event { jsxName = "onCanPlayThroughCapture"; type_ = Media };
-    Event { jsxName = "onDurationChange"; type_ = Media };
-    Event { jsxName = "onDurationChangeCapture"; type_ = Media };
-    Event { jsxName = "onEmptied"; type_ = Media };
-    Event { jsxName = "onEmptiedCapture"; type_ = Media };
-    Event { jsxName = "onEncrypted"; type_ = Media };
-    Event { jsxName = "onEncryptedCapture"; type_ = Media };
-    Event { jsxName = "onEnded"; type_ = Media };
-    Event { jsxName = "onEndedCapture"; type_ = Media };
-    Event { jsxName = "onLoadedData"; type_ = Media };
-    Event { jsxName = "onLoadedDataCapture"; type_ = Media };
-    Event { jsxName = "onLoadedMetadata"; type_ = Media };
-    Event { jsxName = "onLoadedMetadataCapture"; type_ = Media };
-    Event { jsxName = "onLoadStart"; type_ = Media };
-    Event { jsxName = "onLoadStartCapture"; type_ = Media };
-    Event { jsxName = "onPause"; type_ = Media };
-    Event { jsxName = "onPauseCapture"; type_ = Media };
-    Event { jsxName = "onPlay"; type_ = Media };
-    Event { jsxName = "onPlayCapture"; type_ = Media };
-    Event { jsxName = "onPlaying"; type_ = Media };
-    Event { jsxName = "onPlayingCapture"; type_ = Media };
-    Event { jsxName = "onProgress"; type_ = Media };
-    Event { jsxName = "onProgressCapture"; type_ = Media };
-    Event { jsxName = "onRateChange"; type_ = Media };
-    Event { jsxName = "onRateChangeCapture"; type_ = Media };
-    Event { jsxName = "onSeeked"; type_ = Media };
-    Event { jsxName = "onSeekedCapture"; type_ = Media };
-    Event { jsxName = "onSeeking"; type_ = Media };
-    Event { jsxName = "onSeekingCapture"; type_ = Media };
-    Event { jsxName = "onStalled"; type_ = Media };
-    Event { jsxName = "onStalledCapture"; type_ = Media };
-    Event { jsxName = "onSuspend"; type_ = Media };
-    Event { jsxName = "onSuspendCapture"; type_ = Media };
-    Event { jsxName = "onTimeUpdate"; type_ = Media };
-    Event { jsxName = "onTimeUpdateCapture"; type_ = Media };
-    Event { jsxName = "onVolumeChange"; type_ = Media };
-    Event { jsxName = "onVolumeChangeCapture"; type_ = Media };
-    Event { jsxName = "onWaiting"; type_ = Media };
-    Event { jsxName = "onWaitingCapture"; type_ = Media };
-    Event { jsxName = "onAuxClick"; type_ = Mouse };
-    Event { jsxName = "onAuxClickCapture"; type_ = Mouse };
-    Event { jsxName = "onClick"; type_ = Mouse };
-    Event { jsxName = "onClickCapture"; type_ = Mouse };
-    Event { jsxName = "onContextMenu"; type_ = Mouse };
-    Event { jsxName = "onContextMenuCapture"; type_ = Mouse };
-    Event { jsxName = "onDoubleClick"; type_ = Mouse };
-    Event { jsxName = "onDoubleClickCapture"; type_ = Mouse };
-    Event { jsxName = "onDrag"; type_ = Drag };
-    Event { jsxName = "onDragCapture"; type_ = Drag };
-    Event { jsxName = "onDragEnd"; type_ = Drag };
-    Event { jsxName = "onDragEndCapture"; type_ = Drag };
-    Event { jsxName = "onDragEnter"; type_ = Drag };
-    Event { jsxName = "onDragEnterCapture"; type_ = Drag };
-    Event { jsxName = "onDragExit"; type_ = Drag };
-    Event { jsxName = "onDragExitCapture"; type_ = Drag };
-    Event { jsxName = "onDragLeave"; type_ = Drag };
-    Event { jsxName = "onDragLeaveCapture"; type_ = Drag };
-    Event { jsxName = "onDragOver"; type_ = Drag };
-    Event { jsxName = "onDragOverCapture"; type_ = Drag };
-    Event { jsxName = "onDragStart"; type_ = Drag };
-    Event { jsxName = "onDragStartCapture"; type_ = Drag };
-    Event { jsxName = "onDrop"; type_ = Drag };
-    Event { jsxName = "onDropCapture"; type_ = Drag };
-    Event { jsxName = "onMouseDown"; type_ = Mouse };
-    Event { jsxName = "onMouseDownCapture"; type_ = Mouse };
-    Event { jsxName = "onMouseEnter"; type_ = Mouse };
-    Event { jsxName = "onMouseLeave"; type_ = Mouse };
-    Event { jsxName = "onMouseMove"; type_ = Mouse };
-    Event { jsxName = "onMouseMoveCapture"; type_ = Mouse };
-    Event { jsxName = "onMouseOut"; type_ = Mouse };
-    Event { jsxName = "onMouseOutCapture"; type_ = Mouse };
-    Event { jsxName = "onMouseOver"; type_ = Mouse };
-    Event { jsxName = "onMouseOverCapture"; type_ = Mouse };
-    Event { jsxName = "onMouseUp"; type_ = Mouse };
-    Event { jsxName = "onMouseUpCapture"; type_ = Mouse };
-    Event { jsxName = "onSelect"; type_ = Selection };
-    Event { jsxName = "onSelectCapture"; type_ = Selection };
-    Event { jsxName = "onTouchCancel"; type_ = Touch };
-    Event { jsxName = "onTouchCancelCapture"; type_ = Touch };
-    Event { jsxName = "onTouchEnd"; type_ = Touch };
-    Event { jsxName = "onTouchEndCapture"; type_ = Touch };
-    Event { jsxName = "onTouchMove"; type_ = Touch };
-    Event { jsxName = "onTouchMoveCapture"; type_ = Touch };
-    Event { jsxName = "onTouchStart"; type_ = Touch };
-    Event { jsxName = "onTouchStartCapture"; type_ = Touch };
-    Event { jsxName = "onPointerDown"; type_ = Pointer };
-    Event { jsxName = "onPointerDownCapture"; type_ = Pointer };
-    Event { jsxName = "onPointerMove"; type_ = Pointer };
-    Event { jsxName = "onPointerMoveCapture"; type_ = Pointer };
-    Event { jsxName = "onPointerUp"; type_ = Pointer };
-    Event { jsxName = "onPointerUpCapture"; type_ = Pointer };
-    Event { jsxName = "onPointerCancel"; type_ = Pointer };
-    Event { jsxName = "onPointerCancelCapture"; type_ = Pointer };
-    Event { jsxName = "onPointerEnter"; type_ = Pointer };
-    Event { jsxName = "onPointerEnterCapture"; type_ = Pointer };
-    Event { jsxName = "onPointerLeave"; type_ = Pointer };
-    Event { jsxName = "onPointerLeaveCapture"; type_ = Pointer };
-    Event { jsxName = "onPointerOver"; type_ = Pointer };
-    Event { jsxName = "onPointerOverCapture"; type_ = Pointer };
-    Event { jsxName = "onPointerOut"; type_ = Pointer };
-    Event { jsxName = "onPointerOutCapture"; type_ = Pointer };
-    Event { jsxName = "onGotPointerCapture"; type_ = Pointer };
-    Event { jsxName = "onGotPointerCaptureCapture"; type_ = Pointer };
-    Event { jsxName = "onLostPointerCapture"; type_ = Pointer };
-    Event { jsxName = "onLostPointerCaptureCapture"; type_ = Pointer };
-    Event { jsxName = "onScroll"; type_ = UI };
-    Event { jsxName = "onScrollCapture"; type_ = UI };
-    Event { jsxName = "onWheel"; type_ = Wheel };
-    Event { jsxName = "onWheelCapture"; type_ = Wheel };
-    Event { jsxName = "onAnimationStart"; type_ = Animation };
-    Event { jsxName = "onAnimationStartCapture"; type_ = Animation };
-    Event { jsxName = "onAnimationEnd"; type_ = Animation };
-    Event { jsxName = "onAnimationEndCapture"; type_ = Animation };
-    Event { jsxName = "onAnimationIteration"; type_ = Animation };
-    Event { jsxName = "onAnimationIterationCapture"; type_ = Animation };
-    Event { jsxName = "onTransitionEnd"; type_ = Transition };
-    Event { jsxName = "onTransitionEndCapture"; type_ = Transition };
+    Event { jsxName = "oncopy"; type_ = Clipboard };
+    Event { jsxName = "oncopyCapture"; type_ = Clipboard };
+    Event { jsxName = "oncut"; type_ = Clipboard };
+    Event { jsxName = "oncutCapture"; type_ = Clipboard };
+    Event { jsxName = "onpaste"; type_ = Clipboard };
+    Event { jsxName = "onpasteCapture"; type_ = Clipboard };
+    Event { jsxName = "oncompositionEnd"; type_ = Composition };
+    Event { jsxName = "oncompositionEndCapture"; type_ = Composition };
+    Event { jsxName = "oncompositionStart"; type_ = Composition };
+    Event { jsxName = "oncompositionStartCapture"; type_ = Composition };
+    Event { jsxName = "oncompositionUpdate"; type_ = Composition };
+    Event { jsxName = "oncompositionUpdateCapture"; type_ = Composition };
+    Event { jsxName = "onfocus"; type_ = Focus };
+    Event { jsxName = "onfocusCapture"; type_ = Focus };
+    Event { jsxName = "onblur"; type_ = Focus };
+    Event { jsxName = "onblurCapture"; type_ = Focus };
+    Event { jsxName = "onchange"; type_ = Form };
+    Event { jsxName = "onchangeCapture"; type_ = Form };
+    Event { jsxName = "onbeforeInput"; type_ = Form };
+    Event { jsxName = "onbeforeInputCapture"; type_ = Form };
+    Event { jsxName = "oninput"; type_ = Form };
+    Event { jsxName = "oninputCapture"; type_ = Form };
+    Event { jsxName = "onreset"; type_ = Form };
+    Event { jsxName = "onresetCapture"; type_ = Form };
+    Event { jsxName = "onsubmit"; type_ = Form };
+    Event { jsxName = "onsubmitCapture"; type_ = Form };
+    Event { jsxName = "oninvalid"; type_ = Form };
+    Event { jsxName = "oninvalidCapture"; type_ = Form };
+    Event { jsxName = "onload"; type_ = Media };
+    Event { jsxName = "onloadCapture"; type_ = Media };
+    Event { jsxName = "onerror"; type_ = Media };
+    Event { jsxName = "onerrorCapture"; type_ = Media };
+    Event { jsxName = "onkeyDown"; type_ = Keyboard };
+    Event { jsxName = "onkeyDownCapture"; type_ = Keyboard };
+    Event { jsxName = "onkeyPress"; type_ = Keyboard };
+    Event { jsxName = "onkeyPressCapture"; type_ = Keyboard };
+    Event { jsxName = "onkeyUp"; type_ = Keyboard };
+    Event { jsxName = "onkeyUpCapture"; type_ = Keyboard };
+    Event { jsxName = "onabort"; type_ = Media };
+    Event { jsxName = "onabortCapture"; type_ = Media };
+    Event { jsxName = "oncanPlay"; type_ = Media };
+    Event { jsxName = "oncanPlayCapture"; type_ = Media };
+    Event { jsxName = "oncanPlayThrough"; type_ = Media };
+    Event { jsxName = "oncanPlayThroughCapture"; type_ = Media };
+    Event { jsxName = "ondurationChange"; type_ = Media };
+    Event { jsxName = "ondurationChangeCapture"; type_ = Media };
+    Event { jsxName = "onemptied"; type_ = Media };
+    Event { jsxName = "onemptiedCapture"; type_ = Media };
+    Event { jsxName = "onencrypted"; type_ = Media };
+    Event { jsxName = "onencryptedCapture"; type_ = Media };
+    Event { jsxName = "onended"; type_ = Media };
+    Event { jsxName = "onendedCapture"; type_ = Media };
+    Event { jsxName = "onloadedData"; type_ = Media };
+    Event { jsxName = "onloadedDataCapture"; type_ = Media };
+    Event { jsxName = "onloadedMetadata"; type_ = Media };
+    Event { jsxName = "onloadedMetadataCapture"; type_ = Media };
+    Event { jsxName = "onloadStart"; type_ = Media };
+    Event { jsxName = "onloadStartCapture"; type_ = Media };
+    Event { jsxName = "onpause"; type_ = Media };
+    Event { jsxName = "onpauseCapture"; type_ = Media };
+    Event { jsxName = "onplay"; type_ = Media };
+    Event { jsxName = "onplayCapture"; type_ = Media };
+    Event { jsxName = "onplaying"; type_ = Media };
+    Event { jsxName = "onplayingCapture"; type_ = Media };
+    Event { jsxName = "onprogress"; type_ = Media };
+    Event { jsxName = "onprogressCapture"; type_ = Media };
+    Event { jsxName = "onrateChange"; type_ = Media };
+    Event { jsxName = "onrateChangeCapture"; type_ = Media };
+    Event { jsxName = "onseeked"; type_ = Media };
+    Event { jsxName = "onseekedCapture"; type_ = Media };
+    Event { jsxName = "onseeking"; type_ = Media };
+    Event { jsxName = "onseekingCapture"; type_ = Media };
+    Event { jsxName = "onstalled"; type_ = Media };
+    Event { jsxName = "onstalledCapture"; type_ = Media };
+    Event { jsxName = "onsuspend"; type_ = Media };
+    Event { jsxName = "onsuspendCapture"; type_ = Media };
+    Event { jsxName = "ontimeUpdate"; type_ = Media };
+    Event { jsxName = "ontimeUpdateCapture"; type_ = Media };
+    Event { jsxName = "onvolumeChange"; type_ = Media };
+    Event { jsxName = "onvolumeChangeCapture"; type_ = Media };
+    Event { jsxName = "onwaiting"; type_ = Media };
+    Event { jsxName = "onwaitingCapture"; type_ = Media };
+    Event { jsxName = "onauxClick"; type_ = Mouse };
+    Event { jsxName = "onauxClickCapture"; type_ = Mouse };
+    Event { jsxName = "onclick"; type_ = Mouse };
+    Event { jsxName = "onclickCapture"; type_ = Mouse };
+    Event { jsxName = "oncontextMenu"; type_ = Mouse };
+    Event { jsxName = "oncontextMenuCapture"; type_ = Mouse };
+    Event { jsxName = "ondoubleClick"; type_ = Mouse };
+    Event { jsxName = "ondoubleClickCapture"; type_ = Mouse };
+    Event { jsxName = "ondrag"; type_ = Drag };
+    Event { jsxName = "ondragCapture"; type_ = Drag };
+    Event { jsxName = "ondragEnd"; type_ = Drag };
+    Event { jsxName = "ondragEndCapture"; type_ = Drag };
+    Event { jsxName = "ondragEnter"; type_ = Drag };
+    Event { jsxName = "ondragEnterCapture"; type_ = Drag };
+    Event { jsxName = "ondragExit"; type_ = Drag };
+    Event { jsxName = "ondragExitCapture"; type_ = Drag };
+    Event { jsxName = "ondragLeave"; type_ = Drag };
+    Event { jsxName = "ondragLeaveCapture"; type_ = Drag };
+    Event { jsxName = "ondragOver"; type_ = Drag };
+    Event { jsxName = "ondragOverCapture"; type_ = Drag };
+    Event { jsxName = "ondragStart"; type_ = Drag };
+    Event { jsxName = "ondragStartCapture"; type_ = Drag };
+    Event { jsxName = "ondrop"; type_ = Drag };
+    Event { jsxName = "ondropCapture"; type_ = Drag };
+    Event { jsxName = "onmouseDown"; type_ = Mouse };
+    Event { jsxName = "onmouseDownCapture"; type_ = Mouse };
+    Event { jsxName = "onmouseEnter"; type_ = Mouse };
+    Event { jsxName = "onmouseLeave"; type_ = Mouse };
+    Event { jsxName = "onmouseMove"; type_ = Mouse };
+    Event { jsxName = "onmouseMoveCapture"; type_ = Mouse };
+    Event { jsxName = "onmouseOut"; type_ = Mouse };
+    Event { jsxName = "onmouseOutCapture"; type_ = Mouse };
+    Event { jsxName = "onmouseOver"; type_ = Mouse };
+    Event { jsxName = "onmouseOverCapture"; type_ = Mouse };
+    Event { jsxName = "onmouseUp"; type_ = Mouse };
+    Event { jsxName = "onmouseUpCapture"; type_ = Mouse };
+    Event { jsxName = "onselect"; type_ = Selection };
+    Event { jsxName = "onselectCapture"; type_ = Selection };
+    Event { jsxName = "ontouchCancel"; type_ = Touch };
+    Event { jsxName = "ontouchCancelCapture"; type_ = Touch };
+    Event { jsxName = "ontouchEnd"; type_ = Touch };
+    Event { jsxName = "ontouchEndCapture"; type_ = Touch };
+    Event { jsxName = "ontouchMove"; type_ = Touch };
+    Event { jsxName = "ontouchMoveCapture"; type_ = Touch };
+    Event { jsxName = "ontouchStart"; type_ = Touch };
+    Event { jsxName = "ontouchStartCapture"; type_ = Touch };
+    Event { jsxName = "onpointerDown"; type_ = Pointer };
+    Event { jsxName = "onpointerDownCapture"; type_ = Pointer };
+    Event { jsxName = "onpointerMove"; type_ = Pointer };
+    Event { jsxName = "onpointerMoveCapture"; type_ = Pointer };
+    Event { jsxName = "onpointerUp"; type_ = Pointer };
+    Event { jsxName = "onpointerUpCapture"; type_ = Pointer };
+    Event { jsxName = "onpointerCancel"; type_ = Pointer };
+    Event { jsxName = "onpointerCancelCapture"; type_ = Pointer };
+    Event { jsxName = "onpointerEnter"; type_ = Pointer };
+    Event { jsxName = "onpointerEnterCapture"; type_ = Pointer };
+    Event { jsxName = "onpointerLeave"; type_ = Pointer };
+    Event { jsxName = "onpointerLeaveCapture"; type_ = Pointer };
+    Event { jsxName = "onpointerOver"; type_ = Pointer };
+    Event { jsxName = "onpointerOverCapture"; type_ = Pointer };
+    Event { jsxName = "onpointerOut"; type_ = Pointer };
+    Event { jsxName = "onpointerOutCapture"; type_ = Pointer };
+    Event { jsxName = "ongotPointerCapture"; type_ = Pointer };
+    Event { jsxName = "ongotPointerCaptureCapture"; type_ = Pointer };
+    Event { jsxName = "onlostPointerCapture"; type_ = Pointer };
+    Event { jsxName = "onlostPointerCaptureCapture"; type_ = Pointer };
+    Event { jsxName = "onscroll"; type_ = UI };
+    Event { jsxName = "onscrollCapture"; type_ = UI };
+    Event { jsxName = "onwheel"; type_ = Wheel };
+    Event { jsxName = "onwheelCapture"; type_ = Wheel };
+    Event { jsxName = "onanimationStart"; type_ = Animation };
+    Event { jsxName = "onanimationStartCapture"; type_ = Animation };
+    Event { jsxName = "onanimationEnd"; type_ = Animation };
+    Event { jsxName = "onanimationEndCapture"; type_ = Animation };
+    Event { jsxName = "onanimationIteration"; type_ = Animation };
+    Event { jsxName = "onanimationIterationCapture"; type_ = Animation };
+    Event { jsxName = "ontransitionEnd"; type_ = Transition };
+    Event { jsxName = "ontransitionEndCapture"; type_ = Transition };
   ]
 
 (* All the WAI-ARIA 1.1 attributes from https://www.w3.org/TR/wai-aria-1.1/ *)
@@ -473,25 +470,6 @@ let ariaRole = String
    Tablist | Tabpanel | Term | Textbox | Timer | Toolbar | Tooltip | Tree |
    Treegrid | Treeitem | Custom of String *)
 
-let reactValidHtml =
-  [
-    Attribute { name = "class"; jsxName = "className"; type_ = String };
-    Attribute { name = "checked"; jsxName = "defaultChecked"; type_ = Bool };
-    Attribute { name = "selected"; jsxName = "defaultSelected"; type_ = Bool };
-    Attribute { name = "value"; jsxName = "defaultValue"; type_ = String (* | number | ReadonlyArray<String> *) };
-  ]
-
-let reactAttributes =
-  [
-    (* https://reactjs.org/docs/dom-elements.html *)
-    Attribute { name = "dangerouslySetInnerHTML"; jsxName = "dangerouslySetInnerHTML"; type_ = InnerHtml };
-    Attribute { name = "ref"; jsxName = "ref"; type_ = Ref };
-    Attribute { name = "key"; jsxName = "key"; type_ = String };
-    Attribute { name = "suppressContentEditableWarning"; jsxName = "suppressContentEditableWarning"; type_ = Bool };
-    Attribute { name = "suppressHydrationWarning"; jsxName = "suppressHydrationWarning"; type_ = Bool };
-  ]
-  & reactValidHtml
-
 let globalAttributes =
   [
     (* https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes *)
@@ -499,6 +477,7 @@ let globalAttributes =
     Attribute { name = "accessKey"; jsxName = "accessKey"; type_ = String };
     Attribute { name = "autoCapitalize"; jsxName = "autoCapitalize"; type_ = String };
     Attribute { name = "contextMenu"; jsxName = "contextMenu"; type_ = String };
+    Attribute { name = "class"; jsxName = "class_"; type_ = String };
     Attribute { name = "contentEditable"; jsxName = "contentEditable"; type_ = BooleanishString };
     Attribute { name = "dir"; jsxName = "dir"; type_ = String };
     Attribute { name = "draggable"; jsxName = "draggable"; type_ = BooleanishString };
@@ -637,7 +616,7 @@ let dataHTMLAttributes =
 
 let detailsHTMLAttributes =
   [
-    Attribute { name = "open"; jsxName = "open"; type_ = Bool }; Event { jsxName = "onToggle"; type_ = Media }
+    Attribute { name = "open"; jsxName = "open"; type_ = Bool }; Event { jsxName = "ontoggle"; type_ = Media }
   ]
 
 let delHTMLAttributes =
@@ -764,7 +743,6 @@ let inputHTMLAttributes =
     Attribute { name = "type"; jsxName = "type_"; type_ = inputTypeAttribute };
     Attribute { name = "value"; jsxName = "value"; type_ = String (* | ReadonlyArray<String> | number *) };
     Attribute { name = "width"; jsxName = "width"; type_ = String (* number | *) };
-    Event { jsxName = "onChange"; type_ = Form };
   ]
 
 let keygenHTMLAttributes =
@@ -937,7 +915,7 @@ let selectHTMLAttributes =
     Attribute { name = "required"; jsxName = "required"; type_ = Bool };
     Attribute { name = "size"; jsxName = "size"; type_ = Int (* number *) };
     Attribute { name = "value"; jsxName = "value"; type_ = String (* | ReadonlyArray<String> | number *) };
-    Event { jsxName = "onChange"; type_ = Form };
+    Event { jsxName = "onchange"; type_ = Form };
   ]
 
 let sourceHTMLAttributes =
@@ -984,7 +962,7 @@ let textareaHTMLAttributes =
     Attribute { name = "rows"; jsxName = "rows"; type_ = Int (* number *) };
     Attribute { name = "value"; jsxName = "value"; type_ = String (* | ReadonlyArray<String> | number *) };
     Attribute { name = "wrap"; jsxName = "wrap"; type_ = String };
-    Event { jsxName = "onChange"; type_ = Form };
+    Event { jsxName = "onchange"; type_ = Form };
   ]
 
 let tdHTMLAttributes =
@@ -1050,7 +1028,7 @@ module SVG = struct
   let stylingAttributes =
     (* https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/Styling *)
     [
-      Attribute { name = "class"; jsxName = "className"; type_ = String };
+      Attribute { name = "class"; jsxName = "class_"; type_ = String };
       Attribute { name = "style"; jsxName = "style"; type_ = Style }
     ]
 
@@ -1334,12 +1312,7 @@ let webViewHTMLAttributes =
     Attribute { name = "webPreferences"; jsxName = "webPreferences"; type_ = String };
   ]
 
-let hackAttributes =
-  [
-    Event { jsxName = "_onclick"; type_ = Inline };
-  ]
-
-let commonHtmlAttributes = elementAttributes & reactAttributes & globalAttributes & globalEventHandlers & ariaAttributes & hackAttributes
+let commonHtmlAttributes = elementAttributes & globalAttributes & globalEventHandlers & ariaAttributes
 
 let htmlElements =
   [
@@ -1462,7 +1435,7 @@ let htmlElements =
     { tag = "webview"; attributes = commonHtmlAttributes & webViewHTMLAttributes };
   ]
 
-let commonSvgAttributes = SVG.attributes & reactAttributes & globalEventHandlers & ariaAttributes
+let commonSvgAttributes = SVG.attributes & globalEventHandlers & ariaAttributes
 
 let feConvolveMatrixAttributes = [ Attribute { name = "preserveAlpha"; jsxName = "preserveAlpha"; type_ = BooleanishString } ]
 
@@ -1536,10 +1509,7 @@ let getName = function
   | Event { jsxName; _ } -> jsxName
 
 let domPropNames =
-  (commonSvgAttributes & commonHtmlAttributes)
-  |> List.map getName
-  (* We ignore prefixed names such as "hackAttributes prop list" *)
-  |> List.filter (fun name -> not (String.starts_with ~prefix:"_" name))
+  (commonSvgAttributes & commonHtmlAttributes) |> List.map getName
 
 let getJSXName = function
   | Attribute { jsxName; _ } -> jsxName
@@ -1582,10 +1552,6 @@ let findByName tag jsxName =
         List.find_opt byName attributes
         |> Option.to_result ~none:`AttributeNotFound
     | Error err -> Error err
-
-let isReactValidProp name =
-  let byName p = getJSXName p = name in
-  reactValidHtml |> List.exists byName
 
 module Levenshtein = struct
   (* Levenshtein distance from

@@ -12,7 +12,7 @@ let t_to_string attr =
   | Bool (k, true) -> k
   | Style styles -> Printf.sprintf "style=\"%s\"" styles
   | Event (name, value) -> Printf.sprintf "%s=\"%s\"" name value
-  | String (k, v) -> Printf.sprintf "%s=\"%s\"" k (Encoding.encode v)
+  | String (k, v) -> Printf.sprintf "%s=\"%s\"" k (Html.encode v)
 
 let to_string attrs =
   match List.map t_to_string attrs with

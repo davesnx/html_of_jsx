@@ -1,1 +1,3 @@
-let () = Alcotest.run "Suite JSX" [ Test_render.tests; Test_reason.tests ]
+let () =
+  Alcotest.run "Suite JSX"
+    [ Test_without_transformation.tests; Test_with_reason.tests ]

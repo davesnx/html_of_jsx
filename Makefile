@@ -1,4 +1,4 @@
-project_name = html-jsx
+project_name = html_of_jsx
 
 DUNE = opam exec -- dune
 opam_file = $(project_name).opam

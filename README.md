@@ -1,6 +1,6 @@
-# html-jsx
+# html_of_jsx
 
-html-jsx (aka html_of_jsx) is an implementation of JSX but designed to render HTML on the server
+html_of_jsx is an implementation of JSX but designed to render HTML on the server
 
 This library is extracted from [server-reason-react](https://github.com/ml-in-barcelona/server-reason-react) and simplified to just work with HTML5.
 

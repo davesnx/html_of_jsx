@@ -5,7 +5,7 @@
 
 (cram enable)
 
-(name html-jsx)
+(name html_of_jsx)
 
 (license MIT)
 
@@ -14,14 +14,14 @@
 (authors "David Sancho <dsnxmoreno@gmail.com>")
 
 (source
- (github davesnx/html-jsx))
+ (github davesnx/html_of_jsx))
 
 (generate_opam_files true)
 
 (implicit_transitive_deps false)
 
 (package
- (name html-jsx)
+ (name html_of_jsx)
  (synopsis "Render HTML writing JSX")
  (depends
   ;; General system dependencies

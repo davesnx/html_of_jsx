@@ -2,6 +2,9 @@ open Ppxlib
 open Ast_builder.Default
 module List = ListLabels
 
+let repo_url = "https://github.com/davesnx/html_of_jsx"
+let issues_url = "https://github.com/davesnx/html_of_jsx/issues"
+
 let is_html_element tag =
   match tag with
   | "a" | "abbr" | "address" | "area" | "article" | "aside" | "audio" | "b"
@@ -84,43 +87,144 @@ let rewrite_component ~loc tag args children =
   in
   pexp_apply ~loc component props
 
-let rewrite_node ~loc name args children =
-  let name = estring ~loc name in
+let validate_attr ~loc id name =
+  match Static_attributes.findByName id name with
+  | Ok p -> p
+  | Error `ElementNotFound ->
+      raise
+      @@ Location.raise_errorf ~loc
+           "HTML tag '%s' doesn't exist.\n\
+            If this isn't correct, please open an issue at %s" id issues_url
+  | Error `AttributeNotFound -> (
+      match Static_attributes.find_closest_name name with
+      | None ->
+          raise_errorf ~loc
+            "prop '%s' isn't valid on a '%s' element.\n\
+             If this isn't correct, please open an issue at %s." name id
+            issues_url
+      | Some suggestion ->
+          raise_errorf ~loc
+            "prop '%s' isn't valid on a '%s' element.\n\
+             Hint: Maybe you mean '%s'?\n\n\
+             If this isn't correct, please open an issue at %s." name id
+            suggestion issues_url)
 
-  let make_props =
-    match args with
-    | [] -> [%expr []]
-    | props ->
-        List.fold_left
-          ~f:(fun xs (label, x) ->
-            match label with
-            | Nolabel -> xs
-            | Optional name | Labelled name ->
-                let make =
-                  pexp_ident ~loc:x.pexp_loc
-                    {
-                      txt =
-                        Longident.parse
-                          (Printf.sprintf "React_server.React.Html_props.%s"
-                             name);
-                      loc = x.pexp_loc;
-                    }
-                in
-                [%expr [%e make] [%e x] :: [%e xs]])
-          ~init:[%expr []] props
-  in
-  match children with
-  | None -> [%expr Element.node [%e name] [%e make_props] []]
-  | Some childrens ->
+let add_attribute_type_constraint ~loc ~is_optional
+    (type_ : Static_attributes.attributeType) value =
+  match (type_, is_optional) with
+  | String, true -> [%expr ([%e value] : string option)]
+  | String, false -> [%expr ([%e value] : string)]
+  | Int, false -> [%expr ([%e value] : int)]
+  | Int, true -> [%expr ([%e value] : int option)]
+  | Bool, false -> [%expr ([%e value] : bool)]
+  | Bool, true -> [%expr ([%e value] : bool option)]
+  | BooleanishString, false -> [%expr ([%e value] : bool)]
+  | BooleanishString, true -> [%expr ([%e value] : bool option)]
+  (* We treat `Style` as string *)
+  | Style, false -> [%expr ([%e value] : string)]
+  | Style, true -> [%expr ([%e value] : string option)]
+
+let make_attribute ~loc ~is_optional ~prop attribute_name attribute_value =
+  let open Static_attributes in
+  match (prop, is_optional) with
+  | Attribute { type_ = String; _ }, false ->
       [%expr
-        Element.node [%e name] [%e make_props] [%e pexp_list ~loc childrens]]
+        Some (Attribute.String ([%e attribute_name], [%e attribute_value]))]
+  | Attribute { type_ = String; _ }, true ->
+      [%expr
+        Option.map
+          (fun v -> Attribute.String ([%e attribute_name], v))
+          [%e attribute_value]]
+  | Attribute { type_ = Int; _ }, false ->
+      [%expr
+        Some
+          (Attribute.String
+             ([%e attribute_name], string_of_int [%e attribute_value]))]
+  | Attribute { type_ = Int; _ }, true ->
+      [%expr
+        Option.map
+          (fun v -> Attribute.String ([%e attribute_name], string_of_int v))
+          [%e attribute_value]]
+  | Attribute { type_ = Bool; _ }, false ->
+      [%expr Some (Attribute.Bool ([%e attribute_name], [%e attribute_value]))]
+  | Attribute { type_ = Bool; _ }, true ->
+      [%expr
+        Option.map
+          (fun v -> Attribute.Bool ([%e attribute_name], v))
+          [%e attribute_value]]
+  (* BooleanishString needs to transform bool into string *)
+  | Attribute { type_ = BooleanishString; _ }, false ->
+      [%expr
+        Some
+          (Attribute.String
+             ([%e attribute_name], string_of_bool [%e attribute_value]))]
+  | Attribute { type_ = BooleanishString; _ }, true ->
+      [%expr
+        Option.map
+          (fun v -> Attribute.String ([%e attribute_name], v))
+          string_of_bool [%e attribute_value]]
+  | Attribute { type_ = Style; _ }, false ->
+      [%expr Some (Attribute.Style [%e attribute_value])]
+  | Attribute { type_ = Style; _ }, true ->
+      [%expr Option.map (fun v -> Attribute.Style v) [%e attribute_value]]
+  | Event _, false ->
+      [%expr Some (Attribute.Event ([%e attribute_name], [%e attribute_value]))]
+  | Event _, true ->
+      [%expr
+        Option.map
+          (fun v -> Attribute.Event ([%e attribute_name], v))
+          [%e attribute_value]]
 
-type props = {
-  children : expression list;
-  args : (arg_label * expression) list;
-}
+let is_optional = function Optional _ -> true | _ -> false
 
-let split_props ~mapper args =
+let transform_labelled ~loc ~tag_name props (prop_label, (value : expression)) =
+  match prop_label with
+  | Nolabel -> props
+  | Optional name | Labelled name ->
+      let is_optional = is_optional prop_label in
+      let attribute = validate_attr ~loc tag_name name in
+      let attribute_type =
+        match attribute with
+        | Attribute { type_; _ } -> type_
+        | Event _ -> String
+      in
+      let attribute_name = Static_attributes.getName attribute in
+      let attribute_name_expr = estring ~loc attribute_name in
+      let attribute_value =
+        add_attribute_type_constraint ~loc ~is_optional attribute_type value
+      in
+      let attribute_final =
+        make_attribute ~loc ~is_optional ~prop:attribute attribute_name_expr
+          attribute_value
+      in
+      [%expr [%e attribute_final] :: [%e props]]
+
+let transform_attributes ~loc ~tag_name args =
+  match args with
+  | [] -> [%expr []]
+  | attrs -> (
+      let list_of_attributes =
+        attrs
+        |> List.fold_left
+             ~f:(transform_labelled ~loc ~tag_name)
+             ~init:[%expr []]
+      in
+      match list_of_attributes with
+      | [%expr []] -> [%expr []]
+      | _ ->
+          (* We need to filter attributes since optionals are represented as None *)
+          [%expr List.filter_map Fun.id [%e list_of_attributes]])
+
+let rewrite_node ~loc tag_name args children =
+  let dom_node_name = estring ~loc tag_name in
+  let attributes = transform_attributes ~loc ~tag_name args in
+  match children with
+  | Some children ->
+      let childrens = pexp_list ~loc children in
+      [%expr Jsx.node [%e dom_node_name] [%e attributes] [%e childrens]]
+  | None -> [%expr Jsx.node [%e dom_node_name] [%e attributes] []]
+
+let split_args ~mapper args =
   let children = ref (Location.none, []) in
   let rest =
     List.filter_map args ~f:(function
@@ -132,7 +236,7 @@ let split_props ~mapper args =
                   match e.pexp_desc with
                   | Pexp_constant (Pconst_string _) ->
                       let loc = e.pexp_loc in
-                      [%expr Html_jsx.text [%e e]]
+                      [%expr Jsx.text [%e e]]
                   | _ -> e
                 in
                 mapper expression)
@@ -154,27 +258,27 @@ let rewrite_jsx =
     method! expression expr =
       try
         match expr.pexp_desc with
-        | Pexp_apply (({ pexp_desc = Pexp_ident _tagname; _ } as tag), props)
+        | Pexp_apply (({ pexp_desc = Pexp_ident _tagname; _ } as tag), args)
           when has_jsx_attr expr.pexp_attributes -> (
-            let children, rest_of_props =
-              split_props ~mapper:self#expression props
+            let children, rest_of_args =
+              split_args ~mapper:self#expression args
             in
             match tag.pexp_desc with
             | Pexp_ident { txt = Lident name; loc = name_loc }
               when is_html_element name ->
-                rewrite_node ~loc:name_loc name rest_of_props children
+                rewrite_node ~loc:name_loc name rest_of_args children
             | Pexp_ident id ->
-                rewrite_component ~loc:tag.pexp_loc id rest_of_props children
+                rewrite_component ~loc:tag.pexp_loc id rest_of_args children
             | _ -> assert false)
         | Pexp_apply (tag, _props) when has_jsx_attr expr.pexp_attributes ->
             let loc = expr.pexp_loc in
             [%expr
-              [%ocaml.error "html-jsx.ppx: tag should be an identifier"]
+              [%ocaml.error "html_of_jsx.ppx: tag should be an identifier"]
                 [%e tag]]
         | _ -> super#expression expr
       with Error err -> [%expr [%e err]]
   end
 
 let () =
-  Ppxlib.Driver.register_transformation "html-jsx.ppx"
+  Ppxlib.Driver.register_transformation "html_of_jsx.ppx"
     ~preprocess_impl:rewrite_jsx#structure

@@ -1,1 +1,0 @@
-let almostItemProp = <div itemPro />;
