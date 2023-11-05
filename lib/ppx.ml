@@ -86,12 +86,13 @@ let rec unwrap_children ~f children = function
       _;
     } ->
       unwrap_children ~f (f child :: children) next
-  | e -> raise_errorf ~loc:e.pexp_loc "JSX: children prop should be a list"
+  | e -> raise_errorf ~loc:e.pexp_loc "jsx: children prop should be a list"
 
-let has_jsx_attr attrs =
-  List.exists
-    ~f:(function { attr_name = { txt = "JSX"; _ }; _ } -> true | _ -> false)
-    attrs
+let is_jsx = function
+  | { attr_name = { txt = "JSX"; _ }; _ } -> true
+  | _ -> false
+
+let has_jsx_attr attrs = List.exists ~f:is_jsx attrs
 
 let rewrite_component ~loc tag args children =
   let component = pexp_ident ~loc tag in
@@ -108,20 +109,19 @@ let validate_attr ~loc id name =
   match Ppx_static_attributes.findByName id name with
   | Ok p -> p
   | Error `ElementNotFound ->
-      raise
-      @@ Location.raise_errorf ~loc
-           "HTML tag '%s' doesn't exist.\n\
-            If this isn't correct, please open an issue at %s" id issues_url
+      raise_errorf ~loc
+        "jsx: HTML tag '%s' doesn't exist.\n\
+         If this isn't correct, please open an issue at %s" id issues_url
   | Error `AttributeNotFound -> (
       match Ppx_static_attributes.find_closest_name name with
       | None ->
           raise_errorf ~loc
-            "prop '%s' isn't valid on a '%s' element.\n\
+            "jsx: prop '%s' isn't valid on a '%s' element.\n\
              If this isn't correct, please open an issue at %s." name id
             issues_url
       | Some suggestion ->
           raise_errorf ~loc
-            "prop '%s' isn't valid on a '%s' element.\n\
+            "jsx: prop '%s' isn't valid on a '%s' element.\n\
              Hint: Maybe you mean '%s'?\n\n\
              If this isn't correct, please open an issue at %s." name id
             suggestion issues_url)
@@ -311,37 +311,37 @@ let rewrite_jsx =
               split_args ~mapper:self#expression args
             in
             match tag.pexp_desc with
+            (* div() [@JSX] *)
             | Pexp_ident { txt = Lident name; loc = name_loc }
               when is_html_element name || is_svg_element name ->
                 rewrite_node ~loc:name_loc name rest_of_args children
             (* Reason adds `createElement` as default when an uppercase is found,
                we change it back to make *)
+            (* Foo.createElement() [@JSX] *)
             | Pexp_ident
                 { txt = Ldot (modulePath, ("createElement" | "make")); loc } ->
                 let id = { loc; txt = Ldot (modulePath, "make") } in
                 rewrite_component ~loc:tag.pexp_loc id rest_of_args children
+            (* local_function() [@JSX] *)
             | Pexp_ident id ->
                 rewrite_component ~loc:tag.pexp_loc id rest_of_args children
             | _ -> assert false)
+        (* div() [@JSX] *)
         | Pexp_apply (tag, _props) when has_jsx_attr expr.pexp_attributes ->
             let loc = expr.pexp_loc in
             [%expr
               [%ocaml.error "html_of_jsx.ppx: tag should be an identifier"]
                 [%e tag]]
-        (* Is a fragment? <></> *)
-        (* It's represented in the AST as a list with [@JSX] *)
+        (* <> </> is represented as a list in the Parsetree with [@JSX] *)
         | Pexp_construct
             ({ txt = Lident "::"; loc }, Some { pexp_desc = Pexp_tuple _; _ })
         | Pexp_construct ({ txt = Lident "[]"; loc }, None) -> (
-            let jsxAttribute, nonJSXAttributes =
-              List.partition
-                ~f:(fun attribute -> attribute.attr_name.txt = "JSX")
-                expr.pexp_attributes
+            let jsx_attr, rest_attributes =
+              List.partition ~f:is_jsx expr.pexp_attributes
             in
-            match (jsxAttribute, nonJSXAttributes) with
-            (* no JSX attribute *)
+            match (jsx_attr, rest_attributes) with
             | [], _ -> super#expression expr
-            | _, _nonJSXAttributes ->
+            | _, _rest_attributes ->
                 let children = transformChildrenIfList ~loc ~mapper:self expr in
                 [%expr Jsx.fragment [%e children]])
         | _ -> super#expression expr
