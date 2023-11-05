@@ -1,3 +1,5 @@
+(** Used internally, no need to use *)
+
 type t =
   | Bool of (string * bool)
   | String of (string * string)

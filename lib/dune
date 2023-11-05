@@ -10,5 +10,6 @@
  (kind ppx_rewriter)
  (modules ppx Static_attributes)
  (libraries ppxlib ppxlib.astlib html_of_jsx.lib)
+ (ppx_runtime_libraries html_of_jsx.lib)
  (preprocess
   (pps ppxlib.metaquot)))

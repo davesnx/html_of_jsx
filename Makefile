@@ -92,21 +92,12 @@ subst: ## Run dune substitute
 
 .PHONY: documentation
 documentation: ## Generate odoc documentation
-# Since odoc/dune fails when 2 wrapped libraries have the same name,
-# we need to ignore conflicting packages by adding an underscode in front of it
-# https://github.com/ocaml/dune/issues/1645
-	mv $(CURDIR)/packages/promise $(CURDIR)/packages/_promise
-	mv $(CURDIR)/packages/url $(CURDIR)/packages/_url
 	$(DUNE) build --root . @doc
-# and rollback the rename, so the build continues to work
-	mv $(CURDIR)/packages/_promise $(CURDIR)/packages/promise
-	mv $(CURDIR)/packages/_url $(CURDIR)/packages/url
 
-# Because if the hack above, we can't have watch mode
-## .PHONY: documentation-watch
-## documentation-watch: ## Generate odoc documentation
-##	$(DUNE) build --root . -w @doc
+.PHONY: documentation-watch
+documentation-watch: ## Generate odoc documentation
+	$(DUNE) build --root . -w @doc
 
 .PHONY: documentation-serve
-documentation-serve: documentation ## Open odoc documentation with default web browser
+documentation-serve: ## Open odoc documentation with default web browser
 	open _build/default/_doc/_html/index.html
