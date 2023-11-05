@@ -244,4 +244,15 @@
         ),
       ],
     );
-  let some_random_html_element = text(~dx="1 2", ~dy="3 4", ());
+  let some_random_html_element =
+    Jsx.node(
+      "text",
+      List.filter_map(
+        Fun.id,
+        [
+          Some([@implicit_arity] Attribute.String("dy", "3 4": string)),
+          Some([@implicit_arity] Attribute.String("dx", "1 2": string)),
+        ],
+      ),
+      [],
+    );

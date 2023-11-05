@@ -25,6 +25,23 @@ let is_html_element tag =
       true
   | _ -> false
 
+let is_svg_element tag =
+  match tag with
+  | "animate" | "animateMotion" | "animateTransform" | "circle" | "clipPath"
+  | "defs" | "desc" | "ellipse" | "feBlend" | "feColorMatrix"
+  | "feComponentTransfer" | "feComposite" | "feConvolveMatrix"
+  | "feDiffuseLighting" | "feDisplacementMap" | "feDistantLight"
+  | "feDropShadow" | "feFlood" | "feFuncA" | "feFuncB" | "feFuncG" | "feFuncR"
+  | "feGaussianBlur" | "feImage" | "feMerge" | "feMergeNode" | "feMorphology"
+  | "feOffset" | "fePointLight" | "feSpecularLighting" | "feSpotLight"
+  | "feTile" | "feTurbulence" | "filter" | "foreignObject" | "g" | "image"
+  | "line" | "linearGradient" | "marker" | "mask" | "metadata" | "mpath"
+  | "path" | "pattern" | "polygon" | "polyline" | "radialGradient" | "rect"
+  | "stop" | "switch" | "symbol" | "text" | "textPath" | "tspan" | "use"
+  | "view" ->
+      true
+  | _ -> false
+
 (* There's no pexp_list on Ppxlib since isn't a constructor of the Parsetree *)
 let pexp_list ~loc xs =
   List.fold_left (List.rev xs) ~init:[%expr []] ~f:(fun xs x ->
@@ -251,6 +268,34 @@ let split_args ~mapper args =
   in
   (children_prop, rest)
 
+let revAstList ~loc expr =
+  let rec revAstList_ acc = function
+    | [%expr []] -> acc
+    | [%expr [%e? hd] :: [%e? tl]] -> revAstList_ [%expr [%e hd] :: [%e acc]] tl
+    | expr -> expr
+  in
+  revAstList_ [%expr []] expr
+
+let list_have_tail listExpr =
+  match listExpr with
+  | Pexp_construct
+      ({ txt = Lident "::"; _ }, Some { pexp_desc = Pexp_tuple _; _ })
+  | Pexp_construct ({ txt = Lident "[]"; _ }, None) ->
+      false
+  | _ -> true
+
+let transformChildrenIfList ~loc ~mapper children =
+  let rec transformChildren_ children accum =
+    match children with
+    | [%expr []] -> revAstList ~loc accum
+    | [%expr [%e? v] :: [%e? acc]] when list_have_tail acc.pexp_desc ->
+        [%expr [%e mapper#expression v]]
+    | [%expr [%e? v] :: [%e? acc]] ->
+        transformChildren_ acc [%expr [%e mapper#expression v] :: [%e accum]]
+    | notAList -> mapper#expression notAList
+  in
+  transformChildren_ children [%expr []]
+
 let rewrite_jsx =
   object (self)
     inherit Ast_traverse.map as super
@@ -265,7 +310,7 @@ let rewrite_jsx =
             in
             match tag.pexp_desc with
             | Pexp_ident { txt = Lident name; loc = name_loc }
-              when is_html_element name ->
+              when is_html_element name || is_svg_element name ->
                 rewrite_node ~loc:name_loc name rest_of_args children
             (* Reason adds `createElement` as default when an uppercase is found,
                we change it back to make *)
@@ -281,6 +326,22 @@ let rewrite_jsx =
             [%expr
               [%ocaml.error "html_of_jsx.ppx: tag should be an identifier"]
                 [%e tag]]
+        (* Is a fragment? <></> *)
+        (* It's represented in the AST as a list with [@JSX] *)
+        | Pexp_construct
+            ({ txt = Lident "::"; loc }, Some { pexp_desc = Pexp_tuple _; _ })
+        | Pexp_construct ({ txt = Lident "[]"; loc }, None) -> (
+            let jsxAttribute, nonJSXAttributes =
+              List.partition
+                ~f:(fun attribute -> attribute.attr_name.txt = "JSX")
+                expr.pexp_attributes
+            in
+            match (jsxAttribute, nonJSXAttributes) with
+            (* no JSX attribute *)
+            | [], _ -> super#expression expr
+            | _, _nonJSXAttributes ->
+                let children = transformChildrenIfList ~loc ~mapper:self expr in
+                [%expr Jsx.fragment [%e children]])
         | _ -> super#expression expr
       with Error err -> [%expr [%e err]]
   end

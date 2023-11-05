@@ -7,14 +7,15 @@ type node = {
 and element =
   | Null
   | Text of string
-  | Fragment of element
+  | Fragment of element list
   | Node of node
   | Component of (unit -> element)
-  | List of element array
+  | List of element list
 
 let text txt = Text txt
 let null = Null
 let int i = Text (string_of_int i)
 let float f = Text (string_of_float f)
 let list arr = List arr
+let fragment arr = Fragment arr
 let node tag attributes children = Node { tag; attributes; children }

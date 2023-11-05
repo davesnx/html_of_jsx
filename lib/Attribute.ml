@@ -17,4 +17,4 @@ let t_to_string attr =
 let to_string attrs =
   match List.map t_to_string attrs with
   | [] -> ""
-  | rest -> " " ^ (rest |> String.concat " " |> String.trim)
+  | rest -> " " ^ (rest |> List.rev |> String.concat " " |> String.trim)

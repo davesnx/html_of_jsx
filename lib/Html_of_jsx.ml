@@ -2,9 +2,8 @@ let render_element element =
   let rec render_element element =
     match element with
     | Jsx.Null -> ""
-    | Fragment children -> render_element children
-    | List list ->
-        list |> Array.map render_element |> Array.to_list |> String.concat ""
+    | Fragment list | List list ->
+        list |> List.map render_element |> String.concat ""
     | Component f -> render_element (f ())
     | Node { tag; attributes; _ } when Html.is_self_closing_tag tag ->
         Printf.sprintf "<%s%s />" tag (Attribute.to_string attributes)

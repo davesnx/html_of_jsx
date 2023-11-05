@@ -74,15 +74,27 @@ HTML attributes are type-checked and only valid attributes are allowed
 // Error: This expression has type int but an expression was expected of type string
 ```
 
+And also friendly, it recommends you the correct attribute if you misspell it
+
+```reason
+
+        let div = <div ?onClick />;
+                  ^^^^
+// Error: prop 'onClick' isn't valid on a 'div' element.
+//        Hint: Maybe you mean 'onclick'?
+```
+
 ### Minimalistic
 
-Only 1 function to learn, `Html_of_jsx.render` the rest are your functions!
+Only 2 function to learn, the rest are your functions (aka components)!
+- `Html_of_jsx.render` to render your HTML
+- `Jsx.text` to inline text
+
+The rest are helpers on `Jsx`, like (`Jsx.int`). Check the [documentation]() if you are curious
 
 ```reason
 Html_of_jsx.render(<h1>{"Hello, world!"}</h1>)
 ```
-
-Check the [documentation]() for the rest of the types.
 
 ### Supports children as list of elements
 
@@ -92,6 +104,16 @@ let component = (~name, ~children) => {
     <h1> {"Hello, " ++ name ++ "!"} </h1>
     <h2> {children} </h2>
   </div>
+};
+
+Html_of_jsx.render(<component> {"This is a children!"} </component>)
+```
+
+### Supports fragments
+
+```reason
+let component = {
+  <> <div class_="md:w-1/3" /> <div class_="md:w-2/3" /> </>;
 };
 
 Html_of_jsx.render(<component> {"This is a children!"} </component>)
