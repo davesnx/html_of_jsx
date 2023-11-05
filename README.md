@@ -31,7 +31,7 @@ let component = (~name) => {
   </div>
 };
 
-Html_jsx.render(<component />);
+Html_of_jsx.render(<component />);
 ```
 
 ### Uppercase components default to `make`
@@ -43,8 +43,8 @@ module Button = {
   };
 };
 
-Html_jsx.render(<Button />);
-// is equivalent to `Html_jsx.render(<Button.make />)`
+Html_of_jsx.render(<Button />);
+// is equivalent to `Html_of_jsx.render(<Button.make />)`
 ```
 
 ### Brings the power of interleaving expressions (stolen from JSX)
@@ -57,7 +57,7 @@ let component = (~name, ~children) => {
   </div>
 };
 
-Html_jsx.render(<component> {"This is a children!"} </component>)
+Html_of_jsx.render(<component> {"This is a children!"} </component>)
 ```
 
 ### Type-safe
@@ -76,10 +76,10 @@ HTML attributes are type-checked and only valid attributes are allowed
 
 ### Minimalistic
 
-Only 1 function to learn, `Html_jsx.render` the rest are your functions!
+Only 1 function to learn, `Html_of_jsx.render` the rest are your functions!
 
 ```reason
-Html_jsx.render(<h1>{"Hello, world!"}</h1>)
+Html_of_jsx.render(<h1>{"Hello, world!"}</h1>)
 ```
 
 Check the [documentation]() for the rest of the types.
@@ -94,7 +94,7 @@ let component = (~name, ~children) => {
   </div>
 };
 
-Html_jsx.render(<component> {"This is a children!"} </component>)
+Html_of_jsx.render(<component> {"This is a children!"} </component>)
 ```
 
 ### Works with [Reason](https://reasonml.github.io/) and [mlx](https://github.com/andreypopp/mlx)
@@ -106,7 +106,7 @@ let component = (~name) => {
   </div>
 };
 
-Html_jsx.render(<component />)
+Html_of_jsx.render(<component />)
 ```
 
 ```ml
@@ -115,5 +115,5 @@ let component ~name =
     <h1> ("Hello, " ^ name ^ "!") </h1>
   </div>
 
-Html_jsx.render <component />
+Html_of_jsx.render <component />
 ```
