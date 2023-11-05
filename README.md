@@ -4,7 +4,15 @@ html_of_jsx is an implementation of JSX but designed to render HTML on the serve
 
 This library is extracted from [server-reason-react](https://github.com/ml-in-barcelona/server-reason-react) and simplified to just work with HTML5.
 
-### As close as possible to HTML (no `className`, no `htmlFor`, etc.)
+## Installation
+
+```sh
+opan pin add html_of_jsx "https://github.com/davesnx/html_of_jsx"
+```
+
+## Features
+
+### It's just HTML (no `className`, no `htmlFor`, etc.)
 
 ```reason
 let element = <a href="https://x.com/davesnx">
@@ -36,7 +44,7 @@ module Button = {
 };
 
 Html_jsx.render(<Button />);
-// it's equivalent as Html_jsx.render(<Button.make />);
+// is equivalent to `Html_jsx.render(<Button.make />)`
 ```
 
 ### Brings the power of interleaving expressions (stolen from JSX)
@@ -54,7 +62,7 @@ Html_jsx.render(<component> {"This is a children!"} </component>)
 
 ### Type-safe
 
-HTML attributes are type-checked and only valid attributes are allowed:
+HTML attributes are type-checked and only valid attributes are allowed
 
 ```reason
     <h1 noop=1> "Hello, world!" </h1>;
@@ -73,6 +81,8 @@ Only 1 function to learn, `Html_jsx.render` the rest are your functions!
 ```reason
 Html_jsx.render(<h1>{"Hello, world!"}</h1>)
 ```
+
+Check the [documentation]() for the rest of the types.
 
 ### Supports children as list of elements
 

@@ -58,9 +58,6 @@ jobs:
       - name: Install deps
         run: opam install . --deps-only --with-doc --with-test
 
-      - name: Pin dune and melange
-        run: make pin
-
       - name: Build
         run: make build
 
