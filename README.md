@@ -26,6 +26,19 @@ let component = (~name) => {
 Html_jsx.render(<component />);
 ```
 
+### Uppercase components default to `make`
+
+```reason
+module Button = {
+  let make = (~children) => {
+    <button> {children} </button>
+  };
+};
+
+Html_jsx.render(<Button />);
+// it's equivalent as Html_jsx.render(<Button.make />);
+```
+
 ### Brings the power of interleaving expressions (stolen from JSX)
 
 ```reason
