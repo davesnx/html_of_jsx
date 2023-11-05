@@ -1,5 +1,10 @@
-/** This is a demo of a HTTP server that demostrates the possibility of Html_of_jsx.
-  It uses `tiny_httpd` to keep the dependencies to a minimum */
+/**
+
+  This is a demo of a HTTP server that demostrates the possibility of Html_of_jsx.
+
+  It uses `tiny_httpd` to keep the dependencies to a minimum. It also contains a bunch of utilities to generate styles.
+
+*/
 module Httpd = Tiny_httpd;
 
 module Styles = {
