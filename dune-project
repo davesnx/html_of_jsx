@@ -29,7 +29,6 @@
 
   ;; Test dependencies
   (alcotest :with-test)
-  (fmt :with-test)
 
   ;; Documentation
   (odoc :with-doc)
@@ -40,7 +39,4 @@
     (= 0.26.1)
     :with-test))
   (ocaml-lsp-server :with-test)
-
-  ;; Demo deps
-  (dream :with-test)
 ))
