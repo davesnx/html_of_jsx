@@ -2,13 +2,13 @@
 
 **html_of_jsx** is an implementation of JSX designed to render HTML on the server, without React or anything else. It's a minimal library that allows you to write components of HTML in a declarative way.
 
-- Supports most of features from JSX (uppercase components, fragments, etc)
+- Supports most of features from JSX (uppercase components, fragments)
 - but with a few improvements (lowercase components, no need to add annotations)
 - No React idiosyncrasies (no `className`, no `htmlFor`, no `onChange`, etc...)
 - Type-safe
 - Minimal
   - `Html_of_jsx.render` to render an element to HTML
-  - `Jsx.*` to construct elements and nodes (`Jsx.text`, `Jsx.int`, `Jsx.null`, `Jsx.list`)
+  - `Jsx.*` to construct DOM Elements and DOM nodes (`Jsx.text`, `Jsx.int`, `Jsx.null`, `Jsx.list`)
 - Works with [Reason](https://reasonml.github.io) and [mlx](https://github.com/andreypopp/mlx)
 
 ## Installation
