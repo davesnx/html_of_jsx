@@ -1,8 +1,8 @@
 {0 html_of_jsx}
 
-[html_of_jsx] is an implementation of JSX designed to render HTML on the server, without React or anything else. It's a simple library that allows you to write HTML in a declarative way with the component model.
+{b html_of_jsx} is an implementation of JSX designed to render HTML on the server, without React or anything else. It's a simple library that allows you to write HTML in a declarative way with the component model.
 
-This library is extracted from [server-reason-react](https://github.com/ml-in-barcelona/server-reason-react) and simplified to just work with HTML5.
+This library is extracted from {{: https://github.com/ml-in-barcelona/server-reason-react} server-reason-react} and simplified to just work with HTML5.
 
 {1 Installation}
 
@@ -17,12 +17,11 @@ opan pin add html_of_jsx "https://github.com/davesnx/html_of_jsx"
 
 {1 API}
 
-- {!Jsx} Helpers to construct elements
-- {!Html_of_jsx} The toplevel to render the Jsx.elements
+{!Jsx} module that exposes some helpers to construct elements and {!Html_of_jsx} to render them, the rest are functions with labelled arguments.
 
 {1 Features}
 
-{2 It's just HTML (no `className`, no `htmlFor`, etc.)}
+{2 It's just HTML (no [className], no [htmlFor], etc.)}
 
 {[
 let element = <a href="https://x.com/davesnx">
@@ -30,44 +29,59 @@ let element = <a href="https://x.com/davesnx">
 </a>
 ]}
 
-> Note: [reserved keywords](https://v2.ocaml.org/manual/lex.html#sss:keywords) aren't possible as props. For example `class` -> `class_` or `type` -> `type_`.
+> {b Note} {{: https://v2.ocaml.org/manual/lex.html#sss:keywords} reserved keywords} aren't possible as props. For example [class] => [class_] or [type] => [type_].
 
 {2 Components are functions with labeled arguments}
 
 {[
-let component = (~name) => {
-  <div>
-    <h1> {"Hello, " ++ name ++ "!"} </h1>
-  </div>
+let component = (~name, ()) => {
+  <div> <h1> {Jsx.text("Hello, " ++ name ++ "!")} </h1> </div>;
 };
 
-Html_of_jsx.render(<component />);
+Html_of_jsx.render(<component name="lola" />);
 ]}
 
-{2 Uppercase components default to `make`}
+> {b Note} that the [component] function needs to have a last argument of type [unit] in order to work properly with labelled arguments. Explained on the {{: https://v2.ocaml.org/manual/lablexamples.html#s:optional-arguments} OCaml manual}: Functions with only labelled arguments, need a last non labelled argument to be able to be called as a non curried function.
+
+{2 Uppercase components default to [make]}
 
 {[
 module Button = {
-  let make = (~children) => {
-    <button> {children} </button>
+  let make = () => {
+    <button onclick="onClickHandler"> {Jsx.text("Click me")} </button>;
   };
 };
 
 Html_of_jsx.render(<Button />);
-// is equivalent to `Html_of_jsx.render(<Button.make />)`
+// is equivalent to
+Html_of_jsx.render(<Button.make />);
 ]}
 
 {2 Brings the power of interleaving expressions (stolen from JSX)}
 
 {[
-let component = (~name, ~children) => {
+let component = (~name, ~children, ()) => {
   <div>
-    <h1> {"Hello, " ++ name ++ "!"} </h1>
-    <h2> {children} </h2>
-  </div>
+    <h1> {("Hello, " ++ name ++ "!") |> Jsx.text} </h1>
+    <h2> children </h2>
+  </div>;
 };
 
-Html_of_jsx.render(<component> {"This is a children!"} </component>)
+Html_of_jsx.render(
+  <component name="World"> {Jsx.text("This is a children!")} </component>,
+);
+]}
+
+List of childrens are available with [Jsx.list]
+
+{[
+Html_of_jsx.render(
+  <ul>
+    {["This", "is", "an", "unordered", "list"]
+     |> List.map(item => <li> {Jsx.text(item)} </li>)
+     |> Jsx.list}
+  </ul>,
+);
 ]}
 
 {2 Type-safe}
@@ -96,16 +110,14 @@ And also friendly, it recommends you the correct attribute if you misspell it
 
 {2 Minimalistic}
 
-Only 2 function to learn, the rest are your functions (aka components)!
-- `Html_of_jsx.render` to render your HTML
-- `Jsx.text` to inline text
+Only 2 function to learn, the rest are your functions (aka components):
+- [Html_of_jsx.render] to render your HTML
+- [Jsx.text] to inline text
 
-The rest are helpers on `Jsx`, like (`Jsx.int`). Check the [documentation]() if you are curious
+The rest are helpers on [Jsx.*], like ([Jsx.int]). Check the [!Jsx] if you are curious
 
 {[
-
-Html_of_jsx.render(<h1>{"Hello, world!"}</h1>)
-
+Html_of_jsx.render(<h1>{Jsx.text("Hello, world!")}</h1>);
 ]}
 
 {2 Supports children as list of elements}

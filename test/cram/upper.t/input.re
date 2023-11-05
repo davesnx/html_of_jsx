@@ -27,3 +27,9 @@ let upper_all_kinds_of_props =
 let upper_ref_with_children = <FancyButton> <div /> </FancyButton>;
 
 let call = <Link to_="https://sancho.dev/about" color="grey"> "about" </Link>;
+
+let component = (~name) => {
+  <div> <h1> {"Hello, " ++ name ++ "!"} </h1> </div>;
+};
+
+Html_of_jsx.render(<component />);

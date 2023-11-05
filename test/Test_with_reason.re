@@ -241,6 +241,14 @@ let aria_props = () => {
   );
 };
 
+Html_of_jsx.render(
+  <ul>
+    {["This", "is", "an", "unordered", "list"]
+     |> List.map(item => <li> {Jsx.text(item)} </li>)
+     |> Jsx.list}
+  </ul>,
+);
+
 let tests = (
   "Reason",
   [
