@@ -1,3 +1,15 @@
+module Attribute : sig
+  (** Used internally, no need to use *)
+
+  type t =
+    | Bool of (string * bool)
+    | String of (string * string)
+    | Style of string
+    | Event of (string * string)
+
+  val to_string : t list -> string
+end
+
 type node = {
   tag : string;
   attributes : Attribute.t list;

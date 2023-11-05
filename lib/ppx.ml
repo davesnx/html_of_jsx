@@ -146,50 +146,52 @@ let make_attribute ~loc ~is_optional ~prop attribute_name attribute_value =
   match (prop, is_optional) with
   | Attribute { type_ = String; _ }, false ->
       [%expr
-        Some (Attribute.String ([%e attribute_name], [%e attribute_value]))]
+        Some (Jsx.Attribute.String ([%e attribute_name], [%e attribute_value]))]
   | Attribute { type_ = String; _ }, true ->
       [%expr
         Option.map
-          (fun v -> Attribute.String ([%e attribute_name], v))
+          (fun v -> Jsx.Attribute.String ([%e attribute_name], v))
           [%e attribute_value]]
   | Attribute { type_ = Int; _ }, false ->
       [%expr
         Some
-          (Attribute.String
+          (Jsx.Attribute.String
              ([%e attribute_name], string_of_int [%e attribute_value]))]
   | Attribute { type_ = Int; _ }, true ->
       [%expr
         Option.map
-          (fun v -> Attribute.String ([%e attribute_name], string_of_int v))
+          (fun v -> Jsx.Attribute.String ([%e attribute_name], string_of_int v))
           [%e attribute_value]]
   | Attribute { type_ = Bool; _ }, false ->
-      [%expr Some (Attribute.Bool ([%e attribute_name], [%e attribute_value]))]
+      [%expr
+        Some (Jsx.Attribute.Bool ([%e attribute_name], [%e attribute_value]))]
   | Attribute { type_ = Bool; _ }, true ->
       [%expr
         Option.map
-          (fun v -> Attribute.Bool ([%e attribute_name], v))
+          (fun v -> Jsx.Attribute.Bool ([%e attribute_name], v))
           [%e attribute_value]]
   (* BooleanishString needs to transform bool into string *)
   | Attribute { type_ = BooleanishString; _ }, false ->
       [%expr
         Some
-          (Attribute.String
+          (Jsx.Attribute.String
              ([%e attribute_name], string_of_bool [%e attribute_value]))]
   | Attribute { type_ = BooleanishString; _ }, true ->
       [%expr
         Option.map
-          (fun v -> Attribute.String ([%e attribute_name], v))
+          (fun v -> Jsx.Attribute.String ([%e attribute_name], v))
           string_of_bool [%e attribute_value]]
   | Attribute { type_ = Style; _ }, false ->
-      [%expr Some (Attribute.Style [%e attribute_value])]
+      [%expr Some (Jsx.Attribute.Style [%e attribute_value])]
   | Attribute { type_ = Style; _ }, true ->
-      [%expr Option.map (fun v -> Attribute.Style v) [%e attribute_value]]
+      [%expr Option.map (fun v -> Jsx.Attribute.Style v) [%e attribute_value]]
   | Event _, false ->
-      [%expr Some (Attribute.Event ([%e attribute_name], [%e attribute_value]))]
+      [%expr
+        Some (Jsx.Attribute.Event ([%e attribute_name], [%e attribute_value]))]
   | Event _, true ->
       [%expr
         Option.map
-          (fun v -> Attribute.Event ([%e attribute_name], v))
+          (fun v -> Jsx.Attribute.Event ([%e attribute_name], v))
           [%e attribute_value]]
 
 let is_optional = function Optional _ -> true | _ -> false
@@ -303,7 +305,7 @@ let rewrite_jsx =
     method! expression expr =
       try
         match expr.pexp_desc with
-        | Pexp_apply (({ pexp_desc = Pexp_ident _tagname; _ } as tag), args)
+        | Pexp_apply (({ pexp_desc = Pexp_ident _; _ } as tag), args)
           when has_jsx_attr expr.pexp_attributes -> (
             let children, rest_of_args =
               split_args ~mapper:self#expression args

@@ -10,7 +10,7 @@ let single_empty_tag =
 
 let empty_string_attribute =
   case "empty_string_attribute" @@ fun () ->
-  let div = Jsx.node "div" [ Attribute.String ("class", "") ] [] in
+  let div = Jsx.node "div" [ Jsx.Attribute.String ("class", "") ] [] in
   assert_string (Html_of_jsx.render_element div) "<div class=\"\"></div>"
 
 let string_attributes =
@@ -18,8 +18,8 @@ let string_attributes =
   let a =
     Jsx.node "a"
       [
-        Attribute.String ("target", "_blank");
-        Attribute.String ("href", "google.html");
+        Jsx.Attribute.String ("target", "_blank");
+        Jsx.Attribute.String ("href", "google.html");
       ]
       []
   in
@@ -32,10 +32,10 @@ let bool_attributes =
   let a =
     Jsx.node "input"
       [
-        Attribute.String ("type", "checkbox");
-        Attribute.String ("name", "cheese");
-        Attribute.Bool ("checked", true);
-        Attribute.Bool ("disabled", false);
+        Jsx.Attribute.String ("type", "checkbox");
+        Jsx.Attribute.String ("name", "cheese");
+        Jsx.Attribute.Bool ("checked", true);
+        Jsx.Attribute.Bool ("disabled", false);
       ]
       []
   in
@@ -46,7 +46,7 @@ let bool_attributes =
 let truthy_attributes =
   case "truthy_attributes" @@ fun () ->
   let component =
-    Jsx.node "input" [ Attribute.String ("aria-hidden", "true") ] []
+    Jsx.node "input" [ Jsx.Attribute.String ("aria-hidden", "true") ] []
   in
   assert_string
     (Html_of_jsx.render_element component)
@@ -73,8 +73,8 @@ let no_ignore_unkwnown_attributes_on_jsx =
   let div =
     Jsx.node "div"
       [
-        Attribute.String ("key", "uniqueKeyId");
-        Attribute.Bool ("suppressContentEditableWarning", true);
+        Jsx.Attribute.String ("key", "uniqueKeyId");
+        Jsx.Attribute.Bool ("suppressContentEditableWarning", true);
       ]
       []
   in
@@ -111,7 +111,7 @@ let ignore_nulls =
 let inline_styles =
   case "inline_styles" @@ fun () ->
   let component =
-    Jsx.node "button" [ Attribute.Style "color: red; border: none" ] []
+    Jsx.node "button" [ Jsx.Attribute.Style "color: red; border: none" ] []
   in
   assert_string
     (Html_of_jsx.render_element component)
@@ -122,8 +122,8 @@ let encode_attributes =
   let component =
     Jsx.node "div"
       [
-        Attribute.String ("about", "\' <");
-        Attribute.String ("data-user-path", "what/the/path");
+        Jsx.Attribute.String ("about", "\' <");
+        Jsx.Attribute.String ("data-user-path", "what/the/path");
       ]
       [ Jsx.text "& \"" ]
   in
@@ -135,8 +135,8 @@ let encode_attributes =
 let make ~name () =
   Jsx.node "button"
     [
-      Attribute.String ("name", (name : string));
-      Attribute.Event ("onclick", "doFunction('foo');");
+      Jsx.Attribute.String ("name", (name : string));
+      Jsx.Attribute.Event ("onclick", "doFunction('foo');");
     ]
     []
 
@@ -148,14 +148,16 @@ let event =
 
 let className =
   case "className" @@ fun () ->
-  let div = Jsx.node "div" [ Attribute.String ("class", "lol") ] [] in
+  let div = Jsx.node "div" [ Jsx.Attribute.String ("class", "lol") ] [] in
   assert_string (Html_of_jsx.render_element div) "<div class=\"lol\"></div>"
 
 let className_2 =
   case "className_2" @@ fun () ->
   let component =
     Jsx.node "div"
-      [ Attribute.String ("class", "flex xs:justify-center overflow-hidden") ]
+      [
+        Jsx.Attribute.String ("class", "flex xs:justify-center overflow-hidden");
+      ]
       []
   in
   assert_string
@@ -176,7 +178,7 @@ let render_svg =
   let path =
     Jsx.node "path"
       [
-        Attribute.String
+        Jsx.Attribute.String
           ( "d",
             "M 5 3 C 3.9069372 3 3 3.9069372 3 5 L 3 19 C 3 20.093063 \
              3.9069372 21 5 21 L 19 21 C 20.093063 21 21 20.093063 21 19 L 21 \
@@ -189,10 +191,10 @@ let render_svg =
   let svg =
     Jsx.node "svg"
       [
-        Attribute.String ("xmlns", "http://www.w3.org/2000/svg");
-        Attribute.String ("viewBox", "0 0 24 24");
-        Attribute.String ("width", "24px");
-        Attribute.String ("height", "24px");
+        Jsx.Attribute.String ("xmlns", "http://www.w3.org/2000/svg");
+        Jsx.Attribute.String ("viewBox", "0 0 24 24");
+        Jsx.Attribute.String ("width", "24px");
+        Jsx.Attribute.String ("height", "24px");
       ]
       [ path ]
   in
