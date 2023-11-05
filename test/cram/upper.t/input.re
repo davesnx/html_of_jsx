@@ -25,3 +25,5 @@ let upper_all_kinds_of_props =
   </MyComponent>;
 
 let upper_ref_with_children = <FancyButton> <div /> </FancyButton>;
+
+let call = <Link to_="https://sancho.dev/about" color="grey"> "about" </Link>;

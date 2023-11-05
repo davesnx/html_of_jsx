@@ -1,6 +1,13 @@
 # html_of_jsx
 
-**html_of_jsx** is an implementation of JSX designed to render HTML on the server, without React or anything else. It's a simple library that allows you to write HTML in a declarative way with the component model.
+**html_of_jsx** is an implementation of JSX designed to render HTML on the server, without React or anything else. It's a minimal library that allows you to write components of HTML in a declarative way.
+
+- Supports all features from JSX
+- Works with Reason and mlx
+- Type-safe
+- Minimal
+  - `Html_of_jsx.render` to render an element to HTML
+  - `Jsx.*` to construct elements and nodes (`Jsx.text`, `Jsx.int`, `Jsx.null`, `Jsx.list`)
 
 ## Installation
 
@@ -23,9 +30,11 @@ let element = <a href="https://x.com/davesnx">
 let html: string = Html_of_jsx.render(element);
 ```
 
+Check the [demo/server.re](./demo/server.re) file to see a full example.
+
 ### [Documentation](https://davesnx.github.io/html_of_jsx/html_of_jsx/index.html)
 
-[Documentation](https://davesnx.github.io/html_of_jsx/html_of_jsx/index.html)
+Check the [Documentation](https://davesnx.github.io/html_of_jsx/html_of_jsx/index.html) to know more about the API and [features](https://davesnx.github.io/html_of_jsx/html_of_jsx/index.html#features).
 
 ### Credits
 

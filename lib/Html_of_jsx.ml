@@ -16,5 +16,5 @@ let render_element element =
   in
   render_element element
 
-(* TODO: Add buffer *)
+(* TODO: Use buffer instead of Printf and String.concat *)
 let render element = Printf.sprintf "<!DOCTYPE html>%s" (render_element element)

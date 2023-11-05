@@ -23,11 +23,8 @@
  (name html_of_jsx)
  (synopsis "Render HTML writing JSX")
  (depends
-  ;; General system dependencies
   (ocaml (>= 5.0.0))
   (reason (>= 3.10.0))
-
-  ;; Library dependencies
   (ppxlib (and (> 0.23.0) (<= 0.31.0)))
 
   ;; Test dependencies
@@ -41,9 +38,9 @@
   (ocamlformat
    (and
     (= 0.26.1)
-    :with-test))
-  (ocaml-lsp-server :with-test)
+    :with-dev-setup))
+  (ocaml-lsp-server :with-dev-setup)
 
   ;; Demo deps
-  dream
+  (dream :with-dev-setup)
 ))

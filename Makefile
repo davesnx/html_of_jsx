@@ -80,11 +80,11 @@ lib-test: ## Run library tests
 
 .PHONY: demo
 demo: ## Run demo executable
-	$(DUNE) exec demo/index.exe
+	$(DUNE) exec demo/server.exe
 
 .PHONY: demo-watch
 demo-watch: ## Run demo executable
-	$(DUNE) exec -w demo/index.exe
+	$(DUNE) exec -w demo/server.exe
 
 .PHONY: subst
 subst: ## Run dune substitute
