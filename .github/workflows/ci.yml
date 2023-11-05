@@ -56,7 +56,7 @@ jobs:
           opam-disable-sandboxing: true
 
       - name: Install deps
-        run: opam install . --deps-only --with-doc --with-test
+        run: make install
 
       - name: Build
         run: make build
