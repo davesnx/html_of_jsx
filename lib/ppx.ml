@@ -5,43 +5,6 @@ module List = ListLabels
 let repo_url = "https://github.com/davesnx/html_of_jsx"
 let issues_url = "https://github.com/davesnx/html_of_jsx/issues"
 
-let is_html_element tag =
-  match tag with
-  | "a" | "abbr" | "address" | "area" | "article" | "aside" | "audio" | "b"
-  | "base" | "bdi" | "bdo" | "blockquote" | "body" | "br" | "button" | "canvas"
-  | "caption" | "cite" | "code" | "col" | "colgroup" | "data" | "datalist"
-  | "dd" | "del" | "details" | "dfn" | "dialog" | "div" | "dl" | "dt" | "em"
-  | "embed" | "fieldset" | "figcaption" | "figure" | "footer" | "form" | "h1"
-  | "h2" | "h3" | "h4" | "h5" | "h6" | "head" | "header" | "hgroup" | "hr"
-  | "html" | "i" | "iframe" | "img" | "input" | "ins" | "kbd" | "label"
-  | "legend" | "li" | "link" | "main" | "map" | "mark" | "math" | "menu"
-  | "menuitem" | "meta" | "meter" | "nav" | "noscript" | "object" | "ol"
-  | "optgroup" | "option" | "output" | "p" | "param" | "picture" | "pre"
-  | "progress" | "q" | "rb" | "rp" | "rt" | "rtc" | "ruby" | "s" | "samp"
-  | "script" | "search" | "section" | "select" | "slot" | "small" | "source"
-  | "span" | "strong" | "style" | "sub" | "summary" | "sup" | "svg" | "table"
-  | "tbody" | "td" | "template" | "textarea" | "tfoot" | "th" | "thead" | "time"
-  | "title" | "tr" | "track" | "u" | "ul" | "var" | "video" | "wbr" ->
-      true
-  | _ -> false
-
-let is_svg_element tag =
-  match tag with
-  | "animate" | "animateMotion" | "animateTransform" | "circle" | "clipPath"
-  | "defs" | "desc" | "ellipse" | "feBlend" | "feColorMatrix"
-  | "feComponentTransfer" | "feComposite" | "feConvolveMatrix"
-  | "feDiffuseLighting" | "feDisplacementMap" | "feDistantLight"
-  | "feDropShadow" | "feFlood" | "feFuncA" | "feFuncB" | "feFuncG" | "feFuncR"
-  | "feGaussianBlur" | "feImage" | "feMerge" | "feMergeNode" | "feMorphology"
-  | "feOffset" | "fePointLight" | "feSpecularLighting" | "feSpotLight"
-  | "feTile" | "feTurbulence" | "filter" | "foreignObject" | "g" | "image"
-  | "line" | "linearGradient" | "marker" | "mask" | "metadata" | "mpath"
-  | "path" | "pattern" | "polygon" | "polyline" | "radialGradient" | "rect"
-  | "stop" | "switch" | "symbol" | "text" | "textPath" | "tspan" | "use"
-  | "view" ->
-      true
-  | _ -> false
-
 (* There's no pexp_list on Ppxlib since isn't a constructor of the Parsetree *)
 let pexp_list ~loc xs =
   List.fold_left (List.rev xs) ~init:[%expr []] ~f:(fun xs x ->
@@ -313,7 +276,7 @@ let rewrite_jsx =
             match tag.pexp_desc with
             (* div() [@JSX] *)
             | Pexp_ident { txt = Lident name; loc = name_loc }
-              when is_html_element name || is_svg_element name ->
+              when Html.is_html_element name || Html.is_svg_element name ->
                 rewrite_node ~loc:name_loc name rest_of_args children
             (* Reason adds `createElement` as default when an uppercase is found,
                we change it back to make *)
