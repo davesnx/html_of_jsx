@@ -6,12 +6,12 @@ let case title fn = Alcotest.test_case title `Quick fn
 let single_empty_tag =
   case "single_empty_tag" @@ fun () ->
   let div = Jsx.node "div" [] [] in
-  assert_string (Html_of_jsx.render_element div) "<div></div>"
+  assert_string (Html_of_jsx.render div) "<div></div>"
 
 let empty_string_attribute =
   case "empty_string_attribute" @@ fun () ->
   let div = Jsx.node "div" [ Jsx.Attribute.String ("class", "") ] [] in
-  assert_string (Html_of_jsx.render_element div) "<div class=\"\"></div>"
+  assert_string (Html_of_jsx.render div) "<div class=\"\"></div>"
 
 let string_attributes =
   case "string_attributes" @@ fun () ->
@@ -23,8 +23,7 @@ let string_attributes =
       ]
       []
   in
-  assert_string
-    (Html_of_jsx.render_element a)
+  assert_string (Html_of_jsx.render a)
     "<a href=\"google.html\" target=\"_blank\"></a>"
 
 let bool_attributes =
@@ -39,8 +38,7 @@ let bool_attributes =
       ]
       []
   in
-  assert_string
-    (Html_of_jsx.render_element a)
+  assert_string (Html_of_jsx.render a)
     "<input checked name=\"cheese\" type=\"checkbox\" />"
 
 let truthy_attributes =
@@ -48,25 +46,23 @@ let truthy_attributes =
   let component =
     Jsx.node "input" [ Jsx.Attribute.String ("aria-hidden", "true") ] []
   in
-  assert_string
-    (Html_of_jsx.render_element component)
-    "<input aria-hidden=\"true\" />"
+  assert_string (Html_of_jsx.render component) "<input aria-hidden=\"true\" />"
 
 let self_closing_tag =
   case "self_closing_tag" @@ fun () ->
   let input = Jsx.node "input" [] [] in
-  assert_string (Html_of_jsx.render_element input) "<input />"
+  assert_string (Html_of_jsx.render input) "<input />"
 
 let dom_element_innerHtml =
   case "dom_element_innerHtml" @@ fun () ->
   let p = Jsx.node "p" [] [ Jsx.text "text" ] in
-  assert_string (Html_of_jsx.render_element p) "<p>text</p>"
+  assert_string (Html_of_jsx.render p) "<p>text</p>"
 
 let children =
   case "children" @@ fun () ->
   let children = Jsx.node "div" [] [] in
   let div = Jsx.node "div" [] [ children ] in
-  assert_string (Html_of_jsx.render_element div) "<div><div></div></div>"
+  assert_string (Html_of_jsx.render div) "<div><div></div></div>"
 
 let no_ignore_unkwnown_attributes_on_jsx =
   case "no_ignore_unkwnown_attributes_on_jsx" @@ fun () ->
@@ -78,15 +74,14 @@ let no_ignore_unkwnown_attributes_on_jsx =
       ]
       []
   in
-  assert_string
-    (Html_of_jsx.render_element div)
+  assert_string (Html_of_jsx.render div)
     "<div suppressContentEditableWarning key=\"uniqueKeyId\"></div>"
 
 (* TODO: Fragments aren't supported yet *)
 (* let fragment () =
    let div = Jsx.node "div" [] [] in
    let component = React.fragment ~children:(React.list [ div; div ]) () in
-   assert_string (Html_of_jsx.render_element component) "<div></div><div></div>" *)
+   assert_string (Html_of_jsx.render component) "<div></div><div></div>" *)
 
 let ignore_nulls =
   case "ignore_nulls" @@ fun () ->
@@ -94,7 +89,7 @@ let ignore_nulls =
   let span = Jsx.node "span" [] [] in
   let component = Jsx.node "div" [] [ div; span; Jsx.null ] in
   assert_string
-    (Html_of_jsx.render_element component)
+    (Html_of_jsx.render component)
     "<div><div></div><span></span></div>"
 
 (* let fragments_and_texts () =
@@ -106,7 +101,7 @@ let ignore_nulls =
          Jsx.node "b" [] [];
        ]
    in
-   assert_string (Html_of_jsx.render_element component) "<div>foobar<b></b></div>" *)
+   assert_string (Html_of_jsx.render component) "<div>foobar<b></b></div>" *)
 
 let inline_styles =
   case "inline_styles" @@ fun () ->
@@ -114,7 +109,7 @@ let inline_styles =
     Jsx.node "button" [ Jsx.Attribute.Style "color: red; border: none" ] []
   in
   assert_string
-    (Html_of_jsx.render_element component)
+    (Html_of_jsx.render component)
     "<button style=\"color: red; border: none\"></button>"
 
 let encode_attributes =
@@ -128,7 +123,7 @@ let encode_attributes =
       [ Jsx.text "& \"" ]
   in
   assert_string
-    (Html_of_jsx.render_element component)
+    (Html_of_jsx.render component)
     "<div data-user-path=\"what/the/path\" about=\"&#x27; &lt;\">&amp; \
      &quot;</div>"
 
@@ -143,13 +138,13 @@ let make ~name () =
 let event =
   case "event" @@ fun () ->
   assert_string
-    (Html_of_jsx.render_element (make ~name:"json" ()))
+    (Html_of_jsx.render (make ~name:"json" ()))
     "<button onclick=\"doFunction('foo');\" name=\"json\"></button>"
 
 let className =
   case "className" @@ fun () ->
   let div = Jsx.node "div" [ Jsx.Attribute.String ("class", "lol") ] [] in
-  assert_string (Html_of_jsx.render_element div) "<div class=\"lol\"></div>"
+  assert_string (Html_of_jsx.render div) "<div class=\"lol\"></div>"
 
 let className_2 =
   case "className_2" @@ fun () ->
@@ -161,7 +156,7 @@ let className_2 =
       []
   in
   assert_string
-    (Html_of_jsx.render_element component)
+    (Html_of_jsx.render component)
     "<div class=\"flex xs:justify-center overflow-hidden\"></div>"
 
 let render_with_doc_type =
@@ -169,8 +164,7 @@ let render_with_doc_type =
   let div =
     Jsx.node "div" [] [ Jsx.node "span" [] [ Jsx.text "This is valid HTML5" ] ]
   in
-  assert_string
-    (Html_of_jsx.render_element div)
+  assert_string (Html_of_jsx.render div)
     "<div><span>This is valid HTML5</span></div>"
 
 let render_svg =
@@ -198,8 +192,7 @@ let render_svg =
       ]
       [ path ]
   in
-  assert_string
-    (Html_of_jsx.render_element svg)
+  assert_string (Html_of_jsx.render svg)
     "<svg height=\"24px\" width=\"24px\" viewBox=\"0 0 24 24\" \
      xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M 5 3 C 3.9069372 3 3 \
      3.9069372 3 5 L 3 19 C 3 20.093063 3.9069372 21 5 21 L 19 21 C 20.093063 \

@@ -1,4 +1,5 @@
-let render_element element =
+(* TODO: Use buffer instead of Printf and String.concat *)
+let render element =
   let rec render_element element =
     match element with
     | Jsx.Null -> ""
@@ -7,6 +8,11 @@ let render_element element =
     | Component f -> render_element (f ())
     | Node { tag; attributes; _ } when Html.is_self_closing_tag tag ->
         Printf.sprintf "<%s%s />" tag (Jsx.Attribute.to_string attributes)
+    | Node { tag; attributes; children } when tag == "html" ->
+        Printf.sprintf "<!DOCTYPE html><%s%s>%s</%s>" tag
+          (Jsx.Attribute.to_string attributes)
+          (children |> List.map render_element |> String.concat "")
+          tag
     | Node { tag; attributes; children } ->
         Printf.sprintf "<%s%s>%s</%s>" tag
           (Jsx.Attribute.to_string attributes)
@@ -15,6 +21,3 @@ let render_element element =
     | Text text -> Html.encode text
   in
   render_element element
-
-(* TODO: Use buffer instead of Printf and String.concat *)
-let render element = Printf.sprintf "<!DOCTYPE html>%s" (render_element element)
