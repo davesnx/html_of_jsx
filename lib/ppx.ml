@@ -233,33 +233,34 @@ let split_args ~mapper args =
   in
   (children_prop, rest)
 
-let revAstList ~loc expr =
-  let rec revAstList_ acc = function
+let reverse_pexp_list ~loc expr =
+  let rec reverse_pexp_list_ acc = function
     | [%expr []] -> acc
-    | [%expr [%e? hd] :: [%e? tl]] -> revAstList_ [%expr [%e hd] :: [%e acc]] tl
+    | [%expr [%e? hd] :: [%e? tl]] ->
+        reverse_pexp_list_ [%expr [%e hd] :: [%e acc]] tl
     | expr -> expr
   in
-  revAstList_ [%expr []] expr
+  reverse_pexp_list_ [%expr []] expr
 
-let list_have_tail listExpr =
-  match listExpr with
+let list_have_tail expr =
+  match expr with
   | Pexp_construct
       ({ txt = Lident "::"; _ }, Some { pexp_desc = Pexp_tuple _; _ })
   | Pexp_construct ({ txt = Lident "[]"; _ }, None) ->
       false
   | _ -> true
 
-let transformChildrenIfList ~loc ~mapper children =
-  let rec transformChildren_ children accum =
+let transform_items_of_list ~loc ~mapper children =
+  let rec run_mapper children accum =
     match children with
-    | [%expr []] -> revAstList ~loc accum
+    | [%expr []] -> reverse_pexp_list ~loc accum
     | [%expr [%e? v] :: [%e? acc]] when list_have_tail acc.pexp_desc ->
         [%expr [%e mapper#expression v]]
     | [%expr [%e? v] :: [%e? acc]] ->
-        transformChildren_ acc [%expr [%e mapper#expression v] :: [%e accum]]
+        run_mapper acc [%expr [%e mapper#expression v] :: [%e accum]]
     | notAList -> mapper#expression notAList
   in
-  transformChildren_ children [%expr []]
+  run_mapper children [%expr []]
 
 let rewrite_jsx =
   object (self)
@@ -305,7 +306,7 @@ let rewrite_jsx =
             match (jsx_attr, rest_attributes) with
             | [], _ -> super#expression expr
             | _, _rest_attributes ->
-                let children = transformChildrenIfList ~loc ~mapper:self expr in
+                let children = transform_items_of_list ~loc ~mapper:self expr in
                 [%expr Jsx.fragment [%e children]])
         | _ -> super#expression expr
       with Error err -> [%expr [%e err]]
