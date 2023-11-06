@@ -22,10 +22,6 @@ opan pin add html_of_jsx "https://github.com/davesnx/html_of_jsx"
 + (preprocess (pps html_of_jsx.ppx))
 ```
 
-## [Documentation](https://davesnx.github.io/html_of_jsx/html_of_jsx/index.html)
-
-Check the [Documentation](https://davesnx.github.io/html_of_jsx/html_of_jsx/index.html) to know more about the API and [features](https://davesnx.github.io/html_of_jsx/html_of_jsx/index.html#features).
-
 ## Usage
 
 ```reason
@@ -36,8 +32,12 @@ let element = <a href="https://x.com/davesnx">
 let html: string = Html_of_jsx.render(element);
 ```
 
-Check the [demo/server.re](./demo/server.re) file to see a full example with a [Dream](https://aantron.github.io/dream) HTTP server
+Check the [demo/server.re](./demo/server.re) file to see a full example with a tiny HTTP server.
 
-### Credits
+## [Documentation](https://davesnx.github.io/html_of_jsx/html_of_jsx/index.html)
+
+Check the [Documentation](https://davesnx.github.io/html_of_jsx/html_of_jsx/index.html) to know more about the API and the [features](https://davesnx.github.io/html_of_jsx/html_of_jsx/index.html#features).
+
+## Credits
 
 This library is extracted from [server-reason-react](https://github.com/ml-in-barcelona/server-reason-react) and simplified to just work with HTML5.
