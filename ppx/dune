@@ -1,0 +1,8 @@
+(library
+ (name ppx)
+ (public_name html_of_jsx.ppx)
+ (kind ppx_rewriter)
+ (libraries ppxlib ppxlib.astlib html_of_jsx.lib)
+ (ppx_runtime_libraries html_of_jsx.lib)
+ (preprocess
+  (pps ppxlib.metaquot)))

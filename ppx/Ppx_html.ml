@@ -1,59 +1,10 @@
-(** List of attributes that bring type-safety and attribute validation based on the tag. Used at compile-time by the ppx. *)
+(** List of HTML attributes that bring type-safety and validation based on the tag. *)
+
+open Ppx_attributes
 
 [@@@ocamlformat "disable"]
 (* This file is more like a spreadsheet, prefer to keep it with margin=300.
-   Since @@@ocamlformat "margin=300" isn't possible, we disable it *)
-
-let ( & ) = List.append (* ( & ) comes from intersection *)
-
-type attributeType =
-  | String
-  | Int
-  | Bool
-  (* attributes that are boolean values, rendered as strings
-   https://github.com/facebook/react/blob/a17467e7e2cd8947c595d1834889b5d184459f12/packages/react-dom-bindings/src/server/ReactFizzConfigDOM.js#L1165-L1176
-  *)
-  | BooleanishString
-  | Style
-
-type eventType =
-  | Clipboard
-  | Composition
-  | Keyboard
-  | Focus
-  | Form
-  | Mouse
-  | Selection
-  | Touch
-  | UI
-  | Wheel
-  | Media
-  | Image
-  | Animation
-  | Transition
-  | Pointer
-  | Inline
-  | Drag
-
-type attribute = {
-  type_ : attributeType;
-  name : string;
-  jsxName : string;
-}
-
-type event = {
-  type_ : eventType;
-  jsxName : string;
-}
-
-type prop =
-  | Attribute of attribute
-  | Event of event
-
-type element = {
-  tag : string;
-  attributes : prop list;
-}
+   Since @@@ocamlformat "margin=300" isn't possible, we disable it. *)
 
 let attributeReferrerPolicy = String
 (* | Empty | NoReferrer | NoReferrerWhenDowngrade | Origin |
@@ -709,7 +660,7 @@ let inputTypeAttribute = String
 (* | 'button' | 'checkbox' | 'color' | 'date' | 'datetime-local' | 'email' |
    'file' | 'hidden' | 'image' | 'month' | 'number' | 'password' | 'radio' |
    'range' | 'reset' | 'search' | 'submit' | 'tel' | 'text' | 'time' | 'url' |
-   'week' | (String & {}); *)
+   'week' | (String @ {}); *)
 
 let inputHTMLAttributes =
   [
@@ -1290,7 +1241,7 @@ module SVG = struct
       Attribute { name = "zoomAndPan"; jsxName = "zoomAndPan"; type_ = String };
     ]
 
-  let attributes = htmlAttributes & filtersAttributes & presentationAttributes & stylingAttributes & coreAttributes
+  let attributes = htmlAttributes @ filtersAttributes @ presentationAttributes @ stylingAttributes @ coreAttributes
 end
 
 let webViewHTMLAttributes =
@@ -1314,49 +1265,49 @@ let webViewHTMLAttributes =
     Attribute { name = "webPreferences"; jsxName = "webPreferences"; type_ = String };
   ]
 
-let commonHtmlAttributes = elementAttributes & globalAttributes & globalEventHandlers & ariaAttributes
+let commonHtmlAttributes = elementAttributes @ globalAttributes @ globalEventHandlers @ ariaAttributes
 
 let htmlElements =
   [
-    { tag = "a"; attributes = commonHtmlAttributes & anchorHTMLAttributes };
+    { tag = "a"; attributes = commonHtmlAttributes @ anchorHTMLAttributes };
     { tag = "abbr"; attributes = commonHtmlAttributes };
     { tag = "address"; attributes = commonHtmlAttributes };
-    { tag = "area"; attributes = commonHtmlAttributes & areaHTMLAttributes };
+    { tag = "area"; attributes = commonHtmlAttributes @ areaHTMLAttributes };
     { tag = "article"; attributes = commonHtmlAttributes };
     { tag = "aside"; attributes = commonHtmlAttributes };
-    { tag = "audio"; attributes = commonHtmlAttributes & mediaHTMLAttributes };
+    { tag = "audio"; attributes = commonHtmlAttributes @ mediaHTMLAttributes };
     { tag = "b"; attributes = commonHtmlAttributes };
-    { tag = "base"; attributes = commonHtmlAttributes & baseHTMLAttributes };
+    { tag = "base"; attributes = commonHtmlAttributes @ baseHTMLAttributes };
     { tag = "bdi"; attributes = commonHtmlAttributes };
     { tag = "bdo"; attributes = commonHtmlAttributes };
     { tag = "big"; attributes = commonHtmlAttributes };
-    { tag = "blockquote"; attributes = commonHtmlAttributes & blockquoteHTMLAttributes };
+    { tag = "blockquote"; attributes = commonHtmlAttributes @ blockquoteHTMLAttributes };
     { tag = "body"; attributes = commonHtmlAttributes };
     { tag = "br"; attributes = commonHtmlAttributes };
-    { tag = "button"; attributes = commonHtmlAttributes & buttonHTMLAttributes };
-    { tag = "canvas"; attributes = commonHtmlAttributes & canvasHTMLAttributes };
+    { tag = "button"; attributes = commonHtmlAttributes @ buttonHTMLAttributes };
+    { tag = "canvas"; attributes = commonHtmlAttributes @ canvasHTMLAttributes };
     { tag = "caption"; attributes = commonHtmlAttributes };
     { tag = "cite"; attributes = commonHtmlAttributes };
     { tag = "code"; attributes = commonHtmlAttributes };
-    { tag = "col"; attributes = commonHtmlAttributes & colHTMLAttributes };
-    { tag = "colgroup"; attributes = commonHtmlAttributes & colgroupHTMLAttributes };
-    { tag = "data"; attributes = commonHtmlAttributes & dataHTMLAttributes };
+    { tag = "col"; attributes = commonHtmlAttributes @ colHTMLAttributes };
+    { tag = "colgroup"; attributes = commonHtmlAttributes @ colgroupHTMLAttributes };
+    { tag = "data"; attributes = commonHtmlAttributes @ dataHTMLAttributes };
     { tag = "datalist"; attributes = commonHtmlAttributes };
     { tag = "dd"; attributes = commonHtmlAttributes };
-    { tag = "del"; attributes = commonHtmlAttributes & delHTMLAttributes };
-    { tag = "details"; attributes = commonHtmlAttributes & detailsHTMLAttributes };
+    { tag = "del"; attributes = commonHtmlAttributes @ delHTMLAttributes };
+    { tag = "details"; attributes = commonHtmlAttributes @ detailsHTMLAttributes };
     { tag = "dfn"; attributes = commonHtmlAttributes };
-    { tag = "dialog"; attributes = commonHtmlAttributes & dialogHTMLAttributes };
+    { tag = "dialog"; attributes = commonHtmlAttributes @ dialogHTMLAttributes };
     { tag = "div"; attributes = commonHtmlAttributes };
     { tag = "dl"; attributes = commonHtmlAttributes };
     { tag = "dt"; attributes = commonHtmlAttributes };
     { tag = "em"; attributes = commonHtmlAttributes };
-    { tag = "embed"; attributes = commonHtmlAttributes & embedHTMLAttributes };
-    { tag = "fieldset"; attributes = commonHtmlAttributes & fieldsetHTMLAttributes };
+    { tag = "embed"; attributes = commonHtmlAttributes @ embedHTMLAttributes };
+    { tag = "fieldset"; attributes = commonHtmlAttributes @ fieldsetHTMLAttributes };
     { tag = "figcaption"; attributes = commonHtmlAttributes };
     { tag = "figure"; attributes = commonHtmlAttributes };
     { tag = "footer"; attributes = commonHtmlAttributes };
-    { tag = "form"; attributes = commonHtmlAttributes & formHTMLAttributes };
+    { tag = "form"; attributes = commonHtmlAttributes @ formHTMLAttributes };
     { tag = "h1"; attributes = commonHtmlAttributes };
     { tag = "h2"; attributes = commonHtmlAttributes };
     { tag = "h3"; attributes = commonHtmlAttributes };
@@ -1367,77 +1318,77 @@ let htmlElements =
     { tag = "header"; attributes = commonHtmlAttributes };
     { tag = "hgroup"; attributes = commonHtmlAttributes };
     { tag = "hr"; attributes = commonHtmlAttributes };
-    { tag = "html"; attributes = commonHtmlAttributes & htmlHTMLAttributes };
+    { tag = "html"; attributes = commonHtmlAttributes @ htmlHTMLAttributes };
     { tag = "i"; attributes = commonHtmlAttributes };
-    { tag = "iframe"; attributes = commonHtmlAttributes & iframeHTMLAttributes };
-    { tag = "img"; attributes = commonHtmlAttributes & imgHTMLAttributes };
-    { tag = "input"; attributes = commonHtmlAttributes & inputHTMLAttributes };
-    { tag = "ins"; attributes = commonHtmlAttributes & insHTMLAttributes };
+    { tag = "iframe"; attributes = commonHtmlAttributes @ iframeHTMLAttributes };
+    { tag = "img"; attributes = commonHtmlAttributes @ imgHTMLAttributes };
+    { tag = "input"; attributes = commonHtmlAttributes @ inputHTMLAttributes };
+    { tag = "ins"; attributes = commonHtmlAttributes @ insHTMLAttributes };
     { tag = "kbd"; attributes = commonHtmlAttributes };
-    { tag = "keygen"; attributes = commonHtmlAttributes & keygenHTMLAttributes };
-    { tag = "label"; attributes = commonHtmlAttributes & labelHTMLAttributes };
+    { tag = "keygen"; attributes = commonHtmlAttributes @ keygenHTMLAttributes };
+    { tag = "label"; attributes = commonHtmlAttributes @ labelHTMLAttributes };
     { tag = "legend"; attributes = commonHtmlAttributes };
-    { tag = "li"; attributes = commonHtmlAttributes & liHTMLAttributes };
-    { tag = "link"; attributes = commonHtmlAttributes & linkHTMLAttributes };
+    { tag = "li"; attributes = commonHtmlAttributes @ liHTMLAttributes };
+    { tag = "link"; attributes = commonHtmlAttributes @ linkHTMLAttributes };
     { tag = "main"; attributes = commonHtmlAttributes };
-    { tag = "map"; attributes = commonHtmlAttributes & mapHTMLAttributes };
+    { tag = "map"; attributes = commonHtmlAttributes @ mapHTMLAttributes };
     { tag = "mark"; attributes = commonHtmlAttributes };
-    { tag = "menu"; attributes = commonHtmlAttributes & menuHTMLAttributes };
+    { tag = "menu"; attributes = commonHtmlAttributes @ menuHTMLAttributes };
     { tag = "menuitem"; attributes = commonHtmlAttributes };
-    { tag = "meta"; attributes = commonHtmlAttributes & metaHTMLAttributes };
-    { tag = "meter"; attributes = commonHtmlAttributes & meterHTMLAttributes };
+    { tag = "meta"; attributes = commonHtmlAttributes @ metaHTMLAttributes };
+    { tag = "meter"; attributes = commonHtmlAttributes @ meterHTMLAttributes };
     { tag = "nav"; attributes = commonHtmlAttributes };
     { tag = "noindex"; attributes = commonHtmlAttributes };
     { tag = "noscript"; attributes = commonHtmlAttributes };
-    { tag = "object"; attributes = commonHtmlAttributes & objectHTMLAttributes };
-    { tag = "ol"; attributes = commonHtmlAttributes & olHTMLAttributes };
-    { tag = "optgroup"; attributes = commonHtmlAttributes & optgroupHTMLAttributes };
-    { tag = "option"; attributes = commonHtmlAttributes & optionHTMLAttributes };
-    { tag = "output"; attributes = commonHtmlAttributes & outputHTMLAttributes };
+    { tag = "object"; attributes = commonHtmlAttributes @ objectHTMLAttributes };
+    { tag = "ol"; attributes = commonHtmlAttributes @ olHTMLAttributes };
+    { tag = "optgroup"; attributes = commonHtmlAttributes @ optgroupHTMLAttributes };
+    { tag = "option"; attributes = commonHtmlAttributes @ optionHTMLAttributes };
+    { tag = "output"; attributes = commonHtmlAttributes @ outputHTMLAttributes };
     { tag = "p"; attributes = commonHtmlAttributes };
-    { tag = "param"; attributes = commonHtmlAttributes & paramHTMLAttributes };
+    { tag = "param"; attributes = commonHtmlAttributes @ paramHTMLAttributes };
     { tag = "picture"; attributes = commonHtmlAttributes };
     { tag = "pre"; attributes = commonHtmlAttributes };
-    { tag = "progress"; attributes = commonHtmlAttributes & progressHTMLAttributes };
-    { tag = "q"; attributes = commonHtmlAttributes & quoteHTMLAttributes };
+    { tag = "progress"; attributes = commonHtmlAttributes @ progressHTMLAttributes };
+    { tag = "q"; attributes = commonHtmlAttributes @ quoteHTMLAttributes };
     { tag = "rp"; attributes = commonHtmlAttributes };
     { tag = "rt"; attributes = commonHtmlAttributes };
     { tag = "ruby"; attributes = commonHtmlAttributes };
     { tag = "s"; attributes = commonHtmlAttributes };
     { tag = "samp"; attributes = commonHtmlAttributes };
-    { tag = "script"; attributes = commonHtmlAttributes & scriptHTMLAttributes };
+    { tag = "script"; attributes = commonHtmlAttributes @ scriptHTMLAttributes };
     { tag = "section"; attributes = commonHtmlAttributes };
-    { tag = "select"; attributes = commonHtmlAttributes & selectHTMLAttributes };
-    { tag = "slot"; attributes = commonHtmlAttributes & slotHTMLAttributes };
+    { tag = "select"; attributes = commonHtmlAttributes @ selectHTMLAttributes };
+    { tag = "slot"; attributes = commonHtmlAttributes @ slotHTMLAttributes };
     { tag = "small"; attributes = commonHtmlAttributes };
-    { tag = "source"; attributes = commonHtmlAttributes & sourceHTMLAttributes };
+    { tag = "source"; attributes = commonHtmlAttributes @ sourceHTMLAttributes };
     { tag = "span"; attributes = commonHtmlAttributes };
     { tag = "strong"; attributes = commonHtmlAttributes };
-    { tag = "style"; attributes = commonHtmlAttributes & styleHTMLAttributes };
+    { tag = "style"; attributes = commonHtmlAttributes @ styleHTMLAttributes };
     { tag = "sub"; attributes = commonHtmlAttributes };
     { tag = "summary"; attributes = commonHtmlAttributes };
     { tag = "sup"; attributes = commonHtmlAttributes };
-    { tag = "table"; attributes = commonHtmlAttributes & tableHTMLAttributes };
+    { tag = "table"; attributes = commonHtmlAttributes @ tableHTMLAttributes };
     { tag = "tbody"; attributes = commonHtmlAttributes };
-    { tag = "td"; attributes = commonHtmlAttributes & tdHTMLAttributes };
+    { tag = "td"; attributes = commonHtmlAttributes @ tdHTMLAttributes };
     { tag = "template"; attributes = commonHtmlAttributes };
-    { tag = "textarea"; attributes = commonHtmlAttributes & textareaHTMLAttributes };
+    { tag = "textarea"; attributes = commonHtmlAttributes @ textareaHTMLAttributes };
     { tag = "tfoot"; attributes = commonHtmlAttributes };
-    { tag = "th"; attributes = commonHtmlAttributes & thHTMLAttributes };
+    { tag = "th"; attributes = commonHtmlAttributes @ thHTMLAttributes };
     { tag = "thead"; attributes = commonHtmlAttributes };
-    { tag = "time"; attributes = commonHtmlAttributes & timeHTMLAttributes };
+    { tag = "time"; attributes = commonHtmlAttributes @ timeHTMLAttributes };
     { tag = "title"; attributes = commonHtmlAttributes };
     { tag = "tr"; attributes = commonHtmlAttributes };
-    { tag = "track"; attributes = commonHtmlAttributes & trackHTMLAttributes };
+    { tag = "track"; attributes = commonHtmlAttributes @ trackHTMLAttributes };
     { tag = "u"; attributes = commonHtmlAttributes };
     { tag = "ul"; attributes = commonHtmlAttributes };
     { tag = "var"; attributes = commonHtmlAttributes };
-    { tag = "video"; attributes = commonHtmlAttributes & videoHTMLAttributes };
+    { tag = "video"; attributes = commonHtmlAttributes @ videoHTMLAttributes };
     { tag = "wbr"; attributes = commonHtmlAttributes };
-    { tag = "webview"; attributes = commonHtmlAttributes & webViewHTMLAttributes };
+    { tag = "webview"; attributes = commonHtmlAttributes @ webViewHTMLAttributes };
   ]
 
-let commonSvgAttributes = SVG.attributes & globalEventHandlers & ariaAttributes
+let commonSvgAttributes = SVG.attributes @ globalEventHandlers @ ariaAttributes
 
 let feConvolveMatrixAttributes = [ Attribute { name = "preserveAlpha"; jsxName = "preserveAlpha"; type_ = BooleanishString } ]
 
@@ -1456,7 +1407,7 @@ let svgElements =
     { tag = "feColorMatrix"; attributes = commonSvgAttributes };
     { tag = "feComponentTransfer"; attributes = commonSvgAttributes };
     { tag = "feComposite"; attributes = commonSvgAttributes };
-    { tag = "feConvolveMatrix"; attributes = commonSvgAttributes & feConvolveMatrixAttributes };
+    { tag = "feConvolveMatrix"; attributes = commonSvgAttributes @ feConvolveMatrixAttributes };
     { tag = "feDiffuseLighting"; attributes = commonSvgAttributes };
     { tag = "feDisplacementMap"; attributes = commonSvgAttributes };
     { tag = "feDistantLight"; attributes = commonSvgAttributes };
@@ -1504,14 +1455,14 @@ let svgElements =
   ]
 [@@@ocamlformat "enable"]
 
-let elements = svgElements & htmlElements
+let elements = svgElements @ htmlElements
 
 let getName = function
   | Attribute { name; _ } -> name
   | Event { jsxName; _ } -> jsxName
 
 let domPropNames =
-  (commonSvgAttributes & commonHtmlAttributes) |> List.map getName
+  commonSvgAttributes @ commonHtmlAttributes |> List.map getName
 
 let getJSXName = function
   | Attribute { jsxName; _ } -> jsxName

@@ -69,14 +69,14 @@ let rewrite_component ~loc tag args children =
   pexp_apply ~loc component props
 
 let validate_attr ~loc id name =
-  match Ppx_static_attributes.findByName id name with
+  match Ppx_html.findByName id name with
   | Ok p -> p
   | Error `ElementNotFound ->
       raise_errorf ~loc
         "jsx: HTML tag '%s' doesn't exist.\n\
          If this isn't correct, please open an issue at %s" id issues_url
   | Error `AttributeNotFound -> (
-      match Ppx_static_attributes.find_closest_name name with
+      match Ppx_html.find_closest_name name with
       | None ->
           raise_errorf ~loc
             "jsx: prop '%s' isn't valid on a '%s' element.\n\
@@ -90,7 +90,7 @@ let validate_attr ~loc id name =
             suggestion issues_url)
 
 let add_attribute_type_constraint ~loc ~is_optional
-    (type_ : Ppx_static_attributes.attributeType) value =
+    (type_ : Ppx_attributes.attributeType) value =
   match (type_, is_optional) with
   | String, true -> [%expr ([%e value] : string option)]
   | String, false -> [%expr ([%e value] : string)]
@@ -105,7 +105,7 @@ let add_attribute_type_constraint ~loc ~is_optional
   | Style, true -> [%expr ([%e value] : string option)]
 
 let make_attribute ~loc ~is_optional ~prop attribute_name attribute_value =
-  let open Ppx_static_attributes in
+  let open Ppx_attributes in
   match (prop, is_optional) with
   | Attribute { type_ = String; _ }, false ->
       [%expr
@@ -170,7 +170,7 @@ let transform_labelled ~loc ~tag_name props (prop_label, (value : expression)) =
         | Attribute { type_; _ } -> type_
         | Event _ -> String
       in
-      let attribute_name = Ppx_static_attributes.getName attribute in
+      let attribute_name = Ppx_html.getName attribute in
       let attribute_name_expr = estring ~loc attribute_name in
       let attribute_value =
         add_attribute_type_constraint ~loc ~is_optional attribute_type value
@@ -313,5 +313,19 @@ let rewrite_jsx =
   end
 
 let () =
+  let driver_args =
+    [
+      ( "-htmx",
+        Arg.Bool (fun _ -> Ppx_extra_attributes.set_htmx ()),
+        "Enable htmx props" );
+      (* ( "-custom",
+         Arg.String (fun file -> Static_attributes.extra_properties := Some file),
+         "FILE Load inferred types from server cmo file FILE." ); *)
+    ]
+  in
+
+  List.iter
+    ~f:(fun (key, spec, doc) -> Ppxlib.Driver.add_arg key spec ~doc)
+    driver_args;
   Ppxlib.Driver.register_transformation "html_of_jsx.ppx"
     ~preprocess_impl:rewrite_jsx#structure

@@ -1,15 +1,4 @@
 (library
  (name html_of_jsx)
  (wrapped false)
- (modules :standard \ Ppx Ppx_static_attributes)
  (public_name html_of_jsx.lib))
-
-(library
- (name ppx)
- (public_name html_of_jsx.ppx)
- (kind ppx_rewriter)
- (modules Ppx Ppx_static_attributes)
- (libraries ppxlib ppxlib.astlib html_of_jsx.lib)
- (ppx_runtime_libraries html_of_jsx.lib)
- (preprocess
-  (pps ppxlib.metaquot)))
