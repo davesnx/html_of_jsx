@@ -234,13 +234,12 @@ let split_args ~mapper args =
   (children_prop, rest)
 
 let reverse_pexp_list ~loc expr =
-  let rec reverse_pexp_list_ acc = function
+  let rec go acc = function
     | [%expr []] -> acc
-    | [%expr [%e? hd] :: [%e? tl]] ->
-        reverse_pexp_list_ [%expr [%e hd] :: [%e acc]] tl
+    | [%expr [%e? hd] :: [%e? tl]] -> go [%expr [%e hd] :: [%e acc]] tl
     | expr -> expr
   in
-  reverse_pexp_list_ [%expr []] expr
+  go [%expr []] expr
 
 let list_have_tail expr =
   match expr with

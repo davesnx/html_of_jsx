@@ -1,10 +1,15 @@
-(** List of HTML attributes that bring type-safety and validation based on the tag. *)
+(** List of HTML attributes that bring type-safety and validation based on their tag *)
 
 open Ppx_attributes
+(* TODO:
+    - Add description + url in attributes
+    - Remove ocamlformat disable (since all attributes will wrap)
+    - Ensure html names are correct (take a look at server-reason-react-ppx and mdn)
+*)
 
 [@@@ocamlformat "disable"]
 (* This file is more like a spreadsheet, prefer to keep it with margin=300.
-   Since @@@ocamlformat "margin=300" isn't possible, we disable it. *)
+   Since @@@ocamlformat "margin=300" isn't possible, we disable it entirely. *)
 
 let attributeReferrerPolicy = String
 (* | Empty | NoReferrer | NoReferrerWhenDowngrade | Origin |
