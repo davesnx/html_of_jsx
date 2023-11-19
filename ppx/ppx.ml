@@ -331,7 +331,7 @@ let () =
   in
 
   List.iter
-    ~f:(fun (key, spec, doc) -> Ppxlib.Driver.add_arg key spec ~doc)
+    ~f:(fun (key, spec, doc) -> Driver.add_arg key spec ~doc)
     driver_args;
-  Ppxlib.Driver.register_transformation "html_of_jsx.ppx"
+  Driver.register_transformation "html_of_jsx.ppx"
     ~preprocess_impl:rewrite_jsx#structure

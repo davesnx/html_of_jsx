@@ -187,6 +187,15 @@ let globalEventHandlers =
 (* All the WAI-ARIA 1.1 attributes from https://www.w3.org/TR/wai-aria-1.1/ *)
 let ariaAttributes =
   [
+    Attribute
+      {
+        name = "hx-boost";
+        jsxName = "hx_boost";
+        type_ = BooleanishString;
+        (* description =
+           Some "add or remove progressive enhancement for links and forms"; *)
+        (* url = Some "https://htmx.org/attributes/hx-boost" *)
+      };
     (* Identifies the currently active element when DOM focus is on a composite
        widget, textbox, group, or application. *)
     Attribute { name = "aria-activedescendant"; jsxName = "ariaActivedescendant"; type_ = String };
@@ -1466,12 +1475,12 @@ let getName = function
   | Attribute { name; _ } -> name
   | Event { jsxName; _ } -> jsxName
 
-let domPropNames =
-  commonSvgAttributes @ commonHtmlAttributes |> List.map getName
-
 let getJSXName = function
   | Attribute { jsxName; _ } -> jsxName
   | Event { jsxName; _ } -> jsxName
+
+let domPropNames =
+  commonSvgAttributes @ commonHtmlAttributes |> List.map getJSXName
 
 type errors = [ `ElementNotFound | `AttributeNotFound ]
 
