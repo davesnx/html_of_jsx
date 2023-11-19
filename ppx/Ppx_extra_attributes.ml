@@ -10,3 +10,5 @@ let attributes_of_flags = function
   | Some Htmx -> Ppx_htmx.attributes
   | Some Alpinejs -> Ppx_alpinejs.attributes
   | Some (Custom_file _) -> (* Not implemented *) []
+
+let load_attributes = lazy (attributes_of_flags (get ()))

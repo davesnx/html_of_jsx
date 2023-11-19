@@ -17,7 +17,8 @@ let raise_errorf ~loc fmt =
   Printf.ksprintf
     (fun msg ->
       let expr =
-        pexp_extension ~loc (Location.error_extensionf ~loc "%s" msg)
+        pexp_extension ~loc
+          (Location.error_extensionf ~loc "[html_of_jsx] %s" msg)
       in
       raise (Error expr))
     fmt
@@ -49,7 +50,9 @@ let rec unwrap_children ~f children = function
       _;
     } ->
       unwrap_children ~f (f child :: children) next
-  | e -> raise_errorf ~loc:e.pexp_loc "jsx: children prop should be a list"
+  | e ->
+      raise_errorf ~loc:e.pexp_loc
+        "[html_of_jsx]: children prop should be a list"
 
 let is_jsx = function
   | { attr_name = { txt = "JSX"; _ }; _ } -> true
@@ -73,21 +76,25 @@ let validate_attr ~loc id name =
   | Ok p -> p
   | Error `ElementNotFound ->
       raise_errorf ~loc
-        "jsx: HTML tag '%s' doesn't exist.\n\
-         If this isn't correct, please open an issue at %s" id issues_url
+        {|HTML tag '%s' doesn't exist.
+
+If this isn't correct, please open an issue at %s|}
+        id issues_url
   | Error `AttributeNotFound -> (
       match Ppx_html.find_closest_name name with
       | None ->
           raise_errorf ~loc
-            "jsx: prop '%s' isn't valid on a '%s' element.\n\
-             If this isn't correct, please open an issue at %s." name id
-            issues_url
+            {|The attribute '%s' isn't valid on a '%s' element.
+
+If this isn't correct, please open an issue at %s.|}
+            name id issues_url
       | Some suggestion ->
           raise_errorf ~loc
-            "jsx: prop '%s' isn't valid on a '%s' element.\n\
-             Hint: Maybe you mean '%s'?\n\n\
-             If this isn't correct, please open an issue at %s." name id
-            suggestion issues_url)
+            {|The attribute '%s' isn't valid on a '%s' element.
+Hint: Maybe you mean '%s'?
+
+If this isn't correct, please open an issue at %s.|}
+            name id suggestion issues_url)
 
 let add_attribute_type_constraint ~loc ~is_optional
     (type_ : Ppx_attributes.attributeType) value =
@@ -315,7 +322,7 @@ let () =
   let driver_args =
     [
       ( "-htmx",
-        Arg.Bool (fun _ -> Ppx_extra_attributes.set_htmx ()),
+        Arg.Unit (fun _ -> Ppx_extra_attributes.set_htmx ()),
         "Enable htmx props" );
       (* ( "-custom",
          Arg.String (fun file -> Static_attributes.extra_properties := Some file),

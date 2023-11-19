@@ -1,6 +1,7 @@
 (** https://htmx.org/reference/ *)
 
 (* TODO:
+    - Add description + url
     - Events ?
    - How to make values on here available on the runtime (ppx_runtime_deps + using them here)
      - hx-headers or hx-vals want json
