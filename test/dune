@@ -1,5 +1,6 @@
 (test
- (name Test)
- (libraries alcotest fmt html_of_jsx.lib)
+ (name main)
+ (libraries alcotest fmt html_of_jsx.lib test_lib)
+ (flags :standard -open Test_lib)
  (preprocess
   (pps html_of_jsx.ppx)))

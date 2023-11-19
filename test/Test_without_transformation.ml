@@ -1,8 +1,3 @@
-let assert_string left right =
-  Alcotest.check Alcotest.string "should be equal" right left
-
-let case title fn = Alcotest.test_case title `Quick fn
-
 let single_empty_tag =
   case "single_empty_tag" @@ fun () ->
   let div = Jsx.node "div" [] [] in
