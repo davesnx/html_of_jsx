@@ -1,6 +1,4 @@
 module Attribute : sig
-  (** Used internally, no need to use *)
-
   type t =
     | Bool of (string * bool)
     | String of (string * string)
@@ -32,10 +30,10 @@ val null : element
 (** Helper to represent nullability in Jsx, useful to pattern match *)
 
 val int : int -> element
-(** Helper to render an integer (uses string_of_int internally) *)
+(** Helper to render an integer (uses string_of_int) *)
 
 val float : float -> element
-(** Helper to render an integer (uses string_of_float internally) *)
+(** Helper to render an integer (uses string_of_float) *)
 
 val list : element list -> element
 
@@ -43,4 +41,4 @@ val fragment : element list -> element
 (** Fragment  *)
 
 val node : string -> Attribute.t list -> element list -> element
-(** The function to create a HTML DOM Node [https://developer.mozilla.org/en-US/docs/Web/API/Node] given the tag, list of attributes and list of childrens *)
+(** The function to create a HTML DOM Node [https://developer.mozilla.org/en-US/docs/Web/API/Node]. Given the tag, list of attributes and list of childrens *)

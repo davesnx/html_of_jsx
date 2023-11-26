@@ -1472,10 +1472,12 @@ let svgElements =
 let elements = svgElements @ htmlElements
 
 let getName = function
+  | Rich_attribute { name; _ } -> name
   | Attribute { name; _ } -> name
   | Event { jsxName; _ } -> jsxName
 
 let getJSXName = function
+  | Rich_attribute { jsxName; _ } -> jsxName
   | Attribute { jsxName; _ } -> jsxName
   | Event { jsxName; _ } -> jsxName
 

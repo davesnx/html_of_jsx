@@ -29,12 +29,8 @@ let collect_props visit args =
     | [ (Nolabel, arg) ] -> (Some (visit arg), props)
     | (Nolabel, prop) :: _ ->
         let loc = prop.pexp_loc in
-        let error =
-          [%expr
-            [%ocaml.error
-              "an argument without a label could only be the last one"]]
-        in
-        go ((Nolabel, visit error) :: props) []
+        raise_errorf ~loc
+          "an argument without a label could only be the last one"
     | (proplab, prop) :: xs -> go ((proplab, visit prop) :: props) xs
   in
   go [] args
@@ -50,9 +46,7 @@ let rec unwrap_children ~f children = function
       _;
     } ->
       unwrap_children ~f (f child :: children) next
-  | e ->
-      raise_errorf ~loc:e.pexp_loc
-        "[html_of_jsx]: children prop should be a list"
+  | e -> raise_errorf ~loc:e.pexp_loc "children prop should be a list"
 
 let is_jsx = function
   | { attr_name = { txt = "JSX"; _ }; _ } -> true
@@ -114,45 +108,55 @@ let add_attribute_type_constraint ~loc ~is_optional
 let make_attribute ~loc ~is_optional ~prop attribute_name attribute_value =
   let open Ppx_attributes in
   match (prop, is_optional) with
+  | Rich_attribute { type_ = String; _ }, false
   | Attribute { type_ = String; _ }, false ->
       [%expr
         Some (Jsx.Attribute.String ([%e attribute_name], [%e attribute_value]))]
+  | Rich_attribute { type_ = String; _ }, true
   | Attribute { type_ = String; _ }, true ->
       [%expr
         Option.map
           (fun v -> Jsx.Attribute.String ([%e attribute_name], v))
           [%e attribute_value]]
+  | Rich_attribute { type_ = Int; _ }, false
   | Attribute { type_ = Int; _ }, false ->
       [%expr
         Some
           (Jsx.Attribute.String
              ([%e attribute_name], string_of_int [%e attribute_value]))]
-  | Attribute { type_ = Int; _ }, true ->
+  | Rich_attribute { type_ = Int; _ }, true | Attribute { type_ = Int; _ }, true
+    ->
       [%expr
         Option.map
           (fun v -> Jsx.Attribute.String ([%e attribute_name], string_of_int v))
           [%e attribute_value]]
+  | Rich_attribute { type_ = Bool; _ }, false
   | Attribute { type_ = Bool; _ }, false ->
       [%expr
         Some (Jsx.Attribute.Bool ([%e attribute_name], [%e attribute_value]))]
+  | Rich_attribute { type_ = Bool; _ }, true
   | Attribute { type_ = Bool; _ }, true ->
       [%expr
         Option.map
           (fun v -> Jsx.Attribute.Bool ([%e attribute_name], v))
           [%e attribute_value]]
   (* BooleanishString needs to transform bool into string *)
+  | Rich_attribute { type_ = BooleanishString; _ }, false
   | Attribute { type_ = BooleanishString; _ }, false ->
       [%expr
         Some
           (Jsx.Attribute.String
              ([%e attribute_name], string_of_bool [%e attribute_value]))]
+  | Rich_attribute { type_ = BooleanishString; _ }, true
   | Attribute { type_ = BooleanishString; _ }, true ->
       [%expr
         Option.map
           (fun v -> Jsx.Attribute.String ([%e attribute_name], v))
           string_of_bool [%e attribute_value]]
+  | Rich_attribute { type_ = Style; _ }, false
   | Attribute { type_ = Style; _ }, false ->
       [%expr Some (Jsx.Attribute.Style [%e attribute_value])]
+  | Rich_attribute { type_ = Style; _ }, true
   | Attribute { type_ = Style; _ }, true ->
       [%expr Option.map (fun v -> Jsx.Attribute.Style v) [%e attribute_value]]
   | Event _, false ->
@@ -174,6 +178,7 @@ let transform_labelled ~loc ~tag_name props (prop_label, (value : expression)) =
       let attribute = validate_attr ~loc tag_name name in
       let attribute_type =
         match attribute with
+        | Rich_attribute { type_; _ } -> type_
         | Attribute { type_; _ } -> type_
         | Event _ -> String
       in
@@ -297,11 +302,8 @@ let rewrite_jsx =
                 rewrite_component ~loc:tag.pexp_loc id rest_of_args children
             | _ -> assert false)
         (* div() [@JSX] *)
-        | Pexp_apply (tag, _props) when has_jsx_attr expr.pexp_attributes ->
-            let loc = expr.pexp_loc in
-            [%expr
-              [%ocaml.error "html_of_jsx.ppx: tag should be an identifier"]
-                [%e tag]]
+        | Pexp_apply (_tag, _props) when has_jsx_attr expr.pexp_attributes ->
+            raise_errorf ~loc:expr.pexp_loc "tag should be an identifier"
         (* <> </> is represented as a list in the Parsetree with [@JSX] *)
         | Pexp_construct
             ({ txt = Lident "::"; loc }, Some { pexp_desc = Pexp_tuple _; _ })

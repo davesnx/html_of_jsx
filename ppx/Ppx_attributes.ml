@@ -1,15 +1,11 @@
 (** List of attributes that bring type-safety and attribute validation based on the tag. Used at compile-time by the ppx. *)
 
-[@@@ocamlformat "disable"]
-(* This file is more like a spreadsheet, prefer to keep it with margin=300.
-   Since @@@ocamlformat "margin=300" isn't possible, we disable it *)
-
 type attributeType =
   | String
   | Int
   | Bool
   (* attributes that are boolean values, rendered as strings
-   https://github.com/facebook/react/blob/a17467e7e2cd8947c595d1834889b5d184459f12/packages/react-dom-bindings/src/server/ReactFizzConfigDOM.js#L1165-L1176
+     https://github.com/facebook/react/blob/a17467e7e2cd8947c595d1834889b5d184459f12/packages/react-dom-bindings/src/server/ReactFizzConfigDOM.js#L1165-L1176
   *)
   | BooleanishString
   | Style
@@ -33,22 +29,21 @@ type eventType =
   | Inline
   | Drag
 
-type attribute = {
+type attribute = { type_ : attributeType; name : string; jsxName : string }
+
+type rich_attribute = {
   type_ : attributeType;
   name : string;
   jsxName : string;
+  description : string;
+  url : string;
 }
 
-type event = {
-  type_ : eventType;
-  jsxName : string;
-}
+type event = { type_ : eventType; jsxName : string }
 
 type prop =
   | Attribute of attribute
+  | Rich_attribute of rich_attribute
   | Event of event
 
-type element = {
-  tag : string;
-  attributes : prop list;
-}
+type element = { tag : string; attributes : prop list }
