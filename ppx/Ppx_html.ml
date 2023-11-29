@@ -4,7 +4,6 @@ open Ppx_attributes
 (* TODO:
     - Add description + url in attributes
     - Ensure html names are correct (take a look at server-reason-react-ppx and mdn)
-    - Remove ocamlformat disable (is there any ocamlformat option to make all records fields to wrap?)
 *)
 
 [@@@ocamlformat "disable"]
@@ -1279,7 +1278,7 @@ let webViewHTMLAttributes =
     Attribute { name = "webPreferences"; jsxName = "webPreferences"; type_ = String };
   ]
 
-let commonHtmlAttributes = elementAttributes @ globalAttributes @ globalEventHandlers @ ariaAttributes @ (Lazy.force Ppx_extra_attributes.load_attributes)
+let commonHtmlAttributes = elementAttributes @ globalAttributes @ globalEventHandlers @ ariaAttributes @ (Lazy.force (Ppx_extra_attributes.load_attributes ()))
 
 let htmlElements =
   [
@@ -1402,7 +1401,7 @@ let htmlElements =
     { tag = "webview"; attributes = commonHtmlAttributes @ webViewHTMLAttributes };
   ]
 
-let commonSvgAttributes = SVG.attributes @ globalEventHandlers @ ariaAttributes @ (Lazy.force Ppx_extra_attributes.load_attributes)
+let commonSvgAttributes = SVG.attributes @ globalEventHandlers @ ariaAttributes @ (Lazy.force (Ppx_extra_attributes.load_attributes ()))
 
 let feConvolveMatrixAttributes = [ Attribute { name = "preserveAlpha"; jsxName = "preserveAlpha"; type_ = BooleanishString } ]
 

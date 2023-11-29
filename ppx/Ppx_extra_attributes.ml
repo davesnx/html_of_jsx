@@ -10,13 +10,13 @@ let reference_to_string = function
   | Alpinejs -> "Alpine"
   | Custom_file _ -> "Custom"
 
-let to_string = function None -> "None" | Some ref -> reference_to_string ref
+let to_string = function None -> "Html" | Some ref -> reference_to_string ref
 
-let attributes_of_flags reference =
-  match reference with
+let attributes_of_flags = function
   | None -> []
   | Some Htmx -> Ppx_htmx.attributes
   | Some Alpinejs -> Ppx_alpinejs.attributes
   | Some (Custom_file _) -> (* Not implemented *) []
 
-let load_attributes = lazy (attributes_of_flags (get ()))
+(* A function that loads the attributes lazy, since we need to derive the list of attributes with the ppx flags. *)
+let load_attributes () = lazy (attributes_of_flags (get ()))

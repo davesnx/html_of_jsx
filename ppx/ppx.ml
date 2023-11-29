@@ -170,7 +170,8 @@ let make_attribute ~loc ~is_optional ~prop attribute_name attribute_value =
 
 let is_optional = function Optional _ -> true | _ -> false
 
-let transform_labelled ~loc ~tag_name props (prop_label, (value : expression)) =
+let transform_labelled ~loc:_parentLoc ~tag_name props (prop_label, value) =
+  let loc = props.pexp_loc in
   match prop_label with
   | Nolabel -> props
   | Optional name | Labelled name ->

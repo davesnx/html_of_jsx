@@ -1,16 +1,5 @@
 (** https://htmx.org/reference/ *)
 
-(* TODO:
-    - How to make values on here available on the runtime (ppx_runtime_deps + using them here)
-      - hx-headers or hx-vals wants json
-      - hx-replace-url is true | false | string
-    - Extensions?
-       - https://htmx.org/extensions/web-sockets/
-       - https://htmx.org/extensions/server-sent-events/
-   - Events ?
-     - Support for "js:" prefix on hx-request and hx-vals
-*)
-
 open Ppx_attributes
 
 let core_attributes =
