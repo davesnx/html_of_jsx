@@ -239,10 +239,10 @@ let split_args ~mapper args =
           in
           children := (children_expression.pexp_loc, children');
           None
-      | arg_label, e -> Some (arg_label, mapper e))
+      | arg_label, expression -> Some (arg_label, mapper expression))
   in
   let children_prop =
-    match !children with _loc, [] -> None | _loc, children -> Some children
+    match !children with _, [] -> None | _loc, children -> Some children
   in
   (children_prop, rest)
 
