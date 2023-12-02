@@ -115,7 +115,7 @@ let make_attribute ~loc ~is_optional ~prop attribute_name attribute_value =
   | Rich_attribute { type_ = String; _ }, true
   | Attribute { type_ = String; _ }, true ->
       [%expr
-        Option.map
+        Stdlib.Option.map
           (fun v -> Jsx.Attribute.String ([%e attribute_name], v))
           [%e attribute_value]]
   | Rich_attribute { type_ = Int; _ }, false
@@ -127,7 +127,7 @@ let make_attribute ~loc ~is_optional ~prop attribute_name attribute_value =
   | Rich_attribute { type_ = Int; _ }, true | Attribute { type_ = Int; _ }, true
     ->
       [%expr
-        Option.map
+        Stdlib.Option.map
           (fun v -> Jsx.Attribute.String ([%e attribute_name], string_of_int v))
           [%e attribute_value]]
   | Rich_attribute { type_ = Bool; _ }, false
@@ -137,7 +137,7 @@ let make_attribute ~loc ~is_optional ~prop attribute_name attribute_value =
   | Rich_attribute { type_ = Bool; _ }, true
   | Attribute { type_ = Bool; _ }, true ->
       [%expr
-        Option.map
+        Stdlib.Option.map
           (fun v -> Jsx.Attribute.Bool ([%e attribute_name], v))
           [%e attribute_value]]
   (* BooleanishString needs to transform bool into string *)
@@ -150,7 +150,7 @@ let make_attribute ~loc ~is_optional ~prop attribute_name attribute_value =
   | Rich_attribute { type_ = BooleanishString; _ }, true
   | Attribute { type_ = BooleanishString; _ }, true ->
       [%expr
-        Option.map
+        Stdlib.Option.map
           (fun v -> Jsx.Attribute.String ([%e attribute_name], v))
           string_of_bool [%e attribute_value]]
   | Rich_attribute { type_ = Style; _ }, false
@@ -158,13 +158,14 @@ let make_attribute ~loc ~is_optional ~prop attribute_name attribute_value =
       [%expr Some (Jsx.Attribute.Style [%e attribute_value])]
   | Rich_attribute { type_ = Style; _ }, true
   | Attribute { type_ = Style; _ }, true ->
-      [%expr Option.map (fun v -> Jsx.Attribute.Style v) [%e attribute_value]]
+      [%expr
+        Stdlib.Option.map (fun v -> Jsx.Attribute.Style v) [%e attribute_value]]
   | Event _, false ->
       [%expr
         Some (Jsx.Attribute.Event ([%e attribute_name], [%e attribute_value]))]
   | Event _, true ->
       [%expr
-        Option.map
+        Stdlib.Option.map
           (fun v -> Jsx.Attribute.Event ([%e attribute_name], v))
           [%e attribute_value]]
 

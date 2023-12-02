@@ -30,7 +30,7 @@
       List.filter_map(
         Fun.id,
         [
-          Option.map(
+          Stdlib.Option.map(
             v =>
               [@implicit_arity]
               Jsx.Attribute.String("tabIndex", string_of_int(v)),
