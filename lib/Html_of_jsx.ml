@@ -1,8 +1,9 @@
 (* TODO: Use buffer instead of Printf and String.concat *)
 let render element =
   let rec render_element element =
+    let open Jsx in
     match element with
-    | Jsx.Null -> ""
+    | Null -> ""
     | Fragment list | List list ->
         list |> List.map render_element |> String.concat ""
     | Component f -> render_element (f ())
