@@ -4,6 +4,7 @@
 # to CRLF. This causes problems for shell scripts, as bash
 # gets choked up on the extra `\r` character.
 * text eol=lf
+*.png binary
 
 *.re linguist-language=Reason
 *.rei linguist-language=Reason
