@@ -1,4 +1,5 @@
-# html_of_jsx
+![Html_of_jsx logo](./docs/logo-black.png#gh-dark-mode-only)
+![Html_of_jsx logo](./docs/logo-black.png#gh-light-mode-only)
 
 **html_of_jsx** is an implementation of JSX designed to render HTML on the server, without React or anything else. It's a minimal library that allows you to write components of HTML in a declarative way.
 
