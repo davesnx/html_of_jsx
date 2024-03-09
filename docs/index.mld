@@ -11,7 +11,7 @@ opan pin add html_of_jsx "https://github.com/davesnx/html_of_jsx"
 ]}
 
 {[
-(libraries html_of_jsx.lib)
+(libraries html_of_jsx)
 (preprocess (pps html_of_jsx.ppx))
 ]}
 

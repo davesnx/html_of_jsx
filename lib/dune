@@ -1,4 +1,4 @@
 (library
  (name html_of_jsx)
  (wrapped false)
- (public_name html_of_jsx.lib))
+ (public_name html_of_jsx))

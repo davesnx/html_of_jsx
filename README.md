@@ -15,7 +15,7 @@
 ## Installation
 
 ```sh
-opam pin add html_of_jsx git+https://github.com/davesnx/html_of_jsx
+opam install html_of_jsx
 ```
 
 ```diff

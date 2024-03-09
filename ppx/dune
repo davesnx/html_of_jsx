@@ -2,7 +2,7 @@
  (name ppx)
  (public_name html_of_jsx.ppx)
  (kind ppx_rewriter)
- (libraries ppxlib ppxlib.astlib html_of_jsx.lib)
- (ppx_runtime_libraries html_of_jsx.lib)
+ (libraries ppxlib ppxlib.astlib html_of_jsx)
+ (ppx_runtime_libraries html_of_jsx)
  (preprocess
   (pps ppxlib.metaquot)))
