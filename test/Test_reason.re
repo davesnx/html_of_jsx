@@ -35,7 +35,7 @@ let innerhtml =
 let int_attribute =
   case("int_attribute", () => {
     let div = <div tabindex=1 />;
-    assert_string(Html_of_jsx.render(div), {|<div tabIndex="1"></div>|});
+    assert_string(Html_of_jsx.render(div), {|<div tabindex="1"></div>|});
   });
 
 let style_attribute =
@@ -61,7 +61,7 @@ let int_opt_attribute_some =
   case("int_opt_attribute_some", () => {
     let tabindex = Some(1);
     let div = <div ?tabindex />;
-    assert_string(Html_of_jsx.render(div), {|<div tabIndex="1"></div>|});
+    assert_string(Html_of_jsx.render(div), {|<div tabindex="1"></div>|});
   });
 
 let int_opt_attribute_none =

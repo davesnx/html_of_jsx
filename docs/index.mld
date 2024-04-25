@@ -91,7 +91,7 @@ HTML attributes are type-checked and only valid attributes are allowed
 {[
     <h1 noop=1> {Jsx.text("Hello, world!")} </h1>
     ^^^
-// Error: prop 'noop' isn't valid on a 'h1' element.
+// Error: prop 'noop' is not valid on a 'h1' element.
 
     <h1 class_=1> {Jsx.text("Hello, world!")} </h1>
                ^
@@ -104,7 +104,7 @@ And also friendly, it recommends you the correct attribute if you misspell it
 
           <div ?onClick />
           ^^^^
-// Error: prop 'onClick' isn't valid on a 'div' element.
+// Error: prop 'onClick' is not valid on a 'div' element.
 //        Hint: Maybe you mean 'onclick'?
 ]}
 

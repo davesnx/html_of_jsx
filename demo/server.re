@@ -1,10 +1,10 @@
 /**
 
-  This is a demo of a HTTP server that demostrates the possibility of Html_of_jsx.
+     This is a demo of a HTTP server that demostrates the possibility of Html_of_jsx.
 
-  It uses `tiny_httpd` to keep the dependencies to a minimum. It also contains a bunch of utilities to generate styles.
+     It uses `tiny_httpd` to keep the dependencies to a minimum. It also contains a bunch of utilities to generate styles.
 
-*/
+   */
 module Httpd = Tiny_httpd;
 
 module Styles = {
@@ -83,13 +83,13 @@ module Page = {
         />
         <style type_="text/css">
           {js|
-        html {
-          height: 100vh;
-          width: 100vw;
-          margin: 0;
-          padding: 0;
-        }
-        |js}
+           html {
+             height: 100vh;
+             width: 100vw;
+             margin: 0;
+             padding: 0;
+           }
+           |js}
         </style>
         <script src="https://cdn.tailwindcss.com" />
       </head>
