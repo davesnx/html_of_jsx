@@ -34,7 +34,7 @@ let innerhtml =
 
 let int_attribute =
   case("int_attribute", () => {
-    let div = <div tabIndex=1 />;
+    let div = <div tabindex=1 />;
     assert_string(Html_of_jsx.render(div), {|<div tabIndex="1"></div>|});
   });
 
@@ -59,15 +59,15 @@ let link_as_attribute =
 
 let int_opt_attribute_some =
   case("int_opt_attribute_some", () => {
-    let tabIndex = Some(1);
-    let div = <div ?tabIndex />;
+    let tabindex = Some(1);
+    let div = <div ?tabindex />;
     assert_string(Html_of_jsx.render(div), {|<div tabIndex="1"></div>|});
   });
 
 let int_opt_attribute_none =
   case("int_opt_attribute_none", () => {
-    let tabIndex = None;
-    let div = <div ?tabIndex />;
+    let tabindex = None;
+    let div = <div ?tabindex />;
     assert_string(Html_of_jsx.render(div), {|<div></div>|});
   });
 
