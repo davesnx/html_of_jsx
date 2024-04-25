@@ -5,7 +5,7 @@ module List = ListLabels
 let repo_url = "https://github.com/davesnx/html_of_jsx"
 let issues_url = "https://github.com/davesnx/html_of_jsx/issues"
 
-(* There's no pexp_list on Ppxlib since isn't a constructor of the Parsetree *)
+(* There's no pexp_list on Ppxlib since is not a constructor of the Parsetree *)
 let pexp_list ~loc xs =
   List.fold_left (List.rev xs) ~init:[%expr []] ~f:(fun xs x ->
       [%expr [%e x] :: [%e xs]])
@@ -72,23 +72,21 @@ let validate_attr ~loc id name =
       raise_errorf ~loc
         {|HTML tag '%s' doesn't exist.
 
-If this isn't correct, please open an issue at %s|}
+If this is not correct, please open an issue at %s|}
         id issues_url
-  | Error `AttributeNotFound -> (
-      match Ppx_html.find_closest_name name with
-      | None ->
-          raise_errorf ~loc
-            {|The attribute '%s' isn't valid on a '%s' element.
+  | Error `AttributeNotFound ->
+      let suggestion =
+        match Ppx_html.find_closest_name name with
+        | Some suggestion ->
+            Printf.sprintf "Hint: Maybe you mean '%s'?\n" suggestion
+        | None -> ""
+      in
 
-If this isn't correct, please open an issue at %s.|}
-            name id issues_url
-      | Some suggestion ->
-          raise_errorf ~loc
-            {|The attribute '%s' isn't valid on a '%s' element.
-Hint: Maybe you mean '%s'?
-
-If this isn't correct, please open an issue at %s.|}
-            name id suggestion issues_url)
+      raise_errorf ~loc
+        {|The attribute '%s' is not valid on a '%s' element.
+%s
+If this is not correct, please open an issue at %s.|}
+        name id suggestion issues_url
 
 let add_attribute_type_constraint ~loc ~is_optional
     (type_ : Ppx_attributes.attributeType) value =
