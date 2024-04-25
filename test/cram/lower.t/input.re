@@ -2,9 +2,9 @@ let lower = <div />;
 let lower_empty_attr = <div class_="" />;
 let lower_inline_styles =
   <div style={Style.make(~backgroundColor="gainsboro", ())} />;
-let lower_opt_attr = <div ?tabIndex />;
+let lower_opt_attr = <div ?tabindex />;
 let lowerWithChildAndProps = foo =>
-  <a tabIndex=1 href="https://example.com"> foo </a>;
+  <a tabindex=1 href="https://example.com"> foo </a>;
 let lower_child_static = <div> <span /> </div>;
 let lower_child_ident = <div> lolaspa </div>;
 let lower_child_single = <div> <div /> </div>;

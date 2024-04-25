@@ -2,4 +2,4 @@
  (name server)
  (libraries tiny_httpd html_of_jsx)
  (preprocess
-  (pps html_of_jsx.ppx)))
+  (pps html_of_jsx.ppx -htmx)))

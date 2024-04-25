@@ -19,4 +19,4 @@ let attributes_of_flags = function
   | Some (Custom_file _) -> (* Not implemented *) []
 
 (* A function that loads the attributes lazy, since we need to derive the list of attributes with the ppx flags. *)
-let load_attributes () = lazy (attributes_of_flags (get ()))
+let get_attributes () = attributes_of_flags (get ())

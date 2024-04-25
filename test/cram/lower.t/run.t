@@ -33,8 +33,8 @@
           Stdlib.Option.map(
             v =>
               [@implicit_arity]
-              Jsx.Attribute.String("tabIndex", string_of_int(v)),
-            tabIndex: option(int),
+              Jsx.Attribute.String("tabindex", string_of_int(v)),
+            tabindex: option(int),
           ),
         ],
       ),
@@ -52,7 +52,7 @@
           ),
           Some(
             [@implicit_arity]
-            Jsx.Attribute.String("tabIndex", string_of_int(1: int)),
+            Jsx.Attribute.String("tabindex", string_of_int(1: int)),
           ),
         ],
       ),
