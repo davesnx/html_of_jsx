@@ -19,7 +19,7 @@
 
 (package
  (name html_of_jsx)
- (synopsis "Render HTML writing JSX")
+ (synopsis "Render HTML with JSX")
  (depends
   (ocaml (>= 5.0.0))
   (reason (>= 3.10.0))
