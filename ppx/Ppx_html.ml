@@ -18,8 +18,8 @@ let attributeReferrerPolicy = String
 let attributeAnchorTarget = String
 (* | Self | Blank | Parent | Top | Custom of String *)
 
+(* https://developer.mozilla.org/en-US/docs/Web/Events/Event_handlers *)
 let globalEventHandlers =
-  (* https://developer.mozilla.org/en-US/docs/Web/Events/Event_handlers *)
   [
     Event { jsxName = "oncopy"; type_ = Clipboard };
     Event { jsxName = "oncopycapture"; type_ = Clipboard };
@@ -188,228 +188,228 @@ let ariaAttributes =
   [
     (* Identifies the currently active element when DOM focus is on a composite
        widget, textbox, group, or application. *)
-    Attribute { name = "aria-activedescendant"; jsxName = "ariaActivedescendant"; type_ = String };
+    Attribute { name = "aria-activedescendant"; jsxName = "aria_activedescendant"; type_ = String };
 
     (* Indicates whether assistive technologies will present all, or only parts
        of, the changed region based on the change notifications defined by the
        aria-relevant attribute. *)
-    Attribute { name = "aria-atomic"; jsxName = "ariaAtomic"; type_ = BooleanishString };
+    Attribute { name = "aria-atomic"; jsxName = "aria_atomic"; type_ = BooleanishString };
 
     (* Indicates whether inputting text could trigger display of one or more predictions of the user's intended value for an input and specifies how predictions would be
      * presented if they are made.
      *)
-    Attribute { name = "aria-autocomplete"; jsxName = "ariaAutocomplete"; type_ = String (* 'none' | 'inline' | 'list' | 'both' *) };
+    Attribute { name = "aria-autocomplete"; jsxName = "aria_autocomplete"; type_ = String (* 'none' | 'inline' | 'list' | 'both' *) };
 
     (* Indicates an element is being modified and that assistive technologies
        MAY want to wait until the modifications are complete before exposing
        them to the user. *)
-    Attribute { name = "aria-busy"; jsxName = "ariaBusy"; type_ = BooleanishString };
+    Attribute { name = "aria-busy"; jsxName = "aria_busy"; type_ = BooleanishString };
 
     (* Indicates the current "checked" state of checkboxes, radio buttons, and other
     widgets.
     * @see aria-pressed @see aria-selected.
     *)
-    Attribute { name = "aria-checked"; jsxName = "ariaChecked"; type_ = String (* Bool | 'false' | 'mixed' | 'true' *) };
+    Attribute { name = "aria-checked"; jsxName = "aria_checked"; type_ = String (* Bool | 'false' | 'mixed' | 'true' *) };
 
     (* Defines the total number of columns in a table, grid, or treegrid.
     * @see aria-colindex.
     *)
-    Attribute { name = "aria-colcount"; jsxName = "ariaColcount"; type_ = Int };
+    Attribute { name = "aria-colcount"; jsxName = "aria_colcount"; type_ = Int };
 
     (* Defines an element's column index or position with respect to the total number of columns within a table,
     grid, or treegrid.
     * @see aria-colcount @see aria-colspan.
     *)
-    Attribute { name = "aria-colindex"; jsxName = "ariaColindex"; type_ = Int };
+    Attribute { name = "aria-colindex"; jsxName = "aria_colindex"; type_ = Int };
 
     (* Defines the number of columns spanned by a cell or gridcell within a table, grid, or treegrid.
     * @see aria-colindex @see aria-rowspan.
     *)
-    Attribute { name = "aria-colspan"; jsxName = "ariaColspan"; type_ = Int };
+    Attribute { name = "aria-colspan"; jsxName = "aria_colspan"; type_ = Int };
 
     (* Identifies the element (or elements) whose contents or presence are controlled by the current element.
     * @see aria-owns.
     *)
-    Attribute { name = "aria-controls"; jsxName = "ariaControls"; type_ = String };
+    Attribute { name = "aria-controls"; jsxName = "aria_controls"; type_ = String };
 
     (* Indicates the element that represents the current item within a container
        or set of related elements. *)
-    Attribute { name = "aria-current"; jsxName = "ariaCurrent"; type_ = String (* Bool | 'false' | 'true' | 'page' | 'step' | 'location' | 'date' | 'time' *) };
+    Attribute { name = "aria-current"; jsxName = "aria_current"; type_ = String (* Bool | 'false' | 'true' | 'page' | 'step' | 'location' | 'date' | 'time' *) };
 
     (* Identifies the element (or elements) that describes the object.
      * @see aria-labelledby
      *)
-    Attribute { name = "aria-describedby"; jsxName = "ariaDescribedby"; type_ = String };
+    Attribute { name = "aria-describedby"; jsxName = "aria_describedby"; type_ = String };
 
     (* Identifies the element that provides a detailed, extended description for
        the object. * @see aria-describedby. *)
-    Attribute { name = "aria-details"; jsxName = "ariaDetails"; type_ = String };
+    Attribute { name = "aria-details"; jsxName = "aria_details"; type_ = String };
 
     (* Indicates that the element is perceivable but disabled, so it is not editable or otherwise operable.
     * @see aria-hidden @see aria-readonly.
     *)
-    Attribute { name = "aria-disabled"; jsxName = "ariaDisabled"; type_ = BooleanishString };
+    Attribute { name = "aria-disabled"; jsxName = "aria_disabled"; type_ = BooleanishString };
 
     (* Identifies the element that provides an error message for the object.
     * @see aria-invalid @see aria-describedby.
     *)
-    Attribute { name = "aria-errormessage"; jsxName = "ariaErrormessage"; type_ = String };
+    Attribute { name = "aria-errormessage"; jsxName = "aria_errormessage"; type_ = String };
 
     (* Indicates whether the element, or another grouping element it controls,
        is currently expanded or collapsed. *)
-    Attribute { name = "aria-expanded"; jsxName = "ariaExpanded"; type_ = BooleanishString };
+    Attribute { name = "aria-expanded"; jsxName = "aria_expanded"; type_ = BooleanishString };
 
     (* Identifies the next element (or elements) in an alternate reading order of content which, at the user's discretion,
      * allows assistive technology to override the general default of reading in document source order.
      *)
-    Attribute { name = "aria-flowto"; jsxName = "ariaFlowto"; type_ = String };
+    Attribute { name = "aria-flowto"; jsxName = "aria_flowto"; type_ = String };
 
     (* Indicates the availability and type of interactive popup element, such as
        menu or dialog, that can be triggered by an element. *)
-    Attribute { name = "aria-haspopup"; jsxName = "ariaHaspopup"; type_ = String (* Bool | 'false' | 'true' | 'menu' | 'listbox' | 'tree' | 'grid' | 'dialog'; *)};
+    Attribute { name = "aria-haspopup"; jsxName = "aria_haspopup"; type_ = String (* Bool | 'false' | 'true' | 'menu' | 'listbox' | 'tree' | 'grid' | 'dialog'; *)};
 
     (* Indicates whether the element is exposed to an accessibility API.
      * @see aria-disabled.
      *)
-    Attribute { name = "aria-hidden"; jsxName = "ariaHidden"; type_ = BooleanishString };
+    Attribute { name = "aria-hidden"; jsxName = "aria_hidden"; type_ = BooleanishString };
 
     (* Indicates the entered value does not conform to the format expected by the
     application.
     * @see aria-errormessage.
     *)
-    Attribute { name = "aria-invalid"; jsxName = "ariaInvalid"; type_ = String (* Bool | 'false' | 'true' | 'grammar' | 'spelling'; *) };
+    Attribute { name = "aria-invalid"; jsxName = "aria_invalid"; type_ = String (* Bool | 'false' | 'true' | 'grammar' | 'spelling'; *) };
 
     (* Indicates keyboard shortcuts that an author has implemented to activate
        or give focus to an element. *)
-    Attribute { name = "aria-keyshortcuts"; jsxName = "ariaKeyshortcuts"; type_ = String };
+    Attribute { name = "aria-keyshortcuts"; jsxName = "aria_keyshortcuts"; type_ = String };
 
     (* Defines a String value that labels the current element.
     * @see aria-labelledby.
     *)
-    Attribute { name = "aria-label"; jsxName = "ariaLabel"; type_ = String };
+    Attribute { name = "aria-label"; jsxName = "aria_label"; type_ = String };
 
     (* Identifies the element (or elements) that labels the current element.
     * @see aria-describedby.
     *)
-    Attribute { name = "aria-labelledby"; jsxName = "ariaLabelledby"; type_ = String };
+    Attribute { name = "aria-labelledby"; jsxName = "aria_labelledby"; type_ = String };
 
     (* Defines the hierarchical level of an element within a structure. *)
-    Attribute { name = "aria-level"; jsxName = "ariaLevel"; type_ = Int };
+    Attribute { name = "aria-level"; jsxName = "aria_level"; type_ = Int };
 
     (* Indicates that an element will be updated, and describes the types of
        updates the user agents, assistive technologies, and user can expect ;rom
        the live region. *)
-    Attribute { name = "aria-live"; jsxName = "ariaLive"; type_ = String (* 'off' | 'assertive' | 'polite' *) };
+    Attribute { name = "aria-live"; jsxName = "aria_live"; type_ = String (* 'off' | 'assertive' | 'polite' *) };
 
     (* Indicates whether an element is modal when displayed. *)
 
-    Attribute { name = "aria-modal"; jsxName = "ariaModal"; type_ = BooleanishString };
+    Attribute { name = "aria-modal"; jsxName = "aria_modal"; type_ = BooleanishString };
 
     (* Indicates whether a text box accepts multiple lines of input or only a
        single line. *)
-    Attribute { name = "aria-multiline"; jsxName = "ariaMultiline"; type_ = BooleanishString };
+    Attribute { name = "aria-multiline"; jsxName = "aria_multiline"; type_ = BooleanishString };
 
     (* Indicates that the user may select more than one item from the current
        selectable descendants. *)
-    Attribute { name = "aria-multiselectable"; jsxName = "ariaMultiselectable"; type_ = BooleanishString };
+    Attribute { name = "aria-multiselectable"; jsxName = "aria_multiselectable"; type_ = BooleanishString };
 
     (* Indicates whether the element's orientation is horizontal, vertical, or
        unknown/ambiguous. *)
-    Attribute { name = "aria-orientation"; jsxName = "ariaOrientation"; type_ = String (* 'horizontal' | 'vertical' *) };
+    Attribute { name = "aria-orientation"; jsxName = "aria_orientation"; type_ = String (* 'horizontal' | 'vertical' *) };
 
     (* Identifies an element (or elements) in order to define a visual, functional, or contextual parent/child relationship
      * between DOM elements where the DOM hierarchy cannot be used to represent the relationship.
      * @see aria-controls.
      *)
-    Attribute { name = "aria-owns"; jsxName = "ariaOwns"; type_ = String };
+    Attribute { name = "aria-owns"; jsxName = "aria_owns"; type_ = String };
 
     (* Defines a short hint (a word or short phrase) intended to aid the user with data entry when the control has no
     value.
     * A hint could be a sample value or a brief description of the expected format.
     *)
-    Attribute { name = "aria-placeholder"; jsxName = "ariaPlaceholder"; type_ = String };
+    Attribute { name = "aria-placeholder"; jsxName = "aria_placeholder"; type_ = String };
 
     (* Defines an element's number or position in the current set of listitems
        or treeitems. Not required if all elements in the set are present in the
        DOM. * @see aria-setsize. *)
-    Attribute { name = "aria-posinset"; jsxName = "ariaPosinset"; type_ = Int };
+    Attribute { name = "aria-posinset"; jsxName = "aria_posinset"; type_ = Int };
 
     (* Indicates the current "pressed" state of toggle buttons.
     * @see aria-checked @see aria-selected.
     *)
-    Attribute { name = "aria-pressed"; jsxName = "ariaPressed"; type_ = String (* Bool | 'false' | 'mixed' | 'true' *) };
+    Attribute { name = "aria-pressed"; jsxName = "aria_pressed"; type_ = String (* Bool | 'false' | 'mixed' | 'true' *) };
 
     (* Indicates that the element is not editable, but is otherwise
     operable.
     * @see aria-disabled.
     *)
-    Attribute { name = "aria-readonly"; jsxName = "ariaReadonly"; type_ = BooleanishString };
+    Attribute { name = "aria-readonly"; jsxName = "aria_readonly"; type_ = BooleanishString };
 
     (* Indicates what notifications the user agent will trigger when the
     accessibility tree within a live region is modified.
     * @see aria-atomic.
     *)
-    Attribute { name = "aria-relevant"; jsxName = "ariaRelevant"; type_ = String (* 'additions' | 'additions removals' | 'additions text' | 'all' | 'removals' | 'removals additions' | 'removals text' | 'text' | 'text additions' | 'text removals' *) };
+    Attribute { name = "aria-relevant"; jsxName = "aria_relevant"; type_ = String (* 'additions' | 'additions removals' | 'additions text' | 'all' | 'removals' | 'removals additions' | 'removals text' | 'text' | 'text additions' | 'text removals' *) };
 
     (* Indicates that user input is required on the element before a form may be
        submitted. *)
-    Attribute { name = "aria-required"; jsxName = "ariaRequired"; type_ = BooleanishString };
+    Attribute { name = "aria-required"; jsxName = "aria_required"; type_ = BooleanishString };
 
     (* Defines a human-readable, author-localized description for the role of an
        element. *)
-    Attribute { name = "aria-roledescription"; jsxName = "ariaRoledescription"; type_ = String };
+    Attribute { name = "aria-roledescription"; jsxName = "aria_roledescription"; type_ = String };
 
     (* Defines the total number of rows in a table, grid, or treegrid.
     * @see aria-rowindex.
     *)
-    Attribute { name = "aria-rowcount"; jsxName = "ariaRowcount"; type_ = Int };
+    Attribute { name = "aria-rowcount"; jsxName = "aria_rowcount"; type_ = Int };
 
     (* Defines an element's row index or position with respect to the total number of rows within a table, grid, or
     treegrid.
     * @see aria-rowcount @see aria-rowspan.
     *)
-    Attribute { name = "aria-rowindex"; jsxName = "ariaRowindex"; type_ = Int };
+    Attribute { name = "aria-rowindex"; jsxName = "aria_rowindex"; type_ = Int };
 
     (* *)
 
-    Attribute { name = "aria-rowindextext"; jsxName = "ariaRowindextext"; type_ = String };
+    Attribute { name = "aria-rowindextext"; jsxName = "aria_rowindextext"; type_ = String };
 
     (* Defines the number of rows spanned by a cell or gridcell within a table, grid, or treegrid.
     * @see aria-rowindex @see aria-colspan.
     *)
-    Attribute { name = "aria-rowspan"; jsxName = "ariaRowspan"; type_ = Int };
+    Attribute { name = "aria-rowspan"; jsxName = "aria_rowspan"; type_ = Int };
 
     (* Indicates the current "selected" state of various widgets.
     * @see aria-checked @see aria-pressed.
     *)
-    Attribute { name = "aria-selected"; jsxName = "ariaSelected"; type_ = BooleanishString };
+    Attribute { name = "aria-selected"; jsxName = "aria_selected"; type_ = BooleanishString };
 
     (* Defines the number of items in the current set of listitems or treeitems.
     Not required if all elements in the set are present in the DOM.
     * @see aria-posinset.
     *)
-    Attribute { name = "aria-setsize"; jsxName = "ariaSetsize"; type_ = Int };
+    Attribute { name = "aria-setsize"; jsxName = "aria_setsize"; type_ = Int };
 
     (* Indicates if items in a table or grid are sorted in ascending or
        descending order. *)
-    Attribute { name = "aria-sort"; jsxName = "ariaSort"; type_ = String (* 'none' | 'ascending' | 'descending' | 'other' *) };
+    Attribute { name = "aria-sort"; jsxName = "aria_sort"; type_ = String (* 'none' | 'ascending' | 'descending' | 'other' *) };
 
     (* Defines the maximum allowed value for a range widget. *)
 
-    Attribute { name = "aria-valuemax"; jsxName = "ariaValuemax"; type_ = Int };
+    Attribute { name = "aria-valuemax"; jsxName = "aria_valuemax"; type_ = Int };
 
     (* Defines the minimum allowed value for a range widget. *)
 
-    Attribute { name = "aria-valuemin"; jsxName = "ariaValuemin"; type_ = Int };
+    Attribute { name = "aria-valuemin"; jsxName = "aria_valuemin"; type_ = Int };
 
     (* Defines the current value for a range widget.
     * @see aria-valuetext.
     *)
-    Attribute { name = "aria-valuenow"; jsxName = "ariaValuenow"; type_ = Int };
+    Attribute { name = "aria-valuenow"; jsxName = "aria_valuenow"; type_ = Int };
 
     (* Defines the human readable text alternative of aria-valuenow for a range
        widget. *)
-    Attribute { name = "aria-valuetext"; jsxName = "ariaValuetext"; type_ = String };
+    Attribute { name = "aria-valuetext"; jsxName = "aria_valuetext"; type_ = String };
 
   ]
 
@@ -539,11 +539,11 @@ let buttonHTMLAttributes =
     Attribute { name = "autofocus"; jsxName = "autofocus"; type_ = Bool };
     Attribute { name = "disabled"; jsxName = "disabled"; type_ = Bool };
     Attribute { name = "form"; jsxName = "form"; type_ = String };
-    Attribute { name = "formAction"; jsxName = "formAction"; type_ = String };
-    Attribute { name = "formEncType"; jsxName = "formEncType"; type_ = String };
-    Attribute { name = "formMethod"; jsxName = "formMethod"; type_ = String };
-    Attribute { name = "formNoValidate"; jsxName = "formNoValidate"; type_ = Bool };
-    Attribute { name = "formTarget"; jsxName = "formTarget"; type_ = String };
+    Attribute { name = "formaction"; jsxName = "formaction"; type_ = String };
+    Attribute { name = "formenctype"; jsxName = "formenctype"; type_ = String };
+    Attribute { name = "formmethod"; jsxName = "formmethod"; type_ = String };
+    Attribute { name = "formnovalidate"; jsxName = "formnovalidate"; type_ = Bool };
+    Attribute { name = "formtarget"; jsxName = "formtarget"; type_ = String };
     Attribute { name = "name"; jsxName = "name"; type_ = String };
     Attribute { name = "type"; jsxName = "type_"; type_ = String (* 'submit' | 'reset' | 'button' *) };
     Attribute { name = "value"; jsxName = "value"; type_ = String (* | ReadonlyArray<String> | number *) };
@@ -602,45 +602,47 @@ let fieldsetHTMLAttributes =
     Attribute { name = "name"; jsxName = "name"; type_ = String };
   ]
 
+(* https://developer.mozilla.org/en-US/docs/Web/HTML/Element/form *)
 let formHTMLAttributes =
   [
     Attribute { name = "acceptcharset"; jsxName = "acceptcharset"; type_ = String };
     Attribute { name = "action"; jsxName = "action"; type_ = String };
     Attribute { name = "autocomplete"; jsxName = "autocomplete"; type_ = String };
-    Attribute { name = "encType"; jsxName = "encType"; type_ = String };
+    Attribute { name = "enctype"; jsxName = "enctype"; type_ = String };
     Attribute { name = "method"; jsxName = "method_"; type_ = String };
     Attribute { name = "name"; jsxName = "name"; type_ = String };
-    Attribute { name = "noValidate"; jsxName = "noValidate"; type_ = Bool };
+    Attribute { name = "novalidate"; jsxName = "novalidate"; type_ = Bool };
     Attribute { name = "target"; jsxName = "target"; type_ = String };
   ]
 
+(* https://developer.mozilla.org/en-US/docs/Web/HTML/Element/html *)
 let htmlHTMLAttributes =
   [
     Attribute { name = "manifest"; jsxName = "manifest"; type_ = String };
+    Attribute { name = "version"; jsxName = "version"; type_ = String };
+    Attribute { name = "xmlns"; jsxName = "xmlns"; type_ = String };
   ]
 
+(* https://developer.mozilla.org/en-US/docs/Web/HTML/Element/iframe *)
 let iframeHTMLAttributes =
   [
     Attribute { name = "allow"; jsxName = "allow"; type_ = String };
-    Attribute { name = "allowFullScreen"; jsxName = "allowFullScreen"; type_ = Bool };
-    Attribute { name = "allowTransparency"; jsxName = "allowTransparency"; type_ = Bool };
-    (* deprecated *)
-    Attribute { name = "frameBorder"; jsxName = "frameBorder"; type_ = String (* number | *) };
+    Attribute { name = "allowfullscreen"; jsxName = "allowfullscreen"; type_ = Bool };
+    (* Attribute { name = "allowTransparency"; jsxName = "allowTransparency"; type_ = Bool }; *)
+    (* deprecated *) Attribute { name = "frameborder"; jsxName = "frameborder"; type_ = String (* number | *) };
     Attribute { name = "height"; jsxName = "height"; type_ = String (* number | *) };
-    (* deprecated *)
-    Attribute { name = "marginHeight"; jsxName = "marginHeight"; type_ = Int (* number *) };
-    (* deprecated *)
-    Attribute { name = "marginWidth"; jsxName = "marginWidth"; type_ = Int (* number *) };
+    (* deprecated *) Attribute { name = "marginheight"; jsxName = "marginheight"; type_ = Int (* number *) };
+    (* deprecated *) Attribute { name = "marginwidth"; jsxName = "marginwidth"; type_ = Int (* number *) };
     Attribute { name = "name"; jsxName = "name"; type_ = String };
     Attribute { name = "sandbox"; jsxName = "sandbox"; type_ = String };
-    (* deprecated *)
-    Attribute { name = "scrolling"; jsxName = "scrolling"; type_ = String };
+    (* deprecated *) Attribute { name = "scrolling"; jsxName = "scrolling"; type_ = String };
     Attribute { name = "seamless"; jsxName = "seamless"; type_ = Bool };
     Attribute { name = "src"; jsxName = "src"; type_ = String };
-    Attribute { name = "srcDoc"; jsxName = "srcDoc"; type_ = String };
+    Attribute { name = "srcdoc"; jsxName = "srcdoc"; type_ = String };
     Attribute { name = "width"; jsxName = "width"; type_ = String (* number | *) };
   ]
 
+(* https://developer.mozilla.org/en-US/docs/Web/HTML/Element/img *)
 let imgHTMLAttributes =
   [
     Attribute { name = "alt"; jsxName = "alt"; type_ = String };
@@ -654,6 +656,7 @@ let imgHTMLAttributes =
     Attribute { name = "width"; jsxName = "width"; type_ = String (* number | *) };
   ]
 
+(* https://developer.mozilla.org/en-US/docs/Web/HTML/Element/ins *)
 let insHTMLAttributes =
   [
     Attribute { name = "cite"; jsxName = "cite"; type_ = String };
@@ -666,6 +669,7 @@ let inputTypeAttribute = String
    'range' | 'reset' | 'search' | 'submit' | 'tel' | 'text' | 'time' | 'url' |
    'week' | (String @ {}); *)
 
+(* https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input *)
 let inputHTMLAttributes =
   [
     Attribute { name = "accept"; jsxName = "accept"; type_ = String };
@@ -677,17 +681,17 @@ let inputHTMLAttributes =
     Attribute { name = "crossorigin"; jsxName = "crossorigin"; type_ = String };
     Attribute { name = "disabled"; jsxName = "disabled"; type_ = Bool };
     Attribute { name = "form"; jsxName = "form"; type_ = String };
-    Attribute { name = "formAction"; jsxName = "formAction"; type_ = String };
-    Attribute { name = "formEncType"; jsxName = "formEncType"; type_ = String };
-    Attribute { name = "formMethod"; jsxName = "formMethod"; type_ = String };
-    Attribute { name = "formNoValidate"; jsxName = "formNoValidate"; type_ = Bool };
-    Attribute { name = "formTarget"; jsxName = "formTarget"; type_ = String };
+    Attribute { name = "formaction"; jsxName = "formaction"; type_ = String };
+    Attribute { name = "formenctype"; jsxName = "formenctype"; type_ = String };
+    Attribute { name = "formmethod"; jsxName = "formmethod"; type_ = String };
+    Attribute { name = "formnovalidate"; jsxName = "formnovalidate"; type_ = Bool };
+    Attribute { name = "formtarget"; jsxName = "formtarget"; type_ = String };
     Attribute { name = "height"; jsxName = "height"; type_ = String (* number | *) };
     Attribute { name = "list"; jsxName = "list"; type_ = String };
     Attribute { name = "max"; jsxName = "max"; type_ = String (* number | *) };
-    Attribute { name = "maxLength"; jsxName = "maxLength"; type_ = Int (* number *) };
+    Attribute { name = "maxlength"; jsxName = "maxlength"; type_ = Int (* number *) };
     Attribute { name = "min"; jsxName = "min"; type_ = String (* number | *) };
-    Attribute { name = "minLength"; jsxName = "minLength"; type_ = Int (* number *) };
+    Attribute { name = "minlength"; jsxName = "minlength"; type_ = Int (* number *) };
     Attribute { name = "multiple"; jsxName = "multiple"; type_ = Bool };
     Attribute { name = "name"; jsxName = "name"; type_ = String };
     Attribute { name = "pattern"; jsxName = "pattern"; type_ = String };
@@ -719,11 +723,13 @@ let labelHTMLAttributes =
     Attribute { name = "for"; jsxName = "htmlFor"; type_ = String };
   ]
 
+(* https://developer.mozilla.org/en-US/docs/Web/HTML/Element/li *)
 let liHTMLAttributes =
   [
     Attribute { name = "value"; jsxName = "value"; type_ = String (* | ReadonlyArray<String> | number *) }
   ]
 
+(* https://developer.mozilla.org/en-US/docs/Web/HTML/Element/link *)
 let linkHTMLAttributes =
   [
     Attribute { name = "as"; jsxName = "as_"; type_ = String };
@@ -849,15 +855,16 @@ let slotHTMLAttributes =
 
 let scriptHTMLAttributes =
   [
-    (* deprecated *)
-    Attribute { name = "async"; jsxName = "async"; type_ = Bool };
-    Attribute { name = "charset"; jsxName = "charset"; type_ = String };
+    (* deprecated *) Attribute { name = "async"; jsxName = "async"; type_ = Bool };
+    (* deprecated *) Attribute { name = "charset"; jsxName = "charset"; type_ = String };
+    (* deprecated *) Attribute { name = "language"; jsxName = "charset"; type_ = String };
     Attribute { name = "crossorigin"; jsxName = "crossorigin"; type_ = String };
     Attribute { name = "defer"; jsxName = "defer"; type_ = Bool };
     Attribute { name = "integrity"; jsxName = "integrity"; type_ = String };
-    Attribute { name = "noModule"; jsxName = "noModule"; type_ = Bool };
+    Attribute { name = "nomodule"; jsxName = "nomodule"; type_ = Bool };
     Attribute { name = "nonce"; jsxName = "nonce"; type_ = String };
     Attribute { name = "src"; jsxName = "src"; type_ = String };
+    Attribute { name = "referrerpolicy"; jsxName = "referrerpolicy"; type_ = attributeReferrerPolicy };
     Attribute { name = "type"; jsxName = "type_"; type_ = String };
   ]
 
@@ -1249,7 +1256,7 @@ end
 
 let webViewHTMLAttributes =
   [
-    Attribute { name = "allowFullScreen"; jsxName = "allowfullcreen"; type_ = Bool };
+    Attribute { name = "allowfullscreen"; jsxName = "allowfullcreen"; type_ = Bool };
     Attribute { name = "allowPopups"; jsxName = "allowPopups"; type_ = Bool };
     Attribute { name = "autofocus"; jsxName = "autofocus"; type_ = Bool };
     Attribute { name = "autoSize"; jsxName = "autoSize"; type_ = Bool };
@@ -1268,7 +1275,11 @@ let webViewHTMLAttributes =
     Attribute { name = "webPreferences"; jsxName = "webPreferences"; type_ = String };
   ]
 
-let getCommonHtmlAttributes () = elementAttributes @ globalAttributes @ globalEventHandlers @ ariaAttributes @ Ppx_extra_attributes.get_attributes ()
+let getCommonHtmlAttributes () =
+  elementAttributes @
+  globalAttributes @
+  globalEventHandlers @
+  ariaAttributes @ Ppx_extra_attributes.get_attributes ()
 
 let htmlElements () =
   [
@@ -1391,9 +1402,16 @@ let htmlElements () =
     { tag = "webview"; attributes = getCommonHtmlAttributes () @ webViewHTMLAttributes };
   ]
 
-let commonSvgAttributes () = SVG.attributes @ globalEventHandlers @ ariaAttributes @ Ppx_extra_attributes.get_attributes ()
+let commonSvgAttributes () =
+  SVG.attributes @
+  globalEventHandlers @
+  ariaAttributes @
+  Ppx_extra_attributes.get_attributes ()
 
-let feConvolveMatrixAttributes = [ Attribute { name = "preserveAlpha"; jsxName = "preserveAlpha"; type_ = BooleanishString } ]
+let feConvolveMatrixAttributes =
+  [
+    Attribute { name = "preserveAlpha"; jsxName = "preserveAlpha"; type_ = BooleanishString }
+  ]
 
 let svgElements =
   [

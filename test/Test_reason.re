@@ -89,8 +89,6 @@ module Container = {
   };
 };
 
-let a = Container.make(~children=Jsx.node("span", [], []));
-
 let children_uppercase =
   case("children_uppercase", () => {
     let component = <Container />;
@@ -242,7 +240,7 @@ let create_element_variadic =
 let aria_props =
   case("aria_props", () => {
     let component =
-      <h1 ariaHidden=true ariaLabel="send email" ariaAtomic=true>
+      <h1 aria_hidden=true aria_label="send email" aria_atomic=true>
         {Jsx.text("Hello")}
       </h1>;
     assert_string(
