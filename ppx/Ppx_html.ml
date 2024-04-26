@@ -198,7 +198,7 @@ let ariaAttributes =
     (* Indicates whether inputting text could trigger display of one or more predictions of the user's intended value for an input and specifies how predictions would be
      * presented if they are made.
      *)
-    Attribute { name = "aria-autocomplete"; jsxName = "ariaautocomplete"; type_ = String (* 'none' | 'inline' | 'list' | 'both' *) };
+    Attribute { name = "aria-autocomplete"; jsxName = "ariaAutocomplete"; type_ = String (* 'none' | 'inline' | 'list' | 'both' *) };
 
     (* Indicates an element is being modified and that assistive technologies
        MAY want to wait until the modifications are complete before exposing
