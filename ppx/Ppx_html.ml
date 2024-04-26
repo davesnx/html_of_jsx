@@ -12,8 +12,8 @@ open Ppx_attributes
 
 let attributeReferrerPolicy = String
 (* | Empty | NoReferrer | NoReferrerWhenDowngrade | Origin |
-   OriginWhencrossorigin | SameOrigin | StrictOrigin |
-   StrictOriginWhencrossorigin | UnsafeUrl *)
+   OriginWhencrossorigin | OriginWhenCrossOrigin | SameOrigin | StrictOrigin |
+   StrictOriginWhenCrossOrigin | UnsafeUrl *)
 
 let attributeAnchorTarget = String
 (* | Self | Blank | Parent | Top | Custom of String *)
