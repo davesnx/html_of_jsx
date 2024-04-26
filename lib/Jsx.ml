@@ -32,12 +32,14 @@ type node = {
 and element =
   | Null
   | Text of string
+  | Unsafe of string (* text without encoding *)
   | Fragment of element list
   | Node of node
   | Component of (unit -> element)
   | List of element list
 
 let text txt = Text txt
+let unsafe txt = Unsafe txt
 let null = Null
 let int i = Text (string_of_int i)
 let float f = Text (string_of_float f)

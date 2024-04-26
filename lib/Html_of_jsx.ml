@@ -20,5 +20,6 @@ let render element =
           (children |> List.map render_element |> String.concat "")
           tag
     | Text text -> Html.encode text
+    | Unsafe text -> text
   in
   render_element element

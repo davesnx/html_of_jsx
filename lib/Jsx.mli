@@ -18,6 +18,7 @@ type node = {
 and element =
   | Null
   | Text of string
+  | Unsafe of string
   | Fragment of element list
   | Node of node
   | Component of (unit -> element)
@@ -25,6 +26,9 @@ and element =
 
 val text : string -> element
 (** Helper to represent an element as a string *)
+
+val unsafe : string -> element
+(** Helper to bypass HTML encoding and treat output as unsafe. This can lead to HTML scaping problems, XSS inject scripting and other security concerns, use with caution. *)
 
 val null : element
 (** Helper to represent nullability in Jsx, useful to pattern match *)

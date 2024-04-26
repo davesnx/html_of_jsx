@@ -162,6 +162,18 @@ let render_with_doc_type =
   assert_string (Html_of_jsx.render div)
     "<div><span>This is valid HTML5</span></div>"
 
+let jsx_unsafe =
+  case "jsx_unsafe" @@ fun () ->
+  let js_script =
+    {| function showCopyToClipboardMessage() { var el = document.getElementById("copy_to_clipboard_message"); el.classList.remove("hidden"); setTimeout(() => { el.classList.add("hidden"); }, 3000); } |}
+  in
+  let app = Jsx.node "script" [] [ Jsx.unsafe js_script ] in
+  assert_string (Html_of_jsx.render app)
+    "<script> function showCopyToClipboardMessage() { var el = \
+     document.getElementById(\"copy_to_clipboard_message\"); \
+     el.classList.remove(\"hidden\"); setTimeout(() => { \
+     el.classList.add(\"hidden\"); }, 3000); } </script>"
+
 let render_svg =
   case "render_svg" @@ fun () ->
   let path =
@@ -215,4 +227,5 @@ let tests =
       className_2;
       render_with_doc_type;
       render_svg;
+      jsx_unsafe;
     ] )
