@@ -29,6 +29,6 @@ opan install html_of_jsx
 - No React idioms (no [className], no [htmlFor], no [onChange], etc...), just plain HTML5
 - Type-safe, validates attributes and their types
 - Works with OCaml, {{:https://reasonml.github.io} Reason} and {{:https://github.com/ocaml-mlx/mlx}mlx}
-- Integrates very well with Htmx
+- Integrates very well with Htmx (see the {!page-"htmx"} page)
 
 {b See the {!page-"features"} page for all details}

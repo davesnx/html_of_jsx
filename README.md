@@ -10,7 +10,8 @@
 - Minimal
   - `Html_of_jsx.render` to render an element to HTML
   - `Jsx.*` to construct DOM Elements and DOM nodes (`Jsx.text`, `Jsx.int`, `Jsx.null`, `Jsx.list`)
-- Works with [Reason](https://reasonml.github.io) and [mlx](https://github.com/andreypopp/mlx)
+- Works with OCaml, [Reason](https://reasonml.github.io) and [mlx](https://github.com/andreypopp/mlx)
+- Integrates very well with Htmx
 
 ## Installation
 
@@ -37,8 +38,8 @@ Check the [demo/server.re](./demo/server.re) file to see a full example.
 
 ## [Documentation](https://davesnx.github.io/html_of_jsx/html_of_jsx/index.html)
 
-Check the [Documentation](https://davesnx.github.io/html_of_jsx/html_of_jsx/index.html) to know more about the API and the [features](https://davesnx.github.io/html_of_jsx/html_of_jsx/index.html#features).
+Check the [Documentation](https://davesnx.github.io/html_of_jsx/html_of_jsx/index.html) to know more about the API and it's [features](https://davesnx.github.io/html_of_jsx/html_of_jsx/features.html).
 
 ## Credits
 
-This library is extracted from [server-reason-react](https://github.com/ml-in-barcelona/server-reason-react) and simplified to just work with HTML5.
+This library was born from [server-reason-react](https://github.com/ml-in-barcelona/server-reason-react), extracted and simplified to work with HTML5.
