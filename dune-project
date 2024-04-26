@@ -23,7 +23,7 @@
  (depends
   (ocaml (>= 5.0.0))
   (reason (>= 3.10.0))
-  (ppxlib (and (> 0.23.0) (<= 0.31.0)))
+  (ppxlib (> 0.23.0))
 
   ;; Test dependencies
   (alcotest :with-test)
@@ -31,12 +31,11 @@
   ;; Documentation
   (odoc :with-doc)
 
-  ;; Dev dependencies, using with-test so that consumers don't install them (until package is released in opam)
+  ;; Dev dependencies
   (ocamlformat
    (and
     (= 0.26.1)
-    :with-test))
-  (ocaml-lsp-server :with-test)
-
-  (tiny_httpd :with-test)
+    :with-dev-setup))
+  (ocaml-lsp-server :with-dev-setup)
+  (tiny_httpd :with-dev-setup)
 ))
