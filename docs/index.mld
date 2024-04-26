@@ -1,15 +1,20 @@
+{1 }
+
 {0 html_of_jsx}
 
-{b html_of_jsx} is an implementation of JSX designed to render HTML on the server, without React or anything else. It's a simple library that allows you to write HTML in a declarative way with the component model.
+{b html_of_jsx} is an implementation of JSX focused only to render HTML on the server, without React or any other library. It's a simple library (and a ppx) that allows you to write HTML in a declarative manner using the component model.
 
-This library is extracted from {{: https://github.com/ml-in-barcelona/server-reason-react} server-reason-react} and simplified to just work with HTML5.
+This library was born from {{: https://github.com/ml-in-barcelona/server-reason-react} server-reason-react}, extracted and simplified to work with HTML5.
+
+Works with Reason, OCaml, and mlx.
 
 {1 Installation}
 
 {[
-opan pin add html_of_jsx "https://github.com/davesnx/html_of_jsx"
+opan install html_of_jsx
 ]}
 
+{3 Add it to your `dune` file}
 {[
 (libraries html_of_jsx)
 (preprocess (pps html_of_jsx.ppx))
@@ -29,7 +34,7 @@ let element = <a href="https://x.com/davesnx">
 </a>
 ]}
 
-> {b Note} {{: https://v2.ocaml.org/manual/lex.html#sss:keywords} reserved keywords} aren't possible as props. For example [class] => [class_] or [type] => [type_].
+> {b Note} {{: https://v2.ocaml.org/manual/lex.html#sss:keywords} reserved keywords} aren't possible as props. For example: [class] => [class_] or [type] => [type_].
 
 {2 Components are functions with labeled arguments}
 
@@ -57,7 +62,7 @@ Html_of_jsx.render(<Button />);
 Html_of_jsx.render(<Button.make />);
 ]}
 
-{2 Brings the power of interleaving expressions (stolen from JSX)}
+{2 Brings the power of interleaving expressions within your JSX}
 
 {[
 let component = (~name, ~children, ()) => {
@@ -72,7 +77,7 @@ Html_of_jsx.render(
 );
 ]}
 
-List of childrens are available with [Jsx.list]
+{2 List of childrens are available with [Jsx.list]}
 
 {[
 Html_of_jsx.render(
@@ -123,7 +128,7 @@ The rest are helpers on [Jsx.*], like ([Jsx.int]). Check the [!Jsx] if you are c
 Html_of_jsx.render(<h1>{Jsx.text("Hello, world!")}</h1>);
 ]}
 
-{2 Supports children as list of elements}
+{2 Supports children as prop}
 
 {[
 let component = (~name, ~children, ()) => {
@@ -148,17 +153,19 @@ Html_of_jsx.render(<component> {"This is a children!"} </component>)
 
 {[
 let component = (~name, ()) => {
-  <div> <h1> {Jsx.text("Hello, " ++ name ++ "!")} </h1> </div>;
+  <div>
+    <h1> {Jsx.text("Hello, " ++ name ++ "!")} </h1>
+  </div>;
 };
 
 Html_of_jsx.render(<component name="World" />);
 ]}
 
 
-{2 Works with {{:https://github.com/andreypopp/mlx} mlx} (https://github.com/andreypopp/mlx)
+{2 Works with {{:https://github.com/ocaml-mlx/mlx} mlx}
 
 {[
-let component ~name =
+let component ~name () =
   <div>
     <h1> ("Hello, " ^ name ^ "!") </h1>
   </div>
