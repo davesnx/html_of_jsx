@@ -1,5 +1,11 @@
 # Changes
 
+## 0.0.2
+
+- Add `Jsx.unsafe` to allow unsafe HTML as children
+- Fix HTML attributes formatting (charset, autocomplete, tabindex, inputmode, etc...)
+- Enable HTMX attributes via `html_of_jsx.ppx -htmx`
+
 ## 0.0.1
 
 - First working version of the ppx and library
