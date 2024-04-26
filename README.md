@@ -33,7 +33,7 @@ let element = <a href="https://x.com/davesnx">
 let html: string = Html_of_jsx.render(element);
 ```
 
-Check the [demo/server.re](./demo/server.re) file to see a full example with a tiny HTTP server.
+Check the [demo/server.re](./demo/server.re) file to see a full example.
 
 ## [Documentation](https://davesnx.github.io/html_of_jsx/html_of_jsx/index.html)
 

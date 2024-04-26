@@ -86,19 +86,22 @@ Html_of_jsx.render(
 
 {2 Type-safe}
 
-HTML attributes are type-checked and only valid attributes are allowed
+HTML attributes are type-checked and only valid attributes are allowed, also ensures that the value is correct.
 
 {[
     <h1 noop=1> {Jsx.text("Hello, world!")} </h1>
     ^^^
 // Error: prop 'noop' is not valid on a 'h1' element.
+]}
 
+
+{[
     <h1 class_=1> {Jsx.text("Hello, world!")} </h1>
                ^
 // Error: This expression has type int but an expression was expected of type string
 ]}
 
-And also friendly, it recommends you the correct attribute if you misspell it
+And also in case of a misspell, it recommends the closest attribute
 
 {[
 
@@ -110,7 +113,7 @@ And also friendly, it recommends you the correct attribute if you misspell it
 
 {2 Minimalistic}
 
-Only 2 function to learn, the rest are your functions (aka components):
+Only 2 functions to learn, the rest are your own functions (aka components):
 - [Html_of_jsx.render] to render your HTML
 - [Jsx.text] to inline text
 
