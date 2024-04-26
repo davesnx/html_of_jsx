@@ -1,12 +1,10 @@
-{1 }
+{0 }
 
 {0 html_of_jsx}
 
 {b html_of_jsx} is an implementation of JSX focused only to render HTML on the server, without React or any other library. It's a simple library (and a ppx) that allows you to write HTML in a declarative manner using the component model.
 
 This library was born from {{: https://github.com/ml-in-barcelona/server-reason-react} server-reason-react}, extracted and simplified to work with HTML5.
-
-Works with Reason, OCaml, and mlx.
 
 {1 Installation}
 
@@ -24,151 +22,13 @@ opan install html_of_jsx
 
 {!Jsx} module that exposes some helpers to construct elements and {!Html_of_jsx} to render them, the rest are functions with labelled arguments.
 
-{1 Features}
+{1 Overview}
 
-{2 It's just HTML (no [className], no [htmlFor], etc.)}
+- Supports most of the JSX features (uppercase components, fragments, optional attributes, punning, childrens, etc...)
+- but with a few improvements (lowercase components, no need to add annotations)
+- No React idioms (no [className], no [htmlFor], no [onChange], etc...), just plain HTML5
+- Type-safe, validates attributes and their types
+- Works with OCaml, {{:https://reasonml.github.io} Reason} and {{:https://github.com/ocaml-mlx/mlx}mlx}
+- Integrates very well with Htmx
 
-{[
-let element = <a href="https://x.com/davesnx">
-  <span> {"Click me!"} </span>
-</a>
-]}
-
-> {b Note} {{: https://v2.ocaml.org/manual/lex.html#sss:keywords} reserved keywords} aren't possible as props. For example: [class] => [class_] or [type] => [type_].
-
-{2 Components are functions with labeled arguments}
-
-{[
-let component = (~name, ()) => {
-  <div> <h1> {Jsx.text("Hello, " ++ name ++ "!")} </h1> </div>;
-};
-
-Html_of_jsx.render(<component name="lola" />);
-]}
-
-> {b Note} that the [component] function needs to have a last argument of type [unit] in order to work properly with labelled arguments. Explained on the {{: https://v2.ocaml.org/manual/lablexamples.html#s:optional-arguments} OCaml manual}: Functions with only labelled arguments, need a last non labelled argument to be able to be called as a non curried function.
-
-{2 Uppercase components default to [make]}
-
-{[
-module Button = {
-  let make = () => {
-    <button onclick="onClickHandler"> {Jsx.text("Click me")} </button>;
-  };
-};
-
-Html_of_jsx.render(<Button />);
-// is equivalent to
-Html_of_jsx.render(<Button.make />);
-]}
-
-{2 Brings the power of interleaving expressions within your JSX}
-
-{[
-let component = (~name, ~children, ()) => {
-  <div>
-    <h1> {("Hello, " ++ name ++ "!") |> Jsx.text} </h1>
-    <h2> children </h2>
-  </div>;
-};
-
-Html_of_jsx.render(
-  <component name="World"> {Jsx.text("This is a children!")} </component>,
-);
-]}
-
-{2 List of childrens are available with [Jsx.list]}
-
-{[
-Html_of_jsx.render(
-  <ul>
-    {["This", "is", "an", "unordered", "list"]
-     |> List.map(item => <li> {Jsx.text(item)} </li>)
-     |> Jsx.list}
-  </ul>,
-);
-]}
-
-{2 Type-safe}
-
-HTML attributes are type-checked and only valid attributes are allowed, also ensures that the value is correct.
-
-{[
-    <h1 noop=1> {Jsx.text("Hello, world!")} </h1>
-    ^^^
-// Error: prop 'noop' is not valid on a 'h1' element.
-]}
-
-
-{[
-    <h1 class_=1> {Jsx.text("Hello, world!")} </h1>
-               ^
-// Error: This expression has type int but an expression was expected of type string
-]}
-
-And also in case of a misspell, it recommends the closest attribute
-
-{[
-
-          <div ?onClick />
-          ^^^^
-// Error: prop 'onClick' is not valid on a 'div' element.
-//        Hint: Maybe you mean 'onclick'?
-]}
-
-{2 Minimalistic}
-
-Only 2 functions to learn, the rest are your own functions (aka components):
-- [Html_of_jsx.render] to render your HTML
-- [Jsx.text] to inline text
-
-The rest are helpers on [Jsx.*], like ([Jsx.int]). Check the [!Jsx] if you are curious
-
-{[
-Html_of_jsx.render(<h1>{Jsx.text("Hello, world!")}</h1>);
-]}
-
-{2 Supports children as prop}
-
-{[
-let component = (~name, ~children, ()) => {
-  <div>
-    <h1> {Jsx.text("Hello, " ++ name ++ "!")} </h1>
-    <h2> {children} </h2>
-  </div>
-};
-
-Html_of_jsx.render(<component> {"This is a children!"} </component>)
-]}
-
-{2 Supports fragments}
-
-{[
-let component: Jsx.element = <> <div class_="md:w-1/3" /> <div class_="md:w-2/3" /> </>;
-
-Html_of_jsx.render(<component> {"This is a children!"} </component>)
-]}
-
-{2 Works with {{:https://reasonml.github.io} Reason}
-
-{[
-let component = (~name, ()) => {
-  <div>
-    <h1> {Jsx.text("Hello, " ++ name ++ "!")} </h1>
-  </div>;
-};
-
-Html_of_jsx.render(<component name="World" />);
-]}
-
-
-{2 Works with {{:https://github.com/ocaml-mlx/mlx} mlx}
-
-{[
-let component ~name () =
-  <div>
-    <h1> ("Hello, " ^ name ^ "!") </h1>
-  </div>
-
-Html_of_jsx.render <component name="World" />
-]}
+{b See the {!page-"features"} page for all details}

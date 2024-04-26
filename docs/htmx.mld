@@ -1,0 +1,19 @@
+{0 }
+
+{0 {{:https://htmx.org/}Htmx}}
+{4 (Experimental)}
+
+Supports htmx properties
+
+{2 Add the '-htmx' flag into the ppx}
+{[
+(libraries html_of_jsx)
+(preprocess (pps html_of_jsx.ppx -htmx))
+]}
+
+{2 Example}
+{[
+Html_of_jsx.render(<div hx_boost=true />)
+]}
+
+All attributes are supported with the prefix {b hx_}
