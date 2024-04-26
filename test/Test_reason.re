@@ -251,6 +251,16 @@ let aria_props =
     );
   });
 
+let lowercase_component =
+  case("lowercase_component", () => {
+    let component = (~text, ()) => <h1> {Jsx.text(text)} </h1>;
+
+    assert_string(
+      Html_of_jsx.render(<component text="Hello" />),
+      {|<h1>Hello</h1>|},
+    );
+  });
+
 let tests = (
   "Reason with JSX",
   [
@@ -279,5 +289,6 @@ let tests = (
     children_multiple_elements,
     create_element_variadic,
     aria_props,
+    lowercase_component,
   ],
 );
