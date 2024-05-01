@@ -75,14 +75,14 @@ demo-watch: ## Run demo executable
 subst: ## Run dune substitute
 	$(DUNE) subst
 
-.PHONY: documentation
-documentation: ## Generate odoc documentation
+.PHONY: docs
+docs: ## Generate odoc docs
 	$(DUNE) build --root . @doc
 
-.PHONY: documentation-watch
-documentation-watch: ## Generate odoc documentation
+.PHONY: docs-watch
+docs-watch: ## Generate odoc docs
 	$(DUNE) build --root . -w @doc
 
-.PHONY: documentation-serve
-documentation-serve: ## Open odoc documentation with default web browser
+.PHONY: docs-serve
+docs-serve: ## Open odoc docs with default web browser
 	open _build/default/_doc/_html/index.html
