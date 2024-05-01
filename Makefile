@@ -58,7 +58,7 @@ create-switch: ## Create opam switch
 .PHONY: install
 install: # Install dependencies
 	opam install . --deps-only --with-test --with-doc
-	opam install -y tiny_httpd
+	opam install -y tiny_httpd ocamlformat
 
 .PHONY: init
 init: setup-githooks create-switch install ## Create a local dev enviroment
