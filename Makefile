@@ -57,8 +57,8 @@ create-switch: ## Create opam switch
 
 .PHONY: install
 install: # Install dependencies
-	opam install . --deps-only --with-test --with-doc
-	opam install -y tiny_httpd ocamlformat
+	opam install . --deps-only --with-test --with-doc -y
+	opam install -y tiny_httpd ocamlformat ocaml-lsp-server odoc dune-release # Since we don't use latest opam and can use "with-dev-setup" we need to install those deps manually
 
 .PHONY: init
 init: setup-githooks create-switch install ## Create a local dev enviroment
