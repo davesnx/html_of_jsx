@@ -98,6 +98,14 @@ let core_attributes =
       };
     Rich_attribute
       {
+        name = "hx-trigger";
+        jsxName = "hx_trigger";
+        type_ = String;
+        description = "specifies the event that triggers the request";
+        url = "https://htmx.org/attributes/hx-trigger";
+      };
+    Rich_attribute
+      {
         name = "hx-vals";
         jsxName = "hx_vals";
         type_ = String;
