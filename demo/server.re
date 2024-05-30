@@ -20,69 +20,70 @@ module Link = {
 };
 
 module Page = {
-  let make = (~scripts=[], ()) => {
-    <html lang="en" style="color-scheme: dark;">
+  let make = (~project_url, ()) => {
+    <html lang="en" style=Styles.dark>
       <head>
         <meta charset="UTF-8" />
         <meta
           name="viewport"
           content="width=device-width, initial-scale=1.0"
         />
-        <title> {Jsx.text("HTML OF JSX")} </title>
+        <title> "HTML OF JSX" </title>
         <link
           rel="shortcut icon"
           href="https://reasonml.github.io/img/icon_50.png"
         />
         <style type_="text/css">
-          {js|
-           html {
-             height: 100vh;
-             width: 100vw;
-             margin: 0;
-             padding: 0;
-           }
-           |js}
+          {| html {
+              height: 100vh;
+              width: 100vw;
+              margin: 0;
+              padding: 0;
+              line-height: 1.5;
+              tab-size: 4;
+              font-family: ui-sans-serif, system-ui, sans-serif;
+              font-feature-settings: normal;
+              font-variation-settings: normal;
+              -webkit-text-size-adjust: 100%;
+              -webkit-tap-highlight-color: transparent;
+            }
+          |}
         </style>
-        <script src="https://cdn.tailwindcss.com" />
       </head>
-      <body
-        class_="flex items-center justify-center"
-        style="padding-top: 7em; padding-left: 25%; padding-right: 25%;">
+      <body style=Styles.body>
         <div>
           <main>
             <header style={Styles.stack(10)}>
-              <div style={Styles.row(~spread=true, ~fullWidth=true, 100)}>
-                <Link
-                  color="grey" to_="https://github.com/davesnx/html_of_jsx">
-                  <p>
-                    {Jsx.text("https://github.com/davesnx/html_of_jsx")}
-                  </p>
+              <div
+                style={Styles.row(
+                  ~spread=true,
+                  ~fullWidth=true,
+                  ~align=`center,
+                  100,
+                )}>
+                <Link color="grey" to_=project_url>
+                  <p> {Jsx.text(project_url)} </p>
                 </Link>
-                <div style={Styles.row(32)}>
-                  <Link to_="https://sancho.dev/blog" color="grey">
-                    "blog"
-                  </Link>
-                  <Link to_="https://sancho.dev/talks" color="grey">
-                    "talks"
-                  </Link>
-                  <Link to_="https://sancho.dev/about" color="grey">
-                    "about"
+                <div style={Styles.row(4)}>
+                  <span style=Styles.dimmed> "by " </span>
+                  <Link to_="https://x.com/davesnx" color="grey">
+                    "@davesnx"
                   </Link>
                 </div>
               </div>
             </header>
           </main>
           <div>
-            <main class_="text-lg">
+            <main style=Styles.Font.large>
               <div>
-                <div style={Styles.spacer(~bottom=32, ())}>
+                <div style={Styles.spacer(~bottom=16, ())}>
                   <h1 style=Styles.h1> "Html_of_jsx" </h1>
                 </div>
                 <div>
                   <div>
                     <p>
-                      <span class_="font-semibold"> "html_of_jsx" </span>
-                      <span class_="font-light">
+                      <span style=Styles.Font.semibold> "html_of_jsx" </span>
+                      <span>
                         " is an implementation of JSX designed to render HTML on the server, without React or anything else. It's a minimal library that allows you to write components of HTML in a declarative way."
                       </span>
                     </p>
@@ -90,48 +91,35 @@ module Page = {
                     <p>
                       "Check the "
                       <Link
-                        bold=true to_="https://ahrefs.com/" color="lightblue">
+                        bold=true
+                        to_="https://davesnx.github.io/html_of_jsx/html_of_jsx/index.html"
+                        color="lightskyblue">
                         "Documentation"
                       </Link>
                     </p>
                     <div style={Styles.spacer(~bottom=8, ())} />
                   </div>
                 </div>
-                <div style={Styles.spacer(~bottom=28, ())} />
-                <div style=Styles.small>
-                  <Link
-                    color="lightskyblue"
-                    bold=true
-                    to_="https://twitter.com/davesnx">
-                    "Follow me on twttr "
-                  </Link>
-                  <Link
-                    color="lightgrey"
-                    bold=true
-                    to_="https://github.com/davesnx">
-                    "or Github (counts double as internet points)"
-                  </Link>
-                </div>
               </div>
             </main>
           </div>
         </div>
-        {scripts |> List.map(src => <script src />) |> Jsx.list}
       </body>
     </html>;
   };
 };
 
 let () = {
+  let project_url = "https://github.com/davesnx/html_of_jsx";
   let server = Httpd.create();
   let addr = Httpd.addr(server);
   let port = Httpd.port(server);
   Httpd.add_route_handler(
     ~meth=`GET,
     server,
-    Httpd.Route.(exact("hello") @/ string @/ return),
-    (_name, _req) => {
-      let html = Html_of_jsx.render(<Page scripts=["/static/app.js"] />);
+    Httpd.Route.(return),
+    _req => {
+      let html = Html_of_jsx.render(<Page project_url />);
       Httpd.Response.make_string(Ok(html));
     },
   );
