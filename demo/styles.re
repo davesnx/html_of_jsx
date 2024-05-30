@@ -1,13 +1,14 @@
-let heading = ["margin: 0", "padding: 0"];
-
 let join = String.concat("; ");
+
+let reset = ["margin: 0", "padding: 0"];
+
 let h1 =
   join([
     "font-weight: 500",
     "font-size: calc((((((0.7rem + 0.13vw) * 1.25) * 1.25) * 1.25) * 1.25) * 1.25)",
-    "letter-spacing: 0.8px;",
-    "line-height: 2;",
-    ...heading,
+    "letter-spacing: 0.8px",
+    "line-height: 2",
+    ...reset,
   ]);
 
 let small = "font-size: 0.8rem";
@@ -40,3 +41,10 @@ let stack = (~fullWidth=false, gap) =>
     ]
     @ (fullWidth ? ["width: 100%"] : []),
   );
+
+let link = (~bold, color) => {
+  join(
+    [Printf.sprintf("color: %s", color), "text-decoration: underline"]
+    @ (bold ? ["font-weight: bold"] : []),
+  );
+};

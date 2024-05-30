@@ -1,10 +1,10 @@
 /**
 
-     This is a demo of a HTTP server that demostrates the possibility of Html_of_jsx.
+This is a demo of a HTTP server that demostrates the possibility of Html_of_jsx.
 
-     It uses `tiny_httpd` to keep the dependencies to a minimum. It also contains a bunch of utilities to generate styles.
+It uses `tiny_httpd` to keep the dependencies to a minimum. It also contains a bunch of utilities to generate styles, which are unrelated to the project.
 
-   */
+*/
 module Httpd = Tiny_httpd;
 
 module Link = {
@@ -13,10 +13,7 @@ module Link = {
       href=to_
       onmouseover="this.style.opacity='0.6'"
       onmouseout="this.style.opacity='1'"
-      style={Styles.join(
-        [Printf.sprintf("color: %s", color), "text-decoration: underline"]
-        @ (bold ? ["font-weight: bold"] : []),
-      )}>
+      style={Styles.link(~bold, color)}>
       children
     </a>;
   };
@@ -63,10 +60,10 @@ module Page = {
                 </Link>
                 <div style={Styles.row(32)}>
                   <Link to_="https://sancho.dev/blog" color="grey">
-                    {Jsx.text("blog")}
+                    "blog"
                   </Link>
                   <Link to_="https://sancho.dev/talks" color="grey">
-                    {Jsx.text("talks")}
+                    "talks"
                   </Link>
                   <Link to_="https://sancho.dev/about" color="grey">
                     "about"
@@ -79,26 +76,22 @@ module Page = {
             <main class_="text-lg">
               <div>
                 <div style={Styles.spacer(~bottom=32, ())}>
-                  <h1 style=Styles.h1> {Jsx.text("Html_of_jsx")} </h1>
+                  <h1 style=Styles.h1> "Html_of_jsx" </h1>
                 </div>
                 <div>
                   <div>
                     <p>
-                      <span class_="font-semibold">
-                        {Jsx.text("html_of_jsx")}
-                      </span>
+                      <span class_="font-semibold"> "html_of_jsx" </span>
                       <span class_="font-light">
-                        {Jsx.text(
-                           " is an implementation of JSX designed to render HTML on the server, without React or anything else. It's a minimal library that allows you to write components of HTML in a declarative way.",
-                         )}
+                        " is an implementation of JSX designed to render HTML on the server, without React or anything else. It's a minimal library that allows you to write components of HTML in a declarative way."
                       </span>
                     </p>
                     <div style={Styles.spacer(~bottom=8, ())} />
                     <p>
-                      {Jsx.text("Check the ")}
+                      "Check the "
                       <Link
                         bold=true to_="https://ahrefs.com/" color="lightblue">
-                        {Jsx.text("Documentation")}
+                        "Documentation"
                       </Link>
                     </p>
                     <div style={Styles.spacer(~bottom=8, ())} />
