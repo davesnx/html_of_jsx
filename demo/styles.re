@@ -1,25 +1,4 @@
-module Font = {
-  let small = "font-size: 0.8rem";
-  let large = "font-size: 1.2rem";
-  let semibold = "font-weight: 600";
-};
-
 let join = String.concat("; ");
-
-let reset = ["margin: 0", "padding: 0"];
-
-let dark = "color-scheme: dark;";
-
-let body = "display: flex; justify-items: center; padding-top: 7em; padding-left: 25%; padding-right: 25%;";
-
-let h1 =
-  join([
-    "font-weight: 500",
-    "font-size: calc((((((0.7rem + 0.13vw) * 1.25) * 1.25) * 1.25) * 1.25) * 1.25)",
-    "letter-spacing: 0.8px",
-    "line-height: 2",
-    ...reset,
-  ]);
 
 let spacer = (~bottom=0, ~top=0, ~left=0, ~right=0, ()) =>
   join(
@@ -60,6 +39,34 @@ let stack = (~fullWidth=false, gap) =>
     ]
     @ (fullWidth ? ["width: 100%"] : []),
   );
+
+module Font = {
+  let small = "font-size: 0.8rem";
+  let large = "font-size: 1.2rem";
+  let semibold = "font-weight: 600";
+};
+
+let reset = ["margin: 0", "padding: 0"];
+
+let dark = "color-scheme: dark";
+
+let body =
+  join([
+    "display: flex",
+    "justify-items: center",
+    "padding-top: 7em",
+    "padding-left: 25%",
+    "padding-right: 25%",
+  ]);
+
+let h1 =
+  join([
+    "font-weight: 500",
+    "font-size: calc((((((0.7rem + 0.13vw) * 1.25) * 1.25) * 1.25) * 1.25) * 1.25)",
+    "letter-spacing: 0.8px",
+    "line-height: 2",
+    ...reset,
+  ]);
 
 let link = (~bold, color) => {
   join(

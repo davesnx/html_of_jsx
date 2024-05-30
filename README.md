@@ -1,17 +1,23 @@
 ![Html_of_jsx logo](./docs/logo-white.png#gh-dark-mode-only)
 ![Html_of_jsx logo](./docs/logo-black.png#gh-light-mode-only)
 
-**html_of_jsx** is an implementation of JSX designed to render HTML on the server, without React or anything else. It's a minimal library that allows you to write components of HTML in a declarative way.
+### Render HTML with JSX
 
+**html_of_jsx** is a JSX transformation to write HTML declaratively in [OCaml](https://ocaml.org), [Reason](https://reasonml.github.io) and [mlx](https://github.com/ocaml-mlx/mlx).
+
+## Features
+
+- Brings the component model to HTML
 - Supports most of features from [JSX](https://reasonml.github.io/docs/en/jsx) (uppercase components, fragments, optional attributes, punning)
 - but with a few improvements (lowercase components, no need to add annotations)
 - No React idioms (no `className`, no `htmlFor`, no `onChange`, etc...)
+- Integrates well with Htmx
 - Type-safe, validates attributes and their types ([it can be better thought](https://github.com/davesnx/html_of_jsx/issues/2))
+- Works with [OCaml](https://ocaml.org), [Reason](https://reasonml.github.io) and [mlx](https://github.com/ocaml-mlx/mlx)
 - Minimal
   - `Html_of_jsx.render` to render an element to HTML
   - `Jsx.*` to construct DOM Elements and DOM nodes (`Jsx.text`, `Jsx.int`, `Jsx.null`, `Jsx.list`)
-- Works with OCaml, [Reason](https://reasonml.github.io) and [mlx](https://github.com/andreypopp/mlx)
-- Integrates very well with Htmx
+- Created to work on the server-side, but can be used on the client-side too (with [Melange](https://melange.re))
 
 ## Installation
 
@@ -38,8 +44,8 @@ Check the [demo/server.re](./demo/server.re) file to see a full example.
 
 ## [Documentation](https://davesnx.github.io/html_of_jsx/html_of_jsx/index.html)
 
-Check the [Documentation](https://davesnx.github.io/html_of_jsx/html_of_jsx/index.html) to know more about the API and it's [features](https://davesnx.github.io/html_of_jsx/html_of_jsx/features.html).
+Check the [Documentation](https://davesnx.github.io/html_of_jsx/html_of_jsx/index.html) to know more about the API and [features](https://davesnx.github.io/html_of_jsx/html_of_jsx/features.html).
 
 ## Credits
 
-This library was born from [server-reason-react](https://github.com/ml-in-barcelona/server-reason-react), extracted and simplified to work with HTML5.
+This library was extracted from [server-reason-react](https://github.com/ml-in-barcelona/server-reason-react) and later simplified to work only with HTML5.

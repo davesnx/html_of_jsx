@@ -61,12 +61,12 @@ module Page = {
                   ~align=`center,
                   100,
                 )}>
-                <Link color="grey" to_=project_url>
+                <Link color="#777" to_=project_url>
                   <p> {Jsx.text(project_url)} </p>
                 </Link>
                 <div style={Styles.row(4)}>
                   <span style=Styles.dimmed> "by " </span>
-                  <Link to_="https://x.com/davesnx" color="grey">
+                  <Link to_="https://x.com/davesnx" color="#777">
                     "@davesnx"
                   </Link>
                 </div>

@@ -20,7 +20,7 @@
 (package
  (name html_of_jsx)
  (synopsis "Render HTML with JSX")
- (description "html_of_jsx is an implementation of JSX designed to render HTML on the server, without React or anything else. It's a minimal library that allows you to write components of HTML in a declarative way.")
+ (description "html_of_jsx is a JSX transformation that allows you to write HTML declaratively.")
  (depends
   (ocaml (>= 5.0.0))
   (reason (>= 3.10.0))
