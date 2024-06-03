@@ -1,27 +1,27 @@
 Since we generate invalid syntax for the argument of the make fn `(Props : <>)`
 We need to output ML syntax here, otherwise refmt could not parse it.
   $ ../ppx.sh --output ml input.re
-  let hello ~lola = JSX.node "div" [] [ React.string lola ]
+  let hello ~lola = Jsx.node "div" [] [ React.string lola ]
   let react_component_with_props = hello ~lola:"flores" ()
   
   let cositas ?lola =
     match lola with
-    | ((Some lola) [@explicit_arity]) -> JSX.node "div" [] [ React.string lola ]
-    | None -> JSX.node "div" [] [ React.string "no lola" ]
+    | ((Some lola) [@explicit_arity]) -> Jsx.node "div" [] [ React.string lola ]
+    | None -> Jsx.node "div" [] [ React.string "no lola" ]
   
   let react_component_with_optional_prop = hello ?lola:"flores" ()
   
   let div =
-    JSX.fragment
+    Jsx.fragment
       [
-        JSX.node "div"
+        Jsx.node "div"
           (List.filter_map Fun.id
-             [ Some (JSX.Attribute.String ("class", ("md:w-1/3" : string))) ])
+             [ Some (Jsx.Attribute.String ("class", ("md:w-1/3" : string))) ])
           [];
-        JSX.node "div"
+        Jsx.node "div"
           (List.filter_map Fun.id
-             [ Some (JSX.Attribute.String ("class", ("md:w-2/3" : string))) ])
+             [ Some (Jsx.Attribute.String ("class", ("md:w-2/3" : string))) ])
           [];
       ]
   
-  let component = Container.make ~children:(JSX.node "span" [] []) ()
+  let component = Container.make ~children:(Jsx.node "span" [] []) ()

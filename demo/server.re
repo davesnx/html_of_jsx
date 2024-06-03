@@ -62,7 +62,7 @@ module Page = {
                   100,
                 )}>
                 <Link color="#777" to_=project_url>
-                  <p> {JSX.string(project_url)} </p>
+                  <p> {Jsx.string(project_url)} </p>
                 </Link>
                 <div style={Styles.row(4)}>
                   <span style=Styles.dimmed> "by " </span>
@@ -119,7 +119,7 @@ let () = {
     server,
     Httpd.Route.(return),
     _req => {
-      let html = JSX.to_string(<Page project_url />);
+      let html = Jsx.to_string(<Page project_url />);
       Httpd.Response.make_string(Ok(html));
     },
   );
