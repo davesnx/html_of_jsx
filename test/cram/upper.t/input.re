@@ -7,11 +7,11 @@ let upper_children_single = foo => <Upper> foo </Upper>;
 let upper_children_multiple = (foo, bar) => <Upper> foo bar </Upper>;
 
 let upper_children =
-  <Page moreProps="hgalo"> <h1> {Jsx.string("Yep")} </h1> </Page>;
+  <Page moreProps="hgalo"> <h1> {JSX.string("Yep")} </h1> </Page>;
 
 let upper_nested_module = <Foo.Bar a=1 b="1" />;
 
-let upper_child_expr = <Div> {Jsx.int(1)} </Div>;
+let upper_child_expr = <Div> {JSX.int(1)} </Div>;
 let upper_child_ident = <Div> lola </Div>;
 
 let upper_all_kinds_of_props =

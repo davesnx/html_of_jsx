@@ -31,18 +31,43 @@ type node = {
 
 and element =
   | Null
-  | Text of string
+  | String of string
   | Unsafe of string (* text without encoding *)
   | Fragment of element list
   | Node of node
   | Component of (unit -> element)
   | List of element list
 
-let text txt = Text txt
+let string txt = String txt
 let unsafe txt = Unsafe txt
 let null = Null
-let int i = Text (string_of_int i)
-let float f = Text (string_of_float f)
+let int i = String (string_of_int i)
+let float f = String (string_of_float f)
 let list arr = List arr
 let fragment arr = Fragment arr
 let node tag attributes children = Node { tag; attributes; children }
+
+(* TODO: Use buffer instead of Printf and String.concat *)
+let to_string element =
+  let rec render_element element =
+    match element with
+    | Null -> ""
+    | Fragment list | List list ->
+        list |> List.map render_element |> String.concat ""
+    | Component f -> render_element (f ())
+    | Node { tag; attributes; _ } when Html.is_self_closing_tag tag ->
+        Printf.sprintf "<%s%s />" tag (Attribute.to_string attributes)
+    | Node { tag; attributes; children } when tag == "html" ->
+        Printf.sprintf "<!DOCTYPE html><%s%s>%s</%s>" tag
+          (Attribute.to_string attributes)
+          (children |> List.map render_element |> String.concat "")
+          tag
+    | Node { tag; attributes; children } ->
+        Printf.sprintf "<%s%s>%s</%s>" tag
+          (Attribute.to_string attributes)
+          (children |> List.map render_element |> String.concat "")
+          tag
+    | String text -> Html.encode text
+    | Unsafe text -> text
+  in
+  render_element element

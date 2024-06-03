@@ -1,7 +1,7 @@
 let simple_hx_boost =
   case("simple_hx_boost", () => {
     assert_string(
-      Html_of_jsx.render(<div hx_boost=true />),
+      JSX.to_string(<div hx_boost=true />),
       {|<div hx-boost="true"></div>|},
     )
   });
