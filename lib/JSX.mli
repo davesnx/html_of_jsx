@@ -8,21 +8,20 @@ module Attribute : sig
   val to_string : t list -> string
 end
 
-type node = {
-  tag : string;
-  attributes : Attribute.t list;
-  children : element list;
-}
+type element
+(** The type that represents a JSX.element *)
 
-(** The type that represents a JSX.element, it's a recursive type that allows to represent any HTML structure *)
-and element =
-  | Null
-  | String of string
-  | Unsafe of string
-  | Fragment of element list
-  | Node of node
-  | Component of (unit -> element)
-  | List of element list
+val to_string : element -> string
+(** The function to convert a JSX.element to a string. 
+
+    {[
+      let html: string = JSX.to_string (
+        <div>
+          <h1> (JSX.string "Hello, World!") </h1>
+        </div>
+      )
+    ]}
+*)
 
 val string : string -> element
 (** Helper to represent an element as a string *)
@@ -32,7 +31,7 @@ val unsafe : string -> element
     HTML scaping problems, XSS injections and other security concerns, use with caution. *)
 
 val null : element
-(** Helper to represent nullability in Jsx, useful to pattern match *)
+(** Helper to represent nullability in JSX, useful to pattern match *)
 
 val int : int -> element
 (** Helper to render an integer *)
@@ -47,6 +46,3 @@ val fragment : element list -> element
 
 val node : string -> Attribute.t list -> element list -> element
 (** The function to create a HTML DOM Node [https://developer.mozilla.org/en-US/docs/Web/API/Node]. Given the tag, list of attributes and list of childrens *)
-
-val to_string : element -> string
-(** The function to convert a JSX.element to a string *)

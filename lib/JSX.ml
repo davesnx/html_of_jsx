@@ -35,7 +35,7 @@ and element =
   | Unsafe of string (* text without encoding *)
   | Fragment of element list
   | Node of node
-  | Component of (unit -> element)
+  | Component of (unit -> element) (* TODO: Is this unused? *) [@warning "-37"]
   | List of element list
 
 let string txt = String txt

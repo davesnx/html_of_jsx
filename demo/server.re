@@ -109,8 +109,6 @@ module Page = {
   };
 };
 
-Bench.start();
-
 let () = {
   let project_url = "https://github.com/davesnx/html_of_jsx";
   let server = Httpd.create();
