@@ -1,5 +1,5 @@
 (executable
  (name server)
- (libraries tiny_httpd html_of_jsx)
+ (libraries tiny_httpd benchmark html_of_jsx)
  (preprocess
   (pps html_of_jsx.ppx -htmx)))

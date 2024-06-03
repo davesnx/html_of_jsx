@@ -18,6 +18,7 @@ depends: [
   "ocamlformat" {= "0.26.1" & with-dev-setup}
   "ocaml-lsp-server" {with-dev-setup}
   "tiny_httpd" {with-dev-setup}
+  "benchmark" {with-dev-setup}
 ]
 build: [
   ["dune" "subst"] {dev}

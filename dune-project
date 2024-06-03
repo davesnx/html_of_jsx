@@ -39,4 +39,5 @@
     :with-dev-setup))
   (ocaml-lsp-server :with-dev-setup)
   (tiny_httpd :with-dev-setup)
+  (benchmark :with-dev-setup)
 ))

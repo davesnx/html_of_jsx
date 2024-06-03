@@ -1,12 +1,3 @@
-/**
-
-This is a demo of a HTTP server that demostrates the possibility of Html_of_jsx.
-
-It uses `tiny_httpd` to keep the dependencies to a minimum. It also contains a bunch of utilities to generate styles, which are unrelated to the project.
-
-*/
-module Httpd = Tiny_httpd;
-
 module Link = {
   let make = (~color, ~to_, ~bold=false, ~children, ()) => {
     <a
@@ -106,31 +97,5 @@ module Page = {
         </div>
       </body>
     </html>;
-  };
-};
-
-Bench.start();
-
-let () = {
-  let project_url = "https://github.com/davesnx/html_of_jsx";
-  let server = Httpd.create();
-  let addr = Httpd.addr(server);
-  let port = Httpd.port(server);
-  Httpd.add_route_handler(
-    ~meth=`GET,
-    server,
-    Httpd.Route.(return),
-    _req => {
-      let html = JSX.to_string(<Page project_url />);
-      Httpd.Response.make_string(Ok(html));
-    },
-  );
-  switch (
-    Httpd.run(server, ~after_init=() =>
-      Printf.printf("Listening on http://%s:%d\n%!", addr, port)
-    )
-  ) {
-  | Ok () => ()
-  | Error(e) => raise(e)
   };
 };
