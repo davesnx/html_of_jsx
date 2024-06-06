@@ -8,7 +8,9 @@ module Attribute : sig
   val to_string : t list -> string
 end
 
-type element
+type node
+
+and element
 (** The type that represents a Jsx.element *)
 
 val to_string : element -> string
@@ -51,3 +53,22 @@ val text : string -> element
 val unsafe : string -> element
 (** Helper to bypass HTML encoding and treat output as unsafe. This can lead to
     HTML scaping problems, XSS injections and other security concerns, use with caution. *)
+
+type __node = {
+  tag : string;
+  attributes : Attribute.t list;
+  children : __element list;
+}
+(** Type for inspection of a node  *)
+
+and __element =
+  | Null
+  | String of string
+  | Unsafe of string (* text without encoding *)
+  | Fragment of __element list
+  | Node of __node
+  | Component of (unit -> __element)
+  | List of __element list
+
+val __view : element -> __element
+(** The function to inspect a Jsx.element. *)

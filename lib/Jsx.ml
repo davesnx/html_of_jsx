@@ -49,7 +49,7 @@ let fragment arr = Fragment arr
 let node tag attributes children = Node { tag; attributes; children }
 
 let to_string element =
-  let buffer = Buffer.create 1024 in
+  let buffer = Rope.Buffer.create 1024 in
 
   let rec render_element element =
     match element with
@@ -57,26 +57,56 @@ let to_string element =
     | Fragment list | List list -> List.iter render_element list
     | Component f -> render_element (f ())
     | Node { tag; attributes; _ } when Html.is_self_closing_tag tag ->
-        Buffer.add_string buffer
+        Rope.Buffer.add_string buffer
           (Printf.sprintf "<%s%s />" tag (Attribute.to_string attributes))
     | Node { tag; attributes; children } when tag = "html" ->
-        Buffer.add_string buffer
+        Rope.Buffer.add_string buffer
           (Printf.sprintf "<!DOCTYPE html><%s%s>" tag
              (Attribute.to_string attributes));
 
         List.iter render_element children;
 
-        Buffer.add_string buffer (Printf.sprintf "</%s>" tag)
+        Rope.Buffer.add_string buffer (Printf.sprintf "</%s>" tag)
     | Node { tag; attributes; children } ->
-        Buffer.add_string buffer
+        Rope.Buffer.add_string buffer
           (Printf.sprintf "<%s%s>" tag (Attribute.to_string attributes));
 
         List.iter render_element children;
 
-        Buffer.add_string buffer (Printf.sprintf "</%s>" tag)
-    | String text -> Buffer.add_string buffer (Html.encode text)
-    | Unsafe text -> Buffer.add_string buffer text
+        Rope.Buffer.add_string buffer (Printf.sprintf "</%s>" tag)
+    | String text -> Rope.Buffer.add_string buffer (Html.encode text)
+    | Unsafe text -> Rope.Buffer.add_string buffer text
   in
 
   render_element element;
-  Buffer.contents buffer
+
+  buffer |> Rope.Buffer.contents |> Rope.to_string
+
+type __node = {
+  tag : string;
+  attributes : Attribute.t list;
+  children : __element list;
+}
+
+and __element =
+  | Null
+  | String of string
+  | Unsafe of string
+  | Fragment of __element list
+  | Node of __node
+  | Component of (unit -> __element)
+  | List of __element list
+
+let __view (el : element) : __element =
+  let rec view (el : element) : __element =
+    match el with
+    | Null -> Null
+    | String str -> String str
+    | Unsafe str -> Unsafe str
+    | Fragment fragment -> Fragment (List.map view fragment)
+    | Node { tag; attributes; children } ->
+        Node { tag; attributes; children = List.map view children }
+    | Component f -> Component (fun () -> view (f ()))
+    | List list -> List (List.map view list)
+  in
+  view el
