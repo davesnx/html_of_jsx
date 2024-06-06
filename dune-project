@@ -29,6 +29,7 @@
 
   ;; Test dependencies
   (alcotest :with-test)
+  (benchmark :with-test)
 
   ;; Documentation
   (odoc :with-doc)
@@ -40,5 +41,4 @@
     :with-dev-setup))
   (ocaml-lsp-server :with-dev-setup)
   (tiny_httpd :with-dev-setup)
-  (benchmark :with-dev-setup)
 ))
