@@ -8,9 +8,7 @@ module Attribute : sig
   val to_string : t list -> string
 end
 
-type node
-
-and element
+type element
 (** The type that represents a JSX.element *)
 
 val to_string : element -> string
@@ -29,7 +27,7 @@ val float : float -> element
 (** Helper to render a float *)
 
 val fragment : element list -> element
-(** Fragment  *)
+(** Fragment *)
 
 val int : int -> element
 (** Helper to render an integer *)

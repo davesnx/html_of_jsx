@@ -35,4 +35,4 @@
     );
   let component = (~name) =>
     JSX.node("div", [], [JSX.node("h1", [], ["Hello, " ++ name ++ "!"])]);
-  Html_of_jsx.render(component());
+  JSX.to_string(component());
