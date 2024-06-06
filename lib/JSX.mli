@@ -11,15 +11,15 @@ end
 type node
 
 and element
-(** The type that represents a Jsx.element *)
+(** The type that represents a JSX.element *)
 
 val to_string : element -> string
-(** The function to convert a Jsx.element to a string. 
+(** The function to convert a JSX.element to a string. 
 
     {[
-      let html: string = Jsx.to_string (
+      let html: string = JSX.to_string (
         <div>
-          <h1> (Jsx.string "Hello, World!") </h1>
+          <h1> (JSX.string "Hello, World!") </h1>
         </div>
       )
     ]}
@@ -47,7 +47,7 @@ val string : string -> element
 (** Helper to represent an element as a string *)
 
 val text : string -> element
-[@@deprecated "Use Jsx.string instead"]
+[@@deprecated "Use JSX.string instead"]
 (** Helper to render a text *)
 
 val unsafe : string -> element
@@ -71,4 +71,4 @@ and __element =
   | List of __element list
 
 val __view : element -> __element
-(** The function to inspect a Jsx.element. *)
+(** The function to inspect a JSX.element. *)

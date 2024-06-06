@@ -1,22 +1,22 @@
   $ ../ppx.sh --output re input.re
-  let lower = Jsx.node("div", [], []);
+  let lower = JSX.node("div", [], []);
   let lower_empty_attr =
-    Jsx.node(
+    JSX.node(
       "div",
       List.filter_map(
         Fun.id,
-        [Some([@implicit_arity] Jsx.Attribute.String("class", "": string))],
+        [Some([@implicit_arity] JSX.Attribute.String("class", "": string))],
       ),
       [],
     );
   let lower_inline_styles =
-    Jsx.node(
+    JSX.node(
       "div",
       List.filter_map(
         Fun.id,
         [
           Some(
-            Jsx.Attribute.Style(
+            JSX.Attribute.Style(
               Style.make(~backgroundColor="gainsboro", ()): string,
             ),
           ),
@@ -25,7 +25,7 @@
       [],
     );
   let lower_opt_attr =
-    Jsx.node(
+    JSX.node(
       "div",
       List.filter_map(
         Fun.id,
@@ -33,7 +33,7 @@
           Stdlib.Option.map(
             v =>
               [@implicit_arity]
-              Jsx.Attribute.String("tabindex", string_of_int(v)),
+              JSX.Attribute.String("tabindex", string_of_int(v)),
             tabindex: option(int),
           ),
         ],
@@ -41,103 +41,103 @@
       [],
     );
   let lowerWithChildAndProps = foo =>
-    Jsx.node(
+    JSX.node(
       "a",
       List.filter_map(
         Fun.id,
         [
           Some(
             [@implicit_arity]
-            Jsx.Attribute.String("href", "https://example.com": string),
+            JSX.Attribute.String("href", "https://example.com": string),
           ),
           Some(
             [@implicit_arity]
-            Jsx.Attribute.String("tabindex", string_of_int(1: int)),
+            JSX.Attribute.String("tabindex", string_of_int(1: int)),
           ),
         ],
       ),
       [foo],
     );
-  let lower_child_static = Jsx.node("div", [], [Jsx.node("span", [], [])]);
-  let lower_child_ident = Jsx.node("div", [], [lolaspa]);
-  let lower_child_single = Jsx.node("div", [], [Jsx.node("div", [], [])]);
+  let lower_child_static = JSX.node("div", [], [JSX.node("span", [], [])]);
+  let lower_child_ident = JSX.node("div", [], [lolaspa]);
+  let lower_child_single = JSX.node("div", [], [JSX.node("div", [], [])]);
   let lower_children_multiple = (foo, bar) => lower(~children=[foo, bar], ());
-  let lower_child_with_upper_as_children = Jsx.node("div", [], [App.make()]);
+  let lower_child_with_upper_as_children = JSX.node("div", [], [App.make()]);
   let lower_children_nested =
-    Jsx.node(
+    JSX.node(
       "div",
       List.filter_map(
         Fun.id,
         [
           Some(
             [@implicit_arity]
-            Jsx.Attribute.String("class", "flex-container": string),
+            JSX.Attribute.String("class", "flex-container": string),
           ),
         ],
       ),
       [
-        Jsx.node(
+        JSX.node(
           "div",
           List.filter_map(
             Fun.id,
             [
               Some(
                 [@implicit_arity]
-                Jsx.Attribute.String("class", "sidebar": string),
+                JSX.Attribute.String("class", "sidebar": string),
               ),
             ],
           ),
           [
-            Jsx.node(
+            JSX.node(
               "h2",
               List.filter_map(
                 Fun.id,
                 [
                   Some(
                     [@implicit_arity]
-                    Jsx.Attribute.String("class", "title": string),
+                    JSX.Attribute.String("class", "title": string),
                   ),
                 ],
               ),
               ["jsoo-react" |> s],
             ),
-            Jsx.node(
+            JSX.node(
               "nav",
               List.filter_map(
                 Fun.id,
                 [
                   Some(
                     [@implicit_arity]
-                    Jsx.Attribute.String("class", "menu": string),
+                    JSX.Attribute.String("class", "menu": string),
                   ),
                 ],
               ),
               [
-                Jsx.node(
+                JSX.node(
                   "ul",
                   [],
                   [
                     examples
                     |> List.map(e =>
-                         Jsx.node(
+                         JSX.node(
                            "li",
                            [],
                            [
-                             Jsx.node(
+                             JSX.node(
                                "a",
                                List.filter_map(
                                  Fun.id,
                                  [
                                    Some(
                                      [@implicit_arity]
-                                     Jsx.Attribute.Event(
+                                     JSX.Attribute.Event(
                                        "onclick",
                                        "console.log": string,
                                      ),
                                    ),
                                    Some(
                                      [@implicit_arity]
-                                     Jsx.Attribute.String(
+                                     JSX.Attribute.String(
                                        "href",
                                        e.path: string,
                                      ),
@@ -159,93 +159,93 @@
       ],
     );
   let lower_ref_with_children =
-    Jsx.node(
+    JSX.node(
       "button",
       List.filter_map(
         Fun.id,
         [
           Some(
             [@implicit_arity]
-            Jsx.Attribute.String("class", "FancyButton": string),
+            JSX.Attribute.String("class", "FancyButton": string),
           ),
         ],
       ),
       [children],
     );
   let lower_with_many_props =
-    Jsx.node(
+    JSX.node(
       "div",
       List.filter_map(
         Fun.id,
         [
           Some(
-            [@implicit_arity] Jsx.Attribute.String("translate", "yes": string),
+            [@implicit_arity] JSX.Attribute.String("translate", "yes": string),
           ),
         ],
       ),
       [
-        Jsx.node(
+        JSX.node(
           "picture",
           List.filter_map(
             Fun.id,
             [
               Some(
                 [@implicit_arity]
-                Jsx.Attribute.String("id", "idpicture": string),
+                JSX.Attribute.String("id", "idpicture": string),
               ),
             ],
           ),
           [
-            Jsx.node(
+            JSX.node(
               "img",
               List.filter_map(
                 Fun.id,
                 [
                   Some(
                     [@implicit_arity]
-                    Jsx.Attribute.String("id", "idimg": string),
+                    JSX.Attribute.String("id", "idimg": string),
                   ),
                   Some(
                     [@implicit_arity]
-                    Jsx.Attribute.String("alt", "test picture/img.png": string),
+                    JSX.Attribute.String("alt", "test picture/img.png": string),
                   ),
                   Some(
                     [@implicit_arity]
-                    Jsx.Attribute.String("src", "picture/img.png": string),
+                    JSX.Attribute.String("src", "picture/img.png": string),
                   ),
                 ],
               ),
               [],
             ),
-            Jsx.node(
+            JSX.node(
               "source",
               List.filter_map(
                 Fun.id,
                 [
                   Some(
                     [@implicit_arity]
-                    Jsx.Attribute.String("src", "picture/img1.webp": string),
+                    JSX.Attribute.String("src", "picture/img1.webp": string),
                   ),
                   Some(
                     [@implicit_arity]
-                    Jsx.Attribute.String("type", "image/webp": string),
+                    JSX.Attribute.String("type", "image/webp": string),
                   ),
                 ],
               ),
               [],
             ),
-            Jsx.node(
+            JSX.node(
               "source",
               List.filter_map(
                 Fun.id,
                 [
                   Some(
                     [@implicit_arity]
-                    Jsx.Attribute.String("src", "picture/img2.jpg": string),
+                    JSX.Attribute.String("src", "picture/img2.jpg": string),
                   ),
                   Some(
                     [@implicit_arity]
-                    Jsx.Attribute.String("type", "image/jpeg": string),
+                    JSX.Attribute.String("type", "image/jpeg": string),
                   ),
                 ],
               ),
@@ -256,13 +256,13 @@
       ],
     );
   let some_random_html_element =
-    Jsx.node(
+    JSX.node(
       "text",
       List.filter_map(
         Fun.id,
         [
-          Some([@implicit_arity] Jsx.Attribute.String("dy", "3 4": string)),
-          Some([@implicit_arity] Jsx.Attribute.String("dx", "1 2": string)),
+          Some([@implicit_arity] JSX.Attribute.String("dy", "3 4": string)),
+          Some([@implicit_arity] JSX.Attribute.String("dx", "1 2": string)),
         ],
       ),
       [],

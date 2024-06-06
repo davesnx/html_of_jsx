@@ -1,161 +1,161 @@
 let single_empty_tag =
   case "single_empty_tag" @@ fun () ->
-  let div = Jsx.node "div" [] [] in
-  assert_string (Jsx.to_string div) "<div></div>"
+  let div = JSX.node "div" [] [] in
+  assert_string (JSX.to_string div) "<div></div>"
 
 let empty_string_attribute =
   case "empty_string_attribute" @@ fun () ->
-  let div = Jsx.node "div" [ Jsx.Attribute.String ("class", "") ] [] in
-  assert_string (Jsx.to_string div) "<div class=\"\"></div>"
+  let div = JSX.node "div" [ JSX.Attribute.String ("class", "") ] [] in
+  assert_string (JSX.to_string div) "<div class=\"\"></div>"
 
 let string_attributes =
   case "string_attributes" @@ fun () ->
   let a =
-    Jsx.node "a"
+    JSX.node "a"
       [
-        Jsx.Attribute.String ("target", "_blank");
-        Jsx.Attribute.String ("href", "google.html");
+        JSX.Attribute.String ("target", "_blank");
+        JSX.Attribute.String ("href", "google.html");
       ]
       []
   in
-  assert_string (Jsx.to_string a)
+  assert_string (JSX.to_string a)
     "<a href=\"google.html\" target=\"_blank\"></a>"
 
 let bool_attributes =
   case "bool_attributes" @@ fun () ->
   let a =
-    Jsx.node "input"
+    JSX.node "input"
       [
-        Jsx.Attribute.String ("type", "checkbox");
-        Jsx.Attribute.String ("name", "cheese");
-        Jsx.Attribute.Bool ("checked", true);
-        Jsx.Attribute.Bool ("disabled", false);
+        JSX.Attribute.String ("type", "checkbox");
+        JSX.Attribute.String ("name", "cheese");
+        JSX.Attribute.Bool ("checked", true);
+        JSX.Attribute.Bool ("disabled", false);
       ]
       []
   in
-  assert_string (Jsx.to_string a)
+  assert_string (JSX.to_string a)
     "<input checked name=\"cheese\" type=\"checkbox\" />"
 
 let truthy_attributes =
   case "truthy_attributes" @@ fun () ->
   let component =
-    Jsx.node "input" [ Jsx.Attribute.String ("aria-hidden", "true") ] []
+    JSX.node "input" [ JSX.Attribute.String ("aria-hidden", "true") ] []
   in
-  assert_string (Jsx.to_string component) "<input aria-hidden=\"true\" />"
+  assert_string (JSX.to_string component) "<input aria-hidden=\"true\" />"
 
 let self_closing_tag =
   case "self_closing_tag" @@ fun () ->
-  let input = Jsx.node "input" [] [] in
-  assert_string (Jsx.to_string input) "<input />"
+  let input = JSX.node "input" [] [] in
+  assert_string (JSX.to_string input) "<input />"
 
 let dom_element_innerHtml =
   case "dom_element_innerHtml" @@ fun () ->
-  let p = Jsx.node "p" [] [ Jsx.string "text" ] in
-  assert_string (Jsx.to_string p) "<p>text</p>"
+  let p = JSX.node "p" [] [ JSX.string "text" ] in
+  assert_string (JSX.to_string p) "<p>text</p>"
 
 let children =
   case "children" @@ fun () ->
-  let children = Jsx.node "div" [] [] in
-  let div = Jsx.node "div" [] [ children ] in
-  assert_string (Jsx.to_string div) "<div><div></div></div>"
+  let children = JSX.node "div" [] [] in
+  let div = JSX.node "div" [] [ children ] in
+  assert_string (JSX.to_string div) "<div><div></div></div>"
 
 let no_ignore_unkwnown_attributes_on_jsx =
   case "no_ignore_unkwnown_attributes_on_jsx" @@ fun () ->
   let div =
-    Jsx.node "div"
+    JSX.node "div"
       [
-        Jsx.Attribute.String ("key", "uniqueKeyId");
-        Jsx.Attribute.Bool ("suppressContentEditableWarning", true);
+        JSX.Attribute.String ("key", "uniqueKeyId");
+        JSX.Attribute.Bool ("suppressContentEditableWarning", true);
       ]
       []
   in
-  assert_string (Jsx.to_string div)
+  assert_string (JSX.to_string div)
     "<div suppressContentEditableWarning key=\"uniqueKeyId\"></div>"
 
 (* TODO: Fragments aren't supported yet *)
 (* let fragment () =
-   let div = Jsx.node "div" [] [] in
+   let div = JSX.node "div" [] [] in
    let component = React.fragment ~children:(React.list [ div; div ]) () in
-   assert_string (Jsx.to_string component) "<div></div><div></div>" *)
+   assert_string (JSX.to_string component) "<div></div><div></div>" *)
 
 let ignore_nulls =
   case "ignore_nulls" @@ fun () ->
-  let div = Jsx.node "div" [] [] in
-  let span = Jsx.node "span" [] [] in
-  let component = Jsx.node "div" [] [ div; span; Jsx.null ] in
-  assert_string (Jsx.to_string component) "<div><div></div><span></span></div>"
+  let div = JSX.node "div" [] [] in
+  let span = JSX.node "span" [] [] in
+  let component = JSX.node "div" [] [ div; span; JSX.null ] in
+  assert_string (JSX.to_string component) "<div><div></div><span></span></div>"
 
 (* let fragments_and_texts () =
    let component =
-     Jsx.node "div" []
+     JSX.node "div" []
        [
-         React.fragment ~children:(React.list [ Jsx.string "foo" ]) ();
-         Jsx.string "bar";
-         Jsx.node "b" [] [];
+         React.fragment ~children:(React.list [ JSX.string "foo" ]) ();
+         JSX.string "bar";
+         JSX.node "b" [] [];
        ]
    in
-   assert_string (Jsx.to_string component) "<div>foobar<b></b></div>" *)
+   assert_string (JSX.to_string component) "<div>foobar<b></b></div>" *)
 
 let inline_styles =
   case "inline_styles" @@ fun () ->
   let component =
-    Jsx.node "button" [ Jsx.Attribute.Style "color: red; border: none" ] []
+    JSX.node "button" [ JSX.Attribute.Style "color: red; border: none" ] []
   in
-  assert_string (Jsx.to_string component)
+  assert_string (JSX.to_string component)
     "<button style=\"color: red; border: none\"></button>"
 
 let encode_attributes =
   case "encode_attributes" @@ fun () ->
   let component =
-    Jsx.node "div"
+    JSX.node "div"
       [
-        Jsx.Attribute.String ("about", "\' <");
-        Jsx.Attribute.String ("data-user-path", "what/the/path");
+        JSX.Attribute.String ("about", "\' <");
+        JSX.Attribute.String ("data-user-path", "what/the/path");
       ]
-      [ Jsx.string "& \"" ]
+      [ JSX.string "& \"" ]
   in
-  assert_string (Jsx.to_string component)
+  assert_string (JSX.to_string component)
     "<div data-user-path=\"what/the/path\" about=\"&#x27; &lt;\">&amp; \
      &quot;</div>"
 
 let make ~name () =
-  Jsx.node "button"
+  JSX.node "button"
     [
-      Jsx.Attribute.String ("name", (name : string));
-      Jsx.Attribute.Event ("onclick", "doFunction('foo');");
+      JSX.Attribute.String ("name", (name : string));
+      JSX.Attribute.Event ("onclick", "doFunction('foo');");
     ]
     []
 
 let event =
   case "event" @@ fun () ->
   assert_string
-    (Jsx.to_string (make ~name:"json" ()))
+    (JSX.to_string (make ~name:"json" ()))
     "<button onclick=\"doFunction('foo');\" name=\"json\"></button>"
 
 let className =
   case "className" @@ fun () ->
-  let div = Jsx.node "div" [ Jsx.Attribute.String ("class", "lol") ] [] in
-  assert_string (Jsx.to_string div) "<div class=\"lol\"></div>"
+  let div = JSX.node "div" [ JSX.Attribute.String ("class", "lol") ] [] in
+  assert_string (JSX.to_string div) "<div class=\"lol\"></div>"
 
 let className_2 =
   case "className_2" @@ fun () ->
   let component =
-    Jsx.node "div"
+    JSX.node "div"
       [
-        Jsx.Attribute.String ("class", "flex xs:justify-center overflow-hidden");
+        JSX.Attribute.String ("class", "flex xs:justify-center overflow-hidden");
       ]
       []
   in
-  assert_string (Jsx.to_string component)
+  assert_string (JSX.to_string component)
     "<div class=\"flex xs:justify-center overflow-hidden\"></div>"
 
 let render_with_doc_type =
   case "render_svg" @@ fun () ->
   let div =
-    Jsx.node "div" []
-      [ Jsx.node "span" [] [ Jsx.string "This is valid HTML5" ] ]
+    JSX.node "div" []
+      [ JSX.node "span" [] [ JSX.string "This is valid HTML5" ] ]
   in
-  assert_string (Jsx.to_string div)
+  assert_string (JSX.to_string div)
     "<div><span>This is valid HTML5</span></div>"
 
 let jsx_unsafe =
@@ -163,8 +163,8 @@ let jsx_unsafe =
   let js_script =
     {| function showCopyToClipboardMessage() { var el = document.getElementById("copy_to_clipboard_message"); el.classList.remove("hidden"); setTimeout(() => { el.classList.add("hidden"); }, 3000); } |}
   in
-  let app = Jsx.node "script" [] [ Jsx.unsafe js_script ] in
-  assert_string (Jsx.to_string app)
+  let app = JSX.node "script" [] [ JSX.unsafe js_script ] in
+  assert_string (JSX.to_string app)
     "<script> function showCopyToClipboardMessage() { var el = \
      document.getElementById(\"copy_to_clipboard_message\"); \
      el.classList.remove(\"hidden\"); setTimeout(() => { \
@@ -173,9 +173,9 @@ let jsx_unsafe =
 let render_svg =
   case "render_svg" @@ fun () ->
   let path =
-    Jsx.node "path"
+    JSX.node "path"
       [
-        Jsx.Attribute.String
+        JSX.Attribute.String
           ( "d",
             "M 5 3 C 3.9069372 3 3 3.9069372 3 5 L 3 19 C 3 20.093063 \
              3.9069372 21 5 21 L 19 21 C 20.093063 21 21 20.093063 21 19 L 21 \
@@ -186,16 +186,16 @@ let render_svg =
       []
   in
   let svg =
-    Jsx.node "svg"
+    JSX.node "svg"
       [
-        Jsx.Attribute.String ("xmlns", "http://www.w3.org/2000/svg");
-        Jsx.Attribute.String ("viewBox", "0 0 24 24");
-        Jsx.Attribute.String ("width", "24px");
-        Jsx.Attribute.String ("height", "24px");
+        JSX.Attribute.String ("xmlns", "http://www.w3.org/2000/svg");
+        JSX.Attribute.String ("viewBox", "0 0 24 24");
+        JSX.Attribute.String ("width", "24px");
+        JSX.Attribute.String ("height", "24px");
       ]
       [ path ]
   in
-  assert_string (Jsx.to_string svg)
+  assert_string (JSX.to_string svg)
     "<svg height=\"24px\" width=\"24px\" viewBox=\"0 0 24 24\" \
      xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M 5 3 C 3.9069372 3 3 \
      3.9069372 3 5 L 3 19 C 3 20.093063 3.9069372 21 5 21 L 19 21 C 20.093063 \
