@@ -5,7 +5,7 @@ let () =
 
   let result =
     Benchmark.throughputN ~repeat:3 8
-      [ ("to_string", JSX.to_string, html) (* add more benchmarks here *) ]
+      [ ("to_string", JSX.render, html) (* add more benchmarks here *) ]
   in
 
   print_newline ();

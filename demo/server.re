@@ -119,7 +119,7 @@ let () = {
     server,
     Httpd.Route.(return),
     _req => {
-      let html = JSX.to_string(<Page project_url />);
+      let html = JSX.render(<Page project_url />);
       Httpd.Response.make_string(Ok(html));
     },
   );

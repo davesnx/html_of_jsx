@@ -32,4 +32,4 @@ let component = (~name) => {
   <div> <h1> {"Hello, " ++ name ++ "!"} </h1> </div>;
 };
 
-JSX.to_string(<component />);
+JSX.render(<component />);

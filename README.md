@@ -15,7 +15,7 @@
 - Type-safe, validates attributes and their types ([it can be better thought](https://github.com/davesnx/html_of_jsx/issues/2))
 - Works with [OCaml](https://ocaml.org), [Reason](https://reasonml.github.io) and [mlx](https://github.com/ocaml-mlx/mlx)
 - Minimal
-  - `JSX.to_string` to render a JSX element to a HTML string
+  - `JSX.render` to render a JSX element to a HTML string
   - `JSX.*` to construct DOM Elements and DOM nodes (`JSX.string`, `JSX.int`, `JSX.null`, `JSX.list`)
 - Created to work on the server-side, but can be used on the client-side too (with [Melange](https://melange.re))
 
@@ -37,7 +37,7 @@ let element = <a href="https://x.com/davesnx">
   <span> {"Click me!"} </span>
 </a>
 
-let html: string = JSX.to_string(element);
+let html: string = JSX.render(element);
 ```
 
 Check the [demo/server.re](./demo/server.re) file to see a full example.

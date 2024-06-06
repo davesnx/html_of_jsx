@@ -48,7 +48,7 @@ let list arr = List arr
 let fragment arr = Fragment arr
 let node tag attributes children = Node { tag; attributes; children }
 
-let to_string element =
+let render element =
   let buffer = Rope.Buffer.create 1024 in
 
   let rec render_element element =

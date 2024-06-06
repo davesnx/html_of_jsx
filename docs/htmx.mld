@@ -13,7 +13,7 @@ Supports htmx properties
 
 {2 Example}
 {[
-JSX.to_string(<div hx_boost=true />)
+JSX.render(<div hx_boost=true />)
 ]}
 
 All attributes are supported with the prefix {b hx_}

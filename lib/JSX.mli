@@ -1,7 +1,7 @@
 (** Declaratively create HTML elements with JSX using OCaml/Reason.
 
   {[
-    let html: string = JSX.to_string (
+    let html: string = JSX.render (
       <div>
         <h1> {JSX.string("Hello, World!")} </h1>
       </div>
@@ -22,11 +22,11 @@ end
 type element
 (** The type that represents a JSX.element *)
 
-val to_string : element -> string
-(** The function to convert a JSX.element to a string. 
+val render : element -> string
+(** Render a JSX.element to a string. 
 
     {[
-      let html: string = JSX.to_string (
+      let html: string = JSX.render (
         <div>
           <h1> (JSX.string "Hello, World!") </h1>
         </div>
