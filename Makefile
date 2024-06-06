@@ -19,6 +19,10 @@ build: ## Build the project, including non installable libraries and executables
 build-prod: ## Build for production (--profile=prod)
 	$(DUNE) build --profile=prod @all
 
+.PHONY: bench
+bench: ## Run bench mark executable
+	$(DUNE) exec bench/bench.exe
+
 .PHONY: dev
 dev: ## Build in watch mode
 	$(DUNE) build -w @all

@@ -25,7 +25,7 @@
   (ocaml (>= 5.0.0))
   (reason (>= 3.10.0))
   (ppxlib (> 0.23.0))
-  (rope (> 0.6.3))
+  (rope (>= 0.6.3))
 
   ;; Test dependencies
   (alcotest :with-test)
@@ -40,4 +40,5 @@
     :with-dev-setup))
   (ocaml-lsp-server :with-dev-setup)
   (tiny_httpd :with-dev-setup)
+  (benchmark :with-dev-setup)
 ))
