@@ -82,31 +82,34 @@ let to_string element =
 
   buffer |> Rope.Buffer.contents |> Rope.to_string
 
-type __node = {
-  tag : string;
-  attributes : Attribute.t list;
-  children : __element list;
-}
+module Debug = struct
+  type __node = {
+    tag : string;
+    attributes : Attribute.t list;
+    children : __element list;
+  }
 
-and __element =
-  | Null
-  | String of string
-  | Unsafe of string
-  | Fragment of __element list
-  | Node of __node
-  | Component of (unit -> __element)
-  | List of __element list
+  and __element =
+    | Null
+    | String of string
+    | Unsafe of string
+    | Fragment of __element list
+    | Node of __node
+    | Component of (unit -> __element)
+    | List of __element list
 
-let __view (el : element) : __element =
-  let rec view (el : element) : __element =
-    match el with
-    | Null -> Null
-    | String str -> String str
-    | Unsafe str -> Unsafe str
-    | Fragment fragment -> Fragment (List.map view fragment)
-    | Node { tag; attributes; children } ->
-        Node { tag; attributes; children = List.map view children }
-    | Component f -> Component (fun () -> view (f ()))
-    | List list -> List (List.map view list)
-  in
-  view el
+  let view (el : element) : __element =
+    let rec to_debug_element (el : element) : __element =
+      match el with
+      | Null -> Null
+      | String str -> String str
+      | Unsafe str -> Unsafe str
+      | Fragment fragment -> Fragment (List.map to_debug_element fragment)
+      | Node { tag; attributes; children } ->
+          Node
+            { tag; attributes; children = List.map to_debug_element children }
+      | Component f -> Component (fun () -> to_debug_element (f ()))
+      | List list -> List (List.map to_debug_element list)
+    in
+    to_debug_element el
+end
