@@ -102,13 +102,15 @@ Only 2 functions to learn, the rest are your own functions (aka components):
 - [JSX.render] to render your HTML
 - [JSX.string] to inline text
 
-The rest are helpers on [JSX.*], like ([JSX.int]). Check the [!JSX. if you are curious
+The rest are helpers on [JSX.*], like ([JSX.int]). Check [!JSX].
 
 {[
 JSX.render(<h1>{JSX.string("Hello, world!")}</h1>);
 ]}
 
-{2 Supports children as prop}
+{2 children as a prop}
+
+This makes possible to compose any HTML and abstract those components away.
 
 {[
 let component = (~name, ~children, ()) => {
@@ -123,10 +125,16 @@ JSX.render(<component> {"This is a children!"} </component>)
 
 {2 Supports fragments}
 
-{[
-let component: JSX.element = <> <div class_="md:w-1/3" /> <div class_="md:w-2/3" /> </>;
+Construct many [JSX.element] without wrapping them in a HTML element.
 
-JSX.render(<component> {"This is a children!"} </component>)
+{[
+let component: JSX.element =
+  <>
+    <div class_="md:w-1/3" />
+    <div class_="md:w-2/3" />
+  </>;
+
+JSX.render(<component/>)
 ]}
 
 {2 Works with {{:https://reasonml.github.io}Reason}
