@@ -33,8 +33,8 @@
   ;; Dev dependencies
   (ocamlformat
    (and
-    (= 0.26.1)
-    :with-dev-setup))
+    (= 0.26.1) (or
+    :with-dev-setup :with-test)))
   (ocaml-lsp-server :with-dev-setup)
   (tiny_httpd :with-dev-setup)
 ))
