@@ -65,6 +65,9 @@ jobs:
       - name: Run tests
         run: make test
 
+      - name: Run benchmarks
+        run: make bench
+
       - name: Generate docs
         if: github.ref == 'refs/heads/main'
         run: make docs

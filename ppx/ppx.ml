@@ -109,62 +109,62 @@ let make_attribute ~loc ~is_optional ~prop attribute_name attribute_value =
   | Rich_attribute { type_ = String; _ }, false
   | Attribute { type_ = String; _ }, false ->
       [%expr
-        Some (Jsx.Attribute.String ([%e attribute_name], [%e attribute_value]))]
+        Some (JSX.Attribute.String ([%e attribute_name], [%e attribute_value]))]
   | Rich_attribute { type_ = String; _ }, true
   | Attribute { type_ = String; _ }, true ->
       [%expr
         Stdlib.Option.map
-          (fun v -> Jsx.Attribute.String ([%e attribute_name], v))
+          (fun v -> JSX.Attribute.String ([%e attribute_name], v))
           [%e attribute_value]]
   | Rich_attribute { type_ = Int; _ }, false
   | Attribute { type_ = Int; _ }, false ->
       [%expr
         Some
-          (Jsx.Attribute.String
+          (JSX.Attribute.String
              ([%e attribute_name], string_of_int [%e attribute_value]))]
   | Rich_attribute { type_ = Int; _ }, true | Attribute { type_ = Int; _ }, true
     ->
       [%expr
         Stdlib.Option.map
-          (fun v -> Jsx.Attribute.String ([%e attribute_name], string_of_int v))
+          (fun v -> JSX.Attribute.String ([%e attribute_name], string_of_int v))
           [%e attribute_value]]
   | Rich_attribute { type_ = Bool; _ }, false
   | Attribute { type_ = Bool; _ }, false ->
       [%expr
-        Some (Jsx.Attribute.Bool ([%e attribute_name], [%e attribute_value]))]
+        Some (JSX.Attribute.Bool ([%e attribute_name], [%e attribute_value]))]
   | Rich_attribute { type_ = Bool; _ }, true
   | Attribute { type_ = Bool; _ }, true ->
       [%expr
         Stdlib.Option.map
-          (fun v -> Jsx.Attribute.Bool ([%e attribute_name], v))
+          (fun v -> JSX.Attribute.Bool ([%e attribute_name], v))
           [%e attribute_value]]
   (* BooleanishString needs to transform bool into string *)
   | Rich_attribute { type_ = BooleanishString; _ }, false
   | Attribute { type_ = BooleanishString; _ }, false ->
       [%expr
         Some
-          (Jsx.Attribute.String
+          (JSX.Attribute.String
              ([%e attribute_name], string_of_bool [%e attribute_value]))]
   | Rich_attribute { type_ = BooleanishString; _ }, true
   | Attribute { type_ = BooleanishString; _ }, true ->
       [%expr
         Stdlib.Option.map
-          (fun v -> Jsx.Attribute.String ([%e attribute_name], v))
+          (fun v -> JSX.Attribute.String ([%e attribute_name], v))
           string_of_bool [%e attribute_value]]
   | Rich_attribute { type_ = Style; _ }, false
   | Attribute { type_ = Style; _ }, false ->
-      [%expr Some (Jsx.Attribute.Style [%e attribute_value])]
+      [%expr Some (JSX.Attribute.Style [%e attribute_value])]
   | Rich_attribute { type_ = Style; _ }, true
   | Attribute { type_ = Style; _ }, true ->
       [%expr
-        Stdlib.Option.map (fun v -> Jsx.Attribute.Style v) [%e attribute_value]]
+        Stdlib.Option.map (fun v -> JSX.Attribute.Style v) [%e attribute_value]]
   | Event _, false ->
       [%expr
-        Some (Jsx.Attribute.Event ([%e attribute_name], [%e attribute_value]))]
+        Some (JSX.Attribute.Event ([%e attribute_name], [%e attribute_value]))]
   | Event _, true ->
       [%expr
         Stdlib.Option.map
-          (fun v -> Jsx.Attribute.Event ([%e attribute_name], v))
+          (fun v -> JSX.Attribute.Event ([%e attribute_name], v))
           [%e attribute_value]]
 
 let is_optional = function Optional _ -> true | _ -> false
@@ -215,8 +215,8 @@ let rewrite_node ~loc tag_name args children =
   match children with
   | Some children ->
       let childrens = pexp_list ~loc children in
-      [%expr Jsx.node [%e dom_node_name] [%e attributes] [%e childrens]]
-  | None -> [%expr Jsx.node [%e dom_node_name] [%e attributes] []]
+      [%expr JSX.node [%e dom_node_name] [%e attributes] [%e childrens]]
+  | None -> [%expr JSX.node [%e dom_node_name] [%e attributes] []]
 
 let split_args ~mapper args =
   let children = ref (Location.none, []) in
@@ -230,7 +230,7 @@ let split_args ~mapper args =
                   match e.pexp_desc with
                   | Pexp_constant (Pconst_string _) ->
                       let loc = e.pexp_loc in
-                      [%expr Jsx.text [%e e]]
+                      [%expr JSX.string [%e e]]
                   | _ -> e
                 in
                 mapper expression)
@@ -315,7 +315,7 @@ let rewrite_jsx =
             | [], _ -> super#expression expr
             | _, _rest_attributes ->
                 let children = transform_items_of_list ~loc ~mapper:self expr in
-                [%expr Jsx.fragment [%e children]])
+                [%expr JSX.fragment [%e children]])
         | _ -> super#expression expr
       with Error err -> [%expr [%e err]]
   end

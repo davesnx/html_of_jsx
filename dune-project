@@ -25,9 +25,11 @@
   (ocaml (>= 5.0.0))
   (reason (>= 3.10.0))
   (ppxlib (> 0.23.0))
+  (rope (>= 0.6.3))
 
   ;; Test dependencies
   (alcotest :with-test)
+  (benchmark :with-test)
 
   ;; Documentation
   (odoc :with-doc)

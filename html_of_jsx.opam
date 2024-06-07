@@ -2,7 +2,7 @@
 opam-version: "2.0"
 synopsis: "Render HTML with JSX"
 description:
-  "html_of_jsx is an implementation of JSX designed to render HTML on the server, without React or anything else. It's a minimal library that allows you to write components of HTML in a declarative way."
+  "html_of_jsx is a JSX transformation that allows you to write HTML declaratively."
 maintainer: ["David Sancho <dsnxmoreno@gmail.com>"]
 authors: ["David Sancho <dsnxmoreno@gmail.com>"]
 license: "MIT"
@@ -13,7 +13,9 @@ depends: [
   "ocaml" {>= "5.0.0"}
   "reason" {>= "3.10.0"}
   "ppxlib" {> "0.23.0"}
+  "rope" {>= "0.6.3"}
   "alcotest" {with-test}
+  "benchmark" {with-test}
   "odoc" {with-doc}
   "ocamlformat" {= "0.26.1" & with-dev-setup}
   "ocaml-lsp-server" {with-dev-setup}
