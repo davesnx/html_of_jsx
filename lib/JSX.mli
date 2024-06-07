@@ -23,7 +23,7 @@ type element
 (** The type that represents a JSX.element *)
 
 val render : element -> string
-(** Render a JSX.element to a string. 
+(** Render a JSX.element to a string.
 
     {[
       let html: string = JSX.render (
@@ -79,7 +79,7 @@ module Debug : sig
     attributes : Attribute.t list;
     children : __element list;
   }
-  (** Type for inspection of a node  *)
+  (** Type for inspection of a node *)
 
   and __element =
     | Null

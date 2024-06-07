@@ -35,15 +35,16 @@ and element =
   | Unsafe of string (* text without encoding *)
   | Fragment of element list
   | Node of node
-  | Component of (unit -> element) (* TODO: Is this unused? *) [@warning "-37"]
+  | Component of (unit -> element)
+      (* Used to lazy define elements, mostly by the ppx *) [@warning "-37"]
   | List of element list
 
 let string txt = String txt
 let text = string
 let unsafe txt = Unsafe txt
 let null = Null
-let int i = String (string_of_int i)
-let float f = String (string_of_float f)
+let int i = String (Int.to_string i)
+let float f = String (Float.to_string f)
 let list arr = List arr
 let fragment arr = Fragment arr
 let node tag attributes children = Node { tag; attributes; children }
