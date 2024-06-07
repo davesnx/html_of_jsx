@@ -1,9 +1,7 @@
-(lang dune 3.8)
+(lang dune 3.15)
 (generate_opam_files true)
 (implicit_transitive_deps false)
 (using melange 0.1)
-
-(cram enable)
 
 (name html_of_jsx)
 (maintainers "David Sancho <dsnxmoreno@gmail.com>")

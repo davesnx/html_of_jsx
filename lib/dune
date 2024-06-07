@@ -1,5 +1,5 @@
 (library
  (name html_of_jsx)
  (wrapped false)
- (public_name html_of_jsx)
- (libraries rope))
+ (modes :standard melange)
+ (public_name html_of_jsx))

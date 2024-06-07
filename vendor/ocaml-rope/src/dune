@@ -1,6 +1,0 @@
-(library
- (name rope)
- (modes :standard melange)
- (public_name rope)
- (libraries bytes)
- (synopsis "Ropes (heavyweight strings)"))
