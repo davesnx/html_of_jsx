@@ -1,24 +1,19 @@
 (lang dune 3.8)
+(generate_opam_files true)
+(implicit_transitive_deps false)
 
 (cram enable)
 
 (name html_of_jsx)
-
-(license MIT)
-
 (maintainers "David Sancho <dsnxmoreno@gmail.com>")
-
 (authors "David Sancho <dsnxmoreno@gmail.com>")
-
+(license MIT)
 (source
  (github davesnx/html_of_jsx))
 
-(generate_opam_files true)
-
-(implicit_transitive_deps false)
-
 (package
  (name html_of_jsx)
+ (documentation https://davesnx.github.io/html_of_jsx/html_of_jsx/index.html)
  (synopsis "Render HTML with JSX")
  (description "html_of_jsx is a JSX transformation that allows you to write HTML declaratively.")
  (depends
