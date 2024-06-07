@@ -75,6 +75,10 @@ demo: ## Run demo executable
 demo-watch: ## Run demo executable
 	$(DUNE) exec -w demo/server.exe
 
+.PHONY: demo-client
+demo-client: build ## Run client's demo
+	node _build/default/demo/output/demo/client.mjs
+
 .PHONY: subst
 subst: ## Run dune substitute
 	$(DUNE) subst
