@@ -33,7 +33,7 @@ opam install html_of_jsx
 ## Usage
 
 ```reason
-let element = <a href="https://x.com/davesnx">
+let element: JSX.element = <a href="https://x.com/davesnx">
   <span> {"Click me!"} </span>
 </a>
 

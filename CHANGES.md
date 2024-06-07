@@ -1,5 +1,13 @@
 # Changes
 
+## 0.0.3
+
+- [BREAKING] `Html_of_jsx.render` lives under `JSX.render` (removing the `Html_of_jsx` module entirely)
+- [BREAKING] Module `Jsx` is turned into `JSX`
+- [BREAKING] dune's library is now `html_of_jsx` instead of (`html_of_jsx.lib`)
+- [BREAKING] `JSX.element` is opaque (can't see the type from outside), but we have a `JSX.Debug` module to inspect and re-construct `JSX.element` (cc @leandro)
+- Improved performance of `JSX.render`
+
 ## 0.0.2
 
 - Add `Jsx.unsafe` to allow unsafe HTML as children

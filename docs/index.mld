@@ -22,7 +22,7 @@ opan install html_of_jsx
 
 {1 API}
 
-{!Jsx} module that exposes some helpers to construct elements and {!Html_of_jsx} to render them, the rest are functions with labelled arguments.
+The only module exposed is {!JSX} with some functions to construct elements and {!JSX.render} to transform those elements into a string.
 
 {1 Overview}
 
