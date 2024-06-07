@@ -1,4 +1,4 @@
-(dirs lib ppx test docs demo bench)
+(dirs lib ppx test docs demo bench vendor)
 
 (documentation
  (package html_of_jsx))
