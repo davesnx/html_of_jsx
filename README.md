@@ -11,7 +11,7 @@
 - Supports most of features from [JSX](https://reasonml.github.io/docs/en/jsx) (uppercase components, fragments, optional attributes, punning)
 - but with a few improvements (lowercase components, no need to add annotations)
 - No React idioms (no `className`, no `htmlFor`, no `onChange`, etc...)
-- Integrates well with Htmx
+- Integrates well with [htmx](https://htmx.org)
 - Type-safe, validates attributes and their types ([it can be better thought](https://github.com/davesnx/html_of_jsx/issues/2))
 - Works with [OCaml](https://ocaml.org), [Reason](https://reasonml.github.io) and [mlx](https://github.com/ocaml-mlx/mlx)
 - Minimal
