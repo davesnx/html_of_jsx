@@ -17,7 +17,7 @@
 - Minimal
   - `JSX.render` to render a JSX element to a HTML string
   - `JSX.*` to construct DOM Elements and DOM nodes (`JSX.string`, `JSX.int`, `JSX.null`, `JSX.list`)
-- Created to work on the server-side, but can be used on the client-side too (with [Melange](https://melange.re))
+- Created to work on the server-side, but can be used on the client-side as well (with [Melange](https://melange.re) or [jsoo](https://ocsigen.org/js_of_ocaml/))
 
 ## Installation
 
