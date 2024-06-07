@@ -26,7 +26,7 @@ opam install html_of_jsx
 ```
 
 ```diff
-+ (library html_of_jsx.lib)
++ (library html_of_jsx)
 + (preprocess (pps html_of_jsx.ppx))
 ```
 
