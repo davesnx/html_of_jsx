@@ -1,5 +1,16 @@
 (executable
  (name server)
+ (modules server styles)
  (libraries tiny_httpd html_of_jsx)
  (preprocess
   (pps html_of_jsx.ppx -htmx)))
+
+(melange.emit
+ (modules client)
+ (target output)
+ (alias demo)
+ (libraries html_of_jsx)
+ (preprocess
+  (pps html_of_jsx.ppx))
+ (module_systems
+  (es6 mjs)))
