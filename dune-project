@@ -13,7 +13,8 @@
 
 (package
  (name html_of_jsx)
- (documentation https://davesnx.github.io/html_of_jsx/html_of_jsx/index.html)
+ ; There's a bug with pushing documentation with dune-release
+ ; (documentation https://davesnx.github.io/html_of_jsx/html_of_jsx/index.html)
  (synopsis "Render HTML with JSX")
  (description "html_of_jsx is a JSX transformation that allows you to write HTML declaratively.")
  (depends
