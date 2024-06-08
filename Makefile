@@ -57,7 +57,7 @@ setup-githooks: ## Setup githooks
 
 .PHONY: create-switch
 create-switch: ## Create opam switch
-	opam switch create . 5.1.0 --deps-only --with-test -y
+	opam switch create . 5.1.1 --deps-only --with-test -y
 
 .PHONY: install
 install: # Install dependencies
@@ -74,6 +74,10 @@ demo: ## Run demo executable
 .PHONY: demo-watch
 demo-watch: ## Run demo executable
 	$(DUNE) exec -w demo/server.exe
+
+.PHONY: demo-client
+demo-client: build ## Run client's demo
+	node _build/default/demo/output/demo/client.mjs
 
 .PHONY: subst
 subst: ## Run dune substitute

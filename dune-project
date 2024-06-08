@@ -1,8 +1,7 @@
-(lang dune 3.8)
+(lang dune 3.15)
 (generate_opam_files true)
 (implicit_transitive_deps false)
-
-(cram enable)
+(using melange 0.1)
 
 (name html_of_jsx)
 (maintainers "David Sancho <dsnxmoreno@gmail.com>")
@@ -21,7 +20,7 @@
   (ocaml (>= 5.0.0))
   (reason (>= 3.10.0))
   (ppxlib (> 0.23.0))
-  (rope (>= 0.6.3))
+  melange
 
   ;; Test dependencies
   (alcotest :with-test)
