@@ -114,7 +114,7 @@ let encode_attributes =
       [ JSX.string "& \"" ]
   in
   assert_string (JSX.render component)
-    "<div data-user-path=\"what/the/path\" about=\"&#x27; &lt;\">&amp; \
+    "<div data-user-path=\"what/the/path\" about=\"&apos; &lt;\">&amp; \
      &quot;</div>"
 
 let make ~name () =
