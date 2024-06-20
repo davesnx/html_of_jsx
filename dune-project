@@ -1,4 +1,4 @@
-(lang dune 3.15)
+(lang dune 3.12)
 (generate_opam_files true)
 (implicit_transitive_deps false)
 (using melange 0.1)
