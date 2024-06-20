@@ -17,7 +17,7 @@
  (synopsis "Render HTML with JSX")
  (description "html_of_jsx is a JSX transformation that allows you to write HTML declaratively.")
  (depends
-  (ocaml (>= 5.0.0))
+  (ocaml (>= 4.14))
   (reason (>= 3.10.0))
   (ppxlib (> 0.23.0))
   melange
