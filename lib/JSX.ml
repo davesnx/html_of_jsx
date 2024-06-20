@@ -79,16 +79,15 @@ let render element =
         Attribute.add_string buffer attributes;
         Buffer.add_string buffer " />"
     | Node { tag; attributes; children } ->
-        if tag = "html" then Buffer.add_string buffer "<!DOCTYPE html>"
-        else (
-          Buffer.add_char buffer '<';
-          Buffer.add_string buffer tag;
-          Attribute.add_string buffer attributes;
-          Buffer.add_char buffer '>';
-          List.iter render_element children;
-          Buffer.add_string buffer "</";
-          Buffer.add_string buffer tag;
-          Buffer.add_char buffer '>')
+        if tag = "html" then Buffer.add_string buffer "<!DOCTYPE html>";
+        Buffer.add_char buffer '<';
+        Buffer.add_string buffer tag;
+        Attribute.add_string buffer attributes;
+        Buffer.add_char buffer '>';
+        List.iter render_element children;
+        Buffer.add_string buffer "</";
+        Buffer.add_string buffer tag;
+        Buffer.add_char buffer '>'
     | String text -> Html.escape_and_add buffer text
     | Unsafe text -> Buffer.add_string buffer text
   in
