@@ -7,7 +7,7 @@ let is_self_closing_tag = function
       true
   | _ -> false
 
-(* https://github.com/andreypopp/reactor/blob/main/htmlgen/htmlgen.ml#L34-L68 *)
+(* This function is borrowed from https://github.com/dbuenzli/htmlit/blob/62d8f21a9233791a5440311beac02a4627c3a7eb/src/htmlit.ml#L10-L28 *)
 let escape_and_add b s =
   let adds = Buffer.add_string in
   let len = String.length s in
