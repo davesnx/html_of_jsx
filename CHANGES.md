@@ -1,5 +1,10 @@
 # Changes
 
+## Unreleased
+- [BREAKING] Handle HTML encoding for `'` (@davesnx)
+- Handle HTML encoding for `"` (from `&#34;` to `&quot;`) (@davesnx)
+- Improved performance of `JSX.render` (@davesnx)
+
 ## 0.0.3
 
 - [BREAKING] `Html_of_jsx.render` lives under `JSX.render` (removing the `Html_of_jsx` module entirely) (@lessp)
