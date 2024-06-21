@@ -51,8 +51,6 @@ and element =
   | Unsafe of string (* text without encoding *)
   | Fragment of element list
   | Node of node
-  | Component of (unit -> element)
-      (* Used to lazy define elements, mostly by the ppx *) [@warning "-37"]
   | List of element list
 
 let string txt = String txt
@@ -72,7 +70,6 @@ let render element =
     match element with
     | Null -> ()
     | Fragment list | List list -> List.iter render_element list
-    | Component f -> render_element (f ())
     | Node { tag; attributes; _ } when Html.is_self_closing_tag tag ->
         Buffer.add_char buffer '<';
         Buffer.add_string buffer tag;
@@ -109,7 +106,6 @@ module Debug = struct
     | Unsafe of string
     | Fragment of __element list
     | Node of __node
-    | Component of (unit -> __element)
     | List of __element list
 
   let view (el : element) : __element =
@@ -122,7 +118,6 @@ module Debug = struct
       | Node { tag; attributes; children } ->
           Node
             { tag; attributes; children = List.map to_debug_element children }
-      | Component f -> Component (fun () -> to_debug_element (f ()))
       | List list -> List (List.map to_debug_element list)
     in
     to_debug_element el

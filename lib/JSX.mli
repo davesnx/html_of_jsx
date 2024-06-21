@@ -85,7 +85,6 @@ module Debug : sig
     | Unsafe of string (* text without encoding *)
     | Fragment of __element list
     | Node of __node
-    | Component of (unit -> __element)
     | List of __element list
 
   val view : element -> __element
