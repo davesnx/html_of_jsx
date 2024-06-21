@@ -315,7 +315,7 @@ let rewrite_jsx =
             | [], _ -> super#expression expr
             | _, _rest_attributes ->
                 let children = transform_items_of_list ~loc ~mapper:self expr in
-                [%expr JSX.fragment [%e children]])
+                [%expr JSX.list [%e children]])
         | _ -> super#expression expr
       with Error err -> [%expr [%e err]]
   end

@@ -12,7 +12,7 @@ We need to output ML syntax here, otherwise refmt could not parse it.
   let react_component_with_optional_prop = hello ?lola:"flores" ()
   
   let div =
-    JSX.fragment
+    JSX.list
       [
         JSX.node "div"
           (List.filter_map Fun.id

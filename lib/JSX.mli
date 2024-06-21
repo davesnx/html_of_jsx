@@ -36,6 +36,7 @@ val float : float -> element
 (** Helper to render a float *)
 
 val fragment : element list -> element
+[@@deprecated "Use JSX.list instead"]
 (** Fragment *)
 
 val int : int -> element
@@ -83,9 +84,7 @@ module Debug : sig
     | Null
     | String of string
     | Unsafe of string (* text without encoding *)
-    | Fragment of __element list
     | Node of __node
-    | Component of (unit -> __element)
     | List of __element list
 
   val view : element -> __element
