@@ -1,23 +1,23 @@
 let tag =
-  case("tag", () => {
+  test("tag", () => {
     let div = <div />;
     assert_string(JSX.render(div), {|<div></div>|});
   });
 
 let empty_attribute =
-  case("empty_attribute", () => {
+  test("empty_attribute", () => {
     let div = <div class_="" />;
     assert_string(JSX.render(div), {|<div class=""></div>|});
   });
 
 let bool_attribute =
-  case("bool_attribute", () => {
+  test("bool_attribute", () => {
     let div = <div hidden=true />;
     assert_string(JSX.render(div), {|<div hidden></div>|});
   });
 
 let bool_attributes =
-  case("bool_attributes", () => {
+  test("bool_attributes", () => {
     let input =
       <input type_="checkbox" name="cheese" checked=true disabled=false />;
     assert_string(
@@ -27,19 +27,19 @@ let bool_attributes =
   });
 
 let innerhtml =
-  case("innerhtml", () => {
+  test("innerhtml", () => {
     let p = <p> {JSX.string("text")} </p>;
     assert_string(JSX.render(p), {|<p>text</p>|});
   });
 
 let int_attribute =
-  case("int_attribute", () => {
+  test("int_attribute", () => {
     let div = <div tabindex=1 />;
     assert_string(JSX.render(div), {|<div tabindex="1"></div>|});
   });
 
 let style_attribute =
-  case("style_attribute", () => {
+  test("style_attribute", () => {
     let div = <div style="background-color:gainsboro" />;
     assert_string(
       JSX.render(div),
@@ -48,7 +48,7 @@ let style_attribute =
   });
 
 let link_as_attribute =
-  case("link_as_attribute", () => {
+  test("link_as_attribute", () => {
     let link =
       <link as_="image" rel="preload" href="https://sancho.dev/blog" />;
     assert_string(
@@ -58,21 +58,21 @@ let link_as_attribute =
   });
 
 let int_opt_attribute_some =
-  case("int_opt_attribute_some", () => {
+  test("int_opt_attribute_some", () => {
     let tabindex = Some(1);
     let div = <div ?tabindex />;
     assert_string(JSX.render(div), {|<div tabindex="1"></div>|});
   });
 
 let int_opt_attribute_none =
-  case("int_opt_attribute_none", () => {
+  test("int_opt_attribute_none", () => {
     let tabindex = None;
     let div = <div ?tabindex />;
     assert_string(JSX.render(div), {|<div></div>|});
   });
 
 let lists_as_children =
-  case("lists_as_children", () => {
+  test("lists_as_children", () => {
     let div = <> <div class_="md:w-1/3" /> <div class_="md:w-2/3" /> </>;
     assert_string(
       JSX.render(div),
@@ -90,67 +90,67 @@ module Container = {
 };
 
 let children_uppercase =
-  case("children_uppercase", () => {
+  test("children_uppercase", () => {
     let component = <Container />;
     assert_string(JSX.render(component), "");
   });
 
 let children_uppercase_children_case_optional =
-  case("children_uppercase_children_optional", () => {
+  test("children_uppercase_children_optional", () => {
     let component = <Container> <span /> </Container>;
     assert_string(JSX.render(component), {|<div><span></span></div>|});
   });
 
 let children_lowercase =
-  case("children_lowercase", () => {
+  test("children_lowercase", () => {
     let component = <div> <span /> </div>;
     assert_string(JSX.render(component), {|<div><span></span></div>|});
   });
 
 let string_opt_attribute_some =
-  case("string_opt_attribute_some", () => {
+  test("string_opt_attribute_some", () => {
     let class_ = Some("foo");
     let div = <div ?class_ />;
     assert_string(JSX.render(div), {|<div class="foo"></div>|});
   });
 
 let string_opt_attribute_none =
-  case("string_opt_attribute_none", () => {
+  test("string_opt_attribute_none", () => {
     let class_ = None;
     let div = <div ?class_ />;
     assert_string(JSX.render(div), {|<div></div>|});
   });
 
 let bool_opt_attribute_some =
-  case("bool_opt_attribute_some", () => {
+  test("bool_opt_attribute_some", () => {
     let hidden = Some(true);
     let div = <div ?hidden />;
     assert_string(JSX.render(div), {|<div hidden></div>|});
   });
 
 let bool_opt_attribute_none =
-  case("bool_opt_attribute_none", () => {
+  test("bool_opt_attribute_none", () => {
     let hidden = None;
     let div = <div ?hidden />;
     assert_string(JSX.render(div), {|<div></div>|});
   });
 
 let style_opt_attribute_some =
-  case("style_opt_attribute_some", () => {
+  test("style_opt_attribute_some", () => {
     let style = Some("color: blue;");
     let div = <div ?style />;
     assert_string(JSX.render(div), {|<div style="color: blue;"></div>|});
   });
 
 let style_opt_attribute_none =
-  case("style_opt_attribute_none", () => {
+  test("style_opt_attribute_none", () => {
     let style = None;
     let div = <div ?style />;
     assert_string(JSX.render(div), {|<div></div>|});
   });
 
 let onclick_inline_string =
-  case("onclick_inline_string", () => {
+  test("onclick_inline_string", () => {
     let onClick = "console.log('clicked')";
     let div = <div onclick=onClick />;
     assert_string(
@@ -160,7 +160,7 @@ let onclick_inline_string =
   });
 
 let svg =
-  case("svg", () => {
+  test("svg", () => {
     assert_string(
       JSX.render(
         <svg
@@ -184,7 +184,7 @@ module Component = {
 };
 
 let children_one_element =
-  case("children_one_element", () => {
+  test("children_one_element", () => {
     assert_string(
       JSX.render(<Component cosas=true> <span /> </Component>),
       {|<div><span></span></div>|},
@@ -192,7 +192,7 @@ let children_one_element =
   });
 
 let children_multiple_elements =
-  case("children_multiple_elements", () => {
+  test("children_multiple_elements", () => {
     assert_string(
       JSX.render(
         <Component cosas=false>
@@ -221,7 +221,7 @@ module Text = {
 };
 
 let create_element_variadic =
-  case("create_element_variadic", () => {
+  test("create_element_variadic", () => {
     let component = <Text tagType=Text.Tag.H1> {JSX.string("Hello")} </Text>;
     assert_string(JSX.render(component), {|<h1>Hello</h1>|});
     let component = <Text tagType=Text.Tag.H2> {JSX.string("Hello")} </Text>;
@@ -229,7 +229,7 @@ let create_element_variadic =
   });
 
 let aria_props =
-  case("aria_props", () => {
+  test("aria_props", () => {
     let component =
       <h1 aria_hidden=true aria_label="send email" aria_atomic=true>
         {JSX.string("Hello")}
@@ -241,7 +241,7 @@ let aria_props =
   });
 
 let lowercase_component =
-  case("lowercase_component", () => {
+  test("lowercase_component", () => {
     let component = (~text, ()) => <h1> {JSX.string(text)} </h1>;
 
     assert_string(
