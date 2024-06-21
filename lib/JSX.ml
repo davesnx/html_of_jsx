@@ -49,7 +49,6 @@ and element =
   | Null
   | String of string
   | Unsafe of string (* text without encoding *)
-  | Fragment of element list
   | Node of node
   | List of element list
 
@@ -60,7 +59,7 @@ let null = Null
 let int i = String (Int.to_string i)
 let float f = String (Float.to_string f)
 let list arr = List arr
-let fragment arr = Fragment arr
+let fragment arr = List arr
 let node tag attributes children = Node { tag; attributes; children }
 
 let render element =
@@ -69,7 +68,7 @@ let render element =
   let rec render_element element =
     match element with
     | Null -> ()
-    | Fragment list | List list -> List.iter render_element list
+    | List list -> List.iter render_element list
     | Node { tag; attributes; _ } when Html.is_self_closing_tag tag ->
         Buffer.add_char buffer '<';
         Buffer.add_string buffer tag;
@@ -104,7 +103,6 @@ module Debug = struct
     | Null
     | String of string
     | Unsafe of string
-    | Fragment of __element list
     | Node of __node
     | List of __element list
 
@@ -114,7 +112,6 @@ module Debug = struct
       | Null -> Null
       | String str -> String str
       | Unsafe str -> Unsafe str
-      | Fragment fragment -> Fragment (List.map to_debug_element fragment)
       | Node { tag; attributes; children } ->
           Node
             { tag; attributes; children = List.map to_debug_element children }
