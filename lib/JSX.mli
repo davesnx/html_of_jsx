@@ -15,8 +15,6 @@ module Attribute : sig
     | String of (string * string)
     | Style of string
     | Event of (string * string)
-
-  val to_string : t list -> string
 end
 
 type element

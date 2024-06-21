@@ -1,5 +1,10 @@
 # Changes
 
+## Unreleased
+- [BREAKING] Handle HTML encoding for `'` (@davesnx)
+- Handle HTML encoding for `"` (from `&#34;` to `&quot;`) (@davesnx)
+- Improved performance of `JSX.render` (@davesnx)
+
 ## 0.0.3
 
 - [BREAKING] `Html_of_jsx.render` lives under `JSX.render` (removing the `Html_of_jsx` module entirely) (@lessp)
@@ -7,8 +12,8 @@
 - [BREAKING] dune's library is now `html_of_jsx` instead of (`html_of_jsx.lib`) (@lessp)
 - [BREAKING] `JSX.element` is opaque (can't see the type from outside), but we have a `JSX.Debug` module to inspect and re-construct `JSX.element` (cc @leostera) (@lessp)
 - Improved performance of `JSX.render` (@lessp)
-- add hx-trigger to htmx ppx #13 (@lessp)
-- htmlFor -> for_ (@lessp)
+- add `hx-trigger` to htmx ppx #13 (@lessp)
+- `htmlFor` -> `for_` (@lessp)
 - Fix aria-autocomplete (@davesnx)
 
 ## 0.0.2

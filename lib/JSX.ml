@@ -7,20 +7,36 @@ module Attribute = struct
     | Style of string
     | Event of (string * string)
 
-  let t_to_string attr =
+  let add_t_to_string b attr =
     match attr with
     (* false attributes don't get rendered *)
-    | Bool (_, false) -> ""
+    | Bool (_, false) -> ()
     (* true attributes render solely the attribute name *)
-    | Bool (k, true) -> k
-    | Style styles -> Printf.sprintf "style=\"%s\"" styles
-    | Event (name, value) -> Printf.sprintf "%s=\"%s\"" name value
-    | String (k, v) -> Printf.sprintf "%s=\"%s\"" k (Html.encode v)
+    | Bool (k, true) ->
+        Buffer.add_char b ' ';
+        Buffer.add_string b k
+    | Style styles ->
+        Buffer.add_char b ' ';
+        Buffer.add_string b "style=\"";
+        Buffer.add_string b styles;
+        Buffer.add_char b '"'
+    | Event (name, value) ->
+        Buffer.add_char b ' ';
+        Buffer.add_string b name;
+        Buffer.add_string b "=\"";
+        Buffer.add_string b value;
+        Buffer.add_char b '"'
+    | String (name, value) ->
+        Buffer.add_char b ' ';
+        Buffer.add_string b name;
+        Buffer.add_string b "=\"";
+        Html.escape_and_add b value;
+        Buffer.add_char b '"'
 
-  let to_string attrs =
-    match List.map t_to_string attrs with
-    | [] -> ""
-    | rest -> " " ^ (rest |> List.rev |> String.concat " " |> String.trim)
+  let add_string b attrs =
+    match attrs with
+    | [] -> ()
+    | _ -> attrs |> List.rev |> List.iter (fun attr -> add_t_to_string b attr)
 end
 
 type node = {
@@ -50,7 +66,7 @@ let fragment arr = Fragment arr
 let node tag attributes children = Node { tag; attributes; children }
 
 let render element =
-  let buffer = Rope.Buffer.create 1024 in
+  let buffer = Buffer.create 1024 in
 
   let rec render_element element =
     match element with
@@ -58,30 +74,27 @@ let render element =
     | Fragment list | List list -> List.iter render_element list
     | Component f -> render_element (f ())
     | Node { tag; attributes; _ } when Html.is_self_closing_tag tag ->
-        Rope.Buffer.add_string buffer
-          (Printf.sprintf "<%s%s />" tag (Attribute.to_string attributes))
-    | Node { tag; attributes; children } when tag = "html" ->
-        Rope.Buffer.add_string buffer
-          (Printf.sprintf "<!DOCTYPE html><%s%s>" tag
-             (Attribute.to_string attributes));
-
-        List.iter render_element children;
-
-        Rope.Buffer.add_string buffer (Printf.sprintf "</%s>" tag)
+        Buffer.add_char buffer '<';
+        Buffer.add_string buffer tag;
+        Attribute.add_string buffer attributes;
+        Buffer.add_string buffer " />"
     | Node { tag; attributes; children } ->
-        Rope.Buffer.add_string buffer
-          (Printf.sprintf "<%s%s>" tag (Attribute.to_string attributes));
-
+        if tag = "html" then Buffer.add_string buffer "<!DOCTYPE html>";
+        Buffer.add_char buffer '<';
+        Buffer.add_string buffer tag;
+        Attribute.add_string buffer attributes;
+        Buffer.add_char buffer '>';
         List.iter render_element children;
-
-        Rope.Buffer.add_string buffer (Printf.sprintf "</%s>" tag)
-    | String text -> Rope.Buffer.add_string buffer (Html.encode text)
-    | Unsafe text -> Rope.Buffer.add_string buffer text
+        Buffer.add_string buffer "</";
+        Buffer.add_string buffer tag;
+        Buffer.add_char buffer '>'
+    | String text -> Html.escape_and_add buffer text
+    | Unsafe text -> Buffer.add_string buffer text
   in
 
   render_element element;
 
-  buffer |> Rope.Buffer.contents |> Rope.to_string
+  Buffer.contents buffer
 
 module Debug = struct
   type __node = {
