@@ -85,6 +85,20 @@ let list_and_texts =
   in
   assert_string (JSX.render component) "<div>foobar</div>"
 
+let list =
+  case "list" @@ fun () ->
+  let component =
+    JSX.node "p" []
+      [
+        JSX.list
+          [
+            JSX.node "span" [] [ JSX.string "foo" ];
+            JSX.node "span" [] [ JSX.string "bar" ];
+          ];
+      ]
+  in
+  assert_string (JSX.render component) "<p><span>foo</span><span>bar</span></p>"
+
 let inline_styles =
   case "inline_styles" @@ fun () ->
   let component =
@@ -205,6 +219,7 @@ let tests =
       no_ignore_unkwnown_attributes_on_jsx;
       ignore_nulls;
       inline_styles;
+      list;
       list_and_texts;
       encode_attributes;
       event;
