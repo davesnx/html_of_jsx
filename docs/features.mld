@@ -123,7 +123,7 @@ let component = (~name, ~children, ()) => {
 JSX.render(<component> {"This is a children!"} </component>)
 ]}
 
-{2 Supports fragments}
+{2 Supports list of elements as children}
 
 Construct many [JSX.element] without wrapping them in a HTML element.
 

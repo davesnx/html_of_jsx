@@ -71,8 +71,8 @@ let int_opt_attribute_none =
     assert_string(JSX.render(div), {|<div></div>|});
   });
 
-let fragment =
-  case("fragment", () => {
+let lists_as_children =
+  case("lists_as_children", () => {
     let div = <> <div class_="md:w-1/3" /> <div class_="md:w-2/3" /> </>;
     assert_string(
       JSX.render(div),
@@ -270,7 +270,7 @@ let tests = (
     bool_opt_attribute_none,
     style_opt_attribute_some,
     style_opt_attribute_none,
-    fragment,
+    lists_as_children,
     children_uppercase,
     children_lowercase,
     onclick_inline_string,

@@ -71,12 +71,6 @@ let no_ignore_unkwnown_attributes_on_jsx =
   assert_string (JSX.render div)
     "<div suppressContentEditableWarning key=\"uniqueKeyId\"></div>"
 
-(* TODO: Fragments aren't supported yet *)
-(* let fragment () =
-   let div = JSX.node "div" [] [] in
-   let component = React.fragment ~children:(React.list [ div; div ]) () in
-   assert_string (JSX.render component) "<div></div><div></div>" *)
-
 let ignore_nulls =
   case "ignore_nulls" @@ fun () ->
   let div = JSX.node "div" [] [] in
@@ -84,16 +78,12 @@ let ignore_nulls =
   let component = JSX.node "div" [] [ div; span; JSX.null ] in
   assert_string (JSX.render component) "<div><div></div><span></span></div>"
 
-(* let fragments_and_texts () =
-   let component =
-     JSX.node "div" []
-       [
-         React.fragment ~children:(React.list [ JSX.string "foo" ]) ();
-         JSX.string "bar";
-         JSX.node "b" [] [];
-       ]
-   in
-   assert_string (JSX.render component) "<div>foobar<b></b></div>" *)
+let list_and_texts =
+  case "list_and_texts" @@ fun () ->
+  let component =
+    JSX.node "div" [] [ JSX.list [ JSX.string "foo"; JSX.string "bar" ] ]
+  in
+  assert_string (JSX.render component) "<div>foobar</div>"
 
 let inline_styles =
   case "inline_styles" @@ fun () ->
@@ -215,6 +205,7 @@ let tests =
       no_ignore_unkwnown_attributes_on_jsx;
       ignore_nulls;
       inline_styles;
+      list_and_texts;
       encode_attributes;
       event;
       className;
