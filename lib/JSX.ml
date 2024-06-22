@@ -7,49 +7,42 @@ module Attribute = struct
     | Style of string
     | Event of (string * string)
 
-  let add_t_to_string b attr =
+  let write out attr =
     match attr with
     (* false attributes don't get rendered *)
     | Bool (_, false) -> ()
     (* true attributes render solely the attribute name *)
     | Bool (k, true) ->
-        Buffer.add_char b ' ';
-        Buffer.add_string b k
+        Buffer.add_char out ' ';
+        Buffer.add_string out k
     | Style styles ->
-        Buffer.add_char b ' ';
-        Buffer.add_string b "style=\"";
-        Buffer.add_string b styles;
-        Buffer.add_char b '"'
+        Buffer.add_char out ' ';
+        Buffer.add_string out "style=\"";
+        Buffer.add_string out styles;
+        Buffer.add_char out '"'
     | Event (name, value) ->
-        Buffer.add_char b ' ';
-        Buffer.add_string b name;
-        Buffer.add_string b "=\"";
-        Buffer.add_string b value;
-        Buffer.add_char b '"'
+        Buffer.add_char out ' ';
+        Buffer.add_string out name;
+        Buffer.add_string out "=\"";
+        Buffer.add_string out value;
+        Buffer.add_char out '"'
     | String (name, value) ->
-        Buffer.add_char b ' ';
-        Buffer.add_string b name;
-        Buffer.add_string b "=\"";
-        Html.escape_and_add b value;
-        Buffer.add_char b '"'
-
-  let add_string b attrs =
-    match attrs with
-    | [] -> ()
-    | _ -> attrs |> List.rev |> List.iter (fun attr -> add_t_to_string b attr)
+        Buffer.add_char out ' ';
+        Buffer.add_string out name;
+        Buffer.add_string out "=\"";
+        Html.escape_and_add out value;
+        Buffer.add_char out '"'
 end
 
-type node = {
-  tag : string;
-  attributes : Attribute.t list;
-  children : element list;
-}
-
-and element =
+type element =
   | Null
   | String of string
   | Unsafe of string (* text without encoding *)
-  | Node of node
+  | Node of {
+      tag : string;
+      attributes : Attribute.t list;
+      children : element list;
+    }
   | List of element list
 
 let string txt = String txt
@@ -62,60 +55,47 @@ let list arr = List arr
 let fragment arr = List arr
 let node tag attributes children = Node { tag; attributes; children }
 
-let render element =
-  let buffer = Buffer.create 1024 in
-
-  let rec render_element element =
+let write out element =
+  let rec write element =
     match element with
     | Null -> ()
-    | List list -> List.iter render_element list
+    | List list -> List.iter write list
     | Node { tag; attributes; _ } when Html.is_self_closing_tag tag ->
-        Buffer.add_char buffer '<';
-        Buffer.add_string buffer tag;
-        Attribute.add_string buffer attributes;
-        Buffer.add_string buffer " />"
+        Buffer.add_char out '<';
+        Buffer.add_string out tag;
+        List.iter (Attribute.write out) attributes;
+        Buffer.add_string out " />"
     | Node { tag; attributes; children } ->
-        if tag = "html" then Buffer.add_string buffer "<!DOCTYPE html>";
-        Buffer.add_char buffer '<';
-        Buffer.add_string buffer tag;
-        Attribute.add_string buffer attributes;
-        Buffer.add_char buffer '>';
-        List.iter render_element children;
-        Buffer.add_string buffer "</";
-        Buffer.add_string buffer tag;
-        Buffer.add_char buffer '>'
-    | String text -> Html.escape_and_add buffer text
-    | Unsafe text -> Buffer.add_string buffer text
+        if tag = "html" then Buffer.add_string out "<!DOCTYPE html>";
+        Buffer.add_char out '<';
+        Buffer.add_string out tag;
+        List.iter (Attribute.write out) attributes;
+        Buffer.add_char out '>';
+        List.iter write children;
+        Buffer.add_string out "</";
+        Buffer.add_string out tag;
+        Buffer.add_char out '>'
+    | String text -> Html.escape_and_add out text
+    | Unsafe text -> Buffer.add_string out text
   in
+  write element
 
-  render_element element;
-
-  Buffer.contents buffer
+let render element =
+  let out = Buffer.create 1024 in
+  write out element;
+  Buffer.contents out
 
 module Debug = struct
-  type __node = {
-    tag : string;
-    attributes : Attribute.t list;
-    children : __element list;
-  }
-
-  and __element =
+  type nonrec element = element =
     | Null
     | String of string
     | Unsafe of string
-    | Node of __node
-    | List of __element list
+    | Node of {
+        tag : string;
+        attributes : Attribute.t list;
+        children : element list;
+      }
+    | List of element list
 
-  let view (el : element) : __element =
-    let rec to_debug_element (el : element) : __element =
-      match el with
-      | Null -> Null
-      | String str -> String str
-      | Unsafe str -> Unsafe str
-      | Node { tag; attributes; children } ->
-          Node
-            { tag; attributes; children = List.map to_debug_element children }
-      | List list -> List (List.map to_debug_element list)
-    in
-    to_debug_element el
+  let view element = element
 end

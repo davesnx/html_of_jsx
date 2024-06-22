@@ -73,21 +73,20 @@ val unsafe : string -> element
 
 (** Provides ways to inspect a JSX.element. *)
 module Debug : sig
-  type __node = {
-    tag : string;
-    attributes : Attribute.t list;
-    children : __element list;
-  }
-  (** Type for inspection of a node *)
+  type html_element := element
 
-  and __element =
+  type element =
     | Null
     | String of string
     | Unsafe of string (* text without encoding *)
-    | Node of __node
-    | List of __element list
+    | Node of {
+        tag : string;
+        attributes : Attribute.t list;
+        children : element list;
+      }
+    | List of element list
 
-  val view : element -> __element
+  val view : html_element -> element
   (** A function to inspect a JSX.element.
 
      {[
