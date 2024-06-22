@@ -1,3 +1,5 @@
+module Html = Html
+
 module Attribute = struct
   (** Used internally, no need to use *)
 

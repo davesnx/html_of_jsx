@@ -104,3 +104,5 @@ module Debug : sig
      ]}
   *)
 end
+
+module Html : module type of Html
