@@ -1,7 +1,6 @@
 (lang dune 3.12)
 (generate_opam_files true)
 (implicit_transitive_deps false)
-(using melange 0.1)
 
 (name html_of_jsx)
 (maintainers "David Sancho <dsnxmoreno@gmail.com>")
@@ -18,13 +17,12 @@
  (description "html_of_jsx is a JSX transformation that allows you to write HTML declaratively.")
  (depends
   (ocaml (>= 4.14))
-  (reason (>= 3.10.0))
   (ppxlib (> 0.23.0))
-  melange
 
   ;; Test dependencies
   (alcotest :with-test)
   (benchmark :with-test)
+  (reason (and (>= 3.10.0) :with-test))
 
   ;; Documentation
   (odoc :with-doc)

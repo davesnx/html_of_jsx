@@ -32,7 +32,6 @@ The only module exposed is {!JSX} with some functions to construct elements and 
 - Integrates well with Htmx (see the {!page-"htmx"} page)
 - No React idioms (no [className], no [htmlFor], no [onChange], etc...), just plain HTML5
 - Type-safe, validates attributes and their types
-- Works with {{:https://ocaml.org OCaml}, {{:https://reasonml.github.io} Reason} and {{:https://github.com/ocaml-mlx/mlx}mlx}
-- Created to work on the server-side, but can be used on the client-side too (with {{:https://melange.re} Melange})
+- Works with {{:https://ocaml.org} OCaml}, {{:https://reasonml.github.io} Reason} and {{:https://github.com/ocaml-mlx/mlx}mlx}
 
 {b See the {!page-"features"} page for all details}
