@@ -193,21 +193,16 @@ let transform_labelled ~loc:_parentLoc ~tag_name props (prop_label, value) =
       in
       [%expr [%e attribute_final] :: [%e props]]
 
-let transform_attributes ~loc ~tag_name args =
-  match args with
-  | [] -> [%expr []]
-  | attrs -> (
-      let list_of_attributes =
-        attrs
-        |> List.fold_left
-             ~f:(transform_labelled ~loc ~tag_name)
-             ~init:[%expr []]
-      in
-      match list_of_attributes with
-      | [%expr []] -> [%expr []]
-      | _ ->
-          (* We need to filter attributes since optionals are represented as None *)
-          [%expr List.filter_map Fun.id [%e list_of_attributes]])
+let transform_attributes ~loc ~tag_name attrs =
+  let attrs =
+    List.rev attrs
+    |> List.fold_left ~f:(transform_labelled ~loc ~tag_name) ~init:[%expr []]
+  in
+  match attrs with
+  | [%expr []] -> [%expr []]
+  | attrs ->
+      (* We need to filter attributes since optionals are represented as None *)
+      [%expr List.filter_map Fun.id [%e attrs]]
 
 let rewrite_node ~loc tag_name args children =
   let dom_node_name = estring ~loc tag_name in
@@ -288,7 +283,8 @@ let rewrite_jsx =
             match tag.pexp_desc with
             (* div() [@JSX] *)
             | Pexp_ident { txt = Lident name; loc = name_loc }
-              when Html.is_html_element name || Html.is_svg_element name ->
+              when JSX.Html.is_html_element name || JSX.Html.is_svg_element name
+              ->
                 rewrite_node ~loc:name_loc name rest_of_args children
             (* Reason adds `createElement` as default when an uppercase is found,
                we change it back to make *)

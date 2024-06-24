@@ -4,14 +4,14 @@
 
 {3 Render HTML with JSX}
 
-{b html_of_jsx} is a JSX transformation to write HTML declaratively in {{:https://ocaml.org OCaml}, {{:https://reasonml.github.io} Reason} and {{:https://github.com/ocaml-mlx/mlx}mlx}.
+{b html_of_jsx} is a JSX transformation to write HTML declaratively in {{:https://ocaml.org}OCaml}, {{:https://reasonml.github.io}Reason} and {{:https://github.com/ocaml-mlx/mlx}mlx}.
 
 This library was extracted from {{: https://github.com/ml-in-barcelona/server-reason-react} server-reason-react} and later simplified to work only with HTML5.
 
 {1 Installation}
 
 {[
-opan install html_of_jsx
+opam install html_of_jsx
 ]}
 
 {3 Add it to your `dune` file}
@@ -32,7 +32,6 @@ The only module exposed is {!JSX} with some functions to construct elements and 
 - Integrates well with Htmx (see the {!page-"htmx"} page)
 - No React idioms (no [className], no [htmlFor], no [onChange], etc...), just plain HTML5
 - Type-safe, validates attributes and their types
-- Works with {{:https://ocaml.org OCaml}, {{:https://reasonml.github.io} Reason} and {{:https://github.com/ocaml-mlx/mlx}mlx}
-- Created to work on the server-side, but can be used on the client-side too (with {{:https://melange.re} Melange})
+- Works with {{:https://ocaml.org} OCaml}, {{:https://reasonml.github.io} Reason} and {{:https://github.com/ocaml-mlx/mlx}mlx}
 
 {b See the {!page-"features"} page for all details}

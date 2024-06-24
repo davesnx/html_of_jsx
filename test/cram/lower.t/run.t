@@ -48,11 +48,11 @@
         [
           Some(
             [@implicit_arity]
-            JSX.Attribute.String("href", "https://example.com": string),
+            JSX.Attribute.String("tabindex", string_of_int(1: int)),
           ),
           Some(
             [@implicit_arity]
-            JSX.Attribute.String("tabindex", string_of_int(1: int)),
+            JSX.Attribute.String("href", "https://example.com": string),
           ),
         ],
       ),
@@ -130,16 +130,16 @@
                                  [
                                    Some(
                                      [@implicit_arity]
-                                     JSX.Attribute.Event(
-                                       "onclick",
-                                       "console.log": string,
+                                     JSX.Attribute.String(
+                                       "href",
+                                       e.path: string,
                                      ),
                                    ),
                                    Some(
                                      [@implicit_arity]
-                                     JSX.Attribute.String(
-                                       "href",
-                                       e.path: string,
+                                     JSX.Attribute.Event(
+                                       "onclick",
+                                       "console.log": string,
                                      ),
                                    ),
                                  ],
@@ -203,7 +203,7 @@
                 [
                   Some(
                     [@implicit_arity]
-                    JSX.Attribute.String("id", "idimg": string),
+                    JSX.Attribute.String("src", "picture/img.png": string),
                   ),
                   Some(
                     [@implicit_arity]
@@ -211,7 +211,7 @@
                   ),
                   Some(
                     [@implicit_arity]
-                    JSX.Attribute.String("src", "picture/img.png": string),
+                    JSX.Attribute.String("id", "idimg": string),
                   ),
                 ],
               ),
@@ -222,14 +222,14 @@
               List.filter_map(
                 Fun.id,
                 [
-                  Some(
-                    [@implicit_arity]
-                    JSX.Attribute.String("src", "picture/img1.webp": string),
-                  ),
                   Some(
                     [@implicit_arity]
                     JSX.Attribute.String("type", "image/webp": string),
                   ),
+                  Some(
+                    [@implicit_arity]
+                    JSX.Attribute.String("src", "picture/img1.webp": string),
+                  ),
                 ],
               ),
               [],
@@ -241,11 +241,11 @@
                 [
                   Some(
                     [@implicit_arity]
-                    JSX.Attribute.String("src", "picture/img2.jpg": string),
+                    JSX.Attribute.String("type", "image/jpeg": string),
                   ),
                   Some(
                     [@implicit_arity]
-                    JSX.Attribute.String("type", "image/jpeg": string),
+                    JSX.Attribute.String("src", "picture/img2.jpg": string),
                   ),
                 ],
               ),
@@ -261,8 +261,8 @@
       List.filter_map(
         Fun.id,
         [
-          Some([@implicit_arity] JSX.Attribute.String("dy", "3 4": string)),
           Some([@implicit_arity] JSX.Attribute.String("dx", "1 2": string)),
+          Some([@implicit_arity] JSX.Attribute.String("dy", "3 4": string)),
         ],
       ),
       [],

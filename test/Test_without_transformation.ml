@@ -13,8 +13,8 @@ let string_attributes =
   let a =
     JSX.node "a"
       [
-        JSX.Attribute.String ("target", "_blank");
         JSX.Attribute.String ("href", "google.html");
+        JSX.Attribute.String ("target", "_blank");
       ]
       []
   in
@@ -25,10 +25,10 @@ let bool_attributes =
   let a =
     JSX.node "input"
       [
-        JSX.Attribute.String ("type", "checkbox");
-        JSX.Attribute.String ("name", "cheese");
-        JSX.Attribute.Bool ("checked", true);
         JSX.Attribute.Bool ("disabled", false);
+        JSX.Attribute.Bool ("checked", true);
+        JSX.Attribute.String ("name", "cheese");
+        JSX.Attribute.String ("type", "checkbox");
       ]
       []
   in
@@ -63,8 +63,8 @@ let no_ignore_unkwnown_attributes_on_jsx =
   let div =
     JSX.node "div"
       [
-        JSX.Attribute.String ("key", "uniqueKeyId");
         JSX.Attribute.Bool ("suppressContentEditableWarning", true);
+        JSX.Attribute.String ("key", "uniqueKeyId");
       ]
       []
   in
@@ -112,8 +112,8 @@ let encode_attributes =
   let component =
     JSX.node "div"
       [
-        JSX.Attribute.String ("about", "\' <");
         JSX.Attribute.String ("data-user-path", "what/the/path");
+        JSX.Attribute.String ("about", "\' <");
       ]
       [ JSX.string "& \"" ]
   in
@@ -124,8 +124,8 @@ let encode_attributes =
 let make ~name () =
   JSX.node "button"
     [
-      JSX.Attribute.String ("name", (name : string));
       JSX.Attribute.Event ("onclick", "doFunction('foo');");
+      JSX.Attribute.String ("name", (name : string));
     ]
     []
 
@@ -190,10 +190,10 @@ let render_svg =
   let svg =
     JSX.node "svg"
       [
-        JSX.Attribute.String ("xmlns", "http://www.w3.org/2000/svg");
-        JSX.Attribute.String ("viewBox", "0 0 24 24");
-        JSX.Attribute.String ("width", "24px");
         JSX.Attribute.String ("height", "24px");
+        JSX.Attribute.String ("width", "24px");
+        JSX.Attribute.String ("viewBox", "0 0 24 24");
+        JSX.Attribute.String ("xmlns", "http://www.w3.org/2000/svg");
       ]
       [ path ]
   in

@@ -1,5 +1,3 @@
 (library
- (name html_of_jsx)
- (wrapped false)
- (modes :standard melange)
+ (name JSX)
  (public_name html_of_jsx))
