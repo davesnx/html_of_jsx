@@ -33,5 +33,5 @@
     (= 0.26.1) (or
     :with-dev-setup :with-test)))
   (ocaml-lsp-server :with-dev-setup)
-  (tiny_httpd (and (<= 0.16) :with-dev-setup))
+  (tiny_httpd :with-dev-setup)
 ))

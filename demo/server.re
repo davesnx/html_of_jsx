@@ -109,13 +109,15 @@ module Page = {
   };
 };
 
+let get = Httpd.add_route_handler(~meth=`GET);
+
 let () = {
   let project_url = "https://github.com/davesnx/html_of_jsx";
   let server = Httpd.create();
   let addr = Httpd.addr(server);
   let port = Httpd.port(server);
-  Httpd.add_route_handler(
-    ~meth=`GET,
+
+  get(
     server,
     Httpd.Route.(return),
     _req => {
@@ -123,6 +125,7 @@ let () = {
       Httpd.Response.make_string(Ok(html));
     },
   );
+
   switch (
     Httpd.run(server, ~after_init=() =>
       Printf.printf("Listening on http://%s:%d\n%!", addr, port)

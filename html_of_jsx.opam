@@ -18,7 +18,7 @@ depends: [
   "odoc" {with-doc}
   "ocamlformat" {= "0.26.1" & (with-dev-setup | with-test)}
   "ocaml-lsp-server" {with-dev-setup}
-  "tiny_httpd" {<= "0.16" & with-dev-setup}
+  "tiny_httpd" {with-dev-setup}
 ]
 build: [
   ["dune" "subst"] {dev}
