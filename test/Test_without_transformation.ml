@@ -5,17 +5,14 @@ let single_empty_tag =
 
 let empty_string_attribute =
   test "empty_string_attribute" @@ fun () ->
-  let div = JSX.node "div" [ JSX.Attribute.String ("class", "") ] [] in
+  let div = JSX.node "div" [ ("class", `String "") ] [] in
   assert_string (JSX.render div) "<div class=\"\"></div>"
 
 let string_attributes =
   test "string_attributes" @@ fun () ->
   let a =
     JSX.node "a"
-      [
-        JSX.Attribute.String ("href", "google.html");
-        JSX.Attribute.String ("target", "_blank");
-      ]
+      [ ("href", `String "google.html"); ("target", `String "_blank") ]
       []
   in
   assert_string (JSX.render a) "<a href=\"google.html\" target=\"_blank\"></a>"
@@ -25,10 +22,10 @@ let bool_attributes =
   let a =
     JSX.node "input"
       [
-        JSX.Attribute.Bool ("disabled", false);
-        JSX.Attribute.Bool ("checked", true);
-        JSX.Attribute.String ("name", "cheese");
-        JSX.Attribute.String ("type", "checkbox");
+        ("disabled", `Bool false);
+        ("checked", `Bool true);
+        ("name", `String "cheese");
+        ("type", `String "checkbox");
       ]
       []
   in
@@ -37,9 +34,7 @@ let bool_attributes =
 
 let truthy_attributes =
   test "truthy_attributes" @@ fun () ->
-  let component =
-    JSX.node "input" [ JSX.Attribute.String ("aria-hidden", "true") ] []
-  in
+  let component = JSX.node "input" [ ("aria-hidden", `String "true") ] [] in
   assert_string (JSX.render component) "<input aria-hidden=\"true\" />"
 
 let self_closing_tag =
@@ -63,8 +58,8 @@ let no_ignore_unkwnown_attributes_on_jsx =
   let div =
     JSX.node "div"
       [
-        JSX.Attribute.Bool ("suppressContentEditableWarning", true);
-        JSX.Attribute.String ("key", "uniqueKeyId");
+        ("suppressContentEditableWarning", `Bool true);
+        ("key", `String "uniqueKeyId");
       ]
       []
   in
@@ -102,7 +97,7 @@ let list =
 let inline_styles =
   test "inline_styles" @@ fun () ->
   let component =
-    JSX.node "button" [ JSX.Attribute.Style "color: red; border: none" ] []
+    JSX.node "button" [ ("style", `String "color: red; border: none") ] []
   in
   assert_string (JSX.render component)
     "<button style=\"color: red; border: none\"></button>"
@@ -111,10 +106,7 @@ let encode_attributes =
   test "encode_attributes" @@ fun () ->
   let component =
     JSX.node "div"
-      [
-        JSX.Attribute.String ("data-user-path", "what/the/path");
-        JSX.Attribute.String ("about", "\' <");
-      ]
+      [ ("data-user-path", `String "what/the/path"); ("about", `String "\' <") ]
       [ JSX.string "& \"" ]
   in
   assert_string (JSX.render component)
@@ -124,8 +116,8 @@ let encode_attributes =
 let make ~name () =
   JSX.node "button"
     [
-      JSX.Attribute.Event ("onclick", "doFunction('foo');");
-      JSX.Attribute.String ("name", (name : string));
+      ("onclick", `String "doFunction('foo');");
+      ("name", `String (name : string));
     ]
     []
 
@@ -133,20 +125,18 @@ let event =
   test "event" @@ fun () ->
   assert_string
     (JSX.render (make ~name:"json" ()))
-    "<button onclick=\"doFunction('foo');\" name=\"json\"></button>"
+    "<button onclick=\"doFunction(&apos;foo&apos;);\" name=\"json\"></button>"
 
 let className =
   test "className" @@ fun () ->
-  let div = JSX.node "div" [ JSX.Attribute.String ("class", "lol") ] [] in
+  let div = JSX.node "div" [ ("class", `String "lol") ] [] in
   assert_string (JSX.render div) "<div class=\"lol\"></div>"
 
 let className_2 =
   test "className_2" @@ fun () ->
   let component =
     JSX.node "div"
-      [
-        JSX.Attribute.String ("class", "flex xs:justify-center overflow-hidden");
-      ]
+      [ ("class", `String "flex xs:justify-center overflow-hidden") ]
       []
   in
   assert_string (JSX.render component)
@@ -177,8 +167,8 @@ let render_svg =
   let path =
     JSX.node "path"
       [
-        JSX.Attribute.String
-          ( "d",
+        ( "d",
+          `String
             "M 5 3 C 3.9069372 3 3 3.9069372 3 5 L 3 19 C 3 20.093063 \
              3.9069372 21 5 21 L 19 21 C 20.093063 21 21 20.093063 21 19 L 21 \
              12 L 19 12 L 19 19 L 5 19 L 5 5 L 12 5 L 12 3 L 5 3 z M 14 3 L 14 \
@@ -190,10 +180,10 @@ let render_svg =
   let svg =
     JSX.node "svg"
       [
-        JSX.Attribute.String ("height", "24px");
-        JSX.Attribute.String ("width", "24px");
-        JSX.Attribute.String ("viewBox", "0 0 24 24");
-        JSX.Attribute.String ("xmlns", "http://www.w3.org/2000/svg");
+        ("height", `String "24px");
+        ("width", `String "24px");
+        ("viewBox", `String "0 0 24 24");
+        ("xmlns", `String "http://www.w3.org/2000/svg");
       ]
       [ path ]
   in

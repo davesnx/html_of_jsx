@@ -9,13 +9,8 @@
   ]}
 *)
 
-module Attribute : sig
-  type t =
-    | Bool of (string * bool)
-    | String of (string * string)
-    | Style of string
-    | Event of (string * string)
-end
+type attribute =
+  string * [ `Bool of bool | `Int of int | `Float of float | `String of string ]
 
 type element
 (** The type that represents a JSX.element *)
@@ -45,7 +40,7 @@ val int : int -> element
 val list : element list -> element
 (** Helper to render a list of elements *)
 
-val node : string -> Attribute.t list -> element list -> element
+val node : string -> attribute list -> element list -> element
 (** The function to create a HTML DOM Node [https://developer.mozilla.org/en-US/docs/Web/API/Node]. Given the tag, list of attributes and list of children.
 
   {[
@@ -81,7 +76,7 @@ module Debug : sig
     | Unsafe of string (* text without encoding *)
     | Node of {
         tag : string;
-        attributes : Attribute.t list;
+        attributes : attribute list;
         children : element list;
       }
     | List of element list

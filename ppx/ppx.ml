@@ -108,63 +108,55 @@ let make_attribute ~loc ~is_optional ~prop attribute_name attribute_value =
   match (prop, is_optional) with
   | Rich_attribute { type_ = String; _ }, false
   | Attribute { type_ = String; _ }, false ->
-      [%expr
-        Some (JSX.Attribute.String ([%e attribute_name], [%e attribute_value]))]
+      [%expr Some ([%e attribute_name], `String [%e attribute_value])]
   | Rich_attribute { type_ = String; _ }, true
   | Attribute { type_ = String; _ }, true ->
       [%expr
         Stdlib.Option.map
-          (fun v -> JSX.Attribute.String ([%e attribute_name], v))
+          (fun v -> ([%e attribute_name], `String v))
           [%e attribute_value]]
   | Rich_attribute { type_ = Int; _ }, false
   | Attribute { type_ = Int; _ }, false ->
-      [%expr
-        Some
-          (JSX.Attribute.String
-             ([%e attribute_name], string_of_int [%e attribute_value]))]
+      [%expr Some ([%e attribute_name], `Int [%e attribute_value])]
   | Rich_attribute { type_ = Int; _ }, true | Attribute { type_ = Int; _ }, true
     ->
       [%expr
         Stdlib.Option.map
-          (fun v -> JSX.Attribute.String ([%e attribute_name], string_of_int v))
+          (fun v -> ([%e attribute_name], `Int v))
           [%e attribute_value]]
   | Rich_attribute { type_ = Bool; _ }, false
   | Attribute { type_ = Bool; _ }, false ->
-      [%expr
-        Some (JSX.Attribute.Bool ([%e attribute_name], [%e attribute_value]))]
+      [%expr Some ([%e attribute_name], `Bool [%e attribute_value])]
   | Rich_attribute { type_ = Bool; _ }, true
   | Attribute { type_ = Bool; _ }, true ->
       [%expr
         Stdlib.Option.map
-          (fun v -> JSX.Attribute.Bool ([%e attribute_name], v))
+          (fun v -> ([%e attribute_name], `Bool v))
           [%e attribute_value]]
   (* BooleanishString needs to transform bool into string *)
   | Rich_attribute { type_ = BooleanishString; _ }, false
   | Attribute { type_ = BooleanishString; _ }, false ->
       [%expr
-        Some
-          (JSX.Attribute.String
-             ([%e attribute_name], string_of_bool [%e attribute_value]))]
+        Some ([%e attribute_name], `String (string_of_bool [%e attribute_value]))]
   | Rich_attribute { type_ = BooleanishString; _ }, true
   | Attribute { type_ = BooleanishString; _ }, true ->
       [%expr
         Stdlib.Option.map
-          (fun v -> JSX.Attribute.String ([%e attribute_name], v))
+          (fun v -> ([%e attribute_name], `String v))
           string_of_bool [%e attribute_value]]
   | Rich_attribute { type_ = Style; _ }, false
   | Attribute { type_ = Style; _ }, false ->
-      [%expr Some (JSX.Attribute.Style [%e attribute_value])]
+      [%expr Some ("style", `String [%e attribute_value])]
   | Rich_attribute { type_ = Style; _ }, true
   | Attribute { type_ = Style; _ }, true ->
       [%expr
-        Stdlib.Option.map (fun v -> JSX.Attribute.Style v) [%e attribute_value]]
+        Stdlib.Option.map (fun v -> ("style", `String v)) [%e attribute_value]]
   | Event _, false ->
-      [%expr
-        Some (JSX.Attribute.Event ([%e attribute_name], [%e attribute_value]))]
+      [%expr Some ([%e attribute_name], `String [%e attribute_value])]
   | Event _, true ->
       [%expr
         Stdlib.Option.map
-          (fun v -> JSX.Attribute.Event ([%e attribute_name], v))
+          (fun v -> ([%e attribute_name], `String v))
           [%e attribute_value]]
 
 let is_optional = function Optional _ -> true | _ -> false

@@ -155,7 +155,7 @@ let onclick_inline_string =
     let div = <div onclick=onClick />;
     assert_string(
       JSX.render(div),
-      {|<div onclick="console.log('clicked')"></div>|},
+      {|<div onclick="console.log(&apos;clicked&apos;)"></div>|},
     );
   });
 
