@@ -14,7 +14,7 @@ This library was extracted from {{: https://github.com/ml-in-barcelona/server-re
 opam install html_of_jsx
 ]}
 
-{3 Add it to your `dune` file}
+{3 Add it to your {b dune} file}
 {[
 (libraries html_of_jsx)
 (preprocess (pps html_of_jsx.ppx))
@@ -28,8 +28,8 @@ The only module exposed is {!JSX} with some functions to construct elements and 
 
 - Brings the component model to HTML
 - Supports most of the JSX features (uppercase components, fragments, optional attributes, punning, childrens, etc...)
-- but with a few improvements (lowercase components, no need to add annotations)
-- Integrates well with Htmx (see the {!page-"htmx"} page)
+- but with a few improvements (lowercase components, no need to add ppx annotations)
+- Integrates well with Htmx and others (see the {!page-"htmx"} page)
 - No React idioms (no [className], no [htmlFor], no [onChange], etc...), just plain HTML5
 - Type-safe, validates attributes and their types
 - Works with {{:https://ocaml.org} OCaml}, {{:https://reasonml.github.io} Reason} and {{:https://github.com/ocaml-mlx/mlx}mlx}
