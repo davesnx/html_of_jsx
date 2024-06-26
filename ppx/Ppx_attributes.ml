@@ -4,7 +4,7 @@ type attributeType =
   | String
   | Int
   | Bool
-  (* RooleanishString are attributes that are boolean values but represented as strings on the DOM.
+  (* BooleanishString are attributes that are boolean values but represented as strings on the DOM.
      https://github.com/facebook/react/blob/a17467e7e2cd8947c595d1834889b5d184459f12/packages/react-dom-bindings/src/server/ReactFizzConfigDOM.js#L1165-L1176
   *)
   | BooleanishString
