@@ -1,11 +1,16 @@
 # Changes
 
-## Unreleased
+## 0.0.4
+
 - [BREAKING] Handle HTML encoding for `'` (@davesnx)
 - Handle HTML encoding for `"` (from `&#34;` to `&quot;`) (@davesnx)
 - Improved performance of `JSX.render` (@davesnx)
 - [BREAKING] Remove `Fragment` in favor of `JSX.list` (@davesnx)
 - Remove unused `Component (unit -> element)` since it isn't needed (@davesnx)
+- [BREAKING] Change attributes representation (@andreypopp)
+- [BREAKING] Remove melange dependency (@andreypopp)
+- [BREAKING] Lower the OCaml bound to 4.14 (@davesnx)
+- Make lib wrapped (@andreypopp)
 
 ## 0.0.3
 
