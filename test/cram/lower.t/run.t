@@ -3,10 +3,7 @@
   let lower_empty_attr =
     JSX.node(
       "div",
-      List.filter_map(
-        Fun.id,
-        [Some([@implicit_arity] JSX.Attribute.String("class", "": string))],
-      ),
+      List.filter_map(Fun.id, [Some(("class", `String("": string)))]),
       [],
     );
   let lower_inline_styles =
@@ -15,11 +12,10 @@
       List.filter_map(
         Fun.id,
         [
-          Some(
-            JSX.Attribute.Style(
-              Style.make(~backgroundColor="gainsboro", ()): string,
-            ),
-          ),
+          Some((
+            "style",
+            `String(Style.make(~backgroundColor="gainsboro", ()): string),
+          )),
         ],
       ),
       [],
@@ -31,9 +27,7 @@
         Fun.id,
         [
           Stdlib.Option.map(
-            v =>
-              [@implicit_arity]
-              JSX.Attribute.String("tabindex", string_of_int(v)),
+            v => ("tabindex", `Int(v)),
             tabindex: option(int),
           ),
         ],
@@ -46,14 +40,8 @@
       List.filter_map(
         Fun.id,
         [
-          Some(
-            [@implicit_arity]
-            JSX.Attribute.String("tabindex", string_of_int(1: int)),
-          ),
-          Some(
-            [@implicit_arity]
-            JSX.Attribute.String("href", "https://example.com": string),
-          ),
+          Some(("tabindex", `Int(1: int))),
+          Some(("href", `String("https://example.com": string))),
         ],
       ),
       [foo],
@@ -68,36 +56,21 @@
       "div",
       List.filter_map(
         Fun.id,
-        [
-          Some(
-            [@implicit_arity]
-            JSX.Attribute.String("class", "flex-container": string),
-          ),
-        ],
+        [Some(("class", `String("flex-container": string)))],
       ),
       [
         JSX.node(
           "div",
           List.filter_map(
             Fun.id,
-            [
-              Some(
-                [@implicit_arity]
-                JSX.Attribute.String("class", "sidebar": string),
-              ),
-            ],
+            [Some(("class", `String("sidebar": string)))],
           ),
           [
             JSX.node(
               "h2",
               List.filter_map(
                 Fun.id,
-                [
-                  Some(
-                    [@implicit_arity]
-                    JSX.Attribute.String("class", "title": string),
-                  ),
-                ],
+                [Some(("class", `String("title": string)))],
               ),
               ["jsoo-react" |> s],
             ),
@@ -105,12 +78,7 @@
               "nav",
               List.filter_map(
                 Fun.id,
-                [
-                  Some(
-                    [@implicit_arity]
-                    JSX.Attribute.String("class", "menu": string),
-                  ),
-                ],
+                [Some(("class", `String("menu": string)))],
               ),
               [
                 JSX.node(
@@ -128,20 +96,11 @@
                                List.filter_map(
                                  Fun.id,
                                  [
-                                   Some(
-                                     [@implicit_arity]
-                                     JSX.Attribute.String(
-                                       "href",
-                                       e.path: string,
-                                     ),
-                                   ),
-                                   Some(
-                                     [@implicit_arity]
-                                     JSX.Attribute.Event(
-                                       "onclick",
-                                       "console.log": string,
-                                     ),
-                                   ),
+                                   Some(("href", `String(e.path: string))),
+                                   Some((
+                                     "onclick",
+                                     `String("console.log": string),
+                                   )),
                                  ],
                                ),
                                [e.title |> s],
@@ -163,37 +122,20 @@
       "button",
       List.filter_map(
         Fun.id,
-        [
-          Some(
-            [@implicit_arity]
-            JSX.Attribute.String("class", "FancyButton": string),
-          ),
-        ],
+        [Some(("class", `String("FancyButton": string)))],
       ),
       [children],
     );
   let lower_with_many_props =
     JSX.node(
       "div",
-      List.filter_map(
-        Fun.id,
-        [
-          Some(
-            [@implicit_arity] JSX.Attribute.String("translate", "yes": string),
-          ),
-        ],
-      ),
+      List.filter_map(Fun.id, [Some(("translate", `String("yes": string)))]),
       [
         JSX.node(
           "picture",
           List.filter_map(
             Fun.id,
-            [
-              Some(
-                [@implicit_arity]
-                JSX.Attribute.String("id", "idpicture": string),
-              ),
-            ],
+            [Some(("id", `String("idpicture": string)))],
           ),
           [
             JSX.node(
@@ -201,18 +143,9 @@
               List.filter_map(
                 Fun.id,
                 [
-                  Some(
-                    [@implicit_arity]
-                    JSX.Attribute.String("src", "picture/img.png": string),
-                  ),
-                  Some(
-                    [@implicit_arity]
-                    JSX.Attribute.String("alt", "test picture/img.png": string),
-                  ),
-                  Some(
-                    [@implicit_arity]
-                    JSX.Attribute.String("id", "idimg": string),
-                  ),
+                  Some(("src", `String("picture/img.png": string))),
+                  Some(("alt", `String("test picture/img.png": string))),
+                  Some(("id", `String("idimg": string))),
                 ],
               ),
               [],
@@ -222,14 +155,8 @@
               List.filter_map(
                 Fun.id,
                 [
-                  Some(
-                    [@implicit_arity]
-                    JSX.Attribute.String("type", "image/webp": string),
-                  ),
-                  Some(
-                    [@implicit_arity]
-                    JSX.Attribute.String("src", "picture/img1.webp": string),
-                  ),
+                  Some(("type", `String("image/webp": string))),
+                  Some(("src", `String("picture/img1.webp": string))),
                 ],
               ),
               [],
@@ -239,14 +166,8 @@
               List.filter_map(
                 Fun.id,
                 [
-                  Some(
-                    [@implicit_arity]
-                    JSX.Attribute.String("type", "image/jpeg": string),
-                  ),
-                  Some(
-                    [@implicit_arity]
-                    JSX.Attribute.String("src", "picture/img2.jpg": string),
-                  ),
+                  Some(("type", `String("image/jpeg": string))),
+                  Some(("src", `String("picture/img2.jpg": string))),
                 ],
               ),
               [],
@@ -261,8 +182,8 @@
       List.filter_map(
         Fun.id,
         [
-          Some([@implicit_arity] JSX.Attribute.String("dx", "1 2": string)),
-          Some([@implicit_arity] JSX.Attribute.String("dy", "3 4": string)),
+          Some(("dx", `String("1 2": string))),
+          Some(("dy", `String("3 4": string))),
         ],
       ),
       [],

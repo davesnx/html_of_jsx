@@ -16,11 +16,11 @@ We need to output ML syntax here, otherwise refmt could not parse it.
       [
         JSX.node "div"
           (List.filter_map Fun.id
-             [ Some (JSX.Attribute.String ("class", ("md:w-1/3" : string))) ])
+             [ Some ("class", `String ("md:w-1/3" : string)) ])
           [];
         JSX.node "div"
           (List.filter_map Fun.id
-             [ Some (JSX.Attribute.String ("class", ("md:w-2/3" : string))) ])
+             [ Some ("class", `String ("md:w-2/3" : string)) ])
           [];
       ]
   

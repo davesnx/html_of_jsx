@@ -1,40 +1,27 @@
 module Html = Html
 
-module Attribute = struct
-  (** Used internally, no need to use *)
+type attribute =
+  string * [ `Bool of bool | `Int of int | `Float of float | `String of string ]
 
-  type t =
-    | Bool of (string * bool)
-    | String of (string * string)
-    | Style of string
-    | Event of (string * string)
-
-  let write out attr =
-    match attr with
-    (* false attributes don't get rendered *)
-    | Bool (_, false) -> ()
-    (* true attributes render solely the attribute name *)
-    | Bool (k, true) ->
-        Buffer.add_char out ' ';
-        Buffer.add_string out k
-    | Style styles ->
-        Buffer.add_char out ' ';
-        Buffer.add_string out "style=\"";
-        Buffer.add_string out styles;
-        Buffer.add_char out '"'
-    | Event (name, value) ->
-        Buffer.add_char out ' ';
-        Buffer.add_string out name;
-        Buffer.add_string out "=\"";
-        Buffer.add_string out value;
-        Buffer.add_char out '"'
-    | String (name, value) ->
-        Buffer.add_char out ' ';
-        Buffer.add_string out name;
-        Buffer.add_string out "=\"";
-        Html.escape_and_add out value;
-        Buffer.add_char out '"'
-end
+let write_attribute out (attr : attribute) =
+  let write_name_value name value =
+    Buffer.add_char out ' ';
+    Buffer.add_string out name;
+    Buffer.add_string out "=\"";
+    Html.escape_and_add out value;
+    Buffer.add_char out '"'
+  in
+  match attr with
+  | _name, `Bool false ->
+      (* false attributes don't get rendered *)
+      ()
+  | name, `Bool true ->
+      (* true attributes render solely the attribute name *)
+      Buffer.add_char out ' ';
+      Buffer.add_string out name
+  | name, `String value -> write_name_value name value
+  | name, `Int value -> write_name_value name (string_of_int value)
+  | name, `Float value -> write_name_value name (string_of_float value)
 
 type element =
   | Null
@@ -42,7 +29,7 @@ type element =
   | Unsafe of string (* text without encoding *)
   | Node of {
       tag : string;
-      attributes : Attribute.t list;
+      attributes : attribute list;
       children : element list;
     }
   | List of element list
@@ -65,13 +52,13 @@ let write out element =
     | Node { tag; attributes; _ } when Html.is_self_closing_tag tag ->
         Buffer.add_char out '<';
         Buffer.add_string out tag;
-        List.iter (Attribute.write out) attributes;
+        List.iter (write_attribute out) attributes;
         Buffer.add_string out " />"
     | Node { tag; attributes; children } ->
         if tag = "html" then Buffer.add_string out "<!DOCTYPE html>";
         Buffer.add_char out '<';
         Buffer.add_string out tag;
-        List.iter (Attribute.write out) attributes;
+        List.iter (write_attribute out) attributes;
         Buffer.add_char out '>';
         List.iter write children;
         Buffer.add_string out "</";
@@ -94,7 +81,7 @@ module Debug = struct
     | Unsafe of string
     | Node of {
         tag : string;
-        attributes : Attribute.t list;
+        attributes : attribute list;
         children : element list;
       }
     | List of element list
