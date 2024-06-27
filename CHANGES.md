@@ -1,5 +1,8 @@
 # Changes
 
+## Unreleased
+- Make tests run in FreeBSD (https://github.com/davesnx/html_of_jsx/issues/22) (@davesnx)
+
 ## 0.0.4
 
 - [BREAKING] Handle HTML encoding for `'` (@davesnx)
