@@ -137,7 +137,7 @@ let component: JSX.element =
 JSX.render(<component/>)
 ]}
 
-{2 Works with {{:https://reasonml.github.io}Reason}
+{2 Works with {{:https://reasonml.github.io} Reason}
 
 {[
 let component = (~name, ()) => {

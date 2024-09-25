@@ -3,21 +3,21 @@
 
 ### Render HTML with JSX
 
-**html_of_jsx** is a JSX transformation to write HTML declaratively in [OCaml](https://ocaml.org), [Reason](https://reasonml.github.io) and [mlx](https://github.com/ocaml-mlx/mlx).
+**html_of_jsx** is a JSX transformation and a library to write HTML declaratively in [OCaml](https://ocaml.org), [Reason](https://reasonml.github.io) and [mlx](https://github.com/ocaml-mlx/mlx).
 
 ## Features
 
-- Brings the component model to HTML
-- Supports most of features from [JSX](https://reasonml.github.io/docs/en/jsx) (uppercase components, fragments, optional attributes, punning)
-- but with a few improvements (lowercase components, no need to add annotations)
+- Brings the "component model" to HTML
+- Supports all of the Reason's [JSX](https://reasonml.github.io/docs/en/jsx) features (uppercase components, fragments, optional attributes, punning)
+- but with a few improvements (lowercase components, no need to add the ppx annotation)
 - No React idioms (no `className`, no `htmlFor`, no `onChange`, etc...)
 - Integrates well with [htmx](https://htmx.org)
 - Type-safe, validates attributes and their types ([it can be better thought](https://github.com/davesnx/html_of_jsx/issues/2))
 - Works with [OCaml](https://ocaml.org), [Reason](https://reasonml.github.io) and [mlx](https://github.com/ocaml-mlx/mlx)
 - Minimal
   - `JSX.render` to render a JSX element to a HTML string
-  - `JSX.*` to construct DOM Elements and DOM nodes (`JSX.string`, `JSX.int`, `JSX.null`, `JSX.list`)
-- Created to work on the server-side, but can be used on the client-side as well (with [Melange](https://melange.re) or [jsoo](https://ocsigen.org/js_of_ocaml/))
+  - `JSX.*` to construct DOM Elements and DOM nodes (`JSX.string`, `JSX.int`, `JSX.null`, `JSX.list` and `JSX.unsafe`)
+- Designed to work on the server, but can be used on the client-side as well (with [Melange](https://melange.re) or [jsoo](https://ocsigen.org/js_of_ocaml/))
 
 ## Installation
 

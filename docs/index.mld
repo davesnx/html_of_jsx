@@ -26,12 +26,16 @@ The only module exposed is {!JSX} with some functions to construct elements and 
 
 {1 Overview}
 
-- Brings the component model to HTML
-- Supports most of the JSX features (uppercase components, fragments, optional attributes, punning, childrens, etc...)
-- but with a few improvements (lowercase components, no need to add ppx annotations)
+- Brings the "component model" to HTML
+- Supports all of the Reason's JSX features (uppercase components, fragments, optional attributes, punning)
+- but with a few improvements (lowercase components, no need to add the ppx annotation)
 - Integrates well with Htmx and others (see the {!page-"htmx"} page)
 - No React idioms (no [className], no [htmlFor], no [onChange], etc...), just plain HTML5
 - Type-safe, validates attributes and their types
 - Works with {{:https://ocaml.org} OCaml}, {{:https://reasonml.github.io} Reason} and {{:https://github.com/ocaml-mlx/mlx}mlx}
+- Minimal
+  - [JSX.render] to render a JSX element to a HTML string
+  - [JSX.*] to construct DOM Elements and DOM nodes ([JSX.string], [JSX.int], [JSX.null], [JSX.list] and [JSX.unsafe])
+- Designed to work on the server, but can be used on the client-side as well (with {{:https://melange.re} Melange} or {{:https://ocsigen.org/js_of_ocaml/} jsoo})
 
 {b See the {!page-"features"} page for all details}
