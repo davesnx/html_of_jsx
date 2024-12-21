@@ -1,4 +1,5 @@
-(** List of HTML attributes that bring type-safety and validation based on their tag *)
+(** List of HTML attributes that bring type-safety and validation based on their
+    tag *)
 
 open Ppx_attributes
 (* TODO:

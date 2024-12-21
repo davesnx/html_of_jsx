@@ -9,7 +9,11 @@ let spacer = (~bottom=0, ~top=0, ~left=0, ~right=0, ()) =>
   );
 
 module Align = {
-  type t = [ | `center | `start | `end_];
+  type t = [
+    | `center
+    | `start
+    | `end_
+  ];
   let to_s = align =>
     switch (align) {
     | `center => "center"

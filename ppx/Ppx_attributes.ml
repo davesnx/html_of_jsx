@@ -1,4 +1,5 @@
-(** List of attributes that bring type-safety and attribute validation based on the tag. Used at compile-time by the ppx. *)
+(** List of attributes that bring type-safety and attribute validation based on
+    the tag. Used at compile-time by the ppx. *)
 
 type attributeType =
   | String
