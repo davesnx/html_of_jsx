@@ -3,14 +3,17 @@
   let lower_empty_attr =
     JSX.node(
       "div",
-      Stdlib.List.filter_map(Fun.id, [Some(("class", `String("": string)))]),
+      Stdlib.List.filter_map(
+        Stdlib.Fun.id,
+        [Some(("class", `String("": string)))],
+      ),
       [],
     );
   let lower_inline_styles =
     JSX.node(
       "div",
       Stdlib.List.filter_map(
-        Fun.id,
+        Stdlib.Fun.id,
         [
           Some((
             "style",
@@ -24,7 +27,7 @@
     JSX.node(
       "div",
       Stdlib.List.filter_map(
-        Fun.id,
+        Stdlib.Fun.id,
         [
           Stdlib.Option.map(
             v => ("tabindex", `Int(v)),
@@ -38,7 +41,7 @@
     JSX.node(
       "a",
       Stdlib.List.filter_map(
-        Fun.id,
+        Stdlib.Fun.id,
         [
           Some(("tabindex", `Int(1: int))),
           Some(("href", `String("https://example.com": string))),
@@ -55,21 +58,21 @@
     JSX.node(
       "div",
       Stdlib.List.filter_map(
-        Fun.id,
+        Stdlib.Fun.id,
         [Some(("class", `String("flex-container": string)))],
       ),
       [
         JSX.node(
           "div",
           Stdlib.List.filter_map(
-            Fun.id,
+            Stdlib.Fun.id,
             [Some(("class", `String("sidebar": string)))],
           ),
           [
             JSX.node(
               "h2",
               Stdlib.List.filter_map(
-                Fun.id,
+                Stdlib.Fun.id,
                 [Some(("class", `String("title": string)))],
               ),
               ["jsoo-react" |> s],
@@ -77,7 +80,7 @@
             JSX.node(
               "nav",
               Stdlib.List.filter_map(
-                Fun.id,
+                Stdlib.Fun.id,
                 [Some(("class", `String("menu": string)))],
               ),
               [
@@ -94,7 +97,7 @@
                              JSX.node(
                                "a",
                                Stdlib.List.filter_map(
-                                 Fun.id,
+                                 Stdlib.Fun.id,
                                  [
                                    Some(("href", `String(e.path: string))),
                                    Some((
@@ -121,7 +124,7 @@
     JSX.node(
       "button",
       Stdlib.List.filter_map(
-        Fun.id,
+        Stdlib.Fun.id,
         [Some(("class", `String("FancyButton": string)))],
       ),
       [children],
@@ -130,21 +133,21 @@
     JSX.node(
       "div",
       Stdlib.List.filter_map(
-        Fun.id,
+        Stdlib.Fun.id,
         [Some(("translate", `String("yes": string)))],
       ),
       [
         JSX.node(
           "picture",
           Stdlib.List.filter_map(
-            Fun.id,
+            Stdlib.Fun.id,
             [Some(("id", `String("idpicture": string)))],
           ),
           [
             JSX.node(
               "img",
               Stdlib.List.filter_map(
-                Fun.id,
+                Stdlib.Fun.id,
                 [
                   Some(("src", `String("picture/img.png": string))),
                   Some(("alt", `String("test picture/img.png": string))),
@@ -156,7 +159,7 @@
             JSX.node(
               "source",
               Stdlib.List.filter_map(
-                Fun.id,
+                Stdlib.Fun.id,
                 [
                   Some(("type", `String("image/webp": string))),
                   Some(("src", `String("picture/img1.webp": string))),
@@ -167,7 +170,7 @@
             JSX.node(
               "source",
               Stdlib.List.filter_map(
-                Fun.id,
+                Stdlib.Fun.id,
                 [
                   Some(("type", `String("image/jpeg": string))),
                   Some(("src", `String("picture/img2.jpg": string))),
@@ -183,7 +186,7 @@
     JSX.node(
       "text",
       Stdlib.List.filter_map(
-        Fun.id,
+        Stdlib.Fun.id,
         [
           Some(("dx", `String("1 2": string))),
           Some(("dy", `String("3 4": string))),

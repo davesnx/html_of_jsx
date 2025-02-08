@@ -15,11 +15,11 @@ We need to output ML syntax here, otherwise refmt could not parse it.
     JSX.list
       [
         JSX.node "div"
-          (Stdlib.List.filter_map Fun.id
+          (Stdlib.List.filter_map Stdlib.Fun.id
              [ Some ("class", `String ("md:w-1/3" : string)) ])
           [];
         JSX.node "div"
-          (Stdlib.List.filter_map Fun.id
+          (Stdlib.List.filter_map Stdlib.Fun.id
              [ Some ("class", `String ("md:w-2/3" : string)) ])
           [];
       ]
