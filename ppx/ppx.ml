@@ -194,7 +194,7 @@ let transform_attributes ~loc ~tag_name attrs =
   | [%expr []] -> [%expr []]
   | attrs ->
       (* We need to filter attributes since optionals are represented as None *)
-      [%expr List.filter_map Fun.id [%e attrs]]
+      [%expr Stdlib.List.filter_map Fun.id [%e attrs]]
 
 let rewrite_node ~loc tag_name args children =
   let dom_node_name = estring ~loc tag_name in
