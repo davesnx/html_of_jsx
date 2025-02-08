@@ -3,13 +3,13 @@
   let lower_empty_attr =
     JSX.node(
       "div",
-      List.filter_map(Fun.id, [Some(("class", `String("": string)))]),
+      Stdlib.List.filter_map(Fun.id, [Some(("class", `String("": string)))]),
       [],
     );
   let lower_inline_styles =
     JSX.node(
       "div",
-      List.filter_map(
+      Stdlib.List.filter_map(
         Fun.id,
         [
           Some((
@@ -23,7 +23,7 @@
   let lower_opt_attr =
     JSX.node(
       "div",
-      List.filter_map(
+      Stdlib.List.filter_map(
         Fun.id,
         [
           Stdlib.Option.map(
@@ -37,7 +37,7 @@
   let lowerWithChildAndProps = foo =>
     JSX.node(
       "a",
-      List.filter_map(
+      Stdlib.List.filter_map(
         Fun.id,
         [
           Some(("tabindex", `Int(1: int))),
@@ -54,21 +54,21 @@
   let lower_children_nested =
     JSX.node(
       "div",
-      List.filter_map(
+      Stdlib.List.filter_map(
         Fun.id,
         [Some(("class", `String("flex-container": string)))],
       ),
       [
         JSX.node(
           "div",
-          List.filter_map(
+          Stdlib.List.filter_map(
             Fun.id,
             [Some(("class", `String("sidebar": string)))],
           ),
           [
             JSX.node(
               "h2",
-              List.filter_map(
+              Stdlib.List.filter_map(
                 Fun.id,
                 [Some(("class", `String("title": string)))],
               ),
@@ -76,7 +76,7 @@
             ),
             JSX.node(
               "nav",
-              List.filter_map(
+              Stdlib.List.filter_map(
                 Fun.id,
                 [Some(("class", `String("menu": string)))],
               ),
@@ -93,7 +93,7 @@
                            [
                              JSX.node(
                                "a",
-                               List.filter_map(
+                               Stdlib.List.filter_map(
                                  Fun.id,
                                  [
                                    Some(("href", `String(e.path: string))),
@@ -120,7 +120,7 @@
   let lower_ref_with_children =
     JSX.node(
       "button",
-      List.filter_map(
+      Stdlib.List.filter_map(
         Fun.id,
         [Some(("class", `String("FancyButton": string)))],
       ),
@@ -129,18 +129,21 @@
   let lower_with_many_props =
     JSX.node(
       "div",
-      List.filter_map(Fun.id, [Some(("translate", `String("yes": string)))]),
+      Stdlib.List.filter_map(
+        Fun.id,
+        [Some(("translate", `String("yes": string)))],
+      ),
       [
         JSX.node(
           "picture",
-          List.filter_map(
+          Stdlib.List.filter_map(
             Fun.id,
             [Some(("id", `String("idpicture": string)))],
           ),
           [
             JSX.node(
               "img",
-              List.filter_map(
+              Stdlib.List.filter_map(
                 Fun.id,
                 [
                   Some(("src", `String("picture/img.png": string))),
@@ -152,7 +155,7 @@
             ),
             JSX.node(
               "source",
-              List.filter_map(
+              Stdlib.List.filter_map(
                 Fun.id,
                 [
                   Some(("type", `String("image/webp": string))),
@@ -163,7 +166,7 @@
             ),
             JSX.node(
               "source",
-              List.filter_map(
+              Stdlib.List.filter_map(
                 Fun.id,
                 [
                   Some(("type", `String("image/jpeg": string))),
@@ -179,7 +182,7 @@
   let some_random_html_element =
     JSX.node(
       "text",
-      List.filter_map(
+      Stdlib.List.filter_map(
         Fun.id,
         [
           Some(("dx", `String("1 2": string))),
