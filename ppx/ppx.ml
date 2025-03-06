@@ -275,7 +275,7 @@ let rewrite_jsx =
             match tag.pexp_desc with
             (* div() [@JSX] *)
             | Pexp_ident { txt = Lident name; loc = name_loc }
-              when JSX.Html.is_html_element name || JSX.Html.is_svg_element name
+              when Ppx_html.is_html_element name || Ppx_html.is_svg_element name
               ->
                 rewrite_node ~loc:name_loc name rest_of_args children
             (* Reason adds `createElement` as default when an uppercase is found,

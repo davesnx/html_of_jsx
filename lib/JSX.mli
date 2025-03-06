@@ -1,39 +1,33 @@
 (** JSX module
 
-    The JSX module provides a set of functions and types to create and render
-    HTML elements in a declarative manner, similar to JSX in JavaScript/React.
+    The JSX module provides a set of functions and render HTML elements in a
+    declarative manner, similar to JSX in Reason or React.js.
 
     {[
-      let html: string = JSX.render (
+      let html: string = JSX.render(
         <div>
           <h1> {JSX.string("Hello, World!")} </h1>
         </div>
-      )
+      );
     ]} *)
 
-type attribute =
-  string * [ `Bool of bool | `Int of int | `Float of float | `String of string ]
-(** Represents an attribute of an HTML element. It consists of a name and a
-    value which can be of several types.
-
-    This is used by the ppx to create the attributes of the HTML element, and
-    rarely used directly. *)
-
 type element
-(** The type that represents a JSX.element *)
+(** An abstract type that represents a JSX.element *)
 
 val render : element -> string
-(** Render a JSX.element to a string.
+(** Render a JSX.element as a string.
 
     This function takes a JSX.element and converts it into its corresponding
     HTML string representation.
 
     {[
-      let html: string = JSX.render (
+      let html: string = JSX.render(
         <div>
           <h1> {JSX.string("Hello, World!")} </h1>
         </div>
-      )
+      );
+
+      Printf.printf "%s" html; /* <div><h1>Hello, World!</h1></div> */
     ]} *)
 
 val float : float -> element
@@ -68,6 +62,14 @@ val list : element list -> element
         JSX.list
           [ JSX.string "Item 1"; JSX.string "Item 2"; JSX.string "Item 3" ]
     ]} *)
+
+type attribute =
+  string * [ `Bool of bool | `Int of int | `Float of float | `String of string ]
+(** Represents an attribute of an HTML element. It consists of a name and a
+    value which can be of several types.
+
+    This is used by the ppx to create the attributes of the HTML element, and
+    rarely used directly. *)
 
 val node : string -> attribute list -> element list -> element
 (** The function to create an HTML DOM Node.
@@ -160,5 +162,3 @@ module Debug : sig
         | _ -> ()
       ]} *)
 end
-
-module Html : module type of Html
