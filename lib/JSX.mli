@@ -127,6 +127,7 @@ val unsafe : string -> element
 
 module Debug : sig
   type html_element := element
+  (** Used to inspect and re-construct the JSX element, only useful for *)
 
   type element =
     | Null
