@@ -1,3 +1,4 @@
 (library
  (name JSX)
+ (private_modules Html)
  (public_name html_of_jsx))
