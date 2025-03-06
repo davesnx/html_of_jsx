@@ -2,6 +2,7 @@
 
 ## Unreleased
 - Make tests run in FreeBSD (https://github.com/davesnx/html_of_jsx/issues/22) (@davesnx)
+- Fix: prefix with Stdlib all ppx generated code (https://github.com/davesnx/html_of_jsx/pull/23) (@tjdevries)
 
 ## 0.0.4
 
