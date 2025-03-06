@@ -1,12 +1,15 @@
 {0 {{:https://htmx.org/}Htmx}}
+
 {4 (Experimental)}
 
-Supports htmx properties
+Support htmx properties as attributes in all HTML elements.
 
-{2 Add the '-htmx' flag into the ppx}
+{2 Enable the htmx mode}
+
+Adding the [-htmx] flag into the ppx
 {[
-(libraries html_of_jsx)
-(preprocess (pps html_of_jsx.ppx -htmx))
+  (libraries html_of_jsx)
+  (preprocess (pps html_of_jsx.ppx -htmx))
 ]}
 
 {2 Example}
@@ -14,4 +17,4 @@ Supports htmx properties
 JSX.render(<div hx_boost=true />)
 ]}
 
-All attributes are supported with the prefix {b hx_}
+The htmx attributes are scoped with the prefix {b hx_}

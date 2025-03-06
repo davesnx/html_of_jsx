@@ -19,22 +19,22 @@ add it to your {b dune} file
 (preprocess (pps html_of_jsx.ppx))
 ]}
 
+{1 Overview}
+
+- {b Minimal design}. It should just get out of the way. The ppx is seamless and the interface only exposes 5 functions and 2 types.
+- {b Type-safe} validates correct attributes and its types
+- Works with {{:https://ocaml.org} OCaml}, {{:https://reasonml.github.io} Reason} and {{:https://github.com/ocaml-mlx/mlx}mlx}
+- Brings the "component model" to HTML
+- Supports all of {{:https://reasonml.github.io/docs/syntax/jsx} Reason's JSX} features (uppercase components, fragments, optional attributes, punning)
+- but with a few improvements (lowercase components, no need for a ppx annotation)
+- No React idioms (no [className], no [htmlFor], no [onChange], etc...), just plain HTML5
+- Integrates well with {{:https://htmx.org/}Htmx} and others (see the {!page-"htmx"} page)
+- Designed to work on the server, but can be used on the client-side (with {{:https://melange.re} Melange} or {{:https://ocsigen.org/js_of_ocaml/} jsoo})
+
 {1 API}
 
 The only module exposed is {!JSX} with some functions to construct elements and {!JSX.render} to transform those elements into a string.
 
-{b Visit the {!page-"features"} page for all API reference}
+{b Visit the {!page-"features"} page for a detailed explanation of the API, and the features of the library}
 
-{1 Overview}
-
-- Works with {{:https://ocaml.org} OCaml}, {{:https://reasonml.github.io} Reason} and {{:https://github.com/ocaml-mlx/mlx}mlx}
-- Brings the "component model" to HTML
-- Supports all of the Reason's JSX features (uppercase components, fragments, optional attributes, punning)
-- but with a few improvements (lowercase components, no need to add the ppx annotation)
-- Integrates well with Htmx and others (see the {!page-"htmx"} page)
-- No React idioms (no [className], no [htmlFor], no [onChange], etc...), just plain HTML5
-- Type-safe, validates attributes and their types
-- Minimal
-  - [JSX.render] to render a JSX element to a HTML string
-  - [JSX.*] to construct DOM Elements and DOM nodes ([JSX.string], [JSX.int], [JSX.null], [JSX.list] and [JSX.unsafe])
-- Designed to work on the server, but can be used on the client-side (with {{:https://melange.re} Melange} or {{:https://ocsigen.org/js_of_ocaml/} jsoo})
+{b Visit the {!JSX} page for the interface documentation}
