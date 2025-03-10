@@ -1490,7 +1490,7 @@ let getJSXName = function
 let domPropNames =
   commonSvgAttributes () @ getCommonHtmlAttributes () |> List.map getJSXName
 
-type errors = [ `ElementNotFound | `AttributeNotFound ]
+type errors = [ `ElementNotFound | `AttributeNotFound of string option ]
 
 let getAttributes tag =
   let elements = svgElements @ htmlElements () in
@@ -1516,18 +1516,6 @@ let camelcaseToKebabcase str =
         else loop (x :: acc) (y :: xs)
   in
   str |> chars_of_string |> loop [] |> List.rev |> string_of_chars
-
-let findByName tag jsxName =
-  let byName p = getJSXName p = jsxName in
-  if isDataAttribute jsxName then
-    let name = camelcaseToKebabcase jsxName in
-    Ok (Attribute { name; jsxName; type_ = String })
-  else
-    match getAttributes tag with
-    | Ok { attributes; _ } ->
-        List.find_opt byName attributes
-        |> Option.to_result ~none:`AttributeNotFound
-    | Error err -> Error err
 
 module Levenshtein = struct
   (* Levenshtein distance from
@@ -1559,7 +1547,7 @@ end
 
 type closest = { name : string; distance : int }
 
-let find_closest_name invalid =
+let find_closest_name invalid domPropNames =
   let accumulate_distance name bestMatch =
     let distance = Levenshtein.distance invalid name in
     match distance < bestMatch.distance with
@@ -1571,6 +1559,26 @@ let find_closest_name invalid =
       { name = ""; distance = max_int }
   in
   if distance > 2 then None else Some name
+
+let findByName tag jsxName =
+  let byName p = getJSXName p = jsxName in
+  if isDataAttribute jsxName then
+    let name = camelcaseToKebabcase jsxName in
+    Ok (Attribute { name; jsxName; type_ = String })
+  else
+    match getAttributes tag with
+    | Ok { attributes; _ } ->
+        let found =
+          match List.find_opt byName attributes with
+          | Some prop -> Ok prop
+          | None -> (
+              let jsxNames = List.map getJSXName attributes in
+              match find_closest_name jsxName jsxNames with
+              | Some closest -> Error (`AttributeNotFound (Some closest))
+              | None -> Error (`AttributeNotFound None))
+        in
+        found
+    | Error err -> Error err
 
 let is_html_element tag =
   match tag with

@@ -194,3 +194,13 @@
       ),
       [],
     );
+  let lower_case_component = lola(~id="33", ());
+  let lower_case_component_being_html =
+    JSX.node(
+      "div",
+      Stdlib.List.filter_map(
+        Stdlib.Fun.id,
+        [Some(("id", `String("33": string)))],
+      ),
+      [],
+    );
