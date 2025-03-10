@@ -314,6 +314,9 @@ let () =
       ( "-htmx",
         Arg.Unit (fun _ -> Ppx_extra_attributes.set_htmx ()),
         "Enable htmx props" );
+      ( "-react",
+        Arg.Unit (fun _ -> Ppx_extra_attributes.set_react ()),
+        "Enable react props" );
       (* ( "-custom",
          Arg.String (fun file -> Static_attributes.extra_properties := Some file),
          "FILE Load inferred types from server cmo file FILE." ); *)
