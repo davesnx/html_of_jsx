@@ -40,3 +40,6 @@ let lower_with_many_props =
   </div>;
 
 let some_random_html_element = <text dx="1 2" dy="3 4" />;
+
+let lower_case_component = <lola id="33" />;
+let lower_case_component_being_html = <div id="33" />;

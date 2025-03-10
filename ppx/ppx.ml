@@ -74,9 +74,9 @@ let validate_attr ~loc id name =
 
 If this is not correct, please open an issue at %s|}
         id issues_url
-  | Error `AttributeNotFound ->
+  | Error (`AttributeNotFound suggestion) ->
       let suggestion =
-        match Ppx_html.find_closest_name name with
+        match suggestion with
         | Some suggestion ->
             Printf.sprintf "Hint: Maybe you mean '%s'?\n" suggestion
         | None -> ""
