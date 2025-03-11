@@ -289,6 +289,9 @@ let rewrite_jsx =
             | Pexp_ident id ->
                 rewrite_component ~loc:tag.pexp_loc id rest_of_args children
             | _ -> assert false)
+        | Pexp_apply ({ pexp_desc = Pexp_send _; _ }, _)
+          when has_jsx_attr expr.pexp_attributes ->
+            super#expression expr
         (* div() [@JSX] *)
         | Pexp_apply (_tag, _props) when has_jsx_attr expr.pexp_attributes ->
             raise_errorf ~loc:expr.pexp_loc "tag should be an identifier"
