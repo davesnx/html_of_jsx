@@ -195,6 +195,20 @@ let render_svg =
      L 5 3 z M 14 3 L 14 5 L 17.585938 5 L 8.2929688 14.292969 L 9.7070312 \
      15.707031 L 19 6.4140625 L 19 10 L 21 10 L 21 3 L 14 3 z\"></path></svg>"
 
+let obj =
+  object
+    method make () ~children = JSX.node "div" [] [ JSX.string children ]
+  end
+
+(* The point of this test is to verify that --
+ * assuming our jsx provider has properly output the object component
+ * we can process it -- this avoids having to add any mlx files to our test
+ * or having to extend ReasonML *)
+let object_children =
+  test "object_children" @@ fun () ->
+  let str = (obj#make () ~children:"test" [@JSX]) in
+  assert_string (JSX.render str) "<div>test</div>"
+
 let tests =
   ( "render",
     [
@@ -218,4 +232,5 @@ let tests =
       render_with_doc_type;
       render_svg;
       jsx_unsafe;
+      object_children;
     ] )
