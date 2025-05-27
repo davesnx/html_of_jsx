@@ -137,13 +137,13 @@ let make_attribute ~loc ~is_optional ~prop attribute_name attribute_value =
   | Rich_attribute { type_ = BooleanishString; _ }, false
   | Attribute { type_ = BooleanishString; _ }, false ->
       [%expr
-        Some ([%e attribute_name], `String (string_of_bool [%e attribute_value]))]
+        Some ([%e attribute_name], `String (Bool.to_string [%e attribute_value]))]
   | Rich_attribute { type_ = BooleanishString; _ }, true
   | Attribute { type_ = BooleanishString; _ }, true ->
       [%expr
         Stdlib.Option.map
           (fun v -> ([%e attribute_name], `String v))
-          string_of_bool [%e attribute_value]]
+          (Bool.to_string [%e attribute_value])]
   | Rich_attribute { type_ = Style; _ }, false
   | Attribute { type_ = Style; _ }, false ->
       [%expr Some ("style", `String [%e attribute_value])]

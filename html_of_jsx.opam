@@ -9,7 +9,7 @@ license: "MIT"
 homepage: "https://github.com/davesnx/html_of_jsx"
 bug-reports: "https://github.com/davesnx/html_of_jsx/issues"
 depends: [
-  "dune" {>= "3.12"}
+  "dune" {>= "3.16"}
   "ocaml" {>= "4.14"}
   "ppxlib" {>= "0.25.0"}
   "alcotest" {with-test}
