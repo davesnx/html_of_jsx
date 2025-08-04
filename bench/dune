@@ -2,4 +2,4 @@
  (name bench)
  (libraries html_of_jsx benchmark)
  (preprocess
-  (pps html_of_jsx.ppx -htmx)))
+  (pps html_of_jsx.ppx)))
