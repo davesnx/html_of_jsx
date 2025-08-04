@@ -1,13 +1,16 @@
-name: CI
+name: CI & Release
 
 on:
   push:
     branches:
     - main
+    tags:
+    - '*'
   pull_request:
 
 permissions:
   contents: write
+  pull-requests: write
 
 jobs:
   build:
@@ -28,7 +31,9 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: ${{ startsWith(github.ref, 'refs/tags/') && '0' || '1' }}
 
       - name: Load opam cache when not Windows
         if: runner.os != 'Windows'
@@ -92,3 +97,58 @@ jobs:
         with:
           path: _opam
           key: opam-${{ matrix.os }}-${{ matrix.ocaml-compiler }}-${{ hashFiles('**.opam') }}
+
+      # Release steps - only run on ubuntu-latest with OCaml 5.1.1 when a tag is pushed
+      - name: Install release tools
+        if: startsWith(github.ref, 'refs/tags/') && matrix.os == 'ubuntu-latest' && matrix.ocaml-compiler == '5.1.1'
+        run: opam install -y dune-release
+
+      - name: Configure Git for release
+        if: startsWith(github.ref, 'refs/tags/') && matrix.os == 'ubuntu-latest' && matrix.ocaml-compiler == '5.1.1'
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+
+      - name: Setup GitHub token for dune-release
+        if: startsWith(github.ref, 'refs/tags/') && matrix.os == 'ubuntu-latest' && matrix.ocaml-compiler == '5.1.1'
+        run: |
+          echo "${{ secrets.GH_TOKEN }}" > ~/.github-token
+
+      - name: Lint opam files
+        if: startsWith(github.ref, 'refs/tags/') && matrix.os == 'ubuntu-latest' && matrix.ocaml-compiler == '5.1.1'
+        run: opam exec -- dune-release lint
+
+      - name: Extract version from tag
+        if: startsWith(github.ref, 'refs/tags/') && matrix.os == 'ubuntu-latest' && matrix.ocaml-compiler == '5.1.1'
+        id: version
+        run: echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+
+      - name: Distribute release archive
+        if: startsWith(github.ref, 'refs/tags/') && matrix.os == 'ubuntu-latest' && matrix.ocaml-compiler == '5.1.1'
+        run: |
+          opam exec -- dune-release distrib --skip-tests --skip-lint
+
+      - name: Publish to GitHub
+        if: startsWith(github.ref, 'refs/tags/') && matrix.os == 'ubuntu-latest' && matrix.ocaml-compiler == '5.1.1'
+        env:
+          DUNE_RELEASE_DELEGATE: github-dune-release
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          opam exec -- dune-release publish --yes --change-log=./CHANGES.md
+
+      - name: Package opam release
+        if: startsWith(github.ref, 'refs/tags/') && matrix.os == 'ubuntu-latest' && matrix.ocaml-compiler == '5.1.1'
+        run: |
+          opam exec -- dune-release opam pkg -p html_of_jsx --yes --change-log=./CHANGES.md
+
+      - name: Submit to opam repository
+        if: startsWith(github.ref, 'refs/tags/') && matrix.os == 'ubuntu-latest' && matrix.ocaml-compiler == '5.1.1'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Configure opam-publish with GitHub token
+          mkdir -p ~/.config/dune/
+          echo "${{ secrets.GITHUB_TOKEN }}" > ~/.config/dune/github.token
+
+          # Submit to opam-repository
+          opam exec -- dune-release opam submit --yes --change-log=./CHANGES.md
