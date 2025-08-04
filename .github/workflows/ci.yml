@@ -158,11 +158,39 @@ jobs:
           local: /home/runner/git/opam-repository
           EOF
 
+      - name: Clone opam-repository fork
+        if: startsWith(github.ref, 'refs/tags/') && matrix.os == 'ubuntu-latest' && matrix.ocaml-compiler == '5.1.1'
+        run: |
+          # Configure git to use token for SSH-style URLs
+          git config --global url."https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/".insteadOf "git@github.com:"
+
+          # Create directory structure
+          mkdir -p /home/runner/git
+
+          # Clone your fork of opam-repository
+          git clone git@github.com:davesnx/opam-repository.git /home/runner/git/opam-repository
+
+          # Set up the upstream remote
+          cd /home/runner/git/opam-repository
+          git remote add upstream https://github.com/ocaml/opam-repository.git || true
+
+          # Fetch latest from upstream
+          git fetch upstream master
+          git checkout master
+          git merge upstream/master --ff-only || echo "::warning::Your fork may be out of sync with upstream"
+
+          # Return to workspace directory
+          cd ${{ github.workspace }}
+
       - name: Submit to opam repository
         if: startsWith(github.ref, 'refs/tags/') && matrix.os == 'ubuntu-latest' && matrix.ocaml-compiler == '5.1.1'
         env:
           DUNE_RELEASE_DELEGATE: github-dune-release
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
+          # Ensure we're in the project directory
+          cd ${{ github.workspace }}
+
           # Submit to opam-repository
           opam exec -- dune-release opam submit --yes --change-log=./CHANGES.md
 
