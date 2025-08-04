@@ -115,6 +115,12 @@ jobs:
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
 
+      # Release steps begin here - track their success
+      - name: Begin release process
+        if: startsWith(github.ref, 'refs/tags/') && matrix.os == 'ubuntu-latest' && matrix.ocaml-compiler == '5.1.1'
+        id: release_started
+        run: echo "release_started=true" >> $GITHUB_OUTPUT
+
       - name: Lint opam files
         if: startsWith(github.ref, 'refs/tags/') && matrix.os == 'ubuntu-latest' && matrix.ocaml-compiler == '5.1.1'
         run: opam exec -- dune-release lint
@@ -159,3 +165,44 @@ jobs:
         run: |
           # Submit to opam-repository
           opam exec -- dune-release opam submit --yes --change-log=./CHANGES.md
+
+      # Success notification
+      - name: Release success notification
+        if: |
+          success() &&
+          startsWith(github.ref, 'refs/tags/') &&
+          matrix.os == 'ubuntu-latest' &&
+          matrix.ocaml-compiler == '5.1.1' &&
+          steps.release_started.outputs.release_started == 'true'
+        run: |
+          TAG_NAME=${GITHUB_REF#refs/tags/}
+          echo "::notice::Release $TAG_NAME completed successfully! 🎉"
+          echo "Next steps:"
+          echo "1. Check the GitHub release: https://github.com/${{ github.repository }}/releases/tag/$TAG_NAME"
+          echo "2. Monitor the opam PR for approval"
+
+      # Cleanup: Delete tag if any release step failed
+      - name: Delete tag on failure
+        if: |
+          failure() &&
+          startsWith(github.ref, 'refs/tags/') &&
+          matrix.os == 'ubuntu-latest' &&
+          matrix.ocaml-compiler == '5.1.1' &&
+          steps.release_started.outputs.release_started == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          TAG_NAME=${GITHUB_REF#refs/tags/}
+          echo "::error::Release failed, deleting tag $TAG_NAME"
+
+          # Configure git with token
+          git config --global url."https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/".insteadOf "https://github.com/"
+
+          # Delete remote tag
+          git push origin --delete $TAG_NAME || echo "::warning::Failed to delete remote tag"
+
+          # Delete local tag (for completeness)
+          git tag -d $TAG_NAME || true
+
+          echo "::error::Release failed - tag $TAG_NAME has been deleted. Please fix the issues and create a new tag."
+          exit 1
