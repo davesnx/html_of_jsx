@@ -1,14 +1,14 @@
 (** List of attributes that bring type-safety and attribute validation based on
     the tag. Used at compile-time by the ppx. *)
 
-type attributeType =
+type kind =
   | String
   | Int
   | Bool
-  (* BooleanishString are attributes that are boolean values but represented as strings on the DOM.
+  | BooleanishString
+    (* BooleanishString are attributes that are boolean values but represented as strings on the DOM.
      https://github.com/facebook/react/blob/a17467e7e2cd8947c595d1834889b5d184459f12/packages/react-dom-bindings/src/server/ReactFizzConfigDOM.js#L1165-L1176
   *)
-  | BooleanishString
   | Style
 
 type eventType =
@@ -30,10 +30,10 @@ type eventType =
   | Inline
   | Drag
 
-type attribute = { type_ : attributeType; name : string; jsxName : string }
+type attribute = { type_ : kind; name : string; jsxName : string }
 
 type rich_attribute = {
-  type_ : attributeType;
+  type_ : kind;
   name : string;
   jsxName : string;
   description : string;

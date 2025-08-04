@@ -1,6 +1,6 @@
 (** https://htmx.org/reference/ *)
 
-open Ppx_attributes
+open Html_attributes
 
 let core_attributes =
   [

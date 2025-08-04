@@ -1,4 +1,4 @@
-open Ppx_attributes
+open Html_attributes
 
 [@@@ocamlformat "disable"]
 
