@@ -1,8 +1,11 @@
 # Changes
 
-## Unreleased
+## 0.0.5
+
 - Make tests run in FreeBSD (https://github.com/davesnx/html_of_jsx/issues/22) (@davesnx)
 - Fix: prefix with Stdlib all ppx generated code (https://github.com/davesnx/html_of_jsx/pull/23) (@tjdevries)
+- Allow react attributes as props (via -react flag) (https://github.com/davesnx/html_of_jsx/pull#26) (@davesnx)
+- Documentation: pushed old "features" document into the main index as seen https://davesnx.github.io/html_of_jsx/html_of_jsx/index.html
 
 ## 0.0.4
 
