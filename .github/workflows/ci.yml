@@ -18,6 +18,12 @@ jobs:
 
     runs-on: ${{ matrix.os }}
 
+    env:
+      GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+      DUNE_RELEASE_GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+      TERM: dumb
+      OPAMYES: 1
+
     strategy:
       fail-fast: false
       matrix:
@@ -109,17 +115,8 @@ jobs:
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
 
-      - name: Setup GitHub token for dune-release
-        if: startsWith(github.ref, 'refs/tags/') && matrix.os == 'ubuntu-latest' && matrix.ocaml-compiler == '5.1.1'
-        run: |
-          mkdir -p ~/.config/dune/
-          echo "${{ secrets.GH_TOKEN }}" > ~/.config/dune/github.token
-
       - name: Lint opam files
         if: startsWith(github.ref, 'refs/tags/') && matrix.os == 'ubuntu-latest' && matrix.ocaml-compiler == '5.1.1'
-        env:
-          TERM: dumb
-          OPAMYES: 1
         run: opam exec -- dune-release lint
 
       - name: Extract version from tag
@@ -148,7 +145,6 @@ jobs:
       - name: Submit to opam repository
         if: startsWith(github.ref, 'refs/tags/') && matrix.os == 'ubuntu-latest' && matrix.ocaml-compiler == '5.1.1'
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
           DUNE_RELEASE_DELEGATE: github-dune-release
         run: |
           # Submit to opam-repository
