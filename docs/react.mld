@@ -1,0 +1,29 @@
+{0 Enable {{:https://react.dev/}React} attributes}
+
+{1 {b (Experimental)}}
+
+Support React properties as attributes in all HTML and SVG elements.
+
+{2 {b React properties}}
+
+React properties are renamed to match the React DOM API. The rendered HTML won't have any reactisms. For example, `className` is renamed to `class`, `htmlFor` is renamed to `for`, etc.
+
+Those react properties are additional, HTML and SVG attributes are still correct. For example, `class` is still valid, and `className` is also valid.
+
+{2 {b Why}}
+
+This mode is a way help to migrate away from (or migrate to) React
+
+{2 {b Enable}}
+
+Adding the [-react] flag into the ppx
+{[
+  (libraries html_of_jsx)
+  (preprocess (pps html_of_jsx.ppx -react))
+]}
+
+{2 {b Example}}
+
+{@reasonml[
+JSX.render(<div className="random" />);
+]}

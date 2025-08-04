@@ -66,7 +66,7 @@ let rewrite_component ~loc tag args children =
   pexp_apply ~loc component props
 
 let validate_attr ~loc id name =
-  match Ppx_html.findByName id name with
+  match Html.findByName id name with
   | Ok p -> p
   | Error `ElementNotFound ->
       raise_errorf ~loc
@@ -89,7 +89,7 @@ If this is not correct, please open an issue at %s.|}
         name id suggestion issues_url
 
 let add_attribute_type_constraint ~loc ~is_optional
-    (type_ : Ppx_attributes.attributeType) value =
+    (type_ : Html_attributes.kind) value =
   match (type_, is_optional) with
   | String, true -> [%expr ([%e value] : string option)]
   | String, false -> [%expr ([%e value] : string)]
@@ -104,7 +104,7 @@ let add_attribute_type_constraint ~loc ~is_optional
   | Style, true -> [%expr ([%e value] : string option)]
 
 let make_attribute ~loc ~is_optional ~prop attribute_name attribute_value =
-  let open Ppx_attributes in
+  let open Html_attributes in
   match (prop, is_optional) with
   | Rich_attribute { type_ = String; _ }, false
   | Attribute { type_ = String; _ }, false ->
@@ -174,7 +174,7 @@ let transform_labelled ~loc:_parentLoc ~tag_name props (prop_label, value) =
         | Attribute { type_; _ } -> type_
         | Event _ -> String
       in
-      let attribute_name = Ppx_html.getName attribute in
+      let attribute_name = Html.getName attribute in
       let attribute_name_expr = estring ~loc attribute_name in
       let attribute_value =
         add_attribute_type_constraint ~loc ~is_optional attribute_type value
@@ -275,8 +275,7 @@ let rewrite_jsx =
             match tag.pexp_desc with
             (* div() [@JSX] *)
             | Pexp_ident { txt = Lident name; loc = name_loc }
-              when Ppx_html.is_html_element name || Ppx_html.is_svg_element name
-              ->
+              when Html.is_html_element name || Html.is_svg_element name ->
                 rewrite_node ~loc:name_loc name rest_of_args children
             (* Reason adds `createElement` as default when an uppercase is found,
                we change it back to make *)
@@ -311,17 +310,21 @@ let rewrite_jsx =
 let () =
   let driver_args =
     [
-      ( "-htmx",
-        Arg.Unit (fun _ -> Ppx_extra_attributes.set_htmx ()),
-        "Enable htmx props" );
+      ( "Enable htmx attributes in HTML and SVG elements",
+        "-htmx",
+        Arg.Unit (fun () -> Extra_attributes.set Htmx) );
+      ( "Enable react attributes in HTML and SVG elements",
+        "-react",
+        Arg.Unit (fun () -> Extra_attributes.set React) );
       (* ( "-custom",
          Arg.String (fun file -> Static_attributes.extra_properties := Some file),
-         "FILE Load inferred types from server cmo file FILE." ); *)
+         "FILE Load inferred types from cmo file." ); *)
     ]
   in
 
   List.iter
-    ~f:(fun (key, spec, doc) -> Driver.add_arg key spec ~doc)
+    ~f:(fun (doc, key, spec) -> Driver.add_arg key spec ~doc)
     driver_args;
+
   Driver.register_transformation "html_of_jsx.ppx"
     ~preprocess_impl:rewrite_jsx#structure
