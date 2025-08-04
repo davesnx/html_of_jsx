@@ -1,10 +1,10 @@
-{0 {{:https://htmx.org/}Htmx}}
+{0 Enable {{:https://htmx.org/}Htmx} attributes}
 
-{4 (Experimental)}
+{1 {b (Experimental)}}
 
-Support htmx properties as attributes in all HTML elements.
+Support htmx properties as attributes in all HTML elements
 
-{2 Enable the htmx mode}
+{2 {b Enable the htmx mode}}
 
 Adding the [-htmx] flag into the ppx
 {[
@@ -12,7 +12,7 @@ Adding the [-htmx] flag into the ppx
   (preprocess (pps html_of_jsx.ppx -htmx))
 ]}
 
-{2 Example}
+{2 {b Example}}
 {[
 JSX.render(<div hx_boost=true />)
 ]}
