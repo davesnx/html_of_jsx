@@ -1,4 +1,4 @@
-(lang dune 3.12)
+(lang dune 3.16)
 (generate_opam_files true)
 (implicit_transitive_deps false)
 
@@ -34,4 +34,16 @@
     :with-dev-setup :with-test)))
   (ocaml-lsp-server :with-dev-setup)
   (tiny_httpd :with-dev-setup)
+  (mlx :with-dev-setup)
+  (ocamlformat-mlx :with-dev-setup)
 ))
+
+(dialect
+ (name mlx)
+ (implementation
+  (extension mlx)
+  (merlin_reader mlx)
+  (format
+   (run ocamlformat-mlx %{input-file}))
+  (preprocess
+   (run mlx-pp %{input-file}))))

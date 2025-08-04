@@ -64,8 +64,8 @@ let write_attribute out (attr : attribute) =
       Buffer.add_char out ' ';
       Buffer.add_string out name
   | name, `String value -> write_name_value name value
-  | name, `Int value -> write_name_value name (string_of_int value)
-  | name, `Float value -> write_name_value name (string_of_float value)
+  | name, `Int value -> write_name_value name (Int.to_string value)
+  | name, `Float value -> write_name_value name (Float.to_string value)
 
 type element =
   | Null
