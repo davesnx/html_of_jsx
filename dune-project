@@ -19,22 +19,24 @@
   (ocaml (>= 4.14))
   (ppxlib (>= 0.25.0))
 
+  ;; Documentation
+  (odoc :with-doc)
+
   ;; Test dependencies
   (alcotest :with-test)
   (benchmark :with-test)
   (reason (and (>= 3.10.0) :with-test))
 
-  ;; Documentation
-  (odoc :with-doc)
-
-  ;; Dev dependencies
+  ;; Test and dev dependencies
   (ocamlformat
    (and
     (= 0.26.1) (or
     :with-dev-setup :with-test)))
+  (mlx (or :with-test :with-dev-setup))
+
+  ;; Dev dependencies
   (ocaml-lsp-server :with-dev-setup)
   (tiny_httpd :with-dev-setup)
-  (mlx (or :with-test :with-dev-setup))
   (ocamlformat-mlx :with-dev-setup)
 ))
 
