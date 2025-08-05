@@ -34,7 +34,7 @@
     :with-dev-setup :with-test)))
   (ocaml-lsp-server :with-dev-setup)
   (tiny_httpd :with-dev-setup)
-  (mlx :with-dev-setup)
+  (mlx (or :with-test :with-dev-setup))
   (ocamlformat-mlx :with-dev-setup)
 ))
 
