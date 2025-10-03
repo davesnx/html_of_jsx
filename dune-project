@@ -29,8 +29,8 @@
 
   ;; Test and dev dependencies
   (ocamlformat
-   (or
-    :with-dev-setup :with-test))
+   (and (>= 0.26.1)
+    (or :with-dev-setup :with-test)))
   (mlx (or :with-test :with-dev-setup))
 
   ;; Dev dependencies
