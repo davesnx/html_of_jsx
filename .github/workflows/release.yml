@@ -1,12 +1,22 @@
 name: Release
 
 on:
+  # Trigger when CI workflow completes on a tag
   workflow_run:
     workflows: ["CI"]
     types:
       - completed
-    branches:
-      - '*'
+  # Also allow manual trigger for testing
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to release'
+        required: true
+        type: string
+      dry_run:
+        description: 'Dry run (no GitHub release or opam submission)'
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -15,12 +25,14 @@ permissions:
 jobs:
   release:
     name: Release
-    # Only run if CI succeeded on a tag push (or PR for testing)
+    # Run only if:
+    # - CI succeeded on a tag push, OR
+    # - Manual trigger
     if: |
       (github.event_name == 'workflow_run' &&
        github.event.workflow_run.conclusion == 'success' &&
-       github.event.workflow_run.event == 'push') ||
-      github.event_name == 'pull_request'
+       startsWith(github.event.workflow_run.head_branch, 'refs/tags/')) ||
+      github.event_name == 'workflow_dispatch'
 
     runs-on: ${{ matrix.os }}
 
@@ -40,23 +52,44 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.ref }}
+          ref: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag || (github.event_name == 'workflow_run' && github.event.workflow_run.head_branch || github.ref) }}
           fetch-depth: '0'
 
+      - name: Download CI artifacts
+        id: download-artifacts
+        if: github.event_name == 'workflow_run'
+        uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: release-artifacts
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GH_TOKEN }}
+
       - name: Load opam cache
+        if: steps.download-artifacts.outcome != 'success'
         id: opam-cache-windows
         uses: actions/cache/restore@v3
         with:
           path: _opam
           key: opam-${{ matrix.os }}-${{ matrix.ocaml-compiler }}-${{ hashFiles('**.opam') }}
 
+      # Always need OCaml/opam for dune-release, even with artifacts
       - name: Use OCaml ${{ matrix.ocaml-compiler }}
         uses: ocaml/setup-ocaml@v3.4.5
         with:
           ocaml-compiler: ${{ matrix.ocaml-compiler }}
 
-      - name: Install
+      # Only install dependencies if we don't have artifacts
+      - name: Install dependencies
+        if: steps.download-artifacts.outcome != 'success'
         run: make install
+
+      # If we have artifacts, just ensure opam is initialized
+      - name: Initialize opam with artifacts
+        if: steps.download-artifacts.outcome == 'success'
+        run: |
+          # Ensure opam knows about the pre-built artifacts
+          opam install . --deps-only --yes
 
       - name: Install dune-release
         run: opam install dune-release -y
@@ -82,6 +115,8 @@ jobs:
           package-name: 'html_of_jsx'
           changelog: './CHANGES.md'
           github-token: ${{ secrets.GH_TOKEN }}
+          to-opam-repository: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.dry_run == 'false' || 'true' }}
+          to-github-releases: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.dry_run == 'false' || 'true' }}
 
       - name: Save cache
         uses: actions/cache/save@v3
