@@ -289,11 +289,14 @@ jobs:
 
       - name: Create test project
         run: |
-          # Move conflicting project files temporarily
-          mkdir -p .temp-backup
-          mv dune-project .temp-backup/ 2>/dev/null || true
-          mv test .temp-backup/ 2>/dev/null || true
-          mv *.opam .temp-backup/ 2>/dev/null || true
+          # Create test project in a separate directory
+          mkdir -p smoke-test-project
+          cd smoke-test-project
+
+          # Initialize git repo
+          git init
+          git config user.name "Test User"
+          git config user.email "test@example.com"
 
           # Create valid opam file
           cat > test-pkg.opam << 'EOF'
@@ -340,10 +343,6 @@ jobs:
           cat > lib/test_pkg.ml << 'EOF'
           let hello = "world"
           EOF
-
-          # Configure git before committing
-          git config user.name "Test User"
-          git config user.email "test@example.com"
 
           # Commit everything (action expects clean git state)
           git add .
