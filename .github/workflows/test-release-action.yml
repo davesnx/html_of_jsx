@@ -339,6 +339,10 @@ jobs:
           let hello = "world"
           EOF
 
+          # Configure git for commits
+          git config user.name "Test User"
+          git config user.email "test@example.com"
+
           # Commit everything (action expects clean git state)
           git add .
           git commit -m "Test project for smoke test"
