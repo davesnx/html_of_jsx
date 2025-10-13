@@ -34,6 +34,13 @@ jobs:
         with:
           fetch-depth: '1'
 
+      - name: Load opam cache
+        id: opam-cache-windows
+        uses: actions/cache/restore@v3
+        with:
+          path: _opam
+          key: opam-${{ matrix.os }}-${{ matrix.ocaml-compiler }}-${{ hashFiles('**.opam') }}
+
       - name: Use OCaml ${{ matrix.ocaml-compiler }}
         uses: ocaml/setup-ocaml@v3.4.5
         with:
@@ -72,3 +79,9 @@ jobs:
           changelog: './CHANGES.md'
           github-token: ${{ secrets.GH_TOKEN }}
           dry-run: false # Testing without dry-run
+
+      - name: Save cache
+        uses: actions/cache/save@v3
+        with:
+          path: ~/.opam
+          key: opam-${{ matrix.os }}-${{ matrix.ocaml-compiler }}-${{ hashFiles('**.opam') }}
