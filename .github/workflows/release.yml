@@ -42,10 +42,25 @@ jobs:
       - name: Install
         run: make install
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        shell: bash
+        working-directory: .github/scripts/release
+        run: npm ci
+
+      - name: Build
+        shell: bash
+        working-directory: .github/scripts/release
+        run: npm run package
+
       - name: Run dune-release
         uses: ./.github/scripts/release
         with:
           package-name: 'html_of_jsx'
-          changelog: '../../CHANGES.md'
+          changelog: './CHANGES.md'
           github-token: ${{ secrets.GH_TOKEN }}
           dry-run: ${{ github.event_name == 'pull_request' }} # Dry-run on PRs, real release on tags
