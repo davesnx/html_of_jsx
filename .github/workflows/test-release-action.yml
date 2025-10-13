@@ -56,7 +56,6 @@ jobs:
               echo '- Initial release' >> CHANGES.md
             inputs:
               package-name: test-package
-              github-token: ${{ github.token }}
               to-opam-repository: false
               to-github-releases: false
               verbose: true
@@ -73,7 +72,6 @@ jobs:
               echo '- Test release' >> CHANGES.md
             inputs:
               package-name: test-package
-              github-token: ${{ github.token }}
               to-opam-repository: false
               to-github-releases: false
             expect-success: true
@@ -87,7 +85,6 @@ jobs:
               rm -f CHANGES.md
             inputs:
               package-name: test-package
-              github-token: ${{ github.token }}
             expect-success: false
             expect-error: "changelog"
 
@@ -99,7 +96,6 @@ jobs:
               echo '- Release' >> CHANGES.md
             inputs:
               package-name: test-package
-              github-token: ${{ github.token }}
               to-opam-repository: false
               to-github-releases: false
             expect-success: false
@@ -114,7 +110,6 @@ jobs:
               echo 'No version entries here' >> CHANGES.md
             inputs:
               package-name: test-package
-              github-token: ${{ github.token }}
               to-opam-repository: false
               to-github-releases: false
             expect-success: false
@@ -130,7 +125,6 @@ jobs:
             inputs:
               package-name: test-package
               changelog: ./NEWS.md
-              github-token: ${{ github.token }}
               to-opam-repository: false
               to-github-releases: false
             expect-success: true
@@ -207,7 +201,13 @@ jobs:
       - name: Run action
         id: test-action
         uses: ./.github/scripts/release
-        with: ${{ matrix.scenario.inputs }}
+        with:
+          github-token: ${{ github.token }}
+          package-name: ${{ matrix.scenario.inputs.package-name }}
+          to-opam-repository: ${{ matrix.scenario.inputs.to-opam-repository }}
+          to-github-releases: ${{ matrix.scenario.inputs.to-github-releases }}
+          changelog: ${{ matrix.scenario.inputs.changelog }}
+          verbose: ${{ matrix.scenario.inputs.verbose }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         continue-on-error: true
