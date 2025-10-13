@@ -67,4 +67,4 @@ jobs:
           package-name: 'html_of_jsx'
           changelog: './CHANGES.md'
           github-token: ${{ secrets.GH_TOKEN }}
-          dry-run: ${{ github.event_name == 'pull_request' }} # Dry-run on PRs, real release on tags
+          dry-run: false # Testing without dry-run
