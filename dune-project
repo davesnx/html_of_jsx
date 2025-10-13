@@ -33,6 +33,8 @@
     (or :with-dev-setup :with-test)))
   (mlx (or :with-test :with-dev-setup))
 
+  (dune-release :with-dev-setup)
+
   ;; Dev dependencies
   (ocaml-lsp-server :with-dev-setup)
   (tiny_httpd :with-dev-setup)
