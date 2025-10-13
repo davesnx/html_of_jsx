@@ -311,7 +311,21 @@ local: ${config.local}
       }
 
     } catch (error: any) {
-      core.error(`Release failed: ${error.message}`);
+      const errorMessage = error.message || error.toString();
+
+      // Check for specific error patterns and provide helpful messages
+      if (errorMessage.includes('without `workflow` scope')) {
+        core.error('GitHub token is missing the "workflow" scope');
+      } else if (errorMessage.includes('Permission to') && errorMessage.includes('denied')) {
+        core.error('GitHub token does not have permission to push to the repository');
+        core.error('Make sure your token has the "repo" scope and you have push access');
+      } else if (errorMessage.includes('authentication failed') || errorMessage.includes('Invalid username or token')) {
+        core.error('GitHub token authentication failed');
+        core.error('Please check that your GH_TOKEN secret is valid and not expired');
+      }
+
+      core.error(`Release failed: ${errorMessage}`);
+
       if (!dryRun) {
         this.deleteTag();
       } else {
