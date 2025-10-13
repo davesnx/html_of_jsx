@@ -207,8 +207,14 @@ jobs:
           # Create mock opam for testing
           cat > $PWD/.test-bin/opam << 'EOF'
           #!/bin/bash
-          echo "Mock opam: $@"
-          exit 0
+          # Handle 'opam exec -- command args...'
+          if [[ "$1" == "exec" ]] && [[ "$2" == "--" ]]; then
+            shift 2  # Remove 'exec --'
+            exec "$@"  # Execute the actual command
+          else
+            echo "Mock opam: $@"
+            exit 0
+          fi
           EOF
           chmod +x $PWD/.test-bin/opam
 
