@@ -20,6 +20,10 @@ inputs:
     description: 'If true, performs all release steps except submitting to opam-repository (useful for testing)'
     required: false
     default: 'false'
+  verbose:
+    description: 'If true, shows detailed logging output'
+    required: false
+    default: 'false'
 
 outputs:
   version:

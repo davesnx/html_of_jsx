@@ -22,9 +22,20 @@ interface GitHubContext {
 
 class ReleaseManager {
   private context: GitHubContext;
+  private verbose: boolean;
 
-  constructor(context: GitHubContext) {
+  constructor(context: GitHubContext, verbose: boolean = false) {
     this.context = context;
+    this.verbose = verbose;
+  }
+
+  /**
+   * Conditional info logging - only logs if verbose mode is enabled
+   */
+  private info(message: string): void {
+    if (this.verbose) {
+      core.info(message);
+    }
   }
 
   /**
@@ -32,7 +43,7 @@ class ReleaseManager {
    */
   private exec(command: string, options: { silent?: boolean } = {}): string {
     if (!options.silent) {
-      core.info(`> ${command}`);
+      this.info(`> ${command}`);
     }
 
     try {
@@ -60,10 +71,18 @@ class ReleaseManager {
    * Extract version from git tag
    */
   private extractVersion(): string {
-    const tag = this.context.ref.replace('refs/tags/', '');
-    core.setOutput('version', tag);
-    core.info(`Extracted version: ${tag}`);
-    return tag;
+    try {
+      const tag = this.context.ref.replace('refs/tags/', '');
+      if (!tag || tag === this.context.ref) {
+        throw new Error('No valid git tag found in ref');
+      }
+      core.setOutput('version', tag);
+      this.info(`Extracted version: ${tag}`);
+      return tag;
+    } catch (error: any) {
+      core.error(`Failed to extract version from ref ${this.context.ref}: ${error.message}`);
+      throw new Error(`Could not extract version: ${error.message}`);
+    }
   }
 
   /**
@@ -71,12 +90,21 @@ class ReleaseManager {
    */
   private configureGit(): void {
     core.startGroup('Configuring Git for release');
-    this.exec('git config --global user.name "GitHub Actions"');
-    this.exec('git config --global user.email "actions@github.com"');
 
-    // Configure git to use token for SSH-style URLs
-    const gitConfig = `https://x-access-token:${this.context.token}@github.com/`;
-    this.exec(`git config --global url."${gitConfig}".insteadOf "git@github.com:"`);
+    try {
+      this.exec('git config --global user.name "GitHub Actions"');
+      this.exec('git config --global user.email "actions@github.com"');
+
+      // Configure git to use token for SSH-style URLs
+      const gitConfig = `https://x-access-token:${this.context.token}@github.com/`;
+      this.exec(`git config --global url."${gitConfig}".insteadOf "git@github.com:"`);
+
+      this.info('Git configuration completed');
+    } catch (error: any) {
+      core.error(`Failed to configure git: ${error.message}`);
+      throw new Error(`Could not configure git: ${error.message}`);
+    }
+
     core.endGroup();
   }
 
@@ -86,16 +114,28 @@ class ReleaseManager {
   private setupDuneReleaseConfig(config: ReleaseConfig): void {
     core.startGroup('Setting up dune-release configuration');
 
-    const configDir = Path.join(OS.homedir(), '.config', 'dune');
-    Fs.mkdirSync(configDir, { recursive: true });
+    try {
+      const configDir = Path.join(OS.homedir(), '.config', 'dune');
+      Fs.mkdirSync(configDir, { recursive: true });
 
-    const configContent = `user: ${config.user}
+      const configContent = `user: ${config.user}
 remote: ${config.remote}
 local: ${config.local}
 `;
 
-    Fs.writeFileSync(Path.join(configDir, 'release.yml'), configContent);
-    core.info('Dune-release configuration created');
+      Fs.writeFileSync(Path.join(configDir, 'release.yml'), configContent);
+
+      // Create GitHub token file with secure permissions
+      const tokenPath = Path.join(configDir, 'github.token');
+      Fs.writeFileSync(tokenPath, this.context.token, { mode: 0o600 });
+      this.info(`GitHub token file created at ${tokenPath}`);
+
+      this.info('dune-release configuration created');
+    } catch (error: any) {
+      core.error(`Failed to setup dune-release configuration: ${error.message}`);
+      throw new Error(`Could not setup dune-release configuration: ${error.message}`);
+    }
+
     core.endGroup();
   }
 
@@ -109,34 +149,39 @@ local: ${config.local}
     const gitDir = Path.dirname(localPath);
     try {
       Fs.mkdirSync(gitDir, { recursive: true });
-      core.info(`Created directory: ${gitDir}`);
+      this.info(`Created directory: ${gitDir}`);
     } catch (error: any) {
       core.warning(`Could not create directory ${gitDir}: ${error.message}`);
       // Try to proceed anyway, git clone might handle it
     }
 
-    // Clone fork
-    this.exec(`git clone ${forkUrl} ${localPath}`);
+    // Clone fork with shallow depth for faster cloning
+    this.exec(`git clone --depth 1 ${forkUrl} ${localPath}`);
 
     // Set up upstream and sync
     const originalDir = process.cwd();
     try {
-      process.chdir(localPath);
+      try {
+        process.chdir(localPath);
+      } catch (error: any) {
+        core.error(`Failed to change to cloned repository directory: ${error.message}`);
+        throw new Error(`Could not change to directory ${localPath}: ${error.message}`);
+      }
 
       // Add upstream remote
       try {
         this.exec('git remote add upstream https://github.com/ocaml/opam-repository.git');
       } catch {
-        core.info('Upstream remote already exists');
+        this.info('Upstream remote already exists');
       }
 
-      // Fetch and merge latest from upstream
-      this.exec('git fetch upstream master');
+      // Fetch and merge latest from upstream (shallow fetch)
+      this.exec('git fetch --depth 1 upstream master');
       this.exec('git checkout master');
 
       try {
         this.exec('git merge upstream/master --ff-only');
-        core.info('Fork synced with upstream');
+        this.info('Fork synced with upstream');
       } catch {
         core.warning('Your fork may be out of sync with upstream');
       }
@@ -168,7 +213,7 @@ local: ${config.local}
     // Delete remote tag
     try {
       this.exec(`git push origin --delete ${tagName}`);
-      core.info(`Remote tag ${tagName} deleted`);
+      this.info(`Remote tag ${tagName} deleted`);
     } catch {
       core.warning(`Failed to delete remote tag ${tagName}`);
     }
@@ -176,7 +221,7 @@ local: ${config.local}
     // Delete local tag
     try {
       this.exec(`git tag -d ${tagName}`, { silent: true });
-      core.info(`Local tag ${tagName} deleted`);
+      this.info(`Local tag ${tagName} deleted`);
     } catch {
       // Ignore error for local tag deletion
     }
@@ -203,7 +248,7 @@ local: ${config.local}
         core.warning('🔧 DRY RUN MODE ENABLED - No actual submission to opam-repository will occur');
       }
 
-      core.info(`Starting release for version ${version}`);
+      this.info(`Starting release for version ${version}`);
 
       // Lint opam files
       core.startGroup('Linting opam files');
@@ -237,14 +282,19 @@ local: ${config.local}
       if (dryRun) {
         core.startGroup('Submitting to opam repository (DRY RUN - skipping actual submission)');
         core.warning('DRY RUN: Skipping actual submission to opam-repository');
-        core.info('In a real release, this would submit a PR to the opam-repository');
+        this.info('In a real release, this would submit a PR to the opam-repository');
         core.endGroup();
       } else {
         core.startGroup('Submitting to opam repository');
         process.env.DUNE_RELEASE_DELEGATE = 'github-dune-release';
         process.env.GITHUB_TOKEN = this.context.token;
         // Ensure we're in the project directory
-        process.chdir(this.context.workspace);
+        try {
+          process.chdir(this.context.workspace);
+        } catch (error: any) {
+          core.error(`Failed to change to workspace directory: ${error.message}`);
+          throw new Error(`Could not change to workspace directory ${this.context.workspace}: ${error.message}`);
+        }
         this.runDuneRelease('opam', ['submit', '--yes', `--change-log=${changelogPath}`]);
         core.endGroup();
       }
@@ -255,9 +305,9 @@ local: ${config.local}
       } else {
         const tagName = this.context.ref.replace('refs/tags/', '');
         core.notice(`Release ${tagName} completed successfully! 🎉`);
-        core.info('Next steps:');
-        core.info(`1. Check the GitHub release: https://github.com/${this.context.repository}/releases/tag/${tagName}`);
-        core.info('2. Monitor the opam PR for approval');
+        this.info('Next steps:');
+        this.info(`1. Check the GitHub release: https://github.com/${this.context.repository}/releases/tag/${tagName}`);
+        this.info('2. Monitor the opam PR for approval');
       }
 
     } catch (error: any) {
@@ -278,6 +328,7 @@ async function main() {
     const changelogPath = core.getInput('changelog') || './CHANGES.md';
     const token = core.getInput('github-token', { required: true });
     const dryRun = core.getInput('dry-run') === 'true';
+    const verbose = core.getInput('verbose') === 'true';
 
     const opamRepoFork = `ocaml/opam-repository`;
     // Use a local path that works both on GitHub Actions and locally
@@ -300,21 +351,23 @@ async function main() {
       local: opamRepoLocal
     };
 
-    // Log configuration
-    core.info('=== OCaml Dune Release Action ===');
-    core.info(`Package: ${packageName}`);
-    core.info(`Changelog: ${changelogPath}`);
-    core.info(`Dune user: ${effectiveUser}`);
-    core.info(`Opam fork: ${opamRepoFork}`);
-    if (dryRun) {
-      core.info(`Mode: DRY RUN (no submission to opam-repository)`);
-    } else {
-      core.info(`Mode: FULL RELEASE`);
+    // Log configuration (only if verbose)
+    if (verbose) {
+      core.info('=== OCaml Dune Release Action ===');
+      core.info(`Package: ${packageName}`);
+      core.info(`Changelog: ${changelogPath}`);
+      core.info(`User: ${effectiveUser}`);
+      core.info(`Opam fork: ${opamRepoFork}`);
+      if (dryRun) {
+        core.info(`Mode: DRY RUN (no submission to opam-repository)`);
+      } else {
+        core.info(`Mode: FULL RELEASE`);
+      }
+      core.info('================================');
     }
-    core.info('================================');
 
     // Run the release
-    const releaseManager = new ReleaseManager(context);
+    const releaseManager = new ReleaseManager(context, verbose);
     await releaseManager.runRelease(packageName, changelogPath, duneConfig, dryRun);
 
     core.setOutput('release-status', 'success');
