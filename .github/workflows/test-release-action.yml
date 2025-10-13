@@ -212,7 +212,8 @@ jobs:
         run: |
           echo "GITHUB_REF from workflow: $GITHUB_REF"
           echo "GitHub context ref: ${{ github.ref }}"
-          echo "Setting GITHUB_REF for action..."
+          echo "About to run action with GITHUB_REF=$GITHUB_REF"
+          node -e "console.log('Node can see GITHUB_REF:', process.env.GITHUB_REF)"
 
       - name: Run action
         id: test-action
