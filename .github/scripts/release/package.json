@@ -6,6 +6,7 @@
   "scripts": {
     "build": "tsc",
     "type-check": "tsc --noEmit",
+    "test": "npx tsx --test changelog.test.ts",
     "package": "ncc build main.ts -o dist --source-map --license licenses.txt",
     "package:watch": "ncc build main.ts -o dist --source-map --license licenses.txt --watch"
   },
