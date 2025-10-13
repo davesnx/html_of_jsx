@@ -293,14 +293,11 @@ jobs:
 
       - name: Create test project
         run: |
-          # Create a separate test directory to avoid conflicts with the real project
-          mkdir -p smoke-test-project
-          cd smoke-test-project
-
-          # Initialize git repo
-          git init
-          git config user.name "Test User"
-          git config user.email "test@example.com"
+          # Move conflicting project files temporarily
+          mkdir -p .temp-backup
+          mv dune-project .temp-backup/ 2>/dev/null || true
+          mv test .temp-backup/ 2>/dev/null || true
+          mv *.opam .temp-backup/ 2>/dev/null || true
 
           # Create valid opam file
           cat > test-pkg.opam << 'EOF'
