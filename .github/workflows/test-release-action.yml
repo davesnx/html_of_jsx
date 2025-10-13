@@ -293,7 +293,16 @@ jobs:
 
       - name: Create test project
         run: |
-          # Create valid opam file in the root (action runs from repo root)
+          # Create a separate test directory to avoid conflicts with the real project
+          mkdir -p smoke-test-project
+          cd smoke-test-project
+
+          # Initialize git repo
+          git init
+          git config user.name "Test User"
+          git config user.email "test@example.com"
+
+          # Create valid opam file
           cat > test-pkg.opam << 'EOF'
           opam-version: "2.0"
           name: "test-pkg"
@@ -316,7 +325,7 @@ jobs:
 
           # Create dune-project
           cat > dune-project << 'EOF'
-          (lang dune 2.0)
+          (lang dune 3.16)
           (name test-pkg)
           EOF
 
@@ -339,25 +348,29 @@ jobs:
           let hello = "world"
           EOF
 
-          # Configure git for commits
-          git config user.name "Test User"
-          git config user.email "test@example.com"
-
           # Commit everything (action expects clean git state)
           git add .
           git commit -m "Test project for smoke test"
           git tag 0.0.1
 
       - name: Test action (dry-run)
-        uses: ./.github/scripts/release
-        with:
-          package-name: test-pkg
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          to-opam-repository: false
-          to-github-releases: false
-          verbose: true
+        working-directory: smoke-test-project
+        run: |
+          # Copy the built action to this directory
+          cp -r ../.github .
+
+          # Run the action manually using Node
+          node ../.github/scripts/release/dist/index.js
         env:
+          INPUT_PACKAGE_NAME: test-pkg
+          INPUT_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          INPUT_CHANGELOG: ./CHANGES.md
+          INPUT_TO_OPAM_REPOSITORY: "false"
+          INPUT_TO_GITHUB_RELEASES: "false"
+          INPUT_VERBOSE: "true"
           TEST_OVERRIDE_GITHUB_REF: refs/tags/0.0.1
+          GITHUB_WORKSPACE: ${{ github.workspace }}/smoke-test-project
+          GITHUB_REPOSITORY: ${{ github.repository }}
 
   # Summary job
   test-summary:
