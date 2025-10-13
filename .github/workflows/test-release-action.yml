@@ -132,6 +132,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Build the action
+        working-directory: .github/scripts/release
+        run: |
+          npm ci
+          npm run package
+
       - name: Create test environment
         run: |
           # Create a temporary test directory
@@ -236,6 +246,16 @@ jobs:
     needs: unit-tests
     steps:
       - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Build the action
+        working-directory: .github/scripts/release
+        run: |
+          npm ci
+          npm run package
 
       - uses: ocaml/setup-ocaml@v3
         with:
