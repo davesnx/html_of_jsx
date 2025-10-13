@@ -57,6 +57,10 @@ jobs:
         working-directory: .github/scripts/release
         run: npm run package
 
+      - name: Create temporary test tag for PR
+        if: github.event_name == 'pull_request'
+        run: git tag 0.3.0-beta || true
+
       - name: Run dune-release
         uses: ./.github/scripts/release
         with:
