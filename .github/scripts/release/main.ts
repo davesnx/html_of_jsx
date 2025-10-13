@@ -336,8 +336,16 @@ async function main() {
     const opamRepoLocal = core.getInput('opam-repo-local') || defaultOpamPath;
 
     // Get context from environment and GitHub context
+    // For PRs, use the temporary test tag instead of the PR ref
+    let ref = process.env.GITHUB_REF || github.context.ref;
+    if (ref.startsWith('refs/pull/')) {
+      // This is a PR, use the temporary test tag
+      ref = 'refs/tags/0.3.0-beta';
+      core.info(`Running on PR, using temporary test tag: ${ref}`);
+    }
+
     const context: GitHubContext = {
-      ref: process.env.GITHUB_REF || github.context.ref,
+      ref: ref,
       repository: process.env.GITHUB_REPOSITORY || `${github.context.repo.owner}/${github.context.repo.repo}`,
       workspace: process.env.GITHUB_WORKSPACE || process.cwd(),
       token: token
