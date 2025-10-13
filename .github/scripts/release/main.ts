@@ -342,8 +342,9 @@ async function main() {
     // For PRs, use the temporary test tag instead of the PR ref
     let ref = process.env.GITHUB_REF || github.context.ref;
     if (ref.startsWith('refs/pull/')) {
-      // This is a PR, use the temporary test tag (0.3.1-beta)
-      ref = 'refs/tags/0.3.1-beta';
+      // This is a PR, use the temporary test tag from environment
+      const testTag = process.env.TEST_TAG || '0.3.0-beta';
+      ref = `refs/tags/${testTag}`;
       core.info(`Running on PR, using temporary test tag: ${ref}`);
     }
 

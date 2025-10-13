@@ -59,7 +59,11 @@ jobs:
 
       - name: Create temporary test tag for PR
         if: github.event_name == 'pull_request'
-        run: git tag 0.3.1-beta
+        run: |
+          TAG="0.3.0-beta.${{ github.run_number }}"
+          echo "Creating test tag: $TAG"
+          git tag $TAG
+          echo "TEST_TAG=$TAG" >> $GITHUB_ENV
 
       - name: Run dune-release
         uses: ./.github/scripts/release
