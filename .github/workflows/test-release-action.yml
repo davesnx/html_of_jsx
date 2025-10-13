@@ -161,11 +161,6 @@ jobs:
           git commit -m "Initial test commit" || echo "No files to commit"
           git tag 0.1.0
 
-          # Export GITHUB_REF for the entire job
-          echo "GITHUB_REF=refs/tags/0.1.0" >> $GITHUB_ENV
-          echo "GITHUB_REF_NAME=0.1.0" >> $GITHUB_ENV
-          echo "GITHUB_REF_TYPE=tag" >> $GITHUB_ENV
-
           # Create a fake dune-release executable for testing
           mkdir -p ../.test-bin
           cat > ../.test-bin/dune-release << 'EOF'
@@ -208,13 +203,6 @@ jobs:
           EOF
           chmod +x $PWD/.test-bin/opam
 
-      - name: Debug environment
-        run: |
-          echo "GITHUB_REF from workflow: $GITHUB_REF"
-          echo "GitHub context ref: ${{ github.ref }}"
-          echo "About to run action with GITHUB_REF=$GITHUB_REF"
-          node -e "console.log('Node can see GITHUB_REF:', process.env.GITHUB_REF)"
-
       - name: Run action
         id: test-action
         uses: ./.github/scripts/release
@@ -225,6 +213,8 @@ jobs:
           to-github-releases: ${{ matrix.scenario.inputs.to-github-releases }}
           changelog: ${{ matrix.scenario.inputs.changelog }}
           verbose: ${{ matrix.scenario.inputs.verbose }}
+        env:
+          TEST_OVERRIDE_GITHUB_REF: refs/tags/0.1.0
         continue-on-error: true
 
       - name: Validate outcome
@@ -339,11 +329,6 @@ jobs:
           git commit -m "Test project for smoke test"
           git tag 0.0.1
 
-          # Export GITHUB_REF for the action
-          echo "GITHUB_REF=refs/tags/0.0.1" >> $GITHUB_ENV
-          echo "GITHUB_REF_NAME=0.0.1" >> $GITHUB_ENV
-          echo "GITHUB_REF_TYPE=tag" >> $GITHUB_ENV
-
       - name: Test action (dry-run)
         uses: ./.github/scripts/release
         with:
@@ -352,6 +337,8 @@ jobs:
           to-opam-repository: false
           to-github-releases: false
           verbose: true
+        env:
+          TEST_OVERRIDE_GITHUB_REF: refs/tags/0.0.1
 
   # Summary job
   test-summary:

@@ -543,9 +543,15 @@ async function main() {
     const verbose = core.getInput('verbose') === 'true';
 
     // Validate that we're running on a tag
-    const ref = process.env.GITHUB_REF || github.context.ref;
+    // Use TEST_OVERRIDE_GITHUB_REF if provided (for testing), otherwise use GITHUB_REF
+    const testRefOverride = process.env.TEST_OVERRIDE_GITHUB_REF || '';
+    const ref = testRefOverride || process.env.GITHUB_REF || github.context.ref;
     if (!ref.startsWith('refs/tags/')) {
       throw new Error(`This action must be run on a git tag. Current ref: ${ref}`);
+    }
+
+    if (testRefOverride && verbose) {
+      core.warning(`Using TEST_OVERRIDE_GITHUB_REF: ${testRefOverride}`);
     }
 
     // Get the user's GitHub username for the opam-repository fork
@@ -558,7 +564,7 @@ async function main() {
 
     // Get context from environment and GitHub context
     const context: GitHubContext = {
-      ref: process.env.GITHUB_REF || github.context.ref,
+      ref: ref, // Use the ref we already validated (includes test override)
       repository: process.env.GITHUB_REPOSITORY || `${github.context.repo.owner}/${github.context.repo.repo}`,
       workspace: process.env.GITHUB_WORKSPACE || process.cwd(),
       token: token
