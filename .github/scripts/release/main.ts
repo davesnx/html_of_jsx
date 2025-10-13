@@ -205,29 +205,43 @@ local: ${config.local}
    */
   private deleteTag(): void {
     const tagName = this.context.ref.replace('refs/tags/', '');
-    core.error(`Release failed, deleting tag ${tagName}`);
+    this.info(`Attempting to delete tag ${tagName}`);
 
     // Configure git with token
     const gitConfig = `https://x-access-token:${this.context.token}@github.com/`;
     this.exec(`git config --global url."${gitConfig}".insteadOf "https://github.com/"`, { silent: true });
 
-    // Delete remote tag
+    // Check if remote tag exists before deleting
     try {
-      this.exec(`git push origin --delete ${tagName}`);
-      this.info(`Remote tag ${tagName} deleted`);
-    } catch {
-      core.warning(`Failed to delete remote tag ${tagName}`);
+      const remoteTags = this.exec('git ls-remote --tags origin', { silent: true });
+      const remoteTagExists = remoteTags.includes(`refs/tags/${tagName}`);
+
+      if (remoteTagExists) {
+        this.exec(`git push origin --delete ${tagName}`);
+        this.info(`Remote tag ${tagName} deleted`);
+      } else {
+        this.info(`Remote tag ${tagName} does not exist, skipping deletion`);
+      }
+    } catch (error: any) {
+      core.warning(`Could not delete remote tag ${tagName}: ${error.message}`);
     }
 
-    // Delete local tag
+    // Check if local tag exists before deleting
     try {
-      this.exec(`git tag -d ${tagName}`, { silent: true });
-      this.info(`Local tag ${tagName} deleted`);
-    } catch {
-      // Ignore error for local tag deletion
+      const localTags = this.exec('git tag -l', { silent: true });
+      const localTagExists = localTags.split('\n').includes(tagName);
+
+      if (localTagExists) {
+        this.exec(`git tag -d ${tagName}`, { silent: true });
+        this.info(`Local tag ${tagName} deleted`);
+      } else {
+        this.info(`Local tag ${tagName} does not exist, skipping deletion`);
+      }
+    } catch (error: any) {
+      core.warning(`Could not delete local tag ${tagName}: ${error.message}`);
     }
 
-    core.error(`Release failed - tag ${tagName} has been deleted. Please fix the issues and create a new tag.`);
+    core.error(`Release failed - tag cleanup completed. Please fix the issues and create a new tag.`);
     process.exit(1);
   }
 
@@ -270,15 +284,25 @@ local: ${config.local}
 
       // Extract version-specific changelog to temporary file
       const changelogFilename = Path.basename(changelogPath, Path.extname(changelogPath));
+      const absoluteChangelogPath = Path.resolve(changelogPath);
       versionChangelogPath = Path.join(
-        Path.dirname(changelogPath),
+        Path.dirname(absoluteChangelogPath),
         `${changelogFilename}-${version}${Path.extname(changelogPath)}`
       );
 
-      extractVersionChangelog(changelogPath, version, versionChangelogPath);
-      core.info(`Using version-specific changelog: ${versionChangelogPath}`);
+      extractVersionChangelog(absoluteChangelogPath, version, versionChangelogPath);
 
-      // Update changelogPath to use the version-specific file
+      // Log the extracted content for verification
+      try {
+        const extractedContent = Fs.readFileSync(versionChangelogPath, 'utf-8');
+        core.info(`Created version-specific changelog at: ${versionChangelogPath}`);
+        core.info(`Changelog content (${extractedContent.length} chars):`);
+        this.info(extractedContent.substring(0, 200) + (extractedContent.length > 200 ? '...' : ''));
+      } catch (error: any) {
+        core.warning(`Could not read version-specific changelog: ${error.message}`);
+      }
+
+      // Update changelogPath to use the version-specific file (absolute path)
       changelogPath = versionChangelogPath;
 
       core.endGroup();
@@ -303,6 +327,7 @@ local: ${config.local}
       core.startGroup('Publishing to GitHub');
       process.env.DUNE_RELEASE_DELEGATE = 'github-dune-release';
       process.env.GITHUB_TOKEN = this.context.token;
+      this.info(`Publishing with changelog: ${changelogPath}`);
       this.runDuneRelease('publish', ['--yes', `--change-log=${changelogPath}`]);
       core.endGroup();
 
