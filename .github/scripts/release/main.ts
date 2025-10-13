@@ -321,7 +321,8 @@ local: ${config.local}
     packageName: string,
     changelogPath: string,
     duneConfig: ReleaseConfig,
-    dryRun: boolean
+    toGithubReleases: boolean,
+    toOpamRepository: boolean
   ): Promise<void> {
     let versionChangelogPath: string | null = null;
 
@@ -336,8 +337,16 @@ local: ${config.local}
       this.configureGit();
       const version = this.extractVersion();
 
-      if (dryRun) {
-        core.warning('🔧 DRY RUN MODE ENABLED - No actual submission to opam-repository will occur');
+      // Log what will be published
+      if (!toGithubReleases && !toOpamRepository) {
+        core.warning('Both GitHub releases and opam submission are disabled - running validation only');
+      } else {
+        if (!toGithubReleases) {
+          core.warning('GitHub releases disabled - will not publish to GitHub');
+        }
+        if (!toOpamRepository) {
+          core.warning('opam submission disabled - will not submit to opam-repository');
+        }
       }
 
       this.info(`Starting release for version ${version}`);
@@ -398,26 +407,27 @@ local: ${config.local}
       this.runDuneRelease('distrib', ['--skip-tests', '--skip-lint']);
       core.endGroup();
 
-      // Publish to GitHub
-      core.startGroup('Publishing to GitHub');
-      process.env.DUNE_RELEASE_DELEGATE = 'github-dune-release';
-      process.env.GITHUB_TOKEN = this.context.token;
-      this.info(`Publishing with changelog: ${changelogPath}`);
-      this.runDuneRelease('publish', ['--yes', `--change-log=${changelogPath}`]);
-      core.endGroup();
+      // Publish to GitHub (conditional)
+      if (toGithubReleases) {
+        core.startGroup('Publishing to GitHub');
+        process.env.DUNE_RELEASE_DELEGATE = 'github-dune-release';
+        process.env.GITHUB_TOKEN = this.context.token;
+        this.info(`Publishing with changelog: ${changelogPath}`);
+        this.runDuneRelease('publish', ['--yes', `--change-log=${changelogPath}`]);
+        core.endGroup();
+      } else {
+        core.startGroup('Publishing to GitHub (skipped)');
+        core.warning('Skipping GitHub release publication');
+        core.endGroup();
+      }
 
-      // Package opam release
+      // Package opam release (always needed for validation)
       core.startGroup(`Packaging opam release for ${packageName}`);
       this.runDuneRelease('opam', ['pkg', '-p', packageName, '--yes', `--change-log=${changelogPath}`]);
       core.endGroup();
 
-      // Submit to opam repository (or skip if dry-run)
-      if (dryRun) {
-        core.startGroup('Submitting to opam repository (DRY RUN - skipping actual submission)');
-        core.warning('DRY RUN: Skipping actual submission to opam-repository');
-        this.info('In a real release, this would submit a PR to the opam-repository');
-        core.endGroup();
-      } else {
+      // Submit to opam repository (conditional)
+      if (toOpamRepository) {
         core.startGroup('Submitting to opam repository');
         process.env.DUNE_RELEASE_DELEGATE = 'github-dune-release';
         process.env.GITHUB_TOKEN = this.context.token;
@@ -430,42 +440,48 @@ local: ${config.local}
         }
         this.runDuneRelease('opam', ['submit', '--yes', `--change-log=${changelogPath}`]);
         core.endGroup();
+      } else {
+        core.startGroup('Submitting to opam repository (skipped)');
+        core.warning('Skipping submission to opam-repository');
+        core.endGroup();
       }
 
       // Success notification
-      if (dryRun) {
-        core.notice(`DRY RUN: Release ${version} completed successfully (no PR was submitted)! 🎭`);
-      } else {
-        const tagName = this.context.ref.replace('refs/tags/', '');
+      const tagName = this.context.ref.replace('refs/tags/', '');
+      core.notice(`Release ${tagName} completed successfully!`);
 
+      if (toGithubReleases) {
+        core.notice(`GitHub release: https://github.com/${this.context.repository}/releases/tag/${tagName}`);
+      }
+
+      if (toOpamRepository) {
         // Construct the expected opam PR URL
         const opamBranch = `release-${packageName}-${version}`;
         const effectiveUser = duneConfig.user;
         const opamPrUrl = `https://github.com/ocaml/opam-repository/compare/master...${effectiveUser}:opam-repository:${opamBranch}`;
 
-        core.notice(`Release ${tagName} completed successfully! 🎉`);
         core.notice(`Opam PR: ${opamPrUrl}`);
-        this.info('Next steps:');
-        this.info(`1. Check the GitHub release: https://github.com/${this.context.repository}/releases/tag/${tagName}`);
-        this.info(`2. Monitor the opam PR: ${opamPrUrl}`);
 
         // Create a commit with the release information
         try {
           core.startGroup('Creating release tracking commit');
-          const commitMessage = `release ${version}
 
-opam pr: ${opamPrUrl}
-github release: https://github.com/${this.context.repository}/releases/tag/${tagName}`;
+          let commitMessage = `release ${version}\n\n`;
+          if (toOpamRepository) {
+            commitMessage += `opam pr: ${opamPrUrl}\n`;
+          }
+          if (toGithubReleases) {
+            commitMessage += `github release: https://github.com/${this.context.repository}/releases/tag/${tagName}\n`;
+          }
 
           // Check if we're on a branch (not detached HEAD)
           const currentBranch = this.exec('git rev-parse --abbrev-ref HEAD', { silent: true });
 
           if (currentBranch === 'HEAD') {
             this.info('Running on detached HEAD (tag), skipping commit creation');
-            core.notice(`After merge, you can find the PR at: ${opamPrUrl}`);
           } else {
             // Allow empty commit in case there are no changes
-            this.exec(`git commit --allow-empty -m "${commitMessage}"`);
+            this.exec(`git commit --allow-empty -m "${commitMessage.trim()}"`);
             this.info('Created commit with release information');
 
             // Push the commit to the repository
@@ -496,10 +512,11 @@ github release: https://github.com/${this.context.repository}/releases/tag/${tag
 
       core.error(`Release failed: ${errorMessage}`);
 
-      if (!dryRun) {
+      // Only delete tag if we were publishing to GitHub (real release scenario)
+      if (toGithubReleases || toOpamRepository) {
         this.deleteTag();
       } else {
-        core.warning('DRY RUN: Would delete tag on failure in real release');
+        core.warning('Validation mode: Skipping tag deletion on failure');
       }
       throw error;
     } finally {
@@ -521,7 +538,8 @@ async function main() {
     const packageName = core.getInput('package-name', { required: true });
     const changelogPath = core.getInput('changelog') || './CHANGES.md';
     const token = core.getInput('github-token', { required: true });
-    const dryRun = core.getInput('dry-run') === 'true'; // Default is false (production mode)
+    const toOpamRepository = core.getInput('to-opam-repository') !== 'false';
+    const toGithubReleases = core.getInput('to-github-releases') !== 'false';
     const verbose = core.getInput('verbose') === 'true';
 
     // Validate that we're running on a tag
@@ -560,17 +578,14 @@ async function main() {
       core.info(`Changelog: ${changelogPath}`);
       core.info(`User: ${effectiveUser}`);
       core.info(`Opam fork: ${opamRepoFork}`);
-      if (dryRun) {
-        core.info(`Mode: DRY RUN (no submission to opam-repository)`);
-      } else {
-        core.info(`Mode: FULL RELEASE`);
-      }
+      core.info(`Publish to GitHub: ${toGithubReleases ? 'Yes' : 'No'}`);
+      core.info(`Submit to opam: ${toOpamRepository ? 'Yes' : 'No'}`);
       core.info('================================');
     }
 
     // Run the release
     const releaseManager = new ReleaseManager(context, verbose);
-    await releaseManager.runRelease(packageName, changelogPath, duneConfig, dryRun);
+    await releaseManager.runRelease(packageName, changelogPath, duneConfig, toGithubReleases, toOpamRepository);
 
     core.setOutput('release-status', 'success');
   } catch (error: any) {
