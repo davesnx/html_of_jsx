@@ -330,7 +330,10 @@ async function main() {
     const dryRun = core.getInput('dry-run') === 'true';
     const verbose = core.getInput('verbose') === 'true';
 
-    const opamRepoFork = `ocaml/opam-repository`;
+    // Get the user's GitHub username for the opam-repository fork
+    const effectiveUser = process.env.GITHUB_ACTOR || 'github-actions';
+    const opamRepoFork = `${effectiveUser}/opam-repository`;
+
     // Use a local path that works both on GitHub Actions and locally
     const defaultOpamPath = process.env.RUNNER_TEMP ? '/home/runner/git/opam-repository' : '/tmp/opam-repository-test';
     const opamRepoLocal = core.getInput('opam-repo-local') || defaultOpamPath;
@@ -339,8 +342,8 @@ async function main() {
     // For PRs, use the temporary test tag instead of the PR ref
     let ref = process.env.GITHUB_REF || github.context.ref;
     if (ref.startsWith('refs/pull/')) {
-      // This is a PR, use the temporary test tag
-      ref = 'refs/tags/0.3.0-beta';
+      // This is a PR, use the temporary test tag (0.3.1-beta)
+      ref = 'refs/tags/0.3.1-beta';
       core.info(`Running on PR, using temporary test tag: ${ref}`);
     }
 
@@ -352,7 +355,6 @@ async function main() {
     };
 
     // Build dune-release config
-    const effectiveUser = process.env.GITHUB_ACTOR || 'github-actions';
     const duneConfig: ReleaseConfig = {
       user: effectiveUser,
       remote: `git@github.com:${opamRepoFork}`,
