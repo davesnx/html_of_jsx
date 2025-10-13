@@ -94,23 +94,8 @@ jobs:
       - name: Install dune-release
         run: opam install dune-release -y
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: Install dependencies
-        shell: bash
-        working-directory: .github/scripts/release
-        run: npm ci
-
-      - name: Build
-        shell: bash
-        working-directory: .github/scripts/release
-        run: npm run package
-
       - name: Run dune-release
-        uses: ./.github/scripts/release
+        uses: davesnx/dune-release-action@v0.1.0
         with:
           package-name: 'html_of_jsx'
           changelog: './CHANGES.md'
