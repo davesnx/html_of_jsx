@@ -2,7 +2,6 @@ open Ppxlib
 open Ast_builder.Default
 module List = ListLabels
 
-let repo_url = "https://github.com/davesnx/html_of_jsx"
 let issues_url = "https://github.com/davesnx/html_of_jsx/issues"
 
 (* There's no pexp_list on Ppxlib since is not a constructor of the Parsetree *)
@@ -22,18 +21,6 @@ let raise_errorf ~loc fmt =
       in
       raise (Error expr))
     fmt
-
-let collect_props visit args =
-  let rec go props = function
-    | [] -> (None, props)
-    | [ (Nolabel, arg) ] -> (Some (visit arg), props)
-    | (Nolabel, prop) :: _ ->
-        let loc = prop.pexp_loc in
-        raise_errorf ~loc
-          "an argument without a label could only be the last one"
-    | (proplab, prop) :: xs -> go ((proplab, visit prop) :: props) xs
-  in
-  go [] args
 
 let rec unwrap_children ~f children = function
   | { pexp_desc = Pexp_construct ({ txt = Lident "[]"; _ }, None); _ } ->

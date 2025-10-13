@@ -1,4 +1,4 @@
-name: CI & Release
+name: CI
 
 on:
   push:
@@ -32,8 +32,9 @@ jobs:
           - ubuntu-latest
           # - windows-latest
         ocaml-compiler:
-          - 4.14
+          - 4.14.2
           - 5.1.1
+          - 5.3.0
 
     steps:
       - name: Checkout code
@@ -58,7 +59,7 @@ jobs:
           key: opam-${{ matrix.os }}-${{ matrix.ocaml-compiler }}-${{ hashFiles('**.opam') }}
 
       - name: Use OCaml ${{ matrix.ocaml-compiler }}
-        uses: ocaml/setup-ocaml@v3
+        uses: ocaml/setup-ocaml@v3.4.5
         with:
           ocaml-compiler: ${{ matrix.ocaml-compiler }}
 
@@ -103,134 +104,3 @@ jobs:
         with:
           path: _opam
           key: opam-${{ matrix.os }}-${{ matrix.ocaml-compiler }}-${{ hashFiles('**.opam') }}
-
-      # Release steps - only run on ubuntu-latest with OCaml 5.1.1 when a tag is pushed
-      - name: Install release tools
-        if: startsWith(github.ref, 'refs/tags/') && matrix.os == 'ubuntu-latest' && matrix.ocaml-compiler == '5.1.1'
-        run: opam install -y dune-release
-
-      - name: Configure Git for release
-        if: startsWith(github.ref, 'refs/tags/') && matrix.os == 'ubuntu-latest' && matrix.ocaml-compiler == '5.1.1'
-        run: |
-          git config --global user.name "GitHub Actions"
-          git config --global user.email "actions@github.com"
-
-      # Release steps begin here - track their success
-      - name: Begin release process
-        if: startsWith(github.ref, 'refs/tags/') && matrix.os == 'ubuntu-latest' && matrix.ocaml-compiler == '5.1.1'
-        id: release_started
-        run: echo "release_started=true" >> $GITHUB_OUTPUT
-
-      - name: Lint opam files
-        if: startsWith(github.ref, 'refs/tags/') && matrix.os == 'ubuntu-latest' && matrix.ocaml-compiler == '5.1.1'
-        run: opam exec -- dune-release lint
-
-      - name: Extract version from tag
-        if: startsWith(github.ref, 'refs/tags/') && matrix.os == 'ubuntu-latest' && matrix.ocaml-compiler == '5.1.1'
-        id: version
-        run: echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
-
-      - name: Distribute release archive
-        if: startsWith(github.ref, 'refs/tags/') && matrix.os == 'ubuntu-latest' && matrix.ocaml-compiler == '5.1.1'
-        run: |
-          opam exec -- dune-release distrib --skip-tests --skip-lint
-
-      - name: Publish to GitHub
-        if: startsWith(github.ref, 'refs/tags/') && matrix.os == 'ubuntu-latest' && matrix.ocaml-compiler == '5.1.1'
-        env:
-          DUNE_RELEASE_DELEGATE: github-dune-release
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-        run: |
-          opam exec -- dune-release publish --yes --change-log=./CHANGES.md
-
-      - name: Package opam release
-        if: startsWith(github.ref, 'refs/tags/') && matrix.os == 'ubuntu-latest' && matrix.ocaml-compiler == '5.1.1'
-        run: |
-          opam exec -- dune-release opam pkg -p html_of_jsx --yes --change-log=./CHANGES.md
-
-      - name: Setup dune-release configuration
-        if: startsWith(github.ref, 'refs/tags/') && matrix.os == 'ubuntu-latest' && matrix.ocaml-compiler == '5.1.1'
-        run: |
-          mkdir -p ~/.config/dune/
-          cat > ~/.config/dune/release.yml << EOF
-          user: davesnx
-          remote: git@github.com:davesnx/opam-repository
-          local: /home/runner/git/opam-repository
-          EOF
-
-      - name: Clone opam-repository fork
-        if: startsWith(github.ref, 'refs/tags/') && matrix.os == 'ubuntu-latest' && matrix.ocaml-compiler == '5.1.1'
-        run: |
-          # Configure git to use token for SSH-style URLs
-          git config --global url."https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/".insteadOf "git@github.com:"
-
-          # Create directory structure
-          mkdir -p /home/runner/git
-
-          # Clone your fork of opam-repository
-          git clone git@github.com:davesnx/opam-repository.git /home/runner/git/opam-repository
-
-          # Set up the upstream remote
-          cd /home/runner/git/opam-repository
-          git remote add upstream https://github.com/ocaml/opam-repository.git || true
-
-          # Fetch latest from upstream
-          git fetch upstream master
-          git checkout master
-          git merge upstream/master --ff-only || echo "::warning::Your fork may be out of sync with upstream"
-
-          # Return to workspace directory
-          cd ${{ github.workspace }}
-
-      - name: Submit to opam repository
-        if: startsWith(github.ref, 'refs/tags/') && matrix.os == 'ubuntu-latest' && matrix.ocaml-compiler == '5.1.1'
-        env:
-          DUNE_RELEASE_DELEGATE: github-dune-release
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-        run: |
-          # Ensure we're in the project directory
-          cd ${{ github.workspace }}
-
-          # Submit to opam-repository
-          opam exec -- dune-release opam submit --yes --change-log=./CHANGES.md
-
-      # Success notification
-      - name: Release success notification
-        if: |
-          success() &&
-          startsWith(github.ref, 'refs/tags/') &&
-          matrix.os == 'ubuntu-latest' &&
-          matrix.ocaml-compiler == '5.1.1' &&
-          steps.release_started.outputs.release_started == 'true'
-        run: |
-          TAG_NAME=${GITHUB_REF#refs/tags/}
-          echo "::notice::Release $TAG_NAME completed successfully! 🎉"
-          echo "Next steps:"
-          echo "1. Check the GitHub release: https://github.com/${{ github.repository }}/releases/tag/$TAG_NAME"
-          echo "2. Monitor the opam PR for approval"
-
-      # Cleanup: Delete tag if any release step failed
-      - name: Delete tag on failure
-        if: |
-          failure() &&
-          startsWith(github.ref, 'refs/tags/') &&
-          matrix.os == 'ubuntu-latest' &&
-          matrix.ocaml-compiler == '5.1.1' &&
-          steps.release_started.outputs.release_started == 'true'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-        run: |
-          TAG_NAME=${GITHUB_REF#refs/tags/}
-          echo "::error::Release failed, deleting tag $TAG_NAME"
-
-          # Configure git with token
-          git config --global url."https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/".insteadOf "https://github.com/"
-
-          # Delete remote tag
-          git push origin --delete $TAG_NAME || echo "::warning::Failed to delete remote tag"
-
-          # Delete local tag (for completeness)
-          git tag -d $TAG_NAME || true
-
-          echo "::error::Release failed - tag $TAG_NAME has been deleted. Please fix the issues and create a new tag."
-          exit 1
