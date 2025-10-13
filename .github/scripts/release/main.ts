@@ -38,7 +38,8 @@ class ReleaseManager {
     try {
       const result = execSync(command, {
         encoding: 'utf-8',
-        stdio: options.silent ? 'pipe' : 'inherit'
+        // Use 'ignore' for stdin to avoid TTY errors in CI, inherit stdout/stderr for visibility
+        stdio: options.silent ? 'pipe' : ['ignore', 'inherit', 'inherit']
       });
 
       // When stdio is 'inherit', execSync returns null
