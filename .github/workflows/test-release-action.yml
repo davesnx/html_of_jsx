@@ -39,8 +39,6 @@ jobs:
     name: Integration test - ${{ matrix.scenario.name }}
     runs-on: ubuntu-latest
     needs: unit-tests
-    env:
-      GITHUB_REF: refs/tags/0.1.0
     strategy:
       fail-fast: false
       matrix:
@@ -163,6 +161,11 @@ jobs:
           git commit -m "Initial test commit" || echo "No files to commit"
           git tag 0.1.0
 
+          # Export GITHUB_REF for the entire job
+          echo "GITHUB_REF=refs/tags/0.1.0" >> $GITHUB_ENV
+          echo "GITHUB_REF_NAME=0.1.0" >> $GITHUB_ENV
+          echo "GITHUB_REF_TYPE=tag" >> $GITHUB_ENV
+
           # Create a fake dune-release executable for testing
           mkdir -p ../.test-bin
           cat > ../.test-bin/dune-release << 'EOF'
@@ -221,11 +224,6 @@ jobs:
           to-github-releases: ${{ matrix.scenario.inputs.to-github-releases }}
           changelog: ${{ matrix.scenario.inputs.changelog }}
           verbose: ${{ matrix.scenario.inputs.verbose }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_REF: refs/tags/0.1.0
-          GITHUB_REF_NAME: 0.1.0
-          GITHUB_REF_TYPE: tag
         continue-on-error: true
 
       - name: Validate outcome
@@ -340,6 +338,11 @@ jobs:
           git commit -m "Test project for smoke test"
           git tag 0.0.1
 
+          # Export GITHUB_REF for the action
+          echo "GITHUB_REF=refs/tags/0.0.1" >> $GITHUB_ENV
+          echo "GITHUB_REF_NAME=0.0.1" >> $GITHUB_ENV
+          echo "GITHUB_REF_TYPE=tag" >> $GITHUB_ENV
+
       - name: Test action (dry-run)
         uses: ./.github/scripts/release
         with:
@@ -348,8 +351,6 @@ jobs:
           to-opam-repository: false
           to-github-releases: false
           verbose: true
-        env:
-          GITHUB_REF: refs/tags/0.0.1
 
   # Summary job
   test-summary:
