@@ -69,6 +69,49 @@ class ReleaseManager {
   }
 
   /**
+   * Check if required tools are installed
+   */
+  private checkDependencies(): void {
+    core.startGroup('Checking dependencies');
+
+    const dependencies = [
+      { name: 'opam', command: 'opam --version' },
+      { name: 'dune-release', command: 'opam exec -- dune-release --version' }
+    ];
+
+    const missing: string[] = [];
+
+    for (const dep of dependencies) {
+      try {
+        const version = this.exec(dep.command, { silent: true });
+        this.info(`✓ ${dep.name} is installed: ${version}`);
+      } catch (error: any) {
+        core.error(`✗ ${dep.name} is not installed or not accessible`);
+        missing.push(dep.name);
+      }
+    }
+
+    core.endGroup();
+
+    if (missing.length > 0) {
+      const errorMessage = `Missing required dependencies: ${missing.join(', ')}`;
+      core.error(errorMessage);
+      core.error('');
+      core.error('To fix this:');
+
+      if (missing.includes('opam')) {
+        core.error('Install opam: https://opam.ocaml.org/doc/Install.html');
+      }
+
+      if (missing.includes('dune-release')) {
+        core.error('Install dune-release: opam install dune-release');
+      }
+
+      throw new Error(errorMessage);
+    }
+  }
+
+  /**
    * Extract version from git tag
    */
   private extractVersion(): string {
@@ -257,6 +300,9 @@ local: ${config.local}
     let versionChangelogPath: string | null = null;
 
     try {
+      // Check dependencies first
+      this.checkDependencies();
+
       // Setup
       this.configureGit();
       const version = this.extractVersion();
