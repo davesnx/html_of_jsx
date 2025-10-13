@@ -6,6 +6,7 @@ import { execSync } from 'child_process';
 import Fs from 'fs';
 import Path from 'path';
 import OS from 'os';
+import { validateChangelog, extractVersionChangelog } from './changelog';
 
 interface ReleaseConfig {
   user: string;
@@ -239,6 +240,8 @@ local: ${config.local}
     duneConfig: ReleaseConfig,
     dryRun: boolean
   ): Promise<void> {
+    let versionChangelogPath: string | null = null;
+
     try {
       // Setup
       this.configureGit();
@@ -249,6 +252,36 @@ local: ${config.local}
       }
 
       this.info(`Starting release for version ${version}`);
+
+      // Validate and extract changelog
+      core.startGroup('Validating changelog');
+      const validation = validateChangelog(changelogPath, version);
+
+      // Display warnings
+      if (validation.warnings.length > 0) {
+        validation.warnings.forEach(warning => core.warning(warning));
+      }
+
+      // Display errors and fail if invalid
+      if (!validation.valid) {
+        validation.errors.forEach(error => core.error(error));
+        throw new Error('Changelog validation failed. Please fix the issues and try again.');
+      }
+
+      // Extract version-specific changelog to temporary file
+      const changelogFilename = Path.basename(changelogPath, Path.extname(changelogPath));
+      versionChangelogPath = Path.join(
+        Path.dirname(changelogPath),
+        `${changelogFilename}-${version}${Path.extname(changelogPath)}`
+      );
+
+      extractVersionChangelog(changelogPath, version, versionChangelogPath);
+      core.info(`Using version-specific changelog: ${versionChangelogPath}`);
+
+      // Update changelogPath to use the version-specific file
+      changelogPath = versionChangelogPath;
+
+      core.endGroup();
 
       // Lint opam files
       core.startGroup('Linting opam files');
@@ -304,10 +337,47 @@ local: ${config.local}
         core.notice(`DRY RUN: Release ${version} completed successfully (no PR was submitted)! 🎭`);
       } else {
         const tagName = this.context.ref.replace('refs/tags/', '');
+
+        // Construct the expected opam PR URL
+        const opamBranch = `release-${packageName}-${version}`;
+        const effectiveUser = duneConfig.user;
+        const opamPrUrl = `https://github.com/ocaml/opam-repository/compare/master...${effectiveUser}:opam-repository:${opamBranch}`;
+
         core.notice(`Release ${tagName} completed successfully! 🎉`);
+        core.notice(`Opam PR: ${opamPrUrl}`);
         this.info('Next steps:');
         this.info(`1. Check the GitHub release: https://github.com/${this.context.repository}/releases/tag/${tagName}`);
-        this.info('2. Monitor the opam PR for approval');
+        this.info(`2. Monitor the opam PR: ${opamPrUrl}`);
+
+        // Create a commit with the release information
+        try {
+          core.startGroup('Creating release tracking commit');
+          const commitMessage = `release ${version}
+
+opam pr: ${opamPrUrl}
+github release: https://github.com/${this.context.repository}/releases/tag/${tagName}`;
+
+          // Check if we're on a branch (not detached HEAD)
+          const currentBranch = this.exec('git rev-parse --abbrev-ref HEAD', { silent: true });
+
+          if (currentBranch === 'HEAD') {
+            this.info('Running on detached HEAD (tag), skipping commit creation');
+            core.notice(`After merge, you can find the PR at: ${opamPrUrl}`);
+          } else {
+            // Allow empty commit in case there are no changes
+            this.exec(`git commit --allow-empty -m "${commitMessage}"`);
+            this.info('Created commit with release information');
+
+            // Push the commit to the repository
+            this.exec(`git push origin ${currentBranch}`);
+            this.info(`Pushed release tracking commit to ${currentBranch}`);
+          }
+
+          core.endGroup();
+        } catch (error: any) {
+          core.warning(`Could not create or push release tracking commit: ${error.message}`);
+          // Non-fatal, continue
+        }
       }
 
     } catch (error: any) {
@@ -332,6 +402,16 @@ local: ${config.local}
         core.warning('DRY RUN: Would delete tag on failure in real release');
       }
       throw error;
+    } finally {
+      // Clean up temporary changelog file
+      if (versionChangelogPath && Fs.existsSync(versionChangelogPath)) {
+        try {
+          Fs.unlinkSync(versionChangelogPath);
+          this.info(`Cleaned up temporary changelog: ${versionChangelogPath}`);
+        } catch (error: any) {
+          core.warning(`Could not clean up temporary changelog: ${error.message}`);
+        }
+      }
     }
   }
 }
