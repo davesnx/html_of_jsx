@@ -80,6 +80,26 @@ jobs:
           github-token: ${{ secrets.GH_TOKEN }}
           dry-run: false # Testing without dry-run
 
+      - name: Clean up beta tag
+        if: always() && github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          if [ -n "$TEST_TAG" ]; then
+            echo "Cleaning up test tag: $TEST_TAG"
+
+            # Delete remote tag if it exists
+            git push origin :refs/tags/$TEST_TAG 2>/dev/null || echo "Remote tag doesn't exist"
+
+            # Delete local tag if it exists
+            git tag -d $TEST_TAG 2>/dev/null || echo "Local tag doesn't exist"
+
+            # Delete GitHub release if it exists
+            gh release delete $TEST_TAG --yes --cleanup-tag 2>/dev/null || echo "Release doesn't exist"
+
+            echo "Cleanup complete"
+          fi
+
       - name: Save cache
         uses: actions/cache/save@v3
         with:
