@@ -56,6 +56,7 @@ jobs:
               echo '- Initial release' >> CHANGES.md
             inputs:
               package-name: test-package
+              changelog: test-env/CHANGES.md
               to-opam-repository: false
               to-github-releases: false
               verbose: true
@@ -68,10 +69,11 @@ jobs:
             setup: |
               echo 'opam-version: "2.0"' > test-package.opam
               echo 'name: "test-package"' >> test-package.opam
-              echo '## 0.2.0' > CHANGES.md
+              echo '## 0.1.0' > CHANGES.md
               echo '- Test release' >> CHANGES.md
             inputs:
               package-name: test-package
+              changelog: test-env/CHANGES.md
               to-opam-repository: false
               to-github-releases: false
             expect-success: true
@@ -85,6 +87,7 @@ jobs:
               rm -f CHANGES.md
             inputs:
               package-name: test-package
+              changelog: test-env/CHANGES.md
             expect-success: false
             expect-error: "changelog"
 
@@ -92,10 +95,11 @@ jobs:
             description: "Test with invalid opam file"
             setup: |
               echo 'invalid opam content' > test-package.opam
-              echo '## 1.0.0' > CHANGES.md
+              echo '## 0.1.0' > CHANGES.md
               echo '- Release' >> CHANGES.md
             inputs:
               package-name: test-package
+              changelog: test-env/CHANGES.md
               to-opam-repository: false
               to-github-releases: false
             expect-success: false
@@ -110,6 +114,7 @@ jobs:
               echo 'No version entries here' >> CHANGES.md
             inputs:
               package-name: test-package
+              changelog: test-env/CHANGES.md
               to-opam-repository: false
               to-github-releases: false
             expect-success: false
@@ -120,11 +125,11 @@ jobs:
             setup: |
               echo 'opam-version: "2.0"' > test-package.opam
               echo 'name: "test-package"' >> test-package.opam
-              echo '## 0.3.0' > NEWS.md
+              echo '## 0.1.0' > NEWS.md
               echo '- Custom changelog' >> NEWS.md
             inputs:
               package-name: test-package
-              changelog: ./NEWS.md
+              changelog: test-env/NEWS.md
               to-opam-repository: false
               to-github-releases: false
             expect-success: true
@@ -161,9 +166,13 @@ jobs:
           git commit -m "Initial test commit" || echo "No files to commit"
           git tag 0.1.0
 
+          # Copy test files to repo root for the action to find
+          cd ..
+          cp -r test-env/*.opam . 2>/dev/null || true
+
           # Create a fake dune-release executable for testing
-          mkdir -p ../.test-bin
-          cat > ../.test-bin/dune-release << 'EOF'
+          mkdir -p .test-bin
+          cat > .test-bin/dune-release << 'EOF'
           #!/bin/bash
           # Mock dune-release for testing
           case "$1" in
@@ -188,10 +197,10 @@ jobs:
               ;;
           esac
           EOF
-          chmod +x ../.test-bin/dune-release
+          chmod +x .test-bin/dune-release
 
           # Add mock to PATH
-          echo "PATH=$PWD/../.test-bin:$PATH" >> $GITHUB_ENV
+          echo "PATH=$PWD/.test-bin:$PATH" >> $GITHUB_ENV
 
       - name: Setup OCaml (mock)
         run: |
