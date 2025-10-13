@@ -54,7 +54,7 @@ jobs:
               mkdir -p .github/scripts/release
               echo '## 0.1.0' > CHANGES.md
               echo '- Initial release' >> CHANGES.md
-            inputs: |
+            inputs:
               package-name: test-package
               to-opam-repository: false
               to-github-releases: false
@@ -70,7 +70,7 @@ jobs:
               echo 'name: "test-package"' >> test-package.opam
               echo '## 0.2.0' > CHANGES.md
               echo '- Test release' >> CHANGES.md
-            inputs: |
+            inputs:
               package-name: test-package
               to-opam-repository: false
               to-github-releases: false
@@ -83,7 +83,7 @@ jobs:
               echo 'opam-version: "2.0"' > test-package.opam
               echo 'name: "test-package"' >> test-package.opam
               rm -f CHANGES.md
-            inputs: |
+            inputs:
               package-name: test-package
             expect-success: false
             expect-error: "changelog"
@@ -94,7 +94,7 @@ jobs:
               echo 'invalid opam content' > test-package.opam
               echo '## 1.0.0' > CHANGES.md
               echo '- Release' >> CHANGES.md
-            inputs: |
+            inputs:
               package-name: test-package
               to-opam-repository: false
               to-github-releases: false
@@ -108,7 +108,7 @@ jobs:
               echo 'name: "test-package"' >> test-package.opam
               echo '# Changelog' > CHANGES.md
               echo 'No version entries here' >> CHANGES.md
-            inputs: |
+            inputs:
               package-name: test-package
               to-opam-repository: false
               to-github-releases: false
@@ -122,7 +122,7 @@ jobs:
               echo 'name: "test-package"' >> test-package.opam
               echo '## 0.3.0' > NEWS.md
               echo '- Custom changelog' >> NEWS.md
-            inputs: |
+            inputs:
               package-name: test-package
               changelog: ./NEWS.md
               to-opam-repository: false
@@ -191,7 +191,7 @@ jobs:
       - name: Run action
         id: test-action
         uses: ./.github/scripts/release
-        with: ${{ fromJSON(matrix.scenario.inputs) }}
+        with: ${{ matrix.scenario.inputs }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         continue-on-error: true
