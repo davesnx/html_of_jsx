@@ -1,0 +1,25 @@
+{
+  "name": "dune-release-github-action",
+  "description": "Run dune-release for each git tag in GitHub Actions",
+  "private": true,
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "type-check": "tsc --noEmit",
+    "package": "ncc build main.ts -o dist --source-map --license licenses.txt",
+    "package:watch": "ncc build main.ts -o dist --source-map --license licenses.txt --watch"
+  },
+  "dependencies": {
+    "@actions/core": "^1.10.1",
+    "@actions/github": "^6.0.0",
+    "@types/node": "^20.10.0"
+  },
+  "devDependencies": {
+    "@vercel/ncc": "^0.38.1",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

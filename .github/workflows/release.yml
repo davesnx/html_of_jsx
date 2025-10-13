@@ -1,0 +1,58 @@
+name: Release
+
+on:
+  push:
+    tags:
+    - '*'
+  pull_request:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  relase:
+    name: Release
+
+    runs-on: ${{ matrix.os }}
+
+    env:
+      GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+      DUNE_RELEASE_GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+      TERM: dumb
+      OPAMYES: 1
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+        ocaml-compiler:
+          - 5.3.0
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: ${{ startsWith(github.ref, 'refs/tags/') && '0' || '1' }}
+
+      - name: Use OCaml ${{ matrix.ocaml-compiler }}
+        uses: ocaml/setup-ocaml@v3.4.5
+        with:
+          ocaml-compiler: ${{ matrix.ocaml-compiler }}
+
+      - name: Install
+        run: make install
+
+      # Release steps - only run on ubuntu-latest with OCaml 5.3.0 when a tag is pushed
+      - name: Install release tools
+        run: opam install -y dune-release
+
+      # Use the custom dune-release action
+      - name: Run dune-release
+        uses: ./.github/scripts/release
+        with:
+          package-name: 'html_of_jsx'
+          changelog: './CHANGES.md'
+          github-token: ${{ secrets.GH_TOKEN }}
+          dry-run: ${{ github.event_name == 'pull_request' }} # Dry-run on PRs, real release on tags
