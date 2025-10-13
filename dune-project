@@ -36,7 +36,7 @@
   ;; Dev dependencies
   (ocaml-lsp-server :with-dev-setup)
   (tiny_httpd :with-dev-setup)
-  (ocamlformat.mlx
+  (ocamlformat-mlx
    (and (>= 0.26.1)
     (or :with-dev-setup)))
 ))

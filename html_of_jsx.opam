@@ -20,7 +20,7 @@ depends: [
   "mlx" {with-test | with-dev-setup}
   "ocaml-lsp-server" {with-dev-setup}
   "tiny_httpd" {with-dev-setup}
-  "ocamlformat.mlx" {>= "0.26.1" & (with-dev-setup)}
+  "ocamlformat-mlx" {>= "0.26.1" & (with-dev-setup)}
 ]
 build: [
   ["dune" "subst"] {dev}
