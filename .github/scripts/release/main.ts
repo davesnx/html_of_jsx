@@ -69,6 +69,32 @@ class ReleaseManager {
   }
 
   /**
+   * Validate that the tag is new and doesn't exist on remote
+   */
+  private validateNewTag(): void {
+    core.startGroup('Validating tag');
+
+    try {
+      const tagName = this.context.ref.replace('refs/tags/', '');
+      this.info(`Checking if tag ${tagName} already exists on remote...`);
+
+      const remoteTags = this.exec('git ls-remote --tags origin', { silent: true });
+      const tagExists = remoteTags.includes(`refs/tags/${tagName}`);
+
+      if (tagExists) {
+        core.warning(`Tag ${tagName} already exists on remote repository`);
+      } else {
+        this.info(`Tag ${tagName} is new, proceeding with release`);
+      }
+    } catch (error: any) {
+      core.warning(`Could not validate tag existence: ${error.message}`);
+      this.info('Proceeding anyway (validation check failed)');
+    }
+
+    core.endGroup();
+  }
+
+  /**
    * Check if required tools are installed
    */
   private checkDependencies(): void {
@@ -303,6 +329,9 @@ local: ${config.local}
       // Check dependencies first
       this.checkDependencies();
 
+      // Validate the tag is new
+      this.validateNewTag();
+
       // Setup
       this.configureGit();
       const version = this.extractVersion();
@@ -492,8 +521,14 @@ async function main() {
     const packageName = core.getInput('package-name', { required: true });
     const changelogPath = core.getInput('changelog') || './CHANGES.md';
     const token = core.getInput('github-token', { required: true });
-    const dryRun = core.getInput('dry-run') === 'true';
+    const dryRun = core.getInput('dry-run') === 'true'; // Default is false (production mode)
     const verbose = core.getInput('verbose') === 'true';
+
+    // Validate that we're running on a tag
+    const ref = process.env.GITHUB_REF || github.context.ref;
+    if (!ref.startsWith('refs/tags/')) {
+      throw new Error(`This action must be run on a git tag. Current ref: ${ref}`);
+    }
 
     // Get the user's GitHub username for the opam-repository fork
     const effectiveUser = process.env.GITHUB_ACTOR || 'github-actions';
@@ -504,17 +539,8 @@ async function main() {
     const opamRepoLocal = core.getInput('opam-repo-local') || defaultOpamPath;
 
     // Get context from environment and GitHub context
-    // For PRs, use the temporary test tag instead of the PR ref
-    let ref = process.env.GITHUB_REF || github.context.ref;
-    if (ref.startsWith('refs/pull/')) {
-      // This is a PR, use the temporary test tag from environment
-      const testTag = process.env.TEST_TAG || '0.0.6-beta';
-      ref = `refs/tags/${testTag}`;
-      core.info(`Running on PR, using temporary test tag: ${ref}`);
-    }
-
     const context: GitHubContext = {
-      ref: ref,
+      ref: process.env.GITHUB_REF || github.context.ref,
       repository: process.env.GITHUB_REPOSITORY || `${github.context.repo.owner}/${github.context.repo.repo}`,
       workspace: process.env.GITHUB_WORKSPACE || process.cwd(),
       token: token

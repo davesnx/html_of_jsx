@@ -1,18 +1,26 @@
 name: Release
 
 on:
-  push:
-    tags:
-    - '*'
-  pull_request:
+  workflow_run:
+    workflows: ["CI"]
+    types:
+      - completed
+    branches:
+      - '*'
 
 permissions:
   contents: write
   pull-requests: write
 
 jobs:
-  relase:
+  release:
     name: Release
+    # Only run if CI succeeded on a tag push (or PR for testing)
+    if: |
+      (github.event_name == 'workflow_run' &&
+       github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.event == 'push') ||
+      github.event_name == 'pull_request'
 
     runs-on: ${{ matrix.os }}
 
@@ -32,7 +40,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: '1'
+          ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.ref }}
+          fetch-depth: '0'
 
       - name: Load opam cache
         id: opam-cache-windows
@@ -64,41 +73,12 @@ jobs:
         working-directory: .github/scripts/release
         run: npm run package
 
-      - name: Create temporary test tag for PR
-        if: github.event_name == 'pull_request'
-        run: |
-          TAG="0.0.6"
-          echo "Creating test tag: $TAG"
-          git tag $TAG
-          echo "TEST_TAG=$TAG" >> $GITHUB_ENV
-
       - name: Run dune-release
         uses: ./.github/scripts/release
         with:
           package-name: 'html_of_jsx'
           changelog: './CHANGES.md'
           github-token: ${{ secrets.GH_TOKEN }}
-          dry-run: false # Testing without dry-run
-
-      - name: Clean up beta tag
-        if: always() && github.event_name == 'pull_request'
-        env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
-        run: |
-          if [ -n "$TEST_TAG" ]; then
-            echo "Cleaning up test tag: $TEST_TAG"
-
-            # Delete remote tag if it exists
-            git push origin :refs/tags/$TEST_TAG 2>/dev/null || echo "Remote tag doesn't exist"
-
-            # Delete local tag if it exists
-            git tag -d $TEST_TAG 2>/dev/null || echo "Local tag doesn't exist"
-
-            # Delete GitHub release if it exists
-            gh release delete $TEST_TAG --yes --cleanup-tag 2>/dev/null || echo "Release doesn't exist"
-
-            echo "Cleanup complete"
-          fi
 
       - name: Save cache
         uses: actions/cache/save@v3
