@@ -28,6 +28,17 @@ permissions:
 jobs:
   release:
     name: Release
+    # Run only if:
+    # - Manual trigger, OR
+    # - Direct tag push, OR
+    # - CI succeeded on a tag push (not main)
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')) ||
+      (github.event_name == 'workflow_run' &&
+       github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.event == 'push' &&
+       github.event.workflow_run.head_branch != 'main')
 
     runs-on: ${{ matrix.os }}
 
