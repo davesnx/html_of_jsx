@@ -98,6 +98,16 @@ jobs:
           path: ~/.opam
           key: opam-${{ matrix.os }}-${{ matrix.ocaml-compiler }}-${{ hashFiles('**.opam') }}
 
+      - name: Upload build artifacts
+        if: startsWith(github.ref, 'refs/tags/') && matrix.os == 'ubuntu-latest' && matrix.ocaml-compiler == '5.3.0'
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-artifacts
+          path: |
+            _build/
+            _opam/
+          retention-days: 1
+
       - name: Save cache when Windows
         uses: actions/cache/save@v3
         if: steps.opam-cache-windows.outputs.cache-hit != 'true' && runner.os == 'Windows'

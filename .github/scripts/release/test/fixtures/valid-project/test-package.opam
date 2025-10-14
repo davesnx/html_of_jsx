@@ -1,0 +1,34 @@
+opam-version: "2.0"
+name: "test-package"
+version: "1.0.0"
+synopsis: "A test package for CI"
+description: """
+This is a test package used for validating the dune-release-action
+GitHub Action in CI/CD pipelines.
+"""
+maintainer: ["Test Maintainer <test@example.com>"]
+authors: ["Test Author"]
+license: "MIT"
+homepage: "https://github.com/test/test-package"
+doc: "https://test.github.io/test-package/"
+bug-reports: "https://github.com/test/test-package/issues"
+depends: [
+  "ocaml" {>= "4.08.0"}
+  "dune" {>= "2.0"}
+  "alcotest" {with-test}
+]
+build: [
+  ["dune" "subst"] {dev}
+  [
+    "dune"
+    "build"
+    "-p"
+    name
+    "-j"
+    jobs
+    "@install"
+    "@runtest" {with-test}
+    "@doc" {with-doc}
+  ]
+]
+dev-repo: "git+https://github.com/test/test-package.git"

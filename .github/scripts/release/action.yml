@@ -1,0 +1,40 @@
+name: 'dune-release'
+description: 'Automatically run dune-release in GitHub Actions'
+author: 'davesnx'
+branding:
+  icon: 'package'
+  color: 'orange'
+
+inputs:
+  package-name:
+    description: 'Package name for release'
+    required: true
+  changelog:
+    description: 'Path to changelog file'
+    required: false
+    default: './CHANGES.md'
+  github-token:
+    description: 'GitHub token for API access'
+    required: true
+  to-opam-repository:
+    description: 'If true, submits a PR to opam-repository'
+    required: false
+    default: 'true'
+  to-github-releases:
+    description: 'If true, creates a GitHub release'
+    required: false
+    default: 'true'
+  verbose:
+    description: 'If true, shows detailed logging output'
+    required: false
+    default: 'false'
+
+outputs:
+  version:
+    description: 'Extracted version from git tag'
+  release-status:
+    description: 'Status of the release (success/failed)'
+
+runs:
+  using: 'node20'
+  main: 'dist/index.js'

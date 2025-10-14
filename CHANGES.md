@@ -1,5 +1,9 @@
 # Changes
 
+## 0.0.6
+
+- Support OCaml 5.3 (https://github.com/davesnx/html_of_jsx/pull/29) (@davesnx)
+
 ## 0.0.5
 
 - Make tests run in FreeBSD (https://github.com/davesnx/html_of_jsx/issues/22) (@davesnx)
