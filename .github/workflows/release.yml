@@ -1,6 +1,11 @@
 name: Release
 
 on:
+  push:
+    branches:
+    - main
+    tags:
+    - '*'
   # Trigger when CI workflow completes on a tag
   workflow_run:
     workflows: ["CI"]
