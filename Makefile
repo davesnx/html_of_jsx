@@ -95,10 +95,10 @@ docs-serve: ## Open odoc docs with default web browser
 	open _build/default/_doc/_html/index.html
 
 .PHONY: release
-release: ## Create and push a release tag (usage: make release VERSION=0.0.6)
+release: ## Create and push a release tag (usage: make release VERSION=1.0.0)
 	@if [ -z "$(VERSION)" ]; then \
 		echo "Error: VERSION is required"; \
-		echo "Usage: make release VERSION=0.0.6"; \
+		echo "Usage: make release VERSION=1.0.0"; \
 		exit 1; \
 	fi
 	@.github/scripts/create-release.sh $(VERSION)
