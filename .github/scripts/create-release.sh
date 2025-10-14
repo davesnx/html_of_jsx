@@ -5,7 +5,7 @@ set -e
 # Check if version is provided
 if [ -z "$1" ]; then
     echo "Usage: $0 <version>"
-    echo "Example: $0 0.0.6"
+    echo "Example: $0 1.0.0"
     exit 1
 fi
 

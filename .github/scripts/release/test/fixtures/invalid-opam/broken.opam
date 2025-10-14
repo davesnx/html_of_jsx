@@ -1,7 +1,0 @@
-# This is not a valid opam file
-# Missing required opam-version field
-name: "broken-package"
-depends: [
-  this is not valid syntax
-]
-random content that doesn't belong here
