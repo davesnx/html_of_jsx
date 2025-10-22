@@ -3,7 +3,7 @@
 
 ### Render HTML with JSX
 
-**html_of_jsx** is a JSX transformation and a library to write HTML declaratively in [OCaml](https://ocaml.org), [Reason](https://reasonml.github.io) and [mlx](https://github.com/ocaml-mlx/mlx).
+**html_of_jsx** is a JSX transformation and a library to write HTML in [OCaml](https://ocaml.org), [Reason](https://reasonml.github.io) and [mlx](https://github.com/ocaml-mlx/mlx).
 
 ## Features
 

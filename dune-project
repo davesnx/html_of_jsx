@@ -14,7 +14,7 @@
  ; There's a bug with pushing documentation with dune-release
  ; (documentation https://davesnx.github.io/html_of_jsx/html_of_jsx/index.html)
  (synopsis "Render HTML with JSX")
- (description "html_of_jsx is a JSX transformation that allows you to write HTML declaratively.")
+ (description "html_of_jsx is a JSX transformation and a library to write HTML declaratively in OCaml (mlx) and Reason.")
  (depends
   (ocaml (>= 4.14))
   (ppxlib (>= 0.25.0))
