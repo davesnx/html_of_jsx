@@ -1,0 +1,4 @@
+(library
+ (name lola)
+ (modes melange)
+ (public_name html_of_jsx.mel))
