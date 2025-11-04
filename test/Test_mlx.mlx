@@ -1,61 +1,61 @@
 let tag =
   test "tag" (fun () ->
-      let div = <div /> in
-      assert_string (JSX.render div) "<div></div>")
+    let div = <div /> in
+    assert_string (JSX.render div) "<div></div>")
 
 let empty_attribute =
   test "empty_attribute" (fun () ->
-      let div = <div class_="" /> in
-      assert_string (JSX.render div) "<div class=\"\"></div>")
+    let div = <div class_="" /> in
+    assert_string (JSX.render div) {|<div class=""></div>|})
 
 let bool_attribute =
   test "bool_attribute" (fun () ->
-      let div = <div hidden=true /> in
-      assert_string (JSX.render div) {|<div hidden></div>|})
+    let div = <div hidden=true /> in
+    assert_string (JSX.render div) {|<div hidden></div>|})
 
 let bool_attributes =
   test "bool_attributes" (fun () ->
-      let input =
-        <input type_="checkbox" name="cheese" checked=true disabled=false />
-      in
-      assert_string (JSX.render input)
-        {|<input type="checkbox" name="cheese" checked />|})
+    let input =
+      <input type_="checkbox" name="cheese" checked=true disabled=false />
+    in
+    assert_string (JSX.render input)
+      {|<input type="checkbox" name="cheese" checked />|})
 
 let innerhtml =
   test "innerhtml" (fun () ->
-      let p = <p>(JSX.string "text")</p> in
-      assert_string (JSX.render p) {|<p>text</p>|})
+    let p = <p>(JSX.string "text")</p> in
+    assert_string (JSX.render p) {|<p>text</p>|})
 
 let int_attribute =
   test "int_attribute" (fun () ->
-      let div = <div tabindex=1 /> in
-      assert_string (JSX.render div) {|<div tabindex="1"></div>|})
+    let div = <div tabindex=1 /> in
+    assert_string (JSX.render div) {|<div tabindex="1"></div>|})
 
 let style_attribute =
   test "style_attribute" (fun () ->
-      let div = <div style="background-color:gainsboro" /> in
-      assert_string (JSX.render div)
-        {|<div style="background-color:gainsboro"></div>|})
+    let div = <div style="background-color:gainsboro" /> in
+    assert_string (JSX.render div)
+      {|<div style="background-color:gainsboro"></div>|})
 
 let link_as_attribute =
   test "link_as_attribute" (fun () ->
-      let link =
-        <link as_="image" rel="preload" href="https://sancho.dev/blog" />
-      in
-      assert_string (JSX.render link)
-        {|<link as="image" rel="preload" href="https://sancho.dev/blog" />|})
+    let link =
+      <link as_="image" rel="preload" href="https://sancho.dev/blog" />
+    in
+    assert_string (JSX.render link)
+      {|<link as="image" rel="preload" href="https://sancho.dev/blog" />|})
 
 let int_opt_attribute_some =
   test "int_opt_attribute_some" (fun () ->
-      let tabindex = Some 1 in
-      let div = <div ?tabindex /> in
-      assert_string (JSX.render div) {|<div tabindex="1"></div>|})
+    let tabindex = Some 1 in
+    let div = <div ?tabindex /> in
+    assert_string (JSX.render div) {|<div tabindex="1"></div>|})
 
 let int_opt_attribute_none =
   test "int_opt_attribute_none" (fun () ->
-      let tabindex = None in
-      let div = <div ?tabindex /> in
-      assert_string (JSX.render div) {|<div></div>|})
+    let tabindex = None in
+    let div = <div ?tabindex /> in
+    assert_string (JSX.render div) {|<div></div>|})
 
 (* let lists_as_children =
    test "lists_as_children" (fun () ->
@@ -72,61 +72,60 @@ end
 
 let children_uppercase =
   test "children_uppercase" (fun () ->
-      let component = <Container /> in
-      assert_string (JSX.render component) "")
+    let component = <Container /> in
+    assert_string (JSX.render component) "")
 
 let children_uppercase_children_case_optional =
   test "children_uppercase_children_optional" (fun () ->
-      let component = <Container><span /></Container> in
-      assert_string (JSX.render component) {|<div><span></span></div>|})
+    let component = <Container><span /></Container> in
+    assert_string (JSX.render component) {|<div><span></span></div>|})
 
 let children_lowercase =
   test "children_lowercase" (fun () ->
-      let component = <div><span /></div> in
-      assert_string (JSX.render component) {|<div><span></span></div>|})
+    let component = <div><span /></div> in
+    assert_string (JSX.render component) {|<div><span></span></div>|})
 
 let string_opt_attribute_some =
   test "string_opt_attribute_some" (fun () ->
-      let class_ = Some "foo" in
-      let div = <div ?class_ /> in
-      assert_string (JSX.render div) {|<div class="foo"></div>|})
+    let class_ = Some "foo" in
+    let div = <div ?class_ /> in
+    assert_string (JSX.render div) {|<div class="foo"></div>|})
 
 let string_opt_attribute_none =
   test "string_opt_attribute_none" (fun () ->
-      let class_ = None in
-      let div = <div ?class_ /> in
-      assert_string (JSX.render div) {|<div></div>|})
+    let class_ = None in
+    let div = <div ?class_ /> in
+    assert_string (JSX.render div) {|<div></div>|})
 
 let bool_opt_attribute_some =
   test "bool_opt_attribute_some" (fun () ->
-      let hidden = Some true in
-      let div = <div ?hidden /> in
-      assert_string (JSX.render div) {|<div hidden></div>|})
+    let hidden = Some true in
+    let div = <div ?hidden /> in
+    assert_string (JSX.render div) {|<div hidden></div>|})
 
 let bool_opt_attribute_none =
   test "bool_opt_attribute_none" (fun () ->
-      let hidden = None in
-      let div = <div ?hidden /> in
-      assert_string (JSX.render div) {|<div></div>|})
+    let hidden = None in
+    let div = <div ?hidden /> in
+    assert_string (JSX.render div) {|<div></div>|})
 
 let style_opt_attribute_some =
   test "style_opt_attribute_some" (fun () ->
-      let style = Some "color: blue;" in
-      let div = <div ?style /> in
-      assert_string (JSX.render div) {|<div style="color: blue;"></div>|})
+    let style = Some "color: blue;" in
+    let div = <div ?style /> in
+    assert_string (JSX.render div) {|<div style="color: blue;"></div>|})
 
 let style_opt_attribute_none =
   test "style_opt_attribute_none" (fun () ->
-      let style = None in
-      let div = <div ?style /> in
-      assert_string (JSX.render div) {|<div></div>|})
+    let style = None in
+    let div = <div ?style /> in
+    assert_string (JSX.render div) {|<div></div>|})
 
 let onclick_inline_string =
   test "onclick_inline_string" (fun () ->
-      let onClick = "console.log('clicked')" in
-      let div = <div onclick=onClick /> in
-      assert_string (JSX.render div)
-        {|<div onclick="console.log(&apos;clicked&apos;)"></div>|})
+    let onClick = "console.log('clicked')" in
+    let div = <div onclick=onClick /> in
+    assert_string (JSX.render div) {|<div onclick="console.log(&apos;clicked&apos;)"></div>|})
 
 let svg =
   test "svg" (fun () ->

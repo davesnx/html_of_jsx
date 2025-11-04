@@ -7,7 +7,7 @@
 
 ## Features
 
-- Brings the "component model" to HTML
+- Brings the *"component model"* to HTML
 - Supports all of the Reason's [JSX](https://reasonml.github.io/docs/en/jsx) features (uppercase components, fragments, optional attributes, punning)
 - but with a few improvements (lowercase components, no need to add the ppx annotation)
 - No React idioms (no `className`, no `htmlFor`, no `onChange`, etc...)
@@ -25,9 +25,9 @@
 opam install html_of_jsx
 ```
 
-```diff
-+ (library html_of_jsx)
-+ (preprocess (pps html_of_jsx.ppx))
+```clojure
+(libraries html_of_jsx)
+(preprocess (pps html_of_jsx.ppx))
 ```
 
 ## Usage
