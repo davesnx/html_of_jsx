@@ -98,9 +98,9 @@ jobs:
         run: opam install dune-release -y
 
       - name: Run dune-release
-        uses: davesnx/dune-release-action@v0.1.0
+        uses: davesnx/dune-release-action@v0.2.0
         with:
-          package-name: 'html_of_jsx'
+          packages: 'html_of_jsx'
           changelog: './CHANGES.md'
           github-token: ${{ secrets.GH_TOKEN }}
           to-opam-repository: true
