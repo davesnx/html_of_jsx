@@ -205,32 +205,23 @@ let estimate_buffer_size parts =
   in
   max 64 (next_power_of_2 estimated 64)
 
-(** Generate code for Buffer-based assembly of mixed static/dynamic content *)
 let generate_buffer_code ~loc parts =
-  (* Generate a unique variable name for the buffer *)
   let buf_var = "__html_buf" in
   let buf_ident = pexp_ident ~loc { loc; txt = Lident buf_var } in
   let buf_pat = ppat_var ~loc { loc; txt = buf_var } in
-
-  (* Estimate buffer size at compile time *)
   let buffer_size = estimate_buffer_size parts in
   let buffer_size_expr = eint ~loc buffer_size in
-
-  (* Generate Buffer operations for each part *)
   let generate_part_code part =
     match part with
     | Static_analysis.Static_str s ->
         let s_expr = estring ~loc s in
         [%expr Buffer.add_string [%e buf_ident] [%e s_expr]]
     | Static_analysis.Dynamic_string expr ->
-        (* String expression - escape directly without JSX.element wrapper *)
         [%expr Buffer.add_string [%e buf_ident] (JSX.escape [%e expr])]
     | Static_analysis.Dynamic_element expr ->
-        (* JSX.element expression - use JSX.write *)
         [%expr JSX.write [%e buf_ident] [%e expr]]
   in
 
-  (* Build the sequence of buffer operations *)
   let ops = List.map ~f:generate_part_code parts in
   let seq =
     List.fold_right ops ~init:[%expr ()] ~f:(fun op acc ->
@@ -239,22 +230,11 @@ let generate_buffer_code ~loc parts =
           [%e acc]])
   in
 
-  (* Wrap in let expression with estimated buffer size *)
   [%expr
     let [%p buf_pat] = Buffer.create [%e buffer_size_expr] in
     [%e seq];
     JSX.unsafe (Buffer.contents [%e buf_ident])]
 
-(** Generate code for optional attributes with runtime conditional. This
-    generates a match expression that handles the optional attribute cases. *)
-let generate_optional_attr_code ~loc:_ ~tag_name ~optional_attrs ~static_attrs
-    ~children_analysis =
-  (* For now, if there are optional attributes, fall back to dynamic generation.
-     A more sophisticated implementation would generate match expressions. *)
-  ignore (tag_name, optional_attrs, static_attrs, children_analysis);
-  None (* Return None to indicate fallback to JSX.node *)
-
-(** Original unoptimized rewrite_node using JSX.node *)
 let rewrite_node_unoptimized ~loc tag_name args children =
   let dom_node_name = estring ~loc tag_name in
   let attributes = transform_attributes ~loc ~tag_name args in
@@ -264,40 +244,22 @@ let rewrite_node_unoptimized ~loc tag_name args children =
       [%expr JSX.node [%e dom_node_name] [%e attributes] [%e childrens]]
   | None -> [%expr JSX.node [%e dom_node_name] [%e attributes] []]
 
-(** Optimized rewrite_node that uses static analysis to generate efficient code
-*)
 let rewrite_node_optimized ~loc tag_name args children =
-  (* Try static analysis to see if we can optimize *)
   let analysis =
     Static_analysis.analyze_element ~tag_name ~attrs:args ~children
   in
 
   match analysis with
   | Static_analysis.Fully_static html ->
-      (* Fully static: generate JSX.unsafe with the complete HTML string *)
       let html_with_doctype = Static_analysis.maybe_add_doctype tag_name html in
       let html_expr = estring ~loc html_with_doctype in
       [%expr JSX.unsafe [%e html_expr]]
   | Static_analysis.Needs_string_concat parts
   | Static_analysis.Needs_buffer parts ->
-      (* Mixed content with element-typed dynamics: generate Buffer-based code *)
       generate_buffer_code ~loc parts
-  | Static_analysis.Needs_conditional
-      { optional_attrs; static_attrs; tag_name = tn; children_analysis } -> (
-      (* Has optional attributes: try to generate conditional, or fall back *)
-      match
-        generate_optional_attr_code ~loc ~tag_name:tn ~optional_attrs
-          ~static_attrs ~children_analysis
-      with
-      | Some expr -> expr
-      | None ->
-          (* Fall back to JSX.node for complex optional attribute cases *)
-          rewrite_node_unoptimized ~loc tag_name args children)
-  | Static_analysis.Cannot_optimize ->
-      (* Cannot optimize: fall back to original JSX.node approach *)
+  | Static_analysis.Needs_conditional _ | Static_analysis.Cannot_optimize ->
       rewrite_node_unoptimized ~loc tag_name args children
 
-(** Main rewrite_node that checks the optimization flag *)
 let rewrite_node ~loc tag_name args children =
   if !disable_static_optimization then
     rewrite_node_unoptimized ~loc tag_name args children
