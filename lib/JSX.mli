@@ -136,8 +136,8 @@ val escape : string -> string
     string content is known at compile time to be a string (not a JSX.element).
 
     {[
-      JSX.escape "<script>" (* Returns "&lt;script&gt;" *)
-      JSX.escape "hello"    (* Returns "hello" - no allocation *)
+      JSX.escape "<script>" (* Returns "&lt;script&gt;" *) JSX.escape
+        "hello" (* Returns "hello" - no allocation *)
     ]} *)
 
 val write : Buffer.t -> element -> unit

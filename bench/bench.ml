@@ -1,28 +1,22 @@
 (* Benchmark comparing optimized (JSX.unsafe) vs unoptimized (JSX.node) rendering *)
 
 (* Simple test case - static div with class *)
-let optimized_simple =
-  JSX.unsafe {|<div class="container"></div>|}
-
-let unoptimized_simple =
-  JSX.node "div" [("class", `String "container")] []
+let optimized_simple = JSX.unsafe {|<div class="container"></div>|}
+let unoptimized_simple = JSX.node "div" [ ("class", `String "container") ] []
 
 (* Medium test case - nested static elements *)
 let optimized_medium =
-  JSX.unsafe {|<div class="wrapper"><header><h1>Title</h1></header><main><p>Content here</p></main><footer><span>Footer</span></footer></div>|}
+  JSX.unsafe
+    {|<div class="wrapper"><header><h1>Title</h1></header><main><p>Content here</p></main><footer><span>Footer</span></footer></div>|}
 
 let unoptimized_medium =
-  JSX.node "div" [("class", `String "wrapper")] [
-    JSX.node "header" [] [
-      JSX.node "h1" [] [JSX.string "Title"]
-    ];
-    JSX.node "main" [] [
-      JSX.node "p" [] [JSX.string "Content here"]
-    ];
-    JSX.node "footer" [] [
-      JSX.node "span" [] [JSX.string "Footer"]
+  JSX.node "div"
+    [ ("class", `String "wrapper") ]
+    [
+      JSX.node "header" [] [ JSX.node "h1" [] [ JSX.string "Title" ] ];
+      JSX.node "main" [] [ JSX.node "p" [] [ JSX.string "Content here" ] ];
+      JSX.node "footer" [] [ JSX.node "span" [] [ JSX.string "Footer" ] ];
     ]
-  ]
 
 (* Complex test case - the full page from input.re *)
 let optimized_page =
@@ -31,56 +25,117 @@ let optimized_page =
 (* Manually create the unoptimized version of a simpler page for fair comparison *)
 let unoptimized_page =
   let styles_dark = "color-scheme: dark" in
-  let styles_body = "display: flex; justify-items: center; padding-top: 7em; padding-left: 25%; padding-right: 25%" in
-  let styles_h1 = "font-weight: 500; font-size: calc((((((0.7rem + 0.13vw) * 1.25) * 1.25) * 1.25) * 1.25) * 1.25); letter-spacing: 0.8px; line-height: 2; margin: 0; padding: 0" in
-  JSX.node "html" [("lang", `String "en"); ("style", `String styles_dark)] [
-    JSX.node "head" [] [
-      JSX.node "meta" [("charset", `String "UTF-8")] [];
-      JSX.node "meta" [("name", `String "viewport"); ("content", `String "width=device-width, initial-scale=1.0")] [];
-      JSX.node "title" [] [JSX.string "HTML OF JSX"];
-      JSX.node "link" [("rel", `String "shortcut icon"); ("href", `String "https://reasonml.github.io/img/icon_50.png")] [];
-    ];
-    JSX.node "body" [("style", `String styles_body)] [
-      JSX.node "div" [] [
-        JSX.node "main" [] [
-          JSX.node "header" [] [
-            JSX.node "div" [] [
-              JSX.node "a" [("href", `String "https://github.com/davesnx/html_of_jsx")] [
-                JSX.node "p" [] [JSX.string "https://github.com/davesnx/html_of_jsx"]
-              ];
-              JSX.node "div" [] [
-                JSX.node "span" [] [JSX.string "by "];
-                JSX.node "a" [("href", `String "https://x.com/davesnx")] [JSX.string "@davesnx"]
-              ]
+  let styles_body =
+    "display: flex; justify-items: center; padding-top: 7em; padding-left: \
+     25%; padding-right: 25%"
+  in
+  let styles_h1 =
+    "font-weight: 500; font-size: calc((((((0.7rem + 0.13vw) * 1.25) * 1.25) * \
+     1.25) * 1.25) * 1.25); letter-spacing: 0.8px; line-height: 2; margin: 0; \
+     padding: 0"
+  in
+  JSX.node "html"
+    [ ("lang", `String "en"); ("style", `String styles_dark) ]
+    [
+      JSX.node "head" []
+        [
+          JSX.node "meta" [ ("charset", `String "UTF-8") ] [];
+          JSX.node "meta"
+            [
+              ("name", `String "viewport");
+              ("content", `String "width=device-width, initial-scale=1.0");
             ]
-          ]
+            [];
+          JSX.node "title" [] [ JSX.string "HTML OF JSX" ];
+          JSX.node "link"
+            [
+              ("rel", `String "shortcut icon");
+              ("href", `String "https://reasonml.github.io/img/icon_50.png");
+            ]
+            [];
         ];
-        JSX.node "div" [] [
-          JSX.node "main" [] [
-            JSX.node "div" [] [
-              JSX.node "div" [] [
-                JSX.node "h1" [("style", `String styles_h1)] [JSX.string "Html_of_jsx"]
-              ];
-              JSX.node "div" [] [
-                JSX.node "div" [] [
-                  JSX.node "p" [] [
-                    JSX.node "span" [] [JSX.string "html_of_jsx"];
-                    JSX.node "span" [] [JSX.string " is an implementation of JSX designed to render HTML on the server."]
-                  ];
-                  JSX.node "p" [] [
-                    JSX.string "Check the ";
-                    JSX.node "a" [("href", `String "https://davesnx.github.io/html_of_jsx/html_of_jsx/index.html")] [
-                      JSX.string "Documentation"
-                    ]
-                  ]
-                ]
-              ]
-            ]
-          ]
-        ]
-      ]
+      JSX.node "body"
+        [ ("style", `String styles_body) ]
+        [
+          JSX.node "div" []
+            [
+              JSX.node "main" []
+                [
+                  JSX.node "header" []
+                    [
+                      JSX.node "div" []
+                        [
+                          JSX.node "a"
+                            [
+                              ( "href",
+                                `String "https://github.com/davesnx/html_of_jsx"
+                              );
+                            ]
+                            [
+                              JSX.node "p" []
+                                [
+                                  JSX.string
+                                    "https://github.com/davesnx/html_of_jsx";
+                                ];
+                            ];
+                          JSX.node "div" []
+                            [
+                              JSX.node "span" [] [ JSX.string "by " ];
+                              JSX.node "a"
+                                [ ("href", `String "https://x.com/davesnx") ]
+                                [ JSX.string "@davesnx" ];
+                            ];
+                        ];
+                    ];
+                ];
+              JSX.node "div" []
+                [
+                  JSX.node "main" []
+                    [
+                      JSX.node "div" []
+                        [
+                          JSX.node "div" []
+                            [
+                              JSX.node "h1"
+                                [ ("style", `String styles_h1) ]
+                                [ JSX.string "Html_of_jsx" ];
+                            ];
+                          JSX.node "div" []
+                            [
+                              JSX.node "div" []
+                                [
+                                  JSX.node "p" []
+                                    [
+                                      JSX.node "span" []
+                                        [ JSX.string "html_of_jsx" ];
+                                      JSX.node "span" []
+                                        [
+                                          JSX.string
+                                            " is an implementation of JSX \
+                                             designed to render HTML on the \
+                                             server.";
+                                        ];
+                                    ];
+                                  JSX.node "p" []
+                                    [
+                                      JSX.string "Check the ";
+                                      JSX.node "a"
+                                        [
+                                          ( "href",
+                                            `String
+                                              "https://davesnx.github.io/html_of_jsx/html_of_jsx/index.html"
+                                          );
+                                        ]
+                                        [ JSX.string "Documentation" ];
+                                    ];
+                                ];
+                            ];
+                        ];
+                    ];
+                ];
+            ];
+        ];
     ]
-  ]
 
 (* Dynamic string optimization micro-benchmarks *)
 
@@ -88,7 +143,8 @@ let unoptimized_page =
 let old_jsx_write_string name =
   let buf = Buffer.create 128 in
   Buffer.add_string buf "<div>";
-  JSX.write buf (JSX.string name);  (* Allocates JSX.element, pattern matches *)
+  JSX.write buf (JSX.string name);
+  (* Allocates JSX.element, pattern matches *)
   Buffer.add_string buf "</div>";
   JSX.unsafe (Buffer.contents buf)
 
@@ -161,22 +217,31 @@ let () =
   let single_dyn =
     Benchmark.throughputN ~repeat:3 2
       [
-        ("OLD: JSX.write+JSX.string", (fun () -> old_jsx_write_string test_name), ());
+        ( "OLD: JSX.write+JSX.string",
+          (fun () -> old_jsx_write_string test_name),
+          () );
         ("NEW: Buffer+JSX.escape", (fun () -> new_buffer_escape test_name), ());
       ]
   in
   Benchmark.tabulate single_dyn;
 
-  print_endline "\n--- Two dynamic strings: <div>{JSX.string(a)}{JSX.string(b)}</div> ---";
+  print_endline
+    "\n--- Two dynamic strings: <div>{JSX.string(a)}{JSX.string(b)}</div> ---";
   let two_dyn =
     Benchmark.throughputN ~repeat:3 2
       [
-        ("OLD: JSX.write+JSX.string", (fun () -> old_jsx_write_two test_a test_b), ());
+        ( "OLD: JSX.write+JSX.string",
+          (fun () -> old_jsx_write_two test_a test_b),
+          () );
         ("NEW: Buffer+JSX.escape", (fun () -> new_buffer_two test_a test_b), ());
       ]
   in
   Benchmark.tabulate two_dyn;
 
   print_endline "\n=== Summary ===";
-  print_endline "OLD: JSX.write+JSX.string = allocates JSX.element wrapper, pattern matches in write";
-  print_endline "NEW: Buffer+JSX.escape = direct escape to buffer, no wrapper allocation (+25-34% faster)"
+  print_endline
+    "OLD: JSX.write+JSX.string = allocates JSX.element wrapper, pattern \
+     matches in write";
+  print_endline
+    "NEW: Buffer+JSX.escape = direct escape to buffer, no wrapper allocation \
+     (+25-34% faster)"
