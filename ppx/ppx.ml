@@ -4,6 +4,9 @@ module List = ListLabels
 
 let issues_url = "https://github.com/davesnx/html_of_jsx/issues"
 
+(* Flag to disable static optimization *)
+let disable_static_optimization = ref false
+
 (* There's no pexp_list on Ppxlib since is not a constructor of the Parsetree *)
 let pexp_list ~loc xs =
   List.fold_left (List.rev xs) ~init:[%expr []] ~f:(fun xs x ->
@@ -190,8 +193,8 @@ let estimate_buffer_size parts =
   let static_size, dynamic_count =
     List.fold_left parts ~init:(0, 0) ~f:(fun (static, dynamic) part ->
       match part with
-      | Static_analysis.StaticStr s -> (static + String.length s, dynamic)
-      | Static_analysis.DynamicExpr _ -> (static, dynamic + 1))
+      | Static_analysis.Static_str s -> (static + String.length s, dynamic)
+      | Static_analysis.Dynamic_expr _ -> (static, dynamic + 1))
   in
   (* Add estimated size for dynamic content + some padding to avoid resizing *)
   let estimated = static_size + (dynamic_count * 64) in
@@ -213,10 +216,10 @@ let generate_buffer_code ~loc parts =
   (* Generate Buffer operations for each part *)
   let generate_part_code part =
     match part with
-    | Static_analysis.StaticStr s ->
+    | Static_analysis.Static_str s ->
         let s_expr = estring ~loc s in
         [%expr Buffer.add_string [%e buf_ident] [%e s_expr]]
-    | Static_analysis.DynamicExpr expr ->
+    | Static_analysis.Dynamic_expr expr ->
         [%expr JSX.write [%e buf_ident] [%e expr]]
   in
 
@@ -243,45 +246,50 @@ let generate_optional_attr_code ~loc:_ ~tag_name ~optional_attrs ~static_attrs ~
   ignore (tag_name, optional_attrs, static_attrs, children_analysis);
   None  (* Return None to indicate fallback to JSX.node *)
 
+(** Original unoptimized rewrite_node using JSX.node *)
+let rewrite_node_unoptimized ~loc tag_name args children =
+  let dom_node_name = estring ~loc tag_name in
+  let attributes = transform_attributes ~loc ~tag_name args in
+  match children with
+  | Some children ->
+      let childrens = pexp_list ~loc children in
+      [%expr JSX.node [%e dom_node_name] [%e attributes] [%e childrens]]
+  | None -> [%expr JSX.node [%e dom_node_name] [%e attributes] []]
+
 (** Optimized rewrite_node that uses static analysis to generate efficient code *)
-let rewrite_node ~loc tag_name args children =
-  (* First, try static analysis to see if we can optimize *)
+let rewrite_node_optimized ~loc tag_name args children =
+  (* Try static analysis to see if we can optimize *)
   let analysis = Static_analysis.analyze_element ~tag_name ~attrs:args ~children in
 
   match analysis with
-  | Static_analysis.FullyStatic html ->
+  | Static_analysis.Fully_static html ->
       (* Fully static: generate JSX.unsafe with the complete HTML string *)
       let html_with_doctype = Static_analysis.maybe_add_doctype tag_name html in
       let html_expr = estring ~loc html_with_doctype in
       [%expr JSX.unsafe [%e html_expr]]
 
-  | Static_analysis.NeedsBuffer parts ->
+  | Static_analysis.Needs_buffer parts ->
       (* Mixed content: generate Buffer-based code *)
       generate_buffer_code ~loc parts
 
-  | Static_analysis.NeedsConditional { optional_attrs; static_attrs; tag_name = tn; children_analysis } ->
+  | Static_analysis.Needs_conditional { optional_attrs; static_attrs; tag_name = tn; children_analysis } ->
       (* Has optional attributes: try to generate conditional, or fall back *)
       (match generate_optional_attr_code ~loc ~tag_name:tn ~optional_attrs ~static_attrs ~children_analysis with
       | Some expr -> expr
       | None ->
           (* Fall back to JSX.node for complex optional attribute cases *)
-          let dom_node_name = estring ~loc tag_name in
-          let attributes = transform_attributes ~loc ~tag_name args in
-          (match children with
-          | Some children ->
-              let childrens = pexp_list ~loc children in
-              [%expr JSX.node [%e dom_node_name] [%e attributes] [%e childrens]]
-          | None -> [%expr JSX.node [%e dom_node_name] [%e attributes] []]))
+          rewrite_node_unoptimized ~loc tag_name args children)
 
-  | Static_analysis.CannotOptimize ->
+  | Static_analysis.Cannot_optimize ->
       (* Cannot optimize: fall back to original JSX.node approach *)
-      let dom_node_name = estring ~loc tag_name in
-      let attributes = transform_attributes ~loc ~tag_name args in
-      (match children with
-      | Some children ->
-          let childrens = pexp_list ~loc children in
-          [%expr JSX.node [%e dom_node_name] [%e attributes] [%e childrens]]
-      | None -> [%expr JSX.node [%e dom_node_name] [%e attributes] []])
+      rewrite_node_unoptimized ~loc tag_name args children
+
+(** Main rewrite_node that checks the optimization flag *)
+let rewrite_node ~loc tag_name args children =
+  if !disable_static_optimization then
+    rewrite_node_unoptimized ~loc tag_name args children
+  else
+    rewrite_node_optimized ~loc tag_name args children
 
 let split_args ~mapper args =
   let children = ref (Location.none, []) in
@@ -394,6 +402,9 @@ let () =
       ( "Enable react attributes in HTML and SVG elements",
         "-react",
         Arg.Unit (fun () -> Extra_attributes.set React) );
+      ( "Disable static HTML optimization (use JSX.node for all elements)",
+        "-no-static-opt",
+        Arg.Unit (fun () -> disable_static_optimization := true) );
       (* ( "-custom",
          Arg.String (fun file -> Static_attributes.extra_properties := Some file),
          "FILE Load inferred types from cmo file." ); *)
