@@ -4,6 +4,9 @@ module List = ListLabels
 
 let issues_url = "https://github.com/davesnx/html_of_jsx/issues"
 
+(* Flag to disable static optimization *)
+let disable_static_optimization = ref false
+
 (* There's no pexp_list on Ppxlib since is not a constructor of the Parsetree *)
 let pexp_list ~loc xs =
   List.fold_left (List.rev xs) ~init:[%expr []] ~f:(fun xs x ->
@@ -183,7 +186,56 @@ let transform_attributes ~loc ~tag_name attrs =
       (* We need to filter attributes since optionals are represented as None *)
       [%expr Stdlib.List.filter_map Stdlib.Fun.id [%e attrs]]
 
-let rewrite_node ~loc tag_name args children =
+(** Estimate buffer size based on static content and number of dynamic parts.
+    Static parts: exact length known at compile time Dynamic parts: estimate ~64
+    bytes each (reasonable for typical element content) *)
+let estimate_buffer_size parts =
+  let static_size, dynamic_count =
+    List.fold_left parts ~init:(0, 0) ~f:(fun (static, dynamic) part ->
+        match part with
+        | Static_analysis.Static_str s -> (static + String.length s, dynamic)
+        | Static_analysis.Dynamic_string _ -> (static, dynamic + 1)
+        | Static_analysis.Dynamic_element _ -> (static, dynamic + 1))
+  in
+  (* Add estimated size for dynamic content + some padding to avoid resizing *)
+  let estimated = static_size + (dynamic_count * 64) in
+  (* Round up to next power of 2 for efficiency, minimum 64 *)
+  let rec next_power_of_2 n acc =
+    if acc >= n then acc else next_power_of_2 n (acc * 2)
+  in
+  max 64 (next_power_of_2 estimated 64)
+
+let generate_buffer_code ~loc parts =
+  let buf_var = "__html_buf" in
+  let buf_ident = pexp_ident ~loc { loc; txt = Lident buf_var } in
+  let buf_pat = ppat_var ~loc { loc; txt = buf_var } in
+  let buffer_size = estimate_buffer_size parts in
+  let buffer_size_expr = eint ~loc buffer_size in
+  let generate_part_code part =
+    match part with
+    | Static_analysis.Static_str s ->
+        let s_expr = estring ~loc s in
+        [%expr Buffer.add_string [%e buf_ident] [%e s_expr]]
+    | Static_analysis.Dynamic_string expr ->
+        [%expr Buffer.add_string [%e buf_ident] (JSX.escape [%e expr])]
+    | Static_analysis.Dynamic_element expr ->
+        [%expr JSX.write [%e buf_ident] [%e expr]]
+  in
+
+  let ops = List.map ~f:generate_part_code parts in
+  let seq =
+    List.fold_right ops ~init:[%expr ()] ~f:(fun op acc ->
+        [%expr
+          [%e op];
+          [%e acc]])
+  in
+
+  [%expr
+    let [%p buf_pat] = Buffer.create [%e buffer_size_expr] in
+    [%e seq];
+    JSX.unsafe (Buffer.contents [%e buf_ident])]
+
+let rewrite_node_unoptimized ~loc tag_name args children =
   let dom_node_name = estring ~loc tag_name in
   let attributes = transform_attributes ~loc ~tag_name args in
   match children with
@@ -191,6 +243,27 @@ let rewrite_node ~loc tag_name args children =
       let childrens = pexp_list ~loc children in
       [%expr JSX.node [%e dom_node_name] [%e attributes] [%e childrens]]
   | None -> [%expr JSX.node [%e dom_node_name] [%e attributes] []]
+
+let rewrite_node_optimized ~loc tag_name args children =
+  let analysis =
+    Static_analysis.analyze_element ~tag_name ~attrs:args ~children
+  in
+
+  match analysis with
+  | Static_analysis.Fully_static html ->
+      let html_with_doctype = Static_analysis.maybe_add_doctype tag_name html in
+      let html_expr = estring ~loc html_with_doctype in
+      [%expr JSX.unsafe [%e html_expr]]
+  | Static_analysis.Needs_string_concat parts
+  | Static_analysis.Needs_buffer parts ->
+      generate_buffer_code ~loc parts
+  | Static_analysis.Needs_conditional _ | Static_analysis.Cannot_optimize ->
+      rewrite_node_unoptimized ~loc tag_name args children
+
+let rewrite_node ~loc tag_name args children =
+  if !disable_static_optimization then
+    rewrite_node_unoptimized ~loc tag_name args children
+  else rewrite_node_optimized ~loc tag_name args children
 
 let split_args ~mapper args =
   let children = ref (Location.none, []) in
@@ -303,6 +376,9 @@ let () =
       ( "Enable react attributes in HTML and SVG elements",
         "-react",
         Arg.Unit (fun () -> Extra_attributes.set React) );
+      ( "Disable static HTML optimization (use JSX.node for all elements)",
+        "-no-static-opt",
+        Arg.Unit (fun () -> disable_static_optimization := true) );
       (* ( "-custom",
          Arg.String (fun file -> Static_attributes.extra_properties := Some file),
          "FILE Load inferred types from cmo file." ); *)

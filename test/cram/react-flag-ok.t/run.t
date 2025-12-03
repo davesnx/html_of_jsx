@@ -3,12 +3,4 @@
   > EOF
 
   $ ../ppx.sh --output re --flags="-react" input.re
-  let this_should_be_ok =
-    JSX.node(
-      "div",
-      Stdlib.List.filter_map(
-        Stdlib.Fun.id,
-        [Some(("class", `String("random": string)))],
-      ),
-      [],
-    );
+  let this_should_be_ok = JSX.unsafe("<div class=\"random\"></div>");

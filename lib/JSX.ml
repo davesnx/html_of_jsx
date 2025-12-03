@@ -88,6 +88,21 @@ let list arr = List arr
 let fragment arr = List arr
 let node tag attributes children = Node { tag; attributes; children }
 
+let escape s =
+  let needs_escape = ref false in
+  let len = String.length s in
+  for i = 0 to len - 1 do
+    match String.unsafe_get s i with
+    | '&' | '<' | '>' | '\'' | '"' -> needs_escape := true
+    | _ -> ()
+  done;
+  if not !needs_escape then s
+  else begin
+    let buf = Buffer.create (len * 2) in
+    Html.escape_and_add buf s;
+    Buffer.contents buf
+  end
+
 let write out element =
   let rec write element =
     match element with
@@ -117,18 +132,3 @@ let render element =
   let out = Buffer.create 1024 in
   write out element;
   Buffer.contents out
-
-module Debug = struct
-  type nonrec element = element =
-    | Null
-    | String of string
-    | Unsafe of string
-    | Node of {
-        tag : string;
-        attributes : attribute list;
-        children : element list;
-      }
-    | List of element list
-
-  let view element = element
-end
