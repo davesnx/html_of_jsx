@@ -132,18 +132,3 @@ let render element =
   let out = Buffer.create 1024 in
   write out element;
   Buffer.contents out
-
-module Debug = struct
-  type nonrec element = element =
-    | Null
-    | String of string
-    | Unsafe of string
-    | Node of {
-        tag : string;
-        attributes : attribute list;
-        children : element list;
-      }
-    | List of element list
-
-  let view element = element
-end

@@ -149,39 +149,3 @@ val write : Buffer.t -> element -> unit
       JSX.write buf (JSX.string "Hello");
       Buffer.contents buf (* "Hello" *)
     ]} *)
-
-module Debug : sig
-  type html_element := element
-  (** Used to inspect and re-construct the JSX element, only useful for *)
-
-  type element =
-    | Null
-    | String of string
-    | Unsafe of string (* text without encoding *)
-    | Node of {
-        tag : string;
-        attributes : attribute list;
-        children : element list;
-      }
-    | List of element list
-
-  val view : html_element -> element
-  (** A function to inspect a JSX.element.
-
-      This function allows you to convert a JSX.element to its debuggable
-      representation, which can be helpful for inspecting and debugging the
-      structure of the element.
-
-      {[
-        let debug: JSX.Debug.element =
-          JSX.Debug.view(
-            <div>
-              <h1> {JSX.string("Hello, World!")} </h1>
-            </div>
-          );
-
-        match debug with
-        | JSX.Debug.Node {tag; attributes; children} -> Printf.printf("Node: %s", tag)
-        | _ -> ()
-      ]} *)
-end
