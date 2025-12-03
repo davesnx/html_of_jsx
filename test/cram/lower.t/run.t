@@ -1,14 +1,6 @@
   $ ../ppx.sh --output re input.re
-  let lower = JSX.node("div", [], []);
-  let lower_empty_attr =
-    JSX.node(
-      "div",
-      Stdlib.List.filter_map(
-        Stdlib.Fun.id,
-        [Some(("class", `String("": string)))],
-      ),
-      [],
-    );
+  let lower = JSX.unsafe("<div></div>");
+  let lower_empty_attr = JSX.unsafe("<div class=\"\"></div>");
   let lower_inline_styles =
     JSX.node(
       "div",
@@ -37,170 +29,149 @@
       ),
       [],
     );
-  let lowerWithChildAndProps = foo =>
-    JSX.node(
-      "a",
-      Stdlib.List.filter_map(
-        Stdlib.Fun.id,
-        [
-          Some(("tabindex", `Int(1: int))),
-          Some(("href", `String("https://example.com": string))),
-        ],
-      ),
-      [foo],
-    );
-  let lower_child_static = JSX.node("div", [], [JSX.node("span", [], [])]);
-  let lower_child_ident = JSX.node("div", [], [lolaspa]);
-  let lower_child_single = JSX.node("div", [], [JSX.node("div", [], [])]);
+  let lowerWithChildAndProps = foo => {
+    let __html_buf = Buffer.create(128);
+    {
+      Buffer.add_string(
+        __html_buf,
+        "<a tabindex=\"1\" href=\"https://example.com\">",
+      );
+      JSX.write(__html_buf, foo);
+      Buffer.add_string(__html_buf, "</a>");
+      ();
+    };
+    JSX.unsafe(Buffer.contents(__html_buf));
+  };
+  let lower_child_static = JSX.unsafe("<div><span></span></div>");
+  let lower_child_ident = {
+    let __html_buf = Buffer.create(128);
+    {
+      Buffer.add_string(__html_buf, "<div>");
+      JSX.write(__html_buf, lolaspa);
+      Buffer.add_string(__html_buf, "</div>");
+      ();
+    };
+    JSX.unsafe(Buffer.contents(__html_buf));
+  };
+  let lower_child_single = JSX.unsafe("<div><div></div></div>");
   let lower_children_multiple = (foo, bar) => lower(~children=[foo, bar], ());
-  let lower_child_with_upper_as_children = JSX.node("div", [], [App.make()]);
-  let lower_children_nested =
-    JSX.node(
-      "div",
-      Stdlib.List.filter_map(
-        Stdlib.Fun.id,
-        [Some(("class", `String("flex-container": string)))],
-      ),
-      [
-        JSX.node(
-          "div",
-          Stdlib.List.filter_map(
-            Stdlib.Fun.id,
-            [Some(("class", `String("sidebar": string)))],
-          ),
-          [
-            JSX.node(
-              "h2",
-              Stdlib.List.filter_map(
-                Stdlib.Fun.id,
-                [Some(("class", `String("title": string)))],
-              ),
-              ["jsoo-react" |> s],
-            ),
-            JSX.node(
-              "nav",
-              Stdlib.List.filter_map(
-                Stdlib.Fun.id,
-                [Some(("class", `String("menu": string)))],
-              ),
-              [
-                JSX.node(
-                  "ul",
-                  [],
-                  [
-                    examples
-                    |> List.map(e =>
-                         JSX.node(
-                           "li",
-                           [],
-                           [
-                             JSX.node(
-                               "a",
-                               Stdlib.List.filter_map(
-                                 Stdlib.Fun.id,
-                                 [
-                                   Some(("href", `String(e.path: string))),
-                                   Some((
-                                     "onclick",
-                                     `String("console.log": string),
-                                   )),
-                                 ],
-                               ),
-                               [e.title |> s],
-                             ),
-                           ],
-                         )
-                       )
-                    |> React.list,
-                  ],
-                ),
-              ],
-            ),
-          ],
-        ),
-      ],
-    );
-  let lower_ref_with_children =
-    JSX.node(
-      "button",
-      Stdlib.List.filter_map(
-        Stdlib.Fun.id,
-        [Some(("class", `String("FancyButton": string)))],
-      ),
-      [children],
-    );
+  let lower_child_with_upper_as_children = {
+    let __html_buf = Buffer.create(128);
+    {
+      Buffer.add_string(__html_buf, "<div>");
+      JSX.write(__html_buf, App.make());
+      Buffer.add_string(__html_buf, "</div>");
+      ();
+    };
+    JSX.unsafe(Buffer.contents(__html_buf));
+  };
+  let lower_children_nested = {
+    let __html_buf = Buffer.create(128);
+    {
+      Buffer.add_string(__html_buf, "<div class=\"flex-container\">");
+      JSX.write(
+        __html_buf,
+        {
+          let __html_buf = Buffer.create(256);
+          {
+            Buffer.add_string(__html_buf, "<div class=\"sidebar\">");
+            JSX.write(
+              __html_buf,
+              {
+                let __html_buf = Buffer.create(128);
+                {
+                  Buffer.add_string(__html_buf, "<h2 class=\"title\">");
+                  JSX.write(__html_buf, "jsoo-react" |> s);
+                  Buffer.add_string(__html_buf, "</h2>");
+                  ();
+                };
+                JSX.unsafe(Buffer.contents(__html_buf));
+              },
+            );
+            JSX.write(
+              __html_buf,
+              {
+                let __html_buf = Buffer.create(128);
+                {
+                  Buffer.add_string(__html_buf, "<nav class=\"menu\">");
+                  JSX.write(
+                    __html_buf,
+                    {
+                      let __html_buf = Buffer.create(128);
+                      {
+                        Buffer.add_string(__html_buf, "<ul>");
+                        JSX.write(
+                          __html_buf,
+                          examples
+                          |> List.map(e => {
+                               let __html_buf = Buffer.create(128);
+                               {
+                                 Buffer.add_string(__html_buf, "<li>");
+                                 JSX.write(
+                                   __html_buf,
+                                   JSX.node(
+                                     "a",
+                                     Stdlib.List.filter_map(
+                                       Stdlib.Fun.id,
+                                       [
+                                         Some((
+                                           "href",
+                                           `String(e.path: string),
+                                         )),
+                                         Some((
+                                           "onclick",
+                                           `String("console.log": string),
+                                         )),
+                                       ],
+                                     ),
+                                     [e.title |> s],
+                                   ),
+                                 );
+                                 Buffer.add_string(__html_buf, "</li>");
+                                 ();
+                               };
+                               JSX.unsafe(Buffer.contents(__html_buf));
+                             })
+                          |> React.list,
+                        );
+                        Buffer.add_string(__html_buf, "</ul>");
+                        ();
+                      };
+                      JSX.unsafe(Buffer.contents(__html_buf));
+                    },
+                  );
+                  Buffer.add_string(__html_buf, "</nav>");
+                  ();
+                };
+                JSX.unsafe(Buffer.contents(__html_buf));
+              },
+            );
+            Buffer.add_string(__html_buf, "</div>");
+            ();
+          };
+          JSX.unsafe(Buffer.contents(__html_buf));
+        },
+      );
+      Buffer.add_string(__html_buf, "</div>");
+      ();
+    };
+    JSX.unsafe(Buffer.contents(__html_buf));
+  };
+  let lower_ref_with_children = {
+    let __html_buf = Buffer.create(128);
+    {
+      Buffer.add_string(__html_buf, "<button class=\"FancyButton\">");
+      JSX.write(__html_buf, children);
+      Buffer.add_string(__html_buf, "</button>");
+      ();
+    };
+    JSX.unsafe(Buffer.contents(__html_buf));
+  };
   let lower_with_many_props =
-    JSX.node(
-      "div",
-      Stdlib.List.filter_map(
-        Stdlib.Fun.id,
-        [Some(("translate", `String("yes": string)))],
-      ),
-      [
-        JSX.node(
-          "picture",
-          Stdlib.List.filter_map(
-            Stdlib.Fun.id,
-            [Some(("id", `String("idpicture": string)))],
-          ),
-          [
-            JSX.node(
-              "img",
-              Stdlib.List.filter_map(
-                Stdlib.Fun.id,
-                [
-                  Some(("src", `String("picture/img.png": string))),
-                  Some(("alt", `String("test picture/img.png": string))),
-                  Some(("id", `String("idimg": string))),
-                ],
-              ),
-              [],
-            ),
-            JSX.node(
-              "source",
-              Stdlib.List.filter_map(
-                Stdlib.Fun.id,
-                [
-                  Some(("type", `String("image/webp": string))),
-                  Some(("src", `String("picture/img1.webp": string))),
-                ],
-              ),
-              [],
-            ),
-            JSX.node(
-              "source",
-              Stdlib.List.filter_map(
-                Stdlib.Fun.id,
-                [
-                  Some(("type", `String("image/jpeg": string))),
-                  Some(("src", `String("picture/img2.jpg": string))),
-                ],
-              ),
-              [],
-            ),
-          ],
-        ),
-      ],
+    JSX.unsafe(
+      "<div translate=\"yes\"><picture id=\"idpicture\"><img src=\"picture/img.png\" alt=\"test picture/img.png\" id=\"idimg\" /><source type=\"image/webp\" src=\"picture/img1.webp\" /><source type=\"image/jpeg\" src=\"picture/img2.jpg\" /></picture></div>",
     );
   let some_random_html_element =
-    JSX.node(
-      "text",
-      Stdlib.List.filter_map(
-        Stdlib.Fun.id,
-        [
-          Some(("dx", `String("1 2": string))),
-          Some(("dy", `String("3 4": string))),
-        ],
-      ),
-      [],
-    );
+    JSX.unsafe("<text dx=\"1 2\" dy=\"3 4\"></text>");
   let lower_case_component = lola(~id="33", ());
-  let lower_case_component_being_html =
-    JSX.node(
-      "div",
-      Stdlib.List.filter_map(
-        Stdlib.Fun.id,
-        [Some(("id", `String("33": string)))],
-      ),
-      [],
-    );
+  let lower_case_component_being_html = JSX.unsafe("<div id=\"33\"></div>");

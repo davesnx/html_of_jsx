@@ -127,6 +127,16 @@ val unsafe : string -> element
       let script: JSX.element = <script> content </script>
     ]} *)
 
+val write : Buffer.t -> element -> unit
+(** Write an element directly to a buffer. This is used internally by the PPX
+    for optimized rendering when building HTML strings incrementally.
+
+    {[
+      let buf = Buffer.create 256 in
+      JSX.write buf (JSX.string "Hello");
+      Buffer.contents buf (* "Hello" *)
+    ]} *)
+
 module Debug : sig
   type html_element := element
   (** Used to inspect and re-construct the JSX element, only useful for *)
