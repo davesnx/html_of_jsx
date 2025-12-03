@@ -1,5 +1,11 @@
 # Changes
 
+## 0.0.7
+
+- Static HTML optimization: elements with static content are now pre-rendered at compile time for ~10x faster rendering (@davesnx)
+- Add `-no-static-opt` flag to disable static HTML optimization (use `JSX.node` for all elements) (@davesnx)
+- [BREAKING] Remove `JSX.Debug` module (the opaque `JSX.element` type is no longer inspectable) (@davesnx)
+
 ## 0.0.6
 
 - Support OCaml 5.3 (https://github.com/davesnx/html_of_jsx/pull/29) (@davesnx)

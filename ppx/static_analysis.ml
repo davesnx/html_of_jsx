@@ -8,7 +8,8 @@ open Ppxlib
 (** Represents a part of a mixed static/dynamic expression *)
 type static_part =
   | Static_str of string  (** A compile-time constant string *)
-  | Dynamic_expr of expression  (** A runtime expression *)
+  | Dynamic_string of expression  (** A runtime string expression (from JSX.string/text) *)
+  | Dynamic_element of expression  (** A runtime JSX.element expression *)
 
 (** The staticness of an expression *)
 type staticness =
@@ -225,8 +226,9 @@ type children_analysis =
   | NoChildren
   | All_static_children of string
       (** All children are static, contains rendered HTML *)
-  | Mixed_children of static_part list  (** Mix of static and dynamic *)
-  | All_dynamic_children of expression list  (** All children are dynamic *)
+  | All_string_dynamic of static_part list
+      (** All dynamic parts are string-typed (JSX.string/text wrappers) *)
+  | Mixed_children of static_part list  (** Mix of static and dynamic elements *)
 
 (** Extract content from JSX.unsafe("...") call if it has a string literal *)
 let extract_jsx_unsafe_literal expr =
@@ -237,20 +239,43 @@ let extract_jsx_unsafe_literal expr =
       extract_literal_string arg
   | _ -> None
 
+(** Check if an expression is a JSX.string or JSX.text call with a dynamic argument.
+    Returns Some expr if it's a string wrapper, None otherwise. *)
+let extract_jsx_string_wrapper expr =
+  match expr.pexp_desc with
+  | Pexp_apply
+      ( {
+          pexp_desc =
+            Pexp_ident { txt = Ldot (Lident "JSX", ("text" | "string")); _ };
+          _;
+        },
+        [ (Nolabel, arg) ] ) ->
+      Some arg
+  | Pexp_apply
+      ( { pexp_desc = Pexp_ident { txt = Lident ("text" | "string"); _ }; _ },
+        [ (Nolabel, arg) ] ) ->
+      (* Also handle unqualified calls in case of local opens *)
+      Some arg
+  | _ -> None
+
 (** Analyze a single child expression for staticness *)
 let analyze_child expr =
   (* Check for JSX.unsafe("...") - already rendered static HTML *)
   match extract_jsx_unsafe_literal expr with
-  | Some s -> Some (Static_str s) (* Already escaped, don't double-escape *)
+  | Some s -> Static_str s (* Already escaped, don't double-escape *)
   | None -> (
       (* Check for JSX.text/string with literal *)
       match extract_jsx_text_literal expr with
-      | Some s -> Some (Static_str (escape_html s))
+      | Some s -> Static_str (escape_html s)
       | None -> (
           (* Check for plain string literal *)
           match extract_literal_string expr with
-          | Some s -> Some (Static_str (escape_html s))
-          | None -> None))
+          | Some s -> Static_str (escape_html s)
+          | None -> (
+              (* Check for JSX.string/text with dynamic argument *)
+              match extract_jsx_string_wrapper expr with
+              | Some inner_expr -> Dynamic_string inner_expr
+              | None -> Dynamic_element expr)))
 
 (** Analyze all children of an element. Note: This is called with
     already-processed children from the PPX. *)
@@ -259,44 +284,39 @@ let analyze_children children =
   | None -> NoChildren
   | Some [] -> NoChildren
   | Some children ->
-      let parts =
-        List.map
-          (fun child ->
-            match analyze_child child with
-            | Some part -> part
-            | None -> Dynamic_expr child)
-          children
-      in
+      let parts = List.map analyze_child children in
       (* Check if all parts are static *)
       let all_static =
         List.for_all
-          (function Static_str _ -> true | Dynamic_expr _ -> false)
+          (function Static_str _ -> true | _ -> false)
           parts
       in
-      let all_dynamic =
-        List.for_all
-          (function Static_str _ -> false | Dynamic_expr _ -> true)
+      (* Check if all dynamic parts are string-typed (no element-typed) *)
+      let has_element_dynamic =
+        List.exists
+          (function Dynamic_element _ -> true | _ -> false)
           parts
       in
       if all_static then (
         let buf = Buffer.create 128 in
         List.iter
           (function
-            | Static_str s -> Buffer.add_string buf s | Dynamic_expr _ -> ())
+            | Static_str s -> Buffer.add_string buf s
+            | _ -> ())
           parts;
         All_static_children (Buffer.contents buf))
-      else if all_dynamic then
-        let exprs =
-          List.filter_map
-            (function Static_str _ -> None | Dynamic_expr e -> Some e)
-            parts
-        in
-        All_dynamic_children exprs
-      else Mixed_children parts
+      else if not has_element_dynamic then
+        (* All dynamic parts are string-typed - can use string concatenation *)
+        All_string_dynamic parts
+      else
+        (* Has element-typed dynamics - needs Buffer with JSX.write *)
+        Mixed_children parts
 
 (** Overall analysis result for a JSX element *)
 type element_analysis =
   | Fully_static of string  (** Can be rendered entirely at compile time *)
+  | Needs_string_concat of static_part list
+      (** Can use string concatenation - all dynamics are string-typed *)
   | Needs_buffer of static_part list  (** Needs runtime Buffer assembly *)
   | Needs_conditional of {
       optional_attrs : (string * expression) list;
@@ -333,19 +353,16 @@ let analyze_element ~tag_name ~attrs ~children =
           tag_name
       in
       Fully_static html
+  | All_static attrs_html, All_string_dynamic parts ->
+      (* Static attrs with string-typed dynamic children - can use string concat *)
+      let open_tag = Printf.sprintf "<%s%s>" tag_name attrs_html in
+      let close_tag = Printf.sprintf "</%s>" tag_name in
+      Needs_string_concat ([ Static_str open_tag ] @ parts @ [ Static_str close_tag ])
   | All_static attrs_html, Mixed_children parts ->
-      (* Static attrs but mixed children - needs Buffer *)
+      (* Static attrs but mixed children (has element-typed) - needs Buffer *)
       let open_tag = Printf.sprintf "<%s%s>" tag_name attrs_html in
       let close_tag = Printf.sprintf "</%s>" tag_name in
       Needs_buffer ([ Static_str open_tag ] @ parts @ [ Static_str close_tag ])
-  | All_static attrs_html, All_dynamic_children exprs ->
-      (* Static attrs but all dynamic children - needs Buffer *)
-      let open_tag = Printf.sprintf "<%s%s>" tag_name attrs_html in
-      let close_tag = Printf.sprintf "</%s>" tag_name in
-      Needs_buffer
-        ([ Static_str open_tag ]
-        @ List.map (fun e -> Dynamic_expr e) exprs
-        @ [ Static_str close_tag ])
   | Has_optional (optionals, static_attrs), children_result ->
       (* Has optional attributes - needs conditional *)
       Needs_conditional

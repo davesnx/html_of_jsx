@@ -127,6 +127,19 @@ val unsafe : string -> element
       let script: JSX.element = <script> content </script>
     ]} *)
 
+val escape : string -> string
+(** Escape a string for safe HTML output. This escapes ampersand, less-than,
+    greater-than, apostrophe, and double-quote characters. Returns the original
+    string if no escaping is needed (fast path).
+
+    This is used internally by the PPX for optimized rendering when dynamic
+    string content is known at compile time to be a string (not a JSX.element).
+
+    {[
+      JSX.escape "<script>" (* Returns "&lt;script&gt;" *)
+      JSX.escape "hello"    (* Returns "hello" - no allocation *)
+    ]} *)
+
 val write : Buffer.t -> element -> unit
 (** Write an element directly to a buffer. This is used internally by the PPX
     for optimized rendering when building HTML strings incrementally.

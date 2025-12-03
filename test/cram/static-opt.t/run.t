@@ -19,8 +19,45 @@ Test static JSX optimization
     let __html_buf = Buffer.create(128);
     {
       Buffer.add_string(__html_buf, "<div>");
-      JSX.write(__html_buf, JSX.string(name));
+      Buffer.add_string(__html_buf, JSX.escape(name));
       Buffer.add_string(__html_buf, "</div>");
+      ();
+    };
+    JSX.unsafe(Buffer.contents(__html_buf));
+  };
+  let dynamic_two_strings = (a, b) => {
+    let __html_buf = Buffer.create(256);
+    {
+      Buffer.add_string(__html_buf, "<div>");
+      Buffer.add_string(__html_buf, JSX.escape(a));
+      Buffer.add_string(__html_buf, JSX.escape(b));
+      Buffer.add_string(__html_buf, "</div>");
+      ();
+    };
+    JSX.unsafe(Buffer.contents(__html_buf));
+  };
+  let dynamic_three_strings = (a, b, c) => {
+    let __html_buf = Buffer.create(256);
+    {
+      Buffer.add_string(__html_buf, "<p>");
+      Buffer.add_string(__html_buf, JSX.escape(a));
+      Buffer.add_string(__html_buf, JSX.escape(b));
+      Buffer.add_string(__html_buf, JSX.escape(c));
+      Buffer.add_string(__html_buf, "</p>");
+      ();
+    };
+    JSX.unsafe(Buffer.contents(__html_buf));
+  };
+  let dynamic_five_strings = (a, b, c, d, e) => {
+    let __html_buf = Buffer.create(512);
+    {
+      Buffer.add_string(__html_buf, "<span>");
+      Buffer.add_string(__html_buf, JSX.escape(a));
+      Buffer.add_string(__html_buf, JSX.escape(b));
+      Buffer.add_string(__html_buf, JSX.escape(c));
+      Buffer.add_string(__html_buf, JSX.escape(d));
+      Buffer.add_string(__html_buf, JSX.escape(e));
+      Buffer.add_string(__html_buf, "</span>");
       ();
     };
     JSX.unsafe(Buffer.contents(__html_buf));
@@ -34,6 +71,27 @@ Test static JSX optimization
       ),
       [],
     );
+  let dynamic_element = child => {
+    let __html_buf = Buffer.create(128);
+    {
+      Buffer.add_string(__html_buf, "<div>");
+      JSX.write(__html_buf, child);
+      Buffer.add_string(__html_buf, "</div>");
+      ();
+    };
+    JSX.unsafe(Buffer.contents(__html_buf));
+  };
+  let mixed_string_element = (name, child) => {
+    let __html_buf = Buffer.create(256);
+    {
+      Buffer.add_string(__html_buf, "<div>");
+      Buffer.add_string(__html_buf, JSX.escape(name));
+      JSX.write(__html_buf, child);
+      Buffer.add_string(__html_buf, "</div>");
+      ();
+    };
+    JSX.unsafe(Buffer.contents(__html_buf));
+  };
   let multiple_static_children =
     JSX.unsafe("<ul><li>one</li><li>two</li><li>three</li></ul>");
   let disabled_button = JSX.unsafe("<button disabled></button>");

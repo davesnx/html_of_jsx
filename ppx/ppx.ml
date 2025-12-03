@@ -194,7 +194,8 @@ let estimate_buffer_size parts =
     List.fold_left parts ~init:(0, 0) ~f:(fun (static, dynamic) part ->
       match part with
       | Static_analysis.Static_str s -> (static + String.length s, dynamic)
-      | Static_analysis.Dynamic_expr _ -> (static, dynamic + 1))
+      | Static_analysis.Dynamic_string _ -> (static, dynamic + 1)
+      | Static_analysis.Dynamic_element _ -> (static, dynamic + 1))
   in
   (* Add estimated size for dynamic content + some padding to avoid resizing *)
   let estimated = static_size + (dynamic_count * 64) in
@@ -219,7 +220,11 @@ let generate_buffer_code ~loc parts =
     | Static_analysis.Static_str s ->
         let s_expr = estring ~loc s in
         [%expr Buffer.add_string [%e buf_ident] [%e s_expr]]
-    | Static_analysis.Dynamic_expr expr ->
+    | Static_analysis.Dynamic_string expr ->
+        (* String expression - escape directly without JSX.element wrapper *)
+        [%expr Buffer.add_string [%e buf_ident] (JSX.escape [%e expr])]
+    | Static_analysis.Dynamic_element expr ->
+        (* JSX.element expression - use JSX.write *)
         [%expr JSX.write [%e buf_ident] [%e expr]]
   in
 
@@ -237,6 +242,7 @@ let generate_buffer_code ~loc parts =
     let [%p buf_pat] = Buffer.create [%e buffer_size_expr] in
     [%e seq];
     JSX.unsafe (Buffer.contents [%e buf_ident])]
+
 
 (** Generate code for optional attributes with runtime conditional.
     This generates a match expression that handles the optional attribute cases. *)
@@ -268,8 +274,9 @@ let rewrite_node_optimized ~loc tag_name args children =
       let html_expr = estring ~loc html_with_doctype in
       [%expr JSX.unsafe [%e html_expr]]
 
+  | Static_analysis.Needs_string_concat parts
   | Static_analysis.Needs_buffer parts ->
-      (* Mixed content: generate Buffer-based code *)
+      (* Mixed content with element-typed dynamics: generate Buffer-based code *)
       generate_buffer_code ~loc parts
 
   | Static_analysis.Needs_conditional { optional_attrs; static_attrs; tag_name = tn; children_analysis } ->
