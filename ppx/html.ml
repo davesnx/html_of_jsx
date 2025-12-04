@@ -1,8 +1,4 @@
-(** List of HTML attributes that bring type-safety and validation based on their
-    tag *)
-
-(** List of attributes that bring type-safety and attribute validation based on
-    the tag. Used at compile-time by the ppx. *)
+(* List of attributes that bring type-safety and attribute validation based on the tag. Used at compile-time by the ppx *)
 
 open Html_attributes
 (* TODO:
