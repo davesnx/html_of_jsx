@@ -28,21 +28,18 @@ let is_self_closing_tag = function
       true
   | _ -> false
 
-(** Extract a literal string from an expression, if it is one *)
 let rec extract_literal_string expr =
   match expr.pexp_desc with
   | Pexp_constant (Pconst_string (s, _, _)) -> Some s
   | Pexp_constraint (inner, _) -> extract_literal_string inner
   | _ -> None
 
-(** Extract a literal int from an expression, if it is one *)
 let rec extract_literal_int expr =
   match expr.pexp_desc with
   | Pexp_constant (Pconst_integer (s, _)) -> Some (int_of_string s)
   | Pexp_constraint (inner, _) -> extract_literal_int inner
   | _ -> None
 
-(** Extract a literal bool from an expression, if it is one *)
 let rec extract_literal_bool expr =
   match expr.pexp_desc with
   | Pexp_construct ({ txt = Lident "true"; _ }, None) -> Some true
@@ -50,7 +47,6 @@ let rec extract_literal_bool expr =
   | Pexp_constraint (inner, _) -> extract_literal_bool inner
   | _ -> None
 
-(** Extract the argument from a JSX.string/text call, if present *)
 let extract_jsx_string_arg expr =
   match expr.pexp_desc with
   | Pexp_apply
@@ -70,13 +66,11 @@ let extract_jsx_text_literal expr =
   let* arg = extract_jsx_string_arg expr in
   extract_literal_string arg
 
-(** Represents a static attribute value *)
 type static_attr_value =
   | Static_string of string
   | Static_int of int
   | Static_bool of bool
 
-(** Try to extract a static attribute value from an expression *)
 let extract_static_attr_value expr =
   match extract_literal_string expr with
   | Some s -> Some (Static_string s)
@@ -87,36 +81,24 @@ let extract_static_attr_value expr =
           let* b = extract_literal_bool expr in
           Some (Static_bool b))
 
-(** Render a static attribute value to a string *)
 let render_attr_value = function
   | Static_string s -> escape_html s
   | Static_int i -> string_of_int i
   | Static_bool true -> "true"
   | Static_bool false -> "false"
 
-type attr_render_info = {
-  html_name : string;
-  is_boolean : bool;
-      (* HTML boolean attribute that renders as just the name when true *)
-}
-(** Information about a validated HTML attribute *)
+type attr_render_info = { html_name : string; is_boolean : bool }
 
 type parsed_attr =
   | Static_attr of attr_render_info * static_attr_value
   | Optional_attr of string * expression
   | Dynamic_attr of string * expression
 
-(** Result of validating an attribute *)
 type attr_validation_result = Valid_attr of attr_render_info | Invalid_attr
-(* Attribute validation failed, should fall back to JSX.node for proper error *)
 
-(** Validate and get HTML attribute name and rendering info. Uses the Html
-    module for proper validation. *)
 let validate_attr_for_static ~tag_name jsx_name =
   match Html.findByName tag_name jsx_name with
-  | Error _ ->
-      (* Validation failed - return Invalid_attr to trigger fallback *)
-      Invalid_attr
+  | Error _ -> Invalid_attr
   | Ok prop ->
       let html_name = Html.getName prop in
       let is_boolean =
@@ -128,18 +110,11 @@ let validate_attr_for_static ~tag_name jsx_name =
       in
       Valid_attr { html_name; is_boolean }
 
-(** Render a single static attribute to HTML string. Returns the rendered string
-    (with leading space) or empty for false booleans. *)
 let render_static_attr_with_info info value =
   match value with
-  | Static_bool false when info.is_boolean ->
-      (* Boolean HTML attributes: false means don't render *)
-      ""
-  | Static_bool true when info.is_boolean ->
-      (* Boolean HTML attributes: true renders as just the name *)
-      " " ^ info.html_name
+  | Static_bool false when info.is_boolean -> ""
+  | Static_bool true when info.is_boolean -> " " ^ info.html_name
   | _ ->
-      (* Regular attributes: render as name="value" *)
       let value_str = render_attr_value value in
       Printf.sprintf " %s=\"%s\"" info.html_name value_str
 
@@ -162,13 +137,9 @@ let analyze_attribute ~tag_name (label, expr) : attr_analysis_result =
 
 type attrs_analysis =
   | All_static of string
-      (** All attributes are static, contains rendered HTML *)
   | Has_optional of (string * expression) list * string
-      (** Has optional attrs: (name, expr) list and static part *)
-  | Has_dynamic  (** Has dynamic attributes, can't optimize *)
+  | Has_dynamic
   | Validation_failed
-      (** Attribute validation failed, must use original path for error
-          reporting *)
 
 let analyze_attributes ~tag_name attrs =
   let rec loop static_buf optionals = function
@@ -192,11 +163,8 @@ let analyze_attributes ~tag_name attrs =
 type children_analysis =
   | No_children
   | All_static_children of string
-      (** All children are static, contains rendered HTML *)
   | All_string_dynamic of static_part list
-      (** All dynamic parts are string-typed (JSX.string/text wrappers) *)
   | Mixed_children of static_part list
-      (** Mix of static and dynamic elements *)
 
 let extract_jsx_unsafe_literal expr =
   match expr.pexp_desc with
