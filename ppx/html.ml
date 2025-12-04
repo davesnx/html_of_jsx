@@ -109,8 +109,8 @@ let globalEventHandlers =
     Event { jsxName = "onclickcapture"; type_ = Mouse };
     Event { jsxName = "oncontextmenu"; type_ = Mouse };
     Event { jsxName = "oncontextmenucapture"; type_ = Mouse };
-    Event { jsxName = "ondoubleclick"; type_ = Mouse };
-    Event { jsxName = "ondoubleclickcapture"; type_ = Mouse };
+    Event { jsxName = "ondblclick"; type_ = Mouse };
+    Event { jsxName = "ondblclickcapture"; type_ = Mouse };
     Event { jsxName = "ondrag"; type_ = Drag };
     Event { jsxName = "ondragcapture"; type_ = Drag };
     Event { jsxName = "ondragend"; type_ = Drag };
@@ -181,6 +181,46 @@ let globalEventHandlers =
     Event { jsxName = "onanimationiterationcapture"; type_ = Animation };
     Event { jsxName = "ontransitionend"; type_ = Transition };
     Event { jsxName = "ontransitionendcapture"; type_ = Transition };
+    Event { jsxName = "ontransitioncancel"; type_ = Transition };
+    Event { jsxName = "ontransitioncancelcapture"; type_ = Transition };
+    Event { jsxName = "ontransitionrun"; type_ = Transition };
+    Event { jsxName = "ontransitionruncapture"; type_ = Transition };
+    Event { jsxName = "ontransitionstart"; type_ = Transition };
+    Event { jsxName = "ontransitionstartcapture"; type_ = Transition };
+    Event { jsxName = "onanimationcancel"; type_ = Animation };
+    Event { jsxName = "onanimationcancelcapture"; type_ = Animation };
+    Event { jsxName = "onresize"; type_ = UI };
+    Event { jsxName = "onresizecapture"; type_ = UI };
+    Event { jsxName = "onscrollend"; type_ = UI };
+    Event { jsxName = "onscrollendcapture"; type_ = UI };
+    Event { jsxName = "onbeforematch"; type_ = UI };
+    Event { jsxName = "onbeforematchcapture"; type_ = UI };
+    Event { jsxName = "onbeforetoggle"; type_ = UI };
+    Event { jsxName = "onbeforetogglecapture"; type_ = UI };
+    Event { jsxName = "oncancel"; type_ = UI };
+    Event { jsxName = "oncancelcapture"; type_ = UI };
+    Event { jsxName = "onclose"; type_ = UI };
+    Event { jsxName = "onclosecapture"; type_ = UI };
+    Event { jsxName = "oncuechange"; type_ = Media };
+    Event { jsxName = "oncuechangecapture"; type_ = Media };
+    Event { jsxName = "onfocusin"; type_ = Focus };
+    Event { jsxName = "onfocusincapture"; type_ = Focus };
+    Event { jsxName = "onfocusout"; type_ = Focus };
+    Event { jsxName = "onfocusoutcapture"; type_ = Focus };
+    Event { jsxName = "onformdata"; type_ = Form };
+    Event { jsxName = "onformdatacapture"; type_ = Form };
+    Event { jsxName = "onfullscreenchange"; type_ = UI };
+    Event { jsxName = "onfullscreenchangecapture"; type_ = UI };
+    Event { jsxName = "onfullscreenerror"; type_ = UI };
+    Event { jsxName = "onfullscreenerrorcapture"; type_ = UI };
+    Event { jsxName = "onsecuritypolicyviolation"; type_ = UI };
+    Event { jsxName = "onsecuritypolicyviolationcapture"; type_ = UI };
+    Event { jsxName = "onselectionchange"; type_ = Selection };
+    Event { jsxName = "onselectionchangecapture"; type_ = Selection };
+    Event { jsxName = "onselectstart"; type_ = Selection };
+    Event { jsxName = "onselectstartcapture"; type_ = Selection };
+    Event { jsxName = "onslotchange"; type_ = UI };
+    Event { jsxName = "onslotchangecapture"; type_ = UI };
   ]
 
 (* All the WAI-ARIA 1.1 attributes from https://www.w3.org/TR/wai-aria-1.1/ *)
@@ -453,7 +493,7 @@ let globalAttributes =
     Attribute { name = "spellcheck"; jsxName = "spellcheck"; type_ = BooleanishString };
     Attribute { name = "style"; jsxName = "style"; type_ = Style };
     Attribute { name = "tabindex"; jsxName = "tabindex"; type_ = Int };
-    Attribute { name = "enterKeyHint"; jsxName = "enterKeyHint"; type_ = Int };
+    Attribute { name = "enterkeyhint"; jsxName = "enterkeyhint"; type_ = String (* 'enter' | 'done' | 'go' | 'next' | 'previous' | 'search' | 'send' *) };
     (* data-* attributes are globaly available *)
     (* Experimental ; Attribute {name= "exportParts"; jsxName= "exportParts";
        type_= Int} *)
@@ -469,6 +509,27 @@ let globalAttributes =
        built-in element * @see
        https://html.spec.whatwg.org/multipage/custom-elements.html#attr-is *)
     Attribute { name = "is"; jsxName = "is"; type_ = String };
+
+    (* https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/inert *)
+    Attribute { name = "inert"; jsxName = "inert"; type_ = Bool };
+
+    (* https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/popover *)
+    Attribute { name = "popover"; jsxName = "popover"; type_ = String (* 'auto' | 'manual' | 'hint' *) };
+
+    (* https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/autofocus *)
+    Attribute { name = "autofocus"; jsxName = "autofocus"; type_ = Bool };
+
+    (* https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/exportparts *)
+    Attribute { name = "exportparts"; jsxName = "exportparts"; type_ = String };
+
+    (* https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/anchor *)
+    Attribute { name = "anchor"; jsxName = "anchor"; type_ = String };
+
+    (* https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/virtualkeyboardpolicy *)
+    Attribute { name = "virtualkeyboardpolicy"; jsxName = "virtualkeyboardpolicy"; type_ = String (* 'auto' | 'manual' *) };
+
+    (* https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/writingsuggestions *)
+    Attribute { name = "writingsuggestions"; jsxName = "writingsuggestions"; type_ = String (* 'true' | 'false' *) };
   ]
 
 let elementAttributes =
@@ -547,6 +608,8 @@ let buttonHTMLAttributes =
     Attribute { name = "name"; jsxName = "name"; type_ = String };
     Attribute { name = "type"; jsxName = "type_"; type_ = String (* 'submit' | 'reset' | 'button' *) };
     Attribute { name = "value"; jsxName = "value"; type_ = String (* | ReadonlyArray<String> | number *) };
+    Attribute { name = "popovertarget"; jsxName = "popovertarget"; type_ = String };
+    Attribute { name = "popovertargetaction"; jsxName = "popovertargetaction"; type_ = String (* 'hide' | 'show' | 'toggle' *) };
   ]
 
 let canvasHTMLAttributes =
@@ -605,7 +668,7 @@ let fieldsetHTMLAttributes =
 (* https://developer.mozilla.org/en-US/docs/Web/HTML/Element/form *)
 let formHTMLAttributes =
   [
-    Attribute { name = "acceptcharset"; jsxName = "acceptcharset"; type_ = String };
+    Attribute { name = "accept-charset"; jsxName = "acceptCharset"; type_ = String };
     Attribute { name = "action"; jsxName = "action"; type_ = String };
     Attribute { name = "autocomplete"; jsxName = "autocomplete"; type_ = String };
     Attribute { name = "enctype"; jsxName = "enctype"; type_ = String };
@@ -631,9 +694,11 @@ let iframeHTMLAttributes =
     (* Attribute { name = "allowTransparency"; jsxName = "allowTransparency"; type_ = Bool }; *)
     (* deprecated *) Attribute { name = "frameborder"; jsxName = "frameborder"; type_ = String (* number | *) };
     Attribute { name = "height"; jsxName = "height"; type_ = String (* number | *) };
+    Attribute { name = "loading"; jsxName = "loading"; type_ = String (* "lazy" | "eager" *) };
     (* deprecated *) Attribute { name = "marginheight"; jsxName = "marginheight"; type_ = Int (* number *) };
     (* deprecated *) Attribute { name = "marginwidth"; jsxName = "marginwidth"; type_ = Int (* number *) };
     Attribute { name = "name"; jsxName = "name"; type_ = String };
+    Attribute { name = "referrerpolicy"; jsxName = "referrerpolicy"; type_ = attributeReferrerPolicy };
     Attribute { name = "sandbox"; jsxName = "sandbox"; type_ = String };
     (* deprecated *) Attribute { name = "scrolling"; jsxName = "scrolling"; type_ = String };
     Attribute { name = "seamless"; jsxName = "seamless"; type_ = Bool };
@@ -649,6 +714,10 @@ let imgHTMLAttributes =
     Attribute { name = "crossorigin"; jsxName = "crossorigin"; type_ = String (* "anonymous" | "use-credentials" | "" *) };
     Attribute { name = "decoding"; jsxName = "decoding"; type_ = String (* "async" | "auto" | "sync" *) };
     Attribute { name = "height"; jsxName = "height"; type_ = String (* number | *) };
+    Attribute { name = "loading"; jsxName = "loading"; type_ = String (* "lazy" | "eager" *) };
+    Attribute { name = "referrerpolicy"; jsxName = "referrerpolicy"; type_ = attributeReferrerPolicy };
+    Attribute { name = "fetchpriority"; jsxName = "fetchpriority"; type_ = String (* "high" | "low" | "auto" *) };
+    Attribute { name = "ismap"; jsxName = "ismap"; type_ = Bool };
     Attribute { name = "sizes"; jsxName = "sizes"; type_ = String };
     Attribute { name = "src"; jsxName = "src"; type_ = String };
     Attribute { name = "srcset"; jsxName = "srcset"; type_ = String };
@@ -679,6 +748,7 @@ let inputHTMLAttributes =
     Attribute { name = "capture"; jsxName = "capture"; type_ = String (* Bool | *) (* https://www.w3.org/TR/html-media-capture/ *) };
     Attribute { name = "checked"; jsxName = "checked"; type_ = Bool };
     Attribute { name = "crossorigin"; jsxName = "crossorigin"; type_ = String };
+    Attribute { name = "dirname"; jsxName = "dirname"; type_ = String };
     Attribute { name = "disabled"; jsxName = "disabled"; type_ = Bool };
     Attribute { name = "form"; jsxName = "form"; type_ = String };
     Attribute { name = "formaction"; jsxName = "formaction"; type_ = String };
@@ -696,6 +766,8 @@ let inputHTMLAttributes =
     Attribute { name = "name"; jsxName = "name"; type_ = String };
     Attribute { name = "pattern"; jsxName = "pattern"; type_ = String };
     Attribute { name = "placeholder"; jsxName = "placeholder"; type_ = String };
+    Attribute { name = "popovertarget"; jsxName = "popovertarget"; type_ = String };
+    Attribute { name = "popovertargetaction"; jsxName = "popovertargetaction"; type_ = String (* 'hide' | 'show' | 'toggle' *) };
     Attribute { name = "readonly"; jsxName = "readonly"; type_ = Bool };
     Attribute { name = "required"; jsxName = "required"; type_ = Bool };
     Attribute { name = "size"; jsxName = "size"; type_ = Int (* number *) };
@@ -743,6 +815,9 @@ let linkHTMLAttributes =
     Attribute { name = "sizes"; jsxName = "sizes"; type_ = String };
     Attribute { name = "type"; jsxName = "type_"; type_ = String };
     Attribute { name = "charset"; jsxName = "charset"; type_ = String };
+    Attribute { name = "fetchpriority"; jsxName = "fetchpriority"; type_ = String (* "high" | "low" | "auto" *) };
+    Attribute { name = "blocking"; jsxName = "blocking"; type_ = String (* "render" *) };
+    Attribute { name = "disabled"; jsxName = "disabled"; type_ = Bool };
   ]
 
 let mapHTMLAttributes =
@@ -866,6 +941,8 @@ let scriptHTMLAttributes =
     Attribute { name = "src"; jsxName = "src"; type_ = String };
     Attribute { name = "referrerpolicy"; jsxName = "referrerpolicy"; type_ = attributeReferrerPolicy };
     Attribute { name = "type"; jsxName = "type_"; type_ = String };
+    Attribute { name = "blocking"; jsxName = "blocking"; type_ = String (* "render" *) };
+    Attribute { name = "fetchpriority"; jsxName = "fetchpriority"; type_ = String (* "high" | "low" | "auto" *) };
   ]
 
 let selectHTMLAttributes =
@@ -912,7 +989,7 @@ let tableHTMLAttributes =
 let textareaHTMLAttributes =
   [
     Attribute { name = "autocomplete"; jsxName = "autocomplete"; type_ = String };
-    Attribute { name = "autofocus"; jsxName = "autofocus"; type_ = String };
+    Attribute { name = "autofocus"; jsxName = "autofocus"; type_ = Bool };
     Attribute { name = "cols"; jsxName = "cols"; type_ = Int (* number *) };
     Attribute { name = "dirname"; jsxName = "dirname"; type_ = String };
     Attribute { name = "disabled"; jsxName = "disabled"; type_ = Bool };
@@ -971,7 +1048,7 @@ let videoHTMLAttributes =
     Attribute { name = "playsinline"; jsxName = "playsinline"; type_ = Bool };
     Attribute { name = "poster"; jsxName = "poster"; type_ = String };
     Attribute { name = "width"; jsxName = "width"; type_ = String (* number | *) };
-    Attribute { name = "disablePictureInPicture"; jsxName = "disablepictureinpicture"; type_ = Bool };
+    Attribute { name = "disablepictureinpicture"; jsxName = "disablepictureinpicture"; type_ = Bool };
   ]
 
 module SVG = struct
