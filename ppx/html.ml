@@ -10,11 +10,13 @@ open Html_attributes
 (* This file is more like a spreadsheet, prefer to keep it with margin=300.
    Since @@@ocamlformat "margin=300" is not possible, we disable it entirely. *)
 
+(* https://developer.mozilla.org/en-US/docs/Web/HTML/Element/a#referrerpolicy *)
 let attributeReferrerPolicy = String
 (* | Empty | NoReferrer | NoReferrerWhenDowngrade | Origin |
    OriginWhencrossorigin | OriginWhenCrossOrigin | SameOrigin | StrictOrigin |
    StrictOriginWhenCrossOrigin | UnsafeUrl *)
 
+(* https://developer.mozilla.org/en-US/docs/Web/HTML/Element/a#target *)
 let attributeAnchorTarget = String
 (* | Self | Blank | Parent | Top | Custom of String *)
 
@@ -223,6 +225,7 @@ let globalEventHandlers =
     Event { jsxName = "onslotchangecapture"; type_ = UI };
   ]
 
+(* https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Attributes *)
 (* All the WAI-ARIA 1.1 attributes from https://www.w3.org/TR/wai-aria-1.1/ *)
 let ariaAttributes =
   [
@@ -453,6 +456,7 @@ let ariaAttributes =
 
   ]
 
+(* https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Roles *)
 (* All the WAI-ARIA 1.1 role attribute values from
    https://www.w3.org/TR/wai-aria-1.1/#role_definitions *)
 let ariaRole = String
@@ -467,9 +471,9 @@ let ariaRole = String
    Tablist | Tabpanel | Term | Textbox | Timer | Toolbar | Tooltip | Tree |
    Treegrid | Treeitem | Custom of String *)
 
+(* https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes *)
 let globalAttributes =
   [
-    (* https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes *)
     (* Standard HTML Attributes *)
     Attribute { name = "accesskey"; jsxName = "accesskey"; type_ = String };
     Attribute { name = "autocapitalize"; jsxName = "autocapitalize"; type_ = String };
@@ -532,6 +536,7 @@ let globalAttributes =
     Attribute { name = "writingsuggestions"; jsxName = "writingsuggestions"; type_ = String (* 'true' | 'false' *) };
   ]
 
+(* https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes *)
 let elementAttributes =
   [
     (* Attribute { name = "radioGroup"; jsxName = "radioGroup"; type_ = String }; *)
@@ -557,6 +562,7 @@ let elementAttributes =
     Attribute { name = "security"; jsxName = "security"; type_ = String };
   ]
 
+(* https://developer.mozilla.org/en-US/docs/Web/HTML/Element/a *)
 let anchorHTMLAttributes =
   [
     Attribute { name = "download"; jsxName = "download"; type_ = String (* any *) };
@@ -570,6 +576,7 @@ let anchorHTMLAttributes =
     Attribute { name = "referrerpolicy"; jsxName = "referrerpolicy"; type_ = attributeReferrerPolicy };
   ]
 
+(* https://developer.mozilla.org/en-US/docs/Web/HTML/Element/area *)
 let areaHTMLAttributes =
   [
     Attribute { name = "alt"; jsxName = "alt"; type_ = String };
@@ -584,17 +591,20 @@ let areaHTMLAttributes =
     Attribute { name = "target"; jsxName = "target"; type_ = String };
   ]
 
+(* https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base *)
 let baseHTMLAttributes =
   [
     Attribute { name = "href"; jsxName = "href"; type_ = String };
     Attribute { name = "target"; jsxName = "target"; type_ = String };
   ]
 
+(* https://developer.mozilla.org/en-US/docs/Web/HTML/Element/blockquote *)
 let blockquoteHTMLAttributes =
   [
     Attribute { name = "cite"; jsxName = "cite"; type_ = String };
   ]
 
+(* https://developer.mozilla.org/en-US/docs/Web/HTML/Element/button *)
 let buttonHTMLAttributes =
   [
     Attribute { name = "autofocus"; jsxName = "autofocus"; type_ = Bool };
@@ -612,44 +622,52 @@ let buttonHTMLAttributes =
     Attribute { name = "popovertargetaction"; jsxName = "popovertargetaction"; type_ = String (* 'hide' | 'show' | 'toggle' *) };
   ]
 
+(* https://developer.mozilla.org/en-US/docs/Web/HTML/Element/canvas *)
 let canvasHTMLAttributes =
   [
     Attribute { name = "height"; jsxName = "height"; type_ = String (* number | *) };
     Attribute { name = "width"; jsxName = "width"; type_ = String (* number | *) }
   ]
 
+(* https://developer.mozilla.org/en-US/docs/Web/HTML/Element/col *)
 let colHTMLAttributes =
   [
     Attribute { name = "span"; jsxName = "span"; type_ = Int (* number *) };
     Attribute { name = "width"; jsxName = "width"; type_ = String (* number | *) }
   ]
 
+(* https://developer.mozilla.org/en-US/docs/Web/HTML/Element/colgroup *)
 let colgroupHTMLAttributes =
   [
     Attribute { name = "span"; jsxName = "span"; type_ = Int (* number *) }
   ]
 
+(* https://developer.mozilla.org/en-US/docs/Web/HTML/Element/data *)
 let dataHTMLAttributes =
   [
     Attribute { name = "value"; jsxName = "value"; type_ = String (* | ReadonlyArray<String> | number *) }
   ]
 
+(* https://developer.mozilla.org/en-US/docs/Web/HTML/Element/details *)
 let detailsHTMLAttributes =
   [
     Attribute { name = "open"; jsxName = "open"; type_ = Bool }; Event { jsxName = "ontoggle"; type_ = Media }
   ]
 
+(* https://developer.mozilla.org/en-US/docs/Web/HTML/Element/del *)
 let delHTMLAttributes =
   [
     Attribute { name = "cite"; type_ = String; jsxName = "cite" };
     Attribute { name = "datetime"; type_ = String; jsxName = "datetime" }
   ]
 
+(* https://developer.mozilla.org/en-US/docs/Web/HTML/Element/dialog *)
 let dialogHTMLAttributes =
   [
     Attribute { name = "open"; jsxName = "open"; type_ = Bool }
   ]
 
+(* https://developer.mozilla.org/en-US/docs/Web/HTML/Element/embed *)
 let embedHTMLAttributes =
   [
     Attribute { name = "height"; jsxName = "height"; type_ = String (* number | *); };
@@ -658,6 +676,7 @@ let embedHTMLAttributes =
     Attribute { name = "width"; type_ = String (* number | *); jsxName = "width" };
   ]
 
+(* https://developer.mozilla.org/en-US/docs/Web/HTML/Element/fieldset *)
 let fieldsetHTMLAttributes =
   [
     Attribute { name = "disabled"; jsxName = "disabled"; type_ = Bool };
@@ -732,6 +751,7 @@ let insHTMLAttributes =
     Attribute { name = "datetime"; jsxName = "datetime"; type_ = String };
   ]
 
+(* https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input#type *)
 let inputTypeAttribute = String
 (* | 'button' | 'checkbox' | 'color' | 'date' | 'datetime-local' | 'email' |
    'file' | 'hidden' | 'image' | 'month' | 'number' | 'password' | 'radio' |
@@ -778,6 +798,7 @@ let inputHTMLAttributes =
     Attribute { name = "width"; jsxName = "width"; type_ = String (* number | *) };
   ]
 
+(* https://developer.mozilla.org/en-US/docs/Web/HTML/Element/keygen *)
 let keygenHTMLAttributes =
   [
     Attribute { name = "autofocus"; jsxName = "autofocus"; type_ = Bool };
@@ -789,6 +810,7 @@ let keygenHTMLAttributes =
     Attribute { name = "name"; jsxName = "name"; type_ = String };
   ]
 
+(* https://developer.mozilla.org/en-US/docs/Web/HTML/Element/label *)
 let labelHTMLAttributes =
   [
     Attribute { name = "form"; jsxName = "form"; type_ = String };
@@ -820,16 +842,20 @@ let linkHTMLAttributes =
     Attribute { name = "disabled"; jsxName = "disabled"; type_ = Bool };
   ]
 
+(* https://developer.mozilla.org/en-US/docs/Web/HTML/Element/map *)
 let mapHTMLAttributes =
   [
     Attribute { name = "name"; jsxName = "name"; type_ = String };
   ]
 
+(* https://developer.mozilla.org/en-US/docs/Web/HTML/Element/menu *)
 let menuHTMLAttributes =
   [
     Attribute { name = "type"; jsxName = "type_"; type_ = String };
   ]
 
+(* https://developer.mozilla.org/en-US/docs/Web/HTML/Element/video *)
+(* https://developer.mozilla.org/en-US/docs/Web/HTML/Element/audio *)
 let mediaHTMLAttributes =
   [
     Attribute { name = "autoplay"; jsxName = "autoplay"; type_ = Bool };
@@ -845,6 +871,7 @@ let mediaHTMLAttributes =
     Attribute { name = "src"; jsxName = "src"; type_ = String };
   ]
 
+(* https://developer.mozilla.org/en-US/docs/Web/HTML/Element/meta *)
 let metaHTMLAttributes =
   [
     Attribute { name = "charset"; jsxName = "charset"; type_ = String };
@@ -854,6 +881,7 @@ let metaHTMLAttributes =
     Attribute { name = "media"; jsxName = "media"; type_ = String };
   ]
 
+(* https://developer.mozilla.org/en-US/docs/Web/HTML/Element/meter *)
 let meterHTMLAttributes =
   [
     Attribute { name = "form"; jsxName = "form"; type_ = String };
@@ -865,11 +893,13 @@ let meterHTMLAttributes =
     Attribute { name = "value"; jsxName = "value"; type_ = String (* | ReadonlyArray<String> | number *) };
   ]
 
+(* https://developer.mozilla.org/en-US/docs/Web/HTML/Element/q *)
 let quoteHTMLAttributes =
   [
     Attribute { name = "cite"; jsxName = "cite"; type_ = String };
   ]
 
+(* https://developer.mozilla.org/en-US/docs/Web/HTML/Element/object *)
 let objectHTMLAttributes =
   [
     Attribute { name = "classid"; jsxName = "classid"; type_ = String };
@@ -883,6 +913,7 @@ let objectHTMLAttributes =
     Attribute { name = "wmode"; jsxName = "wmode"; type_ = String };
   ]
 
+(* https://developer.mozilla.org/en-US/docs/Web/HTML/Element/ol *)
 let olHTMLAttributes =
   [
     Attribute { name = "reversed"; jsxName = "reversed"; type_ = Bool };
@@ -890,12 +921,14 @@ let olHTMLAttributes =
     Attribute { name = "type"; jsxName = "type_"; type_ = String (* '1' | 'a' | 'A' | 'i' | 'I' *) };
   ]
 
+(* https://developer.mozilla.org/en-US/docs/Web/HTML/Element/optgroup *)
 let optgroupHTMLAttributes =
   [
     Attribute { name = "disabled"; jsxName = "disabled"; type_ = Bool };
     Attribute { name = "label"; jsxName = "label"; type_ = String };
   ]
 
+(* https://developer.mozilla.org/en-US/docs/Web/HTML/Element/option *)
 let optionHTMLAttributes =
   [
     Attribute { name = "disabled"; jsxName = "disabled"; type_ = Bool };
@@ -904,6 +937,7 @@ let optionHTMLAttributes =
     Attribute { name = "value"; jsxName = "value"; type_ = String (* | ReadonlyArray<String> | number *) };
   ]
 
+(* https://developer.mozilla.org/en-US/docs/Web/HTML/Element/output *)
 let outputHTMLAttributes =
   [
     Attribute { name = "form"; jsxName = "form"; type_ = String };
@@ -911,23 +945,27 @@ let outputHTMLAttributes =
     Attribute { name = "name"; jsxName = "name"; type_ = String };
   ]
 
+(* https://developer.mozilla.org/en-US/docs/Web/HTML/Element/param *)
 let paramHTMLAttributes =
   [
     Attribute { name = "name"; jsxName = "name"; type_ = String };
     Attribute { name = "value"; jsxName = "value"; type_ = String (* | ReadonlyArray<String> | number *) };
   ]
 
+(* https://developer.mozilla.org/en-US/docs/Web/HTML/Element/progress *)
 let progressHTMLAttributes =
   [
     Attribute { name = "max"; jsxName = "max"; type_ = String (* number | *) };
     Attribute { name = "value"; jsxName = "value"; type_ = String (* | ReadonlyArray<String> | number *) };
   ]
 
+(* https://developer.mozilla.org/en-US/docs/Web/HTML/Element/slot *)
 let slotHTMLAttributes =
   [
     Attribute { name = "name"; jsxName = "name"; type_ = String };
   ]
 
+(* https://developer.mozilla.org/en-US/docs/Web/HTML/Element/script *)
 let scriptHTMLAttributes =
   [
     (* deprecated *) Attribute { name = "async"; jsxName = "async"; type_ = Bool };
@@ -945,6 +983,7 @@ let scriptHTMLAttributes =
     Attribute { name = "fetchpriority"; jsxName = "fetchpriority"; type_ = String (* "high" | "low" | "auto" *) };
   ]
 
+(* https://developer.mozilla.org/en-US/docs/Web/HTML/Element/select *)
 let selectHTMLAttributes =
   [
     Attribute { name = "autocomplete"; jsxName = "autocomplete"; type_ = String };
@@ -959,6 +998,7 @@ let selectHTMLAttributes =
     Event { jsxName = "onchange"; type_ = Form };
   ]
 
+(* https://developer.mozilla.org/en-US/docs/Web/HTML/Element/source *)
 let sourceHTMLAttributes =
   [
     Attribute { name = "height"; jsxName = "height"; type_ = String (* number | *) };
@@ -970,6 +1010,7 @@ let sourceHTMLAttributes =
     Attribute { name = "width"; jsxName = "width"; type_ = String (* number | *) };
   ]
 
+(* https://developer.mozilla.org/en-US/docs/Web/HTML/Element/style *)
 let styleHTMLAttributes =
   [
     Attribute { name = "media"; jsxName = "media"; type_ = String };
@@ -978,6 +1019,7 @@ let styleHTMLAttributes =
     Attribute { name = "type"; jsxName = "type_"; type_ = String }
   ]
 
+(* https://developer.mozilla.org/en-US/docs/Web/HTML/Element/table *)
 let tableHTMLAttributes =
   [
     Attribute { name = "cellpadding"; jsxName = "cellpadding"; type_ = String (* number | *) };
@@ -986,6 +1028,7 @@ let tableHTMLAttributes =
     Attribute { name = "width"; jsxName = "width"; type_ = String (* number | *) };
   ]
 
+(* https://developer.mozilla.org/en-US/docs/Web/HTML/Element/textarea *)
 let textareaHTMLAttributes =
   [
     Attribute { name = "autocomplete"; jsxName = "autocomplete"; type_ = String };
@@ -1005,6 +1048,7 @@ let textareaHTMLAttributes =
     Attribute { name = "wrap"; jsxName = "wrap"; type_ = String };
   ]
 
+(* https://developer.mozilla.org/en-US/docs/Web/HTML/Element/td *)
 let tdHTMLAttributes =
   [
     Attribute { name = "align"; jsxName = "align"; type_ = String (* type_= "left" | "center" | "right" | "justify" | "char" *) };
@@ -1018,6 +1062,7 @@ let tdHTMLAttributes =
     Attribute { name = "valign"; jsxName = "valign"; type_ = String (* "top" | "middle" | "bottom" | "baseline" *) };
   ]
 
+(* https://developer.mozilla.org/en-US/docs/Web/HTML/Element/th *)
 let thHTMLAttributes =
   [
     Attribute { name = "align"; jsxName = "align"; type_ = String (* "left" | "center" | "right" | "justify" | "char" *) };
@@ -1028,11 +1073,13 @@ let thHTMLAttributes =
     Attribute { name = "abbr"; jsxName = "abbr"; type_ = String };
   ]
 
+(* https://developer.mozilla.org/en-US/docs/Web/HTML/Element/time *)
 let timeHTMLAttributes =
   [
     Attribute { name = "datetime"; jsxName = "datetime"; type_ = String };
   ]
 
+(* https://developer.mozilla.org/en-US/docs/Web/HTML/Element/track *)
 let trackHTMLAttributes =
   [
     Attribute { name = "default"; jsxName = "default"; type_ = Bool };
@@ -1042,6 +1089,7 @@ let trackHTMLAttributes =
     Attribute { name = "srclang"; jsxName = "srclang"; type_ = String };
   ]
 
+(* https://developer.mozilla.org/en-US/docs/Web/HTML/Element/video *)
 let videoHTMLAttributes =
   [
     Attribute { name = "height"; jsxName = "height"; type_ = String (* number | *) };
@@ -1052,10 +1100,10 @@ let videoHTMLAttributes =
   ]
 
 module SVG = struct
-  (* "https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/" *)
+  (* https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute *)
 
+  (* https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/Core *)
   let coreAttributes =
-    (* https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/Core *)
     [
       Attribute { name = "id"; jsxName = "id"; type_ = String };
       Attribute { name = "lang"; jsxName = "lang"; type_ = String };
@@ -1065,15 +1113,15 @@ module SVG = struct
       Attribute { name = "xmlSpace"; jsxName = "xmlSpace"; type_ = String };
     ]
 
+  (* https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/Styling *)
   let stylingAttributes =
-    (* https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/Styling *)
     [
       Attribute { name = "class"; jsxName = "class_"; type_ = String };
       Attribute { name = "style"; jsxName = "style"; type_ = Style }
     ]
 
+  (* https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/Presentation *)
   let presentationAttributes =
-    (* Presentation attributes *)
     [
       Attribute { name = "clip"; jsxName = "clip"; type_ = String (* number | *) };
       Attribute { name = "clipPath"; jsxName = "clipPath"; type_ = String };
@@ -1122,8 +1170,8 @@ module SVG = struct
       Attribute { name = "writingMode"; jsxName = "writingMode"; type_ = String (* number | *) };
     ]
 
+  (* https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute#filters_attributes *)
   let filtersAttributes =
-    (* https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute#filters_attributes *)
     [
       (* Filter primitive attributes *)
       Attribute { name = "height"; jsxName = "height"; type_ = String (* number | *) };
@@ -1173,8 +1221,8 @@ module SVG = struct
       Attribute { name = "additive"; jsxName = "additive"; type_ = String (* type_= "replace" | "sum" *) };
     ]
 
+  (* https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute *)
   let htmlAttributes =
-    (* These are valid SVG attributes, that are HTML Attributes as well *)
     [
       Attribute { name = "color"; jsxName = "color"; type_ = String };
       Attribute { name = "id"; jsxName = "id"; type_ = String };
@@ -1331,6 +1379,7 @@ module SVG = struct
   let attributes = htmlAttributes @ filtersAttributes @ presentationAttributes @ stylingAttributes @ coreAttributes
 end
 
+(* https://developer.mozilla.org/en-US/docs/Web/HTML/Element/webview *)
 let webViewHTMLAttributes =
   [
     Attribute { name = "allowfullscreen"; jsxName = "allowfullcreen"; type_ = Bool };
@@ -1485,6 +1534,7 @@ let commonSvgAttributes () =
   ariaAttributes @
   Extra_attributes.get_attributes ()
 
+(* https://developer.mozilla.org/en-US/docs/Web/SVG/Element/feConvolveMatrix *)
 let feConvolveMatrixAttributes =
   [
     Attribute { name = "preserveAlpha"; jsxName = "preserveAlpha"; type_ = BooleanishString }
