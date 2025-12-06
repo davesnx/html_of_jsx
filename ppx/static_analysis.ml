@@ -1,7 +1,5 @@
 open Ppxlib
 
-let ( let* ) = Option.bind
-
 type static_part =
   | Static_str of string
   | Dynamic_string of expression
@@ -93,8 +91,9 @@ let extract_jsx_float_arg expr =
   | _ -> None
 
 let extract_jsx_text_literal expr =
-  let* arg = extract_jsx_string_arg expr in
-  extract_literal_string arg
+  match extract_jsx_string_arg expr with
+  | Some arg -> extract_literal_string arg
+  | None -> None
 
 type static_attr_value =
   | Static_string of string
@@ -107,9 +106,10 @@ let extract_static_attr_value expr =
   | None -> (
       match extract_literal_int expr with
       | Some i -> Some (Static_int i)
-      | None ->
-          let* b = extract_literal_bool expr in
-          Some (Static_bool b))
+      | None -> (
+          match extract_literal_bool expr with
+          | Some b -> Some (Static_bool b)
+          | None -> None))
 
 let render_attr_value = function
   | Static_string s -> escape_html s
@@ -205,8 +205,9 @@ let extract_jsx_unsafe_literal expr =
   | _ -> None
 
 let extract_jsx_int_literal expr =
-  let* arg = extract_jsx_int_arg expr in
-  extract_literal_int arg
+  match extract_jsx_int_arg expr with
+  | Some arg -> extract_literal_int arg
+  | None -> None
 
 let extract_jsx_float_literal expr =
   match expr.pexp_desc with
@@ -225,31 +226,32 @@ let extract_jsx_float_literal expr =
       | _ -> None)
   | _ -> None
 
-let analyze_child expr =
-  match extract_jsx_unsafe_literal expr with
-  | Some s -> Static_str s (* Already escaped, don't double-escape *)
-  | None -> (
-      match extract_jsx_text_literal expr with
-      | Some s -> Static_str (escape_html s)
-      | None -> (
-          match extract_literal_string expr with
-          | Some s -> Static_str (escape_html s)
-          | None -> (
-              match extract_jsx_int_literal expr with
-              | Some i -> Static_str (string_of_int i)
-              | None -> (
-                  match extract_jsx_float_literal expr with
-                  | Some f -> Static_str (Float.to_string f)
-                  | None -> (
-                      match extract_jsx_string_arg expr with
-                      | Some inner_expr -> Dynamic_string inner_expr
-                      | None -> (
-                          match extract_jsx_int_arg expr with
-                          | Some inner_expr -> Dynamic_int inner_expr
-                          | None -> (
-                              match extract_jsx_float_arg expr with
-                              | Some inner_expr -> Dynamic_float inner_expr
-                              | None -> Dynamic_element expr)))))))
+let analyze_child (expr : expression) : static_part =
+  List.find_map
+    (fun fn -> fn ())
+    [
+      (fun () ->
+        extract_jsx_unsafe_literal expr |> Option.map (fun s -> Static_str s));
+      (fun () ->
+        extract_jsx_text_literal expr
+        |> Option.map (fun s -> Static_str (escape_html s)));
+      (fun () ->
+        extract_literal_string expr
+        |> Option.map (fun s -> Static_str (escape_html s)));
+      (fun () ->
+        extract_jsx_int_literal expr
+        |> Option.map (fun i -> Static_str (string_of_int i)));
+      (fun () ->
+        extract_jsx_float_literal expr
+        |> Option.map (fun f -> Static_str (Float.to_string f)));
+      (fun () ->
+        extract_jsx_string_arg expr |> Option.map (fun e -> Dynamic_string e));
+      (fun () ->
+        extract_jsx_int_arg expr |> Option.map (fun e -> Dynamic_int e));
+      (fun () ->
+        extract_jsx_float_arg expr |> Option.map (fun e -> Dynamic_float e));
+    ]
+  |> Option.value ~default:(Dynamic_element expr)
 
 let analyze_children children =
   match children with
