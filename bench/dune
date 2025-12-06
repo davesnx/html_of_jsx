@@ -1,5 +1,11 @@
 (executable
  (name bench)
+ (modules bench input)
  (libraries html_of_jsx benchmark)
  (preprocess
   (pps html_of_jsx.ppx)))
+
+(executable
+ (name memory)
+ (modules memory)
+ (libraries html_of_jsx))
