@@ -5,7 +5,15 @@ let ( let* ) = Option.bind
 type static_part =
   | Static_str of string
   | Dynamic_string of expression
+  | Dynamic_int of expression
+  | Dynamic_float of expression
   | Dynamic_element of expression
+
+let rec coalesce_static_parts = function
+  | Static_str a :: Static_str b :: rest ->
+      coalesce_static_parts (Static_str (a ^ b) :: rest)
+  | x :: rest -> x :: coalesce_static_parts rest
+  | [] -> []
 
 let escape_html s =
   let len = String.length s in
@@ -58,6 +66,28 @@ let extract_jsx_string_arg expr =
         [ (Nolabel, arg) ] )
   | Pexp_apply
       ( { pexp_desc = Pexp_ident { txt = Lident ("text" | "string"); _ }; _ },
+        [ (Nolabel, arg) ] ) ->
+      Some arg
+  | _ -> None
+
+let extract_jsx_int_arg expr =
+  match expr.pexp_desc with
+  | Pexp_apply
+      ( { pexp_desc = Pexp_ident { txt = Ldot (Lident "JSX", "int"); _ }; _ },
+        [ (Nolabel, arg) ] )
+  | Pexp_apply
+      ( { pexp_desc = Pexp_ident { txt = Lident "int"; _ }; _ },
+        [ (Nolabel, arg) ] ) ->
+      Some arg
+  | _ -> None
+
+let extract_jsx_float_arg expr =
+  match expr.pexp_desc with
+  | Pexp_apply
+      ( { pexp_desc = Pexp_ident { txt = Ldot (Lident "JSX", "float"); _ }; _ },
+        [ (Nolabel, arg) ] )
+  | Pexp_apply
+      ( { pexp_desc = Pexp_ident { txt = Lident "float"; _ }; _ },
         [ (Nolabel, arg) ] ) ->
       Some arg
   | _ -> None
@@ -174,6 +204,27 @@ let extract_jsx_unsafe_literal expr =
       extract_literal_string arg
   | _ -> None
 
+let extract_jsx_int_literal expr =
+  let* arg = extract_jsx_int_arg expr in
+  extract_literal_int arg
+
+let extract_jsx_float_literal expr =
+  match expr.pexp_desc with
+  | Pexp_apply
+      ( { pexp_desc = Pexp_ident { txt = Ldot (Lident "JSX", "float"); _ }; _ },
+        [ (Nolabel, arg) ] )
+  | Pexp_apply
+      ( { pexp_desc = Pexp_ident { txt = Lident "float"; _ }; _ },
+        [ (Nolabel, arg) ] ) -> (
+      match arg.pexp_desc with
+      | Pexp_constant (Pconst_float (s, _)) -> Some (float_of_string s)
+      | Pexp_constraint (inner, _) -> (
+          match inner.pexp_desc with
+          | Pexp_constant (Pconst_float (s, _)) -> Some (float_of_string s)
+          | _ -> None)
+      | _ -> None)
+  | _ -> None
+
 let analyze_child expr =
   match extract_jsx_unsafe_literal expr with
   | Some s -> Static_str s (* Already escaped, don't double-escape *)
@@ -184,9 +235,21 @@ let analyze_child expr =
           match extract_literal_string expr with
           | Some s -> Static_str (escape_html s)
           | None -> (
-              match extract_jsx_string_arg expr with
-              | Some inner_expr -> Dynamic_string inner_expr
-              | None -> Dynamic_element expr)))
+              match extract_jsx_int_literal expr with
+              | Some i -> Static_str (string_of_int i)
+              | None -> (
+                  match extract_jsx_float_literal expr with
+                  | Some f -> Static_str (Float.to_string f)
+                  | None -> (
+                      match extract_jsx_string_arg expr with
+                      | Some inner_expr -> Dynamic_string inner_expr
+                      | None -> (
+                          match extract_jsx_int_arg expr with
+                          | Some inner_expr -> Dynamic_int inner_expr
+                          | None -> (
+                              match extract_jsx_float_arg expr with
+                              | Some inner_expr -> Dynamic_float inner_expr
+                              | None -> Dynamic_element expr)))))))
 
 let analyze_children children =
   match children with
@@ -206,8 +269,9 @@ let analyze_children children =
           (function Static_str s -> Buffer.add_string buf s | _ -> ())
           parts;
         All_static_children (Buffer.contents buf))
-      else if not has_element_dynamic then All_string_dynamic parts
-      else Mixed_children parts
+      else if not has_element_dynamic then
+        All_string_dynamic (coalesce_static_parts parts)
+      else Mixed_children (coalesce_static_parts parts)
 
 type element_analysis =
   | Fully_static of string
@@ -243,12 +307,17 @@ let analyze_element ~tag_name ~attrs ~children =
   | All_static attrs_html, All_string_dynamic parts ->
       let open_tag = Printf.sprintf "<%s%s>" tag_name attrs_html in
       let close_tag = Printf.sprintf "</%s>" tag_name in
-      Needs_string_concat
-        ([ Static_str open_tag ] @ parts @ [ Static_str close_tag ])
+      let all_parts =
+        [ Static_str open_tag ] @ parts @ [ Static_str close_tag ]
+      in
+      Needs_string_concat (coalesce_static_parts all_parts)
   | All_static attrs_html, Mixed_children parts ->
       let open_tag = Printf.sprintf "<%s%s>" tag_name attrs_html in
       let close_tag = Printf.sprintf "</%s>" tag_name in
-      Needs_buffer ([ Static_str open_tag ] @ parts @ [ Static_str close_tag ])
+      let all_parts =
+        [ Static_str open_tag ] @ parts @ [ Static_str close_tag ]
+      in
+      Needs_buffer (coalesce_static_parts all_parts)
   | Has_optional (optionals, static_attrs), children_result ->
       Needs_conditional
         {

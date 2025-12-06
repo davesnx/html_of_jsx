@@ -102,3 +102,34 @@ Test static JSX optimization
     );
   let static_fragment =
     JSX.list([JSX.unsafe("<div></div>"), JSX.unsafe("<span></span>")]);
+  let dynamic_int = count => {
+    let __html_buf = Buffer.create(64);
+    {
+      Buffer.add_string(__html_buf, "<div>");
+      Buffer.add_string(__html_buf, Int.to_string(count));
+      Buffer.add_string(__html_buf, "</div>");
+      ();
+    };
+    JSX.unsafe(Buffer.contents(__html_buf));
+  };
+  let dynamic_float = price => {
+    let __html_buf = Buffer.create(64);
+    {
+      Buffer.add_string(__html_buf, "<span>");
+      Buffer.add_string(__html_buf, Float.to_string(price));
+      Buffer.add_string(__html_buf, "</span>");
+      ();
+    };
+    JSX.unsafe(Buffer.contents(__html_buf));
+  };
+  let mixed_int_string = (count, name) => {
+    let __html_buf = Buffer.create(128);
+    {
+      Buffer.add_string(__html_buf, "<p>");
+      Buffer.add_string(__html_buf, Int.to_string(count));
+      Buffer.add_string(__html_buf, JSX.escape(name));
+      Buffer.add_string(__html_buf, "</p>");
+      ();
+    };
+    JSX.unsafe(Buffer.contents(__html_buf));
+  };

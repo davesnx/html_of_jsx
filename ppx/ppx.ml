@@ -188,13 +188,15 @@ let transform_attributes ~loc ~tag_name attrs =
 
 (** Estimate buffer size based on static content and number of dynamic parts.
     Static parts: exact length known at compile time Dynamic parts: estimate ~64
-    bytes each (reasonable for typical element content) *)
+    bytes each (reasonable for typical element content), int/float ~16 bytes *)
 let estimate_buffer_size parts =
   let static_size, dynamic_count =
     List.fold_left parts ~init:(0, 0) ~f:(fun (static, dynamic) part ->
         match part with
         | Static_analysis.Static_str s -> (static + String.length s, dynamic)
         | Static_analysis.Dynamic_string _ -> (static, dynamic + 1)
+        | Static_analysis.Dynamic_int _ -> (static + 16, dynamic)
+        | Static_analysis.Dynamic_float _ -> (static + 16, dynamic)
         | Static_analysis.Dynamic_element _ -> (static, dynamic + 1))
   in
   (* Add estimated size for dynamic content + some padding to avoid resizing *)
@@ -218,6 +220,12 @@ let generate_buffer_code ~loc parts =
         [%expr Buffer.add_string [%e buf_ident] [%e s_expr]]
     | Static_analysis.Dynamic_string expr ->
         [%expr Buffer.add_string [%e buf_ident] (JSX.escape [%e expr])]
+    | Static_analysis.Dynamic_int expr ->
+        (* Int.to_string cannot produce escapable characters, skip JSX.escape *)
+        [%expr Buffer.add_string [%e buf_ident] (Int.to_string [%e expr])]
+    | Static_analysis.Dynamic_float expr ->
+        (* Float.to_string cannot produce escapable characters, skip JSX.escape *)
+        [%expr Buffer.add_string [%e buf_ident] (Float.to_string [%e expr])]
     | Static_analysis.Dynamic_element expr ->
         [%expr JSX.write [%e buf_ident] [%e expr]]
   in

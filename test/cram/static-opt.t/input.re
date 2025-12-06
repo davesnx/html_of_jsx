@@ -42,3 +42,7 @@ let escaped_content = <div>{JSX.string("<script>alert('xss')</script>")}</div>;
 /* Test: Fragment optimization */
 let static_fragment = <> <div /> <span /> </>;
 
+/* Test: Int/Float escape-free optimization */
+let dynamic_int = count => <div>{JSX.int(count)}</div>;
+let dynamic_float = price => <span>{JSX.float(price)}</span>;
+let mixed_int_string = (count, name) => <p>{JSX.int(count)}{JSX.string(name)}</p>;
