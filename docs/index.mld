@@ -183,6 +183,47 @@ let component ~name () =
 JSX.render <component name="World" />
 ]}
 
-{2 Extra attributes}
+{2 ppx flags}
 
-You can enable extra attributes in the ppx, and we currently support: {b htmx} and {b react}, check the pages for more information: {{!page-htmx}} and {{!page-react}}.
+The ppx supports several flags to customize its behavior:
+
+{3 [-htmx]}
+
+Enables htmx attributes in HTML and SVG elements. See {{!page-htmx}the htmx page} for more information.
+
+{[
+(preprocess (pps html_of_jsx.ppx -htmx))
+]}
+
+{3 [-react]}
+
+Enables React-specific attributes (like [className], [htmlFor], etc.) in HTML and SVG elements. See {{!page-react}the react page} for more information.
+
+{[
+(preprocess (pps html_of_jsx.ppx -react))
+]}
+
+{3 [-disable-static-opt]}
+
+Disables static HTML optimization. By default, the ppx pre-renders elements with static content at compile time for {{:https://sancho.dev/blog/making-html-of-jsx-10x-faster}better performance}. This flag forces all elements to use [JSX.node] at runtime instead of pre-rendered HTML.
+
+{[
+(preprocess (pps html_of_jsx.ppx -disable-static-opt))
+]}
+
+This flag may be useful for:
+- Debugging: inspect the actual [JSX.node] calls being generated
+- Compatibility: if you need the old behavior for some reason
+- Benchmarking: compare optimized vs unoptimized rendering performance
+
+{b Example:}
+
+{@reasonml[
+(* With static optimization (default): *)
+let element = <div class_="container"></div>;
+(* Compiles to: JSX.unsafe {|<div class="container"></div>|} *)
+
+(* With -disable-static-opt: *)
+let element = <div class_="container"></div>;
+(* Compiles to: JSX.node("div", [("class", `String "container")], []) *)
+]}

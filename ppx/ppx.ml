@@ -385,7 +385,7 @@ let () =
         "-react",
         Arg.Unit (fun () -> Extra_attributes.set React) );
       ( "Disable static HTML optimization (use JSX.node for all elements)",
-        "-no-static-opt",
+        "-disable-static-opt",
         Arg.Unit (fun () -> disable_static_optimization := true) );
       (* ( "-custom",
          Arg.String (fun file -> Static_attributes.extra_properties := Some file),
