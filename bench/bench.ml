@@ -18,11 +18,10 @@ let unoptimized_medium =
       JSX.node "footer" [] [ JSX.node "span" [] [ JSX.string "Footer" ] ];
     ]
 
-(* Complex test case - the full page from input.re *)
 let optimized_page =
   Input.Page.make ~project_url:"https://github.com/davesnx/html_of_jsx" ()
 
-(* Manually create the unoptimized version of a simpler page for fair comparison *)
+(* the same page as input.re, but created manually to create the unoptimized version for fair comparison *)
 let unoptimized_page =
   let styles_dark = "color-scheme: dark" in
   let styles_body =
