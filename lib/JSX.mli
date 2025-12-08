@@ -1,7 +1,7 @@
 (** JSX module
 
     The JSX module provides a set of functions and render HTML elements in a
-    declarative manner, similar to JSX in Reason or React.js.
+    declarative manner
 
     {[
       let html: string = JSX.render(
@@ -127,21 +127,20 @@ val unsafe : string -> element
       let script: JSX.element = <script> content </script>
     ]} *)
 
-val escape : string -> string
-(** Escape a string for safe HTML output. This escapes ampersand, less-than,
-    greater-than, apostrophe, and double-quote characters. Returns the original
-    string if no escaping is needed (fast path).
+val escape : Buffer.t -> string -> unit
+(** Escape a string and write it directly to a buffer. This escapes ampersand,
+    less-than, greater-than, apostrophe, and double-quote characters.
 
-    This is used internally by the PPX for optimized rendering when dynamic
-    string content is known at compile time to be a string (not a JSX.element).
+    This is used internally by the PPX for optimized rendering.
 
     {[
-      JSX.escape "<script>" (* Returns "&lt;script&gt;" *) JSX.escape
-        "hello" (* Returns "hello" - no allocation *)
+      let buf = Buffer.create 256 in
+      JSX.escape buf "<script>";
+      Buffer.contents buf (* "&lt;script&gt;" *)
     ]} *)
 
 val write : Buffer.t -> element -> unit
-(** Write an element directly to a buffer. This is used internally by the PPX
+(** Write an element directly to a buffer. This is used internally by the ppx
     for optimized rendering when building HTML strings incrementally.
 
     {[

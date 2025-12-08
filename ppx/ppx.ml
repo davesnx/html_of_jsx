@@ -219,7 +219,7 @@ let generate_buffer_code ~loc parts =
         let s_expr = estring ~loc s in
         [%expr Buffer.add_string [%e buf_ident] [%e s_expr]]
     | Static_analysis.Dynamic_string expr ->
-        [%expr Buffer.add_string [%e buf_ident] (JSX.escape [%e expr])]
+        [%expr JSX.escape [%e buf_ident] [%e expr]]
     | Static_analysis.Dynamic_int expr ->
         (* Int.to_string cannot produce escapable characters, skip JSX.escape *)
         [%expr Buffer.add_string [%e buf_ident] (Int.to_string [%e expr])]

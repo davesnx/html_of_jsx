@@ -19,7 +19,7 @@ Test static JSX optimization
     let __html_buf = Buffer.create(128);
     {
       Buffer.add_string(__html_buf, "<div>");
-      Buffer.add_string(__html_buf, JSX.escape(name));
+      JSX.escape(__html_buf, name);
       Buffer.add_string(__html_buf, "</div>");
       ();
     };
@@ -29,8 +29,8 @@ Test static JSX optimization
     let __html_buf = Buffer.create(256);
     {
       Buffer.add_string(__html_buf, "<div>");
-      Buffer.add_string(__html_buf, JSX.escape(a));
-      Buffer.add_string(__html_buf, JSX.escape(b));
+      JSX.escape(__html_buf, a);
+      JSX.escape(__html_buf, b);
       Buffer.add_string(__html_buf, "</div>");
       ();
     };
@@ -40,9 +40,9 @@ Test static JSX optimization
     let __html_buf = Buffer.create(256);
     {
       Buffer.add_string(__html_buf, "<p>");
-      Buffer.add_string(__html_buf, JSX.escape(a));
-      Buffer.add_string(__html_buf, JSX.escape(b));
-      Buffer.add_string(__html_buf, JSX.escape(c));
+      JSX.escape(__html_buf, a);
+      JSX.escape(__html_buf, b);
+      JSX.escape(__html_buf, c);
       Buffer.add_string(__html_buf, "</p>");
       ();
     };
@@ -52,11 +52,11 @@ Test static JSX optimization
     let __html_buf = Buffer.create(512);
     {
       Buffer.add_string(__html_buf, "<span>");
-      Buffer.add_string(__html_buf, JSX.escape(a));
-      Buffer.add_string(__html_buf, JSX.escape(b));
-      Buffer.add_string(__html_buf, JSX.escape(c));
-      Buffer.add_string(__html_buf, JSX.escape(d));
-      Buffer.add_string(__html_buf, JSX.escape(e));
+      JSX.escape(__html_buf, a);
+      JSX.escape(__html_buf, b);
+      JSX.escape(__html_buf, c);
+      JSX.escape(__html_buf, d);
+      JSX.escape(__html_buf, e);
       Buffer.add_string(__html_buf, "</span>");
       ();
     };
@@ -85,7 +85,7 @@ Test static JSX optimization
     let __html_buf = Buffer.create(256);
     {
       Buffer.add_string(__html_buf, "<div>");
-      Buffer.add_string(__html_buf, JSX.escape(name));
+      JSX.escape(__html_buf, name);
       JSX.write(__html_buf, child);
       Buffer.add_string(__html_buf, "</div>");
       ();
@@ -127,7 +127,7 @@ Test static JSX optimization
     {
       Buffer.add_string(__html_buf, "<p>");
       Buffer.add_string(__html_buf, Int.to_string(count));
-      Buffer.add_string(__html_buf, JSX.escape(name));
+      JSX.escape(__html_buf, name);
       Buffer.add_string(__html_buf, "</p>");
       ();
     };

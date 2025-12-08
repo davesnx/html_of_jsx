@@ -139,25 +139,24 @@ let unoptimized_page =
 
 (* Dynamic string optimization micro-benchmarks *)
 
-(* OLD behavior: JSX.write with JSX.string wrapper *)
-let old_jsx_write_string name =
+(* JSX.write with JSX.string wrapper - allocates JSX.element, pattern matches *)
+let approach_jsx_write_string name =
   let buf = Buffer.create 128 in
   Buffer.add_string buf "<div>";
   JSX.write buf (JSX.string name);
-  (* Allocates JSX.element, pattern matches *)
   Buffer.add_string buf "</div>";
   JSX.unsafe (Buffer.contents buf)
 
-(* NEW behavior: direct JSX.escape call - avoids JSX.element allocation *)
-let new_buffer_escape name =
+(* JSX.escape - no intermediate allocation (PPX output) *)
+let approach_escape name =
   let buf = Buffer.create 128 in
   Buffer.add_string buf "<div>";
-  Buffer.add_string buf (JSX.escape name);
+  JSX.escape buf name;
   Buffer.add_string buf "</div>";
   JSX.unsafe (Buffer.contents buf)
 
-(* Two strings - OLD *)
-let old_jsx_write_two a b =
+(* Two strings - JSX.write *)
+let two_jsx_write a b =
   let buf = Buffer.create 128 in
   Buffer.add_string buf "<div>";
   JSX.write buf (JSX.string a);
@@ -165,18 +164,23 @@ let old_jsx_write_two a b =
   Buffer.add_string buf "</div>";
   JSX.unsafe (Buffer.contents buf)
 
-(* Two strings - NEW *)
-let new_buffer_two a b =
+(* Two strings - escape *)
+let two_escape a b =
   let buf = Buffer.create 128 in
   Buffer.add_string buf "<div>";
-  Buffer.add_string buf (JSX.escape a);
-  Buffer.add_string buf (JSX.escape b);
+  JSX.escape buf a;
+  JSX.escape buf b;
   Buffer.add_string buf "</div>";
   JSX.unsafe (Buffer.contents buf)
 
 let test_name = "Hello, World!"
 let test_a = "Hello"
 let test_b = "World"
+
+(* Strings that require escaping *)
+let escape_name = "<script>alert('XSS')</script>"
+let escape_a = "a < b && c > d"
+let escape_b = "\"quoted\" & 'apostrophe'"
 
 let () =
   print_endline "=== Static JSX Optimization Benchmark ===\n";
@@ -211,37 +215,54 @@ let () =
   in
   Benchmark.tabulate page_result;
 
-  print_endline "\n=== Dynamic String Children Optimization ===\n";
+  print_endline "\n=== Dynamic String Escaping Comparison ===\n";
 
-  print_endline "--- Single dynamic string: <div>{JSX.string(name)}</div> ---";
+  print_endline "--- Single dynamic string: <div>{name}</div> ---";
   let single_dyn =
     Benchmark.throughputN ~repeat:3 2
       [
-        ( "OLD: JSX.write+JSX.string",
-          (fun () -> old_jsx_write_string test_name),
+        ( "JSX.write+JSX.string",
+          (fun () -> approach_jsx_write_string test_name),
           () );
-        ("NEW: Buffer+JSX.escape", (fun () -> new_buffer_escape test_name), ());
+        ("escape", (fun () -> approach_escape test_name), ());
       ]
   in
   Benchmark.tabulate single_dyn;
 
-  print_endline
-    "\n--- Two dynamic strings: <div>{JSX.string(a)}{JSX.string(b)}</div> ---";
+  print_endline "\n--- Two dynamic strings: <div>{a}{b}</div> ---";
   let two_dyn =
     Benchmark.throughputN ~repeat:3 2
       [
-        ( "OLD: JSX.write+JSX.string",
-          (fun () -> old_jsx_write_two test_a test_b),
-          () );
-        ("NEW: Buffer+JSX.escape", (fun () -> new_buffer_two test_a test_b), ());
+        ("JSX.write+JSX.string", (fun () -> two_jsx_write test_a test_b), ());
+        ("escape", (fun () -> two_escape test_a test_b), ());
       ]
   in
   Benchmark.tabulate two_dyn;
 
+  print_endline "\n=== With Strings That Need Escaping ===\n";
+
+  print_endline "--- Single string with HTML chars: <div>{name}</div> ---";
+  let single_escape =
+    Benchmark.throughputN ~repeat:3 2
+      [
+        ( "JSX.write+JSX.string",
+          (fun () -> approach_jsx_write_string escape_name),
+          () );
+        ("escape", (fun () -> approach_escape escape_name), ());
+      ]
+  in
+  Benchmark.tabulate single_escape;
+
+  print_endline "\n--- Two strings with HTML chars: <div>{a}{b}</div> ---";
+  let two_escape =
+    Benchmark.throughputN ~repeat:3 2
+      [
+        ("JSX.write+JSX.string", (fun () -> two_jsx_write escape_a escape_b), ());
+        ("escape", (fun () -> two_escape escape_a escape_b), ());
+      ]
+  in
+  Benchmark.tabulate two_escape;
+
   print_endline "\n=== Summary ===";
-  print_endline
-    "OLD: JSX.write+JSX.string = allocates JSX.element wrapper, pattern \
-     matches in write";
-  print_endline
-    "NEW: Buffer+JSX.escape = direct escape to buffer, no wrapper allocation \
-     (+25-34% faster)"
+  print_endline "JSX.write+JSX.string = allocates JSX.element, pattern matches";
+  print_endline "escape     = no intermediate allocation (PPX output)"
