@@ -1,5 +1,9 @@
 # Changes
 
+## Unreleased
+
+- Remove temporal string on each JSX.escape, and make escape faster (#9c64ba4)
+
 ## 0.0.7
 
 - Static HTML optimization: elements with static content are now pre-rendered at compile time for ~10x faster rendering (@davesnx)
