@@ -136,39 +136,162 @@ let unoptimized_page =
         ];
     ]
 
-(* Dynamic string optimization micro-benchmarks *)
+(* ============================================================ *)
+(* Three escape implementations to compare                      *)
+(* ============================================================ *)
 
-(* JSX.write with JSX.string wrapper - allocates JSX.element, pattern matches *)
-let approach_jsx_write_string name =
+(* 1. Loop everything: flush-based, always scans entire string *)
+let escape_loop_all buf s =
+  let len = String.length s in
+  let max_idx = len - 1 in
+  let flush start i =
+    if start < len then Buffer.add_substring buf s start (i - start)
+  in
+  let rec loop start i =
+    if i > max_idx then flush start i
+    else
+      let next = i + 1 in
+      match String.get s i with
+      | '&' ->
+          flush start i;
+          Buffer.add_string buf "&amp;";
+          loop next next
+      | '<' ->
+          flush start i;
+          Buffer.add_string buf "&lt;";
+          loop next next
+      | '>' ->
+          flush start i;
+          Buffer.add_string buf "&gt;";
+          loop next next
+      | '\'' ->
+          flush start i;
+          Buffer.add_string buf "&apos;";
+          loop next next
+      | '"' ->
+          flush start i;
+          Buffer.add_string buf "&quot;";
+          loop next next
+      | _ -> loop start next
+  in
+  loop 0 0
+
+(* 2. Exception-based: single pass with early exit via exception *)
+let escape_exception buf s =
+  let len = String.length s in
+  let exception Needs_escape of int in
+  try
+    for i = 0 to len - 1 do
+      match String.unsafe_get s i with
+      | '&' | '<' | '>' | '\'' | '"' -> raise (Needs_escape i)
+      | _ -> ()
+    done;
+    Buffer.add_string buf s
+  with Needs_escape start ->
+    if start > 0 then Buffer.add_substring buf s 0 start;
+    for i = start to len - 1 do
+      match String.unsafe_get s i with
+      | '&' -> Buffer.add_string buf "&amp;"
+      | '<' -> Buffer.add_string buf "&lt;"
+      | '>' -> Buffer.add_string buf "&gt;"
+      | '\'' -> Buffer.add_string buf "&apos;"
+      | '"' -> Buffer.add_string buf "&quot;"
+      | c -> Buffer.add_char buf c
+    done
+
+(* 3. Tail-recursive: current JSX.escape implementation *)
+let escape_tailrec = JSX.escape
+
+(* 4. Hybrid: fast path check + flush-based batching *)
+let rec find_first s len i =
+  if i >= len then -1
+  else
+    match String.unsafe_get s i with
+    | '&' | '<' | '>' | '\'' | '"' -> i
+    | _ -> find_first s len (i + 1)
+
+let escape_raphael buf s =
+  let len = String.length s in
+  let rec go i =
+    if i >= len then ()
+    else
+      let first = find_first s len i in
+      if first < 0 then Buffer.add_substring buf s i (len - i)
+      else begin
+        if first > i then Buffer.add_substring buf s i (first - i);
+        (match String.unsafe_get s first with
+        | '&' -> Buffer.add_string buf "&amp;"
+        | '<' -> Buffer.add_string buf "&lt;"
+        | '>' -> Buffer.add_string buf "&gt;"
+        | '\'' -> Buffer.add_string buf "&apos;"
+        | '"' -> Buffer.add_string buf "&quot;"
+        | _ -> ());
+        go (first + 1)
+      end
+  in
+  go 0
+
+(* ============================================================ *)
+(* Benchmark helpers using each implementation                  *)
+(* ============================================================ *)
+
+let with_loop_all name =
   let buf = Buffer.create 128 in
   Buffer.add_string buf "<div>";
-  JSX.write buf (JSX.string name);
+  escape_loop_all buf name;
   Buffer.add_string buf "</div>";
   JSX.unsafe (Buffer.contents buf)
 
-(* JSX.escape - no intermediate allocation (PPX output) *)
-let approach_escape name =
+let with_exception name =
   let buf = Buffer.create 128 in
   Buffer.add_string buf "<div>";
-  JSX.escape buf name;
+  escape_exception buf name;
   Buffer.add_string buf "</div>";
   JSX.unsafe (Buffer.contents buf)
 
-(* Two strings - JSX.write *)
-let two_jsx_write a b =
+let with_tailrec name =
   let buf = Buffer.create 128 in
   Buffer.add_string buf "<div>";
-  JSX.write buf (JSX.string a);
-  JSX.write buf (JSX.string b);
+  escape_tailrec buf name;
   Buffer.add_string buf "</div>";
   JSX.unsafe (Buffer.contents buf)
 
-(* Two strings - escape *)
-let two_escape a b =
+let two_loop_all a b =
   let buf = Buffer.create 128 in
   Buffer.add_string buf "<div>";
-  JSX.escape buf a;
-  JSX.escape buf b;
+  escape_loop_all buf a;
+  escape_loop_all buf b;
+  Buffer.add_string buf "</div>";
+  JSX.unsafe (Buffer.contents buf)
+
+let two_exception a b =
+  let buf = Buffer.create 128 in
+  Buffer.add_string buf "<div>";
+  escape_exception buf a;
+  escape_exception buf b;
+  Buffer.add_string buf "</div>";
+  JSX.unsafe (Buffer.contents buf)
+
+let two_tailrec a b =
+  let buf = Buffer.create 128 in
+  Buffer.add_string buf "<div>";
+  escape_tailrec buf a;
+  escape_tailrec buf b;
+  Buffer.add_string buf "</div>";
+  JSX.unsafe (Buffer.contents buf)
+
+let with_raphael name =
+  let buf = Buffer.create 128 in
+  Buffer.add_string buf "<div>";
+  escape_raphael buf name;
+  Buffer.add_string buf "</div>";
+  JSX.unsafe (Buffer.contents buf)
+
+let two_raphael a b =
+  let buf = Buffer.create 128 in
+  Buffer.add_string buf "<div>";
+  escape_raphael buf a;
+  escape_raphael buf b;
   Buffer.add_string buf "</div>";
   JSX.unsafe (Buffer.contents buf)
 
@@ -214,54 +337,58 @@ let () =
   in
   Benchmark.tabulate page_result;
 
-  print_endline "\n=== Dynamic String Escaping Comparison ===\n";
+  print_endline "\n=== Escape Implementation Comparison ===\n";
 
-  print_endline "--- Single dynamic string: <div>{name}</div> ---";
-  let single_dyn =
+  print_endline "--- Single string WITHOUT escaping: <div>{name}</div> ---";
+  let single_no_escape =
     Benchmark.throughputN ~repeat:3 2
       [
-        ( "JSX.write+JSX.string",
-          (fun () -> approach_jsx_write_string test_name),
-          () );
-        ("escape", (fun () -> approach_escape test_name), ());
+        ("loop_all", (fun () -> with_loop_all test_name), ());
+        ("exception", (fun () -> with_exception test_name), ());
+        ("tailrec", (fun () -> with_tailrec test_name), ());
+        ("raphael", (fun () -> with_raphael test_name), ());
       ]
   in
-  Benchmark.tabulate single_dyn;
+  Benchmark.tabulate single_no_escape;
 
-  print_endline "\n--- Two dynamic strings: <div>{a}{b}</div> ---";
-  let two_dyn =
+  print_endline "\n--- Two strings WITHOUT escaping: <div>{a}{b}</div> ---";
+  let two_no_escape =
     Benchmark.throughputN ~repeat:3 2
       [
-        ("JSX.write+JSX.string", (fun () -> two_jsx_write test_a test_b), ());
-        ("escape", (fun () -> two_escape test_a test_b), ());
+        ("loop_all", (fun () -> two_loop_all test_a test_b), ());
+        ("exception", (fun () -> two_exception test_a test_b), ());
+        ("tailrec", (fun () -> two_tailrec test_a test_b), ());
+        ("raphael", (fun () -> two_raphael test_a test_b), ());
       ]
   in
-  Benchmark.tabulate two_dyn;
+  Benchmark.tabulate two_no_escape;
 
-  print_endline "\n=== With Strings That Need Escaping ===\n";
-
-  print_endline "--- Single string with HTML chars: <div>{name}</div> ---";
-  let single_escape =
+  print_endline "\n--- Single string WITH escaping: <div>{name}</div> ---";
+  let single_with_escape =
     Benchmark.throughputN ~repeat:3 2
       [
-        ( "JSX.write+JSX.string",
-          (fun () -> approach_jsx_write_string escape_name),
-          () );
-        ("escape", (fun () -> approach_escape escape_name), ());
+        ("loop_all", (fun () -> with_loop_all escape_name), ());
+        ("exception", (fun () -> with_exception escape_name), ());
+        ("tailrec", (fun () -> with_tailrec escape_name), ());
+        ("raphael", (fun () -> with_raphael escape_name), ());
       ]
   in
-  Benchmark.tabulate single_escape;
+  Benchmark.tabulate single_with_escape;
 
-  print_endline "\n--- Two strings with HTML chars: <div>{a}{b}</div> ---";
-  let two_escape =
+  print_endline "\n--- Two strings WITH escaping: <div>{a}{b}</div> ---";
+  let two_with_escape =
     Benchmark.throughputN ~repeat:3 2
       [
-        ("JSX.write+JSX.string", (fun () -> two_jsx_write escape_a escape_b), ());
-        ("escape", (fun () -> two_escape escape_a escape_b), ());
+        ("loop_all", (fun () -> two_loop_all escape_a escape_b), ());
+        ("exception", (fun () -> two_exception escape_a escape_b), ());
+        ("tailrec", (fun () -> two_tailrec escape_a escape_b), ());
+        ("raphael", (fun () -> two_raphael escape_a escape_b), ());
       ]
   in
-  Benchmark.tabulate two_escape;
+  Benchmark.tabulate two_with_escape;
 
   print_endline "\n=== Summary ===";
-  print_endline "JSX.write+JSX.string = allocates JSX.element, pattern matches";
-  print_endline "escape     = no intermediate allocation (PPX output)"
+  print_endline "loop_all  = flush-based, always scans entire string";
+  print_endline "exception = single pass, early exit via exception";
+  print_endline "tailrec   = tail-recursive find + char-by-char loop";
+  print_endline "raphael    = tail-recursive find + flush-based batching"
