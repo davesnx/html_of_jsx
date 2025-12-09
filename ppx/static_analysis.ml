@@ -284,12 +284,6 @@ type element_analysis =
   | Fully_static of string
   | Needs_string_concat of static_part list
   | Needs_buffer of static_part list
-  | Needs_conditional of {
-      optional_attrs : (attr_render_info * expression) list;
-      static_attrs : string;
-      tag_name : string;
-      children_analysis : children_analysis;
-    }
   | Cannot_optimize
 
 let analyze_element ~tag_name ~attrs ~children =
@@ -325,14 +319,7 @@ let analyze_element ~tag_name ~attrs ~children =
         [ Static_str open_tag ] @ parts @ [ Static_str close_tag ]
       in
       Needs_buffer (coalesce_static_parts all_parts)
-  | Has_optional (optionals, static_attrs), children_result ->
-      Needs_conditional
-        {
-          optional_attrs = optionals;
-          static_attrs;
-          tag_name;
-          children_analysis = children_result;
-        }
+  | Has_optional _, _ -> Cannot_optimize
 
 let maybe_add_doctype tag_name html =
   if tag_name = "html" then "<!DOCTYPE html>" ^ html else html
