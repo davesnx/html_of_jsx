@@ -4,8 +4,10 @@ module List = ListLabels
 
 let issues_url = "https://github.com/davesnx/html_of_jsx/issues"
 
-(* Flag to disable static optimization *)
+(* Flags to control optimizations *)
 let disable_static_optimization = ref false
+let disable_buffer_estimation = ref false
+let disable_optional_attrs_opt = ref false
 
 (* There's no pexp_list on Ppxlib since is not a constructor of the Parsetree *)
 let pexp_list ~loc xs =
@@ -186,29 +188,33 @@ let transform_attributes ~loc ~tag_name attrs =
       (* We need to filter attributes since optionals are represented as None *)
       [%expr Stdlib.List.filter_map Stdlib.Fun.id [%e attrs]]
 
+let default_buffer_size = 1024
+
 (** Estimate buffer size based on static content and number of dynamic parts.
     Static parts: exact length known at compile time Dynamic strings: ~32 bytes
     (typical short text like names, labels) Dynamic elements: ~256 bytes (nested
     elements are typically larger) Int/float: ~16 bytes (numeric strings) *)
 let estimate_buffer_size parts =
-  let static_size, string_count, element_count =
-    List.fold_left parts ~init:(0, 0, 0)
-      ~f:(fun (static, strings, elements) part ->
-        match part with
-        | Static_analysis.Static_str s ->
-            (static + String.length s, strings, elements)
-        | Static_analysis.Dynamic_string _ -> (static, strings + 1, elements)
-        | Static_analysis.Dynamic_int _ -> (static + 16, strings, elements)
-        | Static_analysis.Dynamic_float _ -> (static + 16, strings, elements)
-        | Static_analysis.Dynamic_element _ -> (static, strings, elements + 1))
-  in
-  (* Different estimates for strings vs elements to reduce buffer resizing *)
-  let estimated = static_size + (string_count * 32) + (element_count * 256) in
-  (* Round up to next power of 2 for efficiency, minimum 64 *)
-  let rec next_power_of_2 n acc =
-    if acc >= n then acc else next_power_of_2 n (acc * 2)
-  in
-  max 64 (next_power_of_2 estimated 64)
+  if !disable_buffer_estimation then default_buffer_size
+  else
+    let static_size, string_count, element_count =
+      List.fold_left parts ~init:(0, 0, 0)
+        ~f:(fun (static, strings, elements) part ->
+          match part with
+          | Static_analysis.Static_str s ->
+              (static + String.length s, strings, elements)
+          | Static_analysis.Dynamic_string _ -> (static, strings + 1, elements)
+          | Static_analysis.Dynamic_int _ -> (static + 16, strings, elements)
+          | Static_analysis.Dynamic_float _ -> (static + 16, strings, elements)
+          | Static_analysis.Dynamic_element _ -> (static, strings, elements + 1))
+    in
+    (* Different estimates for strings vs elements to reduce buffer resizing *)
+    let estimated = static_size + (string_count * 32) + (element_count * 256) in
+    (* Round up to next power of 2 for efficiency, minimum 64 *)
+    let rec next_power_of_2 n acc =
+      if acc >= n then acc else next_power_of_2 n (acc * 2)
+    in
+    max 64 (next_power_of_2 estimated 64)
 
 let generate_buffer_code ~loc parts =
   let buf_var = "__html_buf" in
@@ -287,28 +293,34 @@ let generate_optional_attr_code ~loc buf_ident
 
 let estimate_conditional_buffer_size ~tag_name ~static_attrs ~optional_attrs
     ~children_analysis =
-  let base_size = 1 + String.length tag_name + String.length static_attrs + 1 in
-  let close_size =
-    if Static_analysis.is_self_closing_tag tag_name then 2
-    else 2 + String.length tag_name + 1
-  in
-  let optional_estimate = List.length optional_attrs * 32 in
-  let children_estimate =
-    match children_analysis with
-    | Static_analysis.No_children -> 0
-    | Static_analysis.All_static_children s -> String.length s
-    | Static_analysis.All_string_dynamic parts
-    | Static_analysis.Mixed_children parts ->
-        List.fold_left parts ~init:0 ~f:(fun acc part ->
-            match part with
-            | Static_analysis.Static_str s -> acc + String.length s
-            | _ -> acc + 64)
-  in
-  let total = base_size + close_size + optional_estimate + children_estimate in
-  let rec next_power_of_2 n acc =
-    if acc >= n then acc else next_power_of_2 n (acc * 2)
-  in
-  max 64 (next_power_of_2 total 64)
+  if !disable_buffer_estimation then default_buffer_size
+  else
+    let base_size =
+      1 + String.length tag_name + String.length static_attrs + 1
+    in
+    let close_size =
+      if Static_analysis.is_self_closing_tag tag_name then 2
+      else 2 + String.length tag_name + 1
+    in
+    let optional_estimate = List.length optional_attrs * 32 in
+    let children_estimate =
+      match children_analysis with
+      | Static_analysis.No_children -> 0
+      | Static_analysis.All_static_children s -> String.length s
+      | Static_analysis.All_string_dynamic parts
+      | Static_analysis.Mixed_children parts ->
+          List.fold_left parts ~init:0 ~f:(fun acc part ->
+              match part with
+              | Static_analysis.Static_str s -> acc + String.length s
+              | _ -> acc + 64)
+    in
+    let total =
+      base_size + close_size + optional_estimate + children_estimate
+    in
+    let rec next_power_of_2 n acc =
+      if acc >= n then acc else next_power_of_2 n (acc * 2)
+    in
+    max 64 (next_power_of_2 total 64)
 
 let generate_children_code ~loc buf_ident children_analysis =
   match children_analysis with
@@ -420,8 +432,11 @@ let rewrite_node_optimized ~loc tag_name args children =
       generate_buffer_code ~loc parts
   | Static_analysis.Needs_conditional
       { optional_attrs; static_attrs; tag_name; children_analysis } ->
-      generate_conditional_buffer_code ~loc ~tag_name ~static_attrs
-        ~optional_attrs ~children_analysis
+      if !disable_optional_attrs_opt then
+        rewrite_node_unoptimized ~loc tag_name args children
+      else
+        generate_conditional_buffer_code ~loc ~tag_name ~static_attrs
+          ~optional_attrs ~children_analysis
   | Static_analysis.Cannot_optimize ->
       rewrite_node_unoptimized ~loc tag_name args children
 
@@ -544,9 +559,13 @@ let () =
       ( "Disable static HTML optimization (use JSX.node for all elements)",
         "-disable-static-opt",
         Arg.Unit (fun () -> disable_static_optimization := true) );
-      (* ( "-custom",
-         Arg.String (fun file -> Static_attributes.extra_properties := Some file),
-         "FILE Load inferred types from cmo file." ); *)
+      ( "Disable buffer size estimation (use fixed 1024 byte buffer)",
+        "-disable-buffer-estimation",
+        Arg.Unit (fun () -> disable_buffer_estimation := true) );
+      ( "Disable optional attributes optimization (use JSX.node for elements \
+         with optional attrs)",
+        "-disable-optional-attrs-opt",
+        Arg.Unit (fun () -> disable_optional_attrs_opt := true) );
     ]
   in
 

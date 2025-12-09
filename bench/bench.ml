@@ -1,146 +1,10 @@
-(* Benchmark comparing optimized (JSX.unsafe) vs unoptimized (JSX.node) rendering *)
-
-(* Simple test case - static div with class *)
-let optimized_simple = JSX.unsafe {|<div class="container"></div>|}
-let unoptimized_simple = JSX.node "div" [ ("class", `String "container") ] []
-
-(* Medium test case - nested static elements *)
-let optimized_medium =
-  JSX.unsafe
-    {|<div class="wrapper"><header><h1>Title</h1></header><main><p>Content here</p></main><footer><span>Footer</span></footer></div>|}
-
-let unoptimized_medium =
-  JSX.node "div"
-    [ ("class", `String "wrapper") ]
-    [
-      JSX.node "header" [] [ JSX.node "h1" [] [ JSX.string "Title" ] ];
-      JSX.node "main" [] [ JSX.node "p" [] [ JSX.string "Content here" ] ];
-      JSX.node "footer" [] [ JSX.node "span" [] [ JSX.string "Footer" ] ];
-    ]
-
-let optimized_page =
-  Input.Page.make ~project_url:"https://github.com/davesnx/html_of_jsx" ()
-
-(* the same page as input.re, but created manually to create the unoptimized version for fair comparison *)
-let unoptimized_page =
-  let styles_dark = "color-scheme: dark" in
-  let styles_body =
-    "display: flex; justify-items: center; padding-top: 7em; padding-left: \
-     25%; padding-right: 25%"
-  in
-  let styles_h1 =
-    "font-weight: 500; font-size: calc((((((0.7rem + 0.13vw) * 1.25) * 1.25) * \
-     1.25) * 1.25) * 1.25); letter-spacing: 0.8px; line-height: 2; margin: 0; \
-     padding: 0"
-  in
-  JSX.node "html"
-    [ ("lang", `String "en"); ("style", `String styles_dark) ]
-    [
-      JSX.node "head" []
-        [
-          JSX.node "meta" [ ("charset", `String "UTF-8") ] [];
-          JSX.node "meta"
-            [
-              ("name", `String "viewport");
-              ("content", `String "width=device-width, initial-scale=1.0");
-            ]
-            [];
-          JSX.node "title" [] [ JSX.string "HTML OF JSX" ];
-          JSX.node "link"
-            [
-              ("rel", `String "shortcut icon");
-              ("href", `String "https://reasonml.github.io/img/icon_50.png");
-            ]
-            [];
-        ];
-      JSX.node "body"
-        [ ("style", `String styles_body) ]
-        [
-          JSX.node "div" []
-            [
-              JSX.node "main" []
-                [
-                  JSX.node "header" []
-                    [
-                      JSX.node "div" []
-                        [
-                          JSX.node "a"
-                            [
-                              ( "href",
-                                `String "https://github.com/davesnx/html_of_jsx"
-                              );
-                            ]
-                            [
-                              JSX.node "p" []
-                                [
-                                  JSX.string
-                                    "https://github.com/davesnx/html_of_jsx";
-                                ];
-                            ];
-                          JSX.node "div" []
-                            [
-                              JSX.node "span" [] [ JSX.string "by " ];
-                              JSX.node "a"
-                                [ ("href", `String "https://x.com/davesnx") ]
-                                [ JSX.string "@davesnx" ];
-                            ];
-                        ];
-                    ];
-                ];
-              JSX.node "div" []
-                [
-                  JSX.node "main" []
-                    [
-                      JSX.node "div" []
-                        [
-                          JSX.node "div" []
-                            [
-                              JSX.node "h1"
-                                [ ("style", `String styles_h1) ]
-                                [ JSX.string "Html_of_jsx" ];
-                            ];
-                          JSX.node "div" []
-                            [
-                              JSX.node "div" []
-                                [
-                                  JSX.node "p" []
-                                    [
-                                      JSX.node "span" []
-                                        [ JSX.string "html_of_jsx" ];
-                                      JSX.node "span" []
-                                        [
-                                          JSX.string
-                                            " is an implementation of JSX \
-                                             designed to render HTML on the \
-                                             server.";
-                                        ];
-                                    ];
-                                  JSX.node "p" []
-                                    [
-                                      JSX.string "Check the ";
-                                      JSX.node "a"
-                                        [
-                                          ( "href",
-                                            `String
-                                              "https://davesnx.github.io/html_of_jsx/html_of_jsx/index.html"
-                                          );
-                                        ]
-                                        [ JSX.string "Documentation" ];
-                                    ];
-                                ];
-                            ];
-                        ];
-                    ];
-                ];
-            ];
-        ];
-    ]
+(* Benchmark comparing different optimizations *)
 
 (* ============================================================ *)
-(* Three escape implementations to compare                      *)
+(* 1. Escape function implementations                           *)
 (* ============================================================ *)
 
-(* 1. Loop everything: flush-based, always scans entire string *)
+(* Loop everything: flush-based, always scans entire string *)
 let escape_loop_all buf s =
   let len = String.length s in
   let max_idx = len - 1 in
@@ -176,7 +40,7 @@ let escape_loop_all buf s =
   in
   loop 0 0
 
-(* 2. Exception-based: single pass with early exit via exception *)
+(* Exception-based: single pass with early exit via exception (current JSX.escape) *)
 let escape_exception buf s =
   let len = String.length s in
   let exception Needs_escape of int in
@@ -199,10 +63,8 @@ let escape_exception buf s =
       | c -> Buffer.add_char buf c
     done
 
-(* 3. Tail-recursive: current JSX.escape implementation *)
 let escape_tailrec = JSX.escape
 
-(* 4. Hybrid: fast path check + flush-based batching *)
 let rec find_first s len i =
   if i >= len then -1
   else
@@ -232,7 +94,155 @@ let escape_raphael buf s =
   go 0
 
 (* ============================================================ *)
-(* Benchmark helpers using each implementation                  *)
+(* 2. Buffer size estimation benchmark                          *)
+(* ============================================================ *)
+
+(* Simulates PPX-generated code with fixed buffer size (1024) *)
+let buffer_fixed_1024 a b c d e =
+  let buf = Buffer.create 1024 in
+  Buffer.add_string buf "<div class=\"container\">";
+  JSX.escape buf a;
+  JSX.escape buf b;
+  JSX.escape buf c;
+  JSX.escape buf d;
+  JSX.escape buf e;
+  Buffer.add_string buf "</div>";
+  JSX.unsafe (Buffer.contents buf)
+
+(* Simulates PPX-generated code with estimated buffer size *)
+(* Static: 30 bytes, 5 strings * 32 = 160, total ~256 *)
+let buffer_estimated a b c d e =
+  let buf = Buffer.create 256 in
+  Buffer.add_string buf "<div class=\"container\">";
+  JSX.escape buf a;
+  JSX.escape buf b;
+  JSX.escape buf c;
+  JSX.escape buf d;
+  JSX.escape buf e;
+  Buffer.add_string buf "</div>";
+  JSX.unsafe (Buffer.contents buf)
+
+(* Larger case: simulates a page-like structure *)
+let buffer_fixed_page title desc content footer extra =
+  let buf = Buffer.create 1024 in
+  Buffer.add_string buf "<!DOCTYPE html><html><head><title>";
+  JSX.escape buf title;
+  Buffer.add_string buf "</title><meta name=\"description\" content=\"";
+  JSX.escape buf desc;
+  Buffer.add_string buf "\"></head><body><main>";
+  JSX.escape buf content;
+  Buffer.add_string buf "</main><footer>";
+  JSX.escape buf footer;
+  JSX.escape buf extra;
+  Buffer.add_string buf "</footer></body></html>";
+  JSX.unsafe (Buffer.contents buf)
+
+(* Estimated: ~150 static + 5*32 = 310, rounded to 512 *)
+let buffer_estimated_page title desc content footer extra =
+  let buf = Buffer.create 512 in
+  Buffer.add_string buf "<!DOCTYPE html><html><head><title>";
+  JSX.escape buf title;
+  Buffer.add_string buf "</title><meta name=\"description\" content=\"";
+  JSX.escape buf desc;
+  Buffer.add_string buf "\"></head><body><main>";
+  JSX.escape buf content;
+  Buffer.add_string buf "</main><footer>";
+  JSX.escape buf footer;
+  JSX.escape buf extra;
+  Buffer.add_string buf "</footer></body></html>";
+  JSX.unsafe (Buffer.contents buf)
+
+(* ============================================================ *)
+(* 3. Optional attributes optimization benchmark                *)
+(* ============================================================ *)
+
+(* Unoptimized: uses JSX.node with List.filter_map (generated when flag is disabled) *)
+let optional_attrs_unoptimized ~class_ ~id ~title () =
+  JSX.node "div"
+    (Stdlib.List.filter_map Stdlib.Fun.id
+       [
+         Stdlib.Option.map (fun v -> ("class", `String v)) class_;
+         Stdlib.Option.map (fun v -> ("id", `String v)) id;
+         Stdlib.Option.map (fun v -> ("title", `String v)) title;
+       ])
+    [ JSX.string "content" ]
+
+(* Optimized: direct buffer writes with conditionals (generated when flag is enabled) *)
+let optional_attrs_optimized ~class_ ~id ~title () =
+  let buf = Buffer.create 128 in
+  Buffer.add_string buf "<div";
+  (match class_ with
+  | Some v ->
+      Buffer.add_string buf " class=\"";
+      JSX.escape buf v;
+      Buffer.add_char buf '"'
+  | None -> ());
+  (match id with
+  | Some v ->
+      Buffer.add_string buf " id=\"";
+      JSX.escape buf v;
+      Buffer.add_char buf '"'
+  | None -> ());
+  (match title with
+  | Some v ->
+      Buffer.add_string buf " title=\"";
+      JSX.escape buf v;
+      Buffer.add_char buf '"'
+  | None -> ());
+  Buffer.add_string buf ">content</div>";
+  JSX.unsafe (Buffer.contents buf)
+
+(* With more attributes to amplify the difference *)
+let optional_attrs_unoptimized_many ~a1 ~a2 ~a3 ~a4 ~a5 () =
+  JSX.node "div"
+    (Stdlib.List.filter_map Stdlib.Fun.id
+       [
+         Stdlib.Option.map (fun v -> ("data-a1", `String v)) a1;
+         Stdlib.Option.map (fun v -> ("data-a2", `String v)) a2;
+         Stdlib.Option.map (fun v -> ("data-a3", `String v)) a3;
+         Stdlib.Option.map (fun v -> ("data-a4", `String v)) a4;
+         Stdlib.Option.map (fun v -> ("data-a5", `String v)) a5;
+       ])
+    [ JSX.string "content" ]
+
+let optional_attrs_optimized_many ~a1 ~a2 ~a3 ~a4 ~a5 () =
+  let buf = Buffer.create 256 in
+  Buffer.add_string buf "<div";
+  (match a1 with
+  | Some v ->
+      Buffer.add_string buf " data-a1=\"";
+      JSX.escape buf v;
+      Buffer.add_char buf '"'
+  | None -> ());
+  (match a2 with
+  | Some v ->
+      Buffer.add_string buf " data-a2=\"";
+      JSX.escape buf v;
+      Buffer.add_char buf '"'
+  | None -> ());
+  (match a3 with
+  | Some v ->
+      Buffer.add_string buf " data-a3=\"";
+      JSX.escape buf v;
+      Buffer.add_char buf '"'
+  | None -> ());
+  (match a4 with
+  | Some v ->
+      Buffer.add_string buf " data-a4=\"";
+      JSX.escape buf v;
+      Buffer.add_char buf '"'
+  | None -> ());
+  (match a5 with
+  | Some v ->
+      Buffer.add_string buf " data-a5=\"";
+      JSX.escape buf v;
+      Buffer.add_char buf '"'
+  | None -> ());
+  Buffer.add_string buf ">content</div>";
+  JSX.unsafe (Buffer.contents buf)
+
+(* ============================================================ *)
+(* Escape benchmark helpers                                     *)
 (* ============================================================ *)
 
 let with_loop_all name =
@@ -253,6 +263,13 @@ let with_tailrec name =
   let buf = Buffer.create 128 in
   Buffer.add_string buf "<div>";
   escape_tailrec buf name;
+  Buffer.add_string buf "</div>";
+  JSX.unsafe (Buffer.contents buf)
+
+let with_raphael name =
+  let buf = Buffer.create 128 in
+  Buffer.add_string buf "<div>";
+  escape_raphael buf name;
   Buffer.add_string buf "</div>";
   JSX.unsafe (Buffer.contents buf)
 
@@ -280,13 +297,6 @@ let two_tailrec a b =
   Buffer.add_string buf "</div>";
   JSX.unsafe (Buffer.contents buf)
 
-let with_raphael name =
-  let buf = Buffer.create 128 in
-  Buffer.add_string buf "<div>";
-  escape_raphael buf name;
-  Buffer.add_string buf "</div>";
-  JSX.unsafe (Buffer.contents buf)
-
 let two_raphael a b =
   let buf = Buffer.create 128 in
   Buffer.add_string buf "<div>";
@@ -295,51 +305,31 @@ let two_raphael a b =
   Buffer.add_string buf "</div>";
   JSX.unsafe (Buffer.contents buf)
 
+(* ============================================================ *)
+(* Test data                                                    *)
+(* ============================================================ *)
+
 let test_name = "Hello, World!"
 let test_a = "Hello"
 let test_b = "World"
-
-(* Strings that require escaping *)
 let escape_name = "<script>alert('XSS')</script>"
 let escape_a = "a < b && c > d"
 let escape_b = "\"quoted\" & 'apostrophe'"
 
+(* Data for buffer/optional attrs benchmarks *)
+let str1 = "Hello"
+let str2 = "World"
+let str3 = "This is some content"
+let str4 = "Footer text"
+let str5 = "Extra information"
+
 let () =
-  print_endline "=== Static JSX Optimization Benchmark ===\n";
+  (* ============================================================ *)
+  (* ESCAPE FUNCTION COMPARISON                                   *)
+  (* ============================================================ *)
+  print_endline "=== 1. Escape Implementation Comparison ===\n";
 
-  print_endline "--- Simple case: <div class=\"container\"></div> ---";
-  let simple_result =
-    Benchmark.throughputN ~repeat:3 3
-      [
-        ("optimized (JSX.unsafe)", JSX.render, optimized_simple);
-        ("unoptimized (JSX.node)", JSX.render, unoptimized_simple);
-      ]
-  in
-  Benchmark.tabulate simple_result;
-
-  print_endline "\n--- Medium case: Nested static HTML ---";
-  let medium_result =
-    Benchmark.throughputN ~repeat:3 3
-      [
-        ("optimized (JSX.unsafe)", JSX.render, optimized_medium);
-        ("unoptimized (JSX.node)", JSX.render, unoptimized_medium);
-      ]
-  in
-  Benchmark.tabulate medium_result;
-
-  print_endline "\n--- Complex case: Full page (simplified) ---";
-  let page_result =
-    Benchmark.throughputN ~repeat:3 5
-      [
-        ("optimized (JSX.unsafe)", JSX.render, optimized_page);
-        ("unoptimized (JSX.node)", JSX.render, unoptimized_page);
-      ]
-  in
-  Benchmark.tabulate page_result;
-
-  print_endline "\n=== Escape Implementation Comparison ===\n";
-
-  print_endline "--- Single string WITHOUT escaping: <div>{name}</div> ---";
+  print_endline "--- Single string WITHOUT escaping ---";
   let single_no_escape =
     Benchmark.throughputN ~repeat:3 2
       [
@@ -351,7 +341,7 @@ let () =
   in
   Benchmark.tabulate single_no_escape;
 
-  print_endline "\n--- Two strings WITHOUT escaping: <div>{a}{b}</div> ---";
+  print_endline "\n--- Two strings WITHOUT escaping ---";
   let two_no_escape =
     Benchmark.throughputN ~repeat:3 2
       [
@@ -363,7 +353,7 @@ let () =
   in
   Benchmark.tabulate two_no_escape;
 
-  print_endline "\n--- Single string WITH escaping: <div>{name}</div> ---";
+  print_endline "\n--- Single string WITH escaping ---";
   let single_with_escape =
     Benchmark.throughputN ~repeat:3 2
       [
@@ -375,7 +365,7 @@ let () =
   in
   Benchmark.tabulate single_with_escape;
 
-  print_endline "\n--- Two strings WITH escaping: <div>{a}{b}</div> ---";
+  print_endline "\n--- Two strings WITH escaping ---";
   let two_with_escape =
     Benchmark.throughputN ~repeat:3 2
       [
@@ -387,8 +377,139 @@ let () =
   in
   Benchmark.tabulate two_with_escape;
 
+  (* ============================================================ *)
+  (* BUFFER SIZE ESTIMATION                                       *)
+  (* ============================================================ *)
+  print_endline "\n=== 2. Buffer Size Estimation ===\n";
+
+  print_endline "--- Small element with 5 dynamic strings ---";
+  let buffer_small =
+    Benchmark.throughputN ~repeat:3 2
+      [
+        ( "fixed (1024)",
+          (fun () -> buffer_fixed_1024 str1 str2 str3 str4 str5),
+          () );
+        ( "estimated (256)",
+          (fun () -> buffer_estimated str1 str2 str3 str4 str5),
+          () );
+      ]
+  in
+  Benchmark.tabulate buffer_small;
+
+  print_endline "\n--- Page-like structure with 5 dynamic strings ---";
+  let buffer_page =
+    Benchmark.throughputN ~repeat:3 2
+      [
+        ( "fixed (1024)",
+          (fun () -> buffer_fixed_page str1 str2 str3 str4 str5),
+          () );
+        ( "estimated (512)",
+          (fun () -> buffer_estimated_page str1 str2 str3 str4 str5),
+          () );
+      ]
+  in
+  Benchmark.tabulate buffer_page;
+
+  (* ============================================================ *)
+  (* OPTIONAL ATTRIBUTES OPTIMIZATION                             *)
+  (* ============================================================ *)
+  print_endline "\n=== 3. Optional Attributes Optimization ===\n";
+
+  print_endline "--- 3 optional attrs (all Some) ---";
+  let opt_all_some =
+    Benchmark.throughputN ~repeat:3 2
+      [
+        ( "JSX.node",
+          (fun () ->
+            optional_attrs_unoptimized ~class_:(Some "container")
+              ~id:(Some "main") ~title:(Some "Title") ()),
+          () );
+        ( "buffer",
+          (fun () ->
+            optional_attrs_optimized ~class_:(Some "container")
+              ~id:(Some "main") ~title:(Some "Title") ()),
+          () );
+      ]
+  in
+  Benchmark.tabulate opt_all_some;
+
+  print_endline "\n--- 3 optional attrs (all None) ---";
+  let opt_all_none =
+    Benchmark.throughputN ~repeat:3 2
+      [
+        ( "JSX.node",
+          (fun () ->
+            optional_attrs_unoptimized ~class_:None ~id:None ~title:None ()),
+          () );
+        ( "buffer",
+          (fun () ->
+            optional_attrs_optimized ~class_:None ~id:None ~title:None ()),
+          () );
+      ]
+  in
+  Benchmark.tabulate opt_all_none;
+
+  print_endline "\n--- 3 optional attrs (mixed) ---";
+  let opt_mixed =
+    Benchmark.throughputN ~repeat:3 2
+      [
+        ( "JSX.node",
+          (fun () ->
+            optional_attrs_unoptimized ~class_:(Some "container") ~id:None
+              ~title:(Some "Title") ()),
+          () );
+        ( "buffer",
+          (fun () ->
+            optional_attrs_optimized ~class_:(Some "container") ~id:None
+              ~title:(Some "Title") ()),
+          () );
+      ]
+  in
+  Benchmark.tabulate opt_mixed;
+
+  print_endline "\n--- 5 optional attrs (all Some) ---";
+  let opt_many_some =
+    Benchmark.throughputN ~repeat:3 2
+      [
+        ( "JSX.node",
+          (fun () ->
+            optional_attrs_unoptimized_many ~a1:(Some "v1") ~a2:(Some "v2")
+              ~a3:(Some "v3") ~a4:(Some "v4") ~a5:(Some "v5") ()),
+          () );
+        ( "buffer",
+          (fun () ->
+            optional_attrs_optimized_many ~a1:(Some "v1") ~a2:(Some "v2")
+              ~a3:(Some "v3") ~a4:(Some "v4") ~a5:(Some "v5") ()),
+          () );
+      ]
+  in
+  Benchmark.tabulate opt_many_some;
+
+  print_endline "\n--- 5 optional attrs (all None) ---";
+  let opt_many_none =
+    Benchmark.throughputN ~repeat:3 2
+      [
+        ( "JSX.node",
+          (fun () ->
+            optional_attrs_unoptimized_many ~a1:None ~a2:None ~a3:None ~a4:None
+              ~a5:None ()),
+          () );
+        ( "buffer",
+          (fun () ->
+            optional_attrs_optimized_many ~a1:None ~a2:None ~a3:None ~a4:None
+              ~a5:None ()),
+          () );
+      ]
+  in
+  Benchmark.tabulate opt_many_none;
+
+  (* ============================================================ *)
+  (* SUMMARY                                                      *)
+  (* ============================================================ *)
   print_endline "\n=== Summary ===";
-  print_endline "loop_all  = flush-based, always scans entire string";
-  print_endline "exception = single pass, early exit via exception";
-  print_endline "tailrec   = tail-recursive find + char-by-char loop";
-  print_endline "raphael    = tail-recursive find + flush-based batching"
+  print_endline
+    "1. Escape: exception = current JSX.escape (fast path for no-escape case)";
+  print_endline
+    "2. Buffer: estimated sizes reduce reallocations for small outputs";
+  print_endline
+    "3. Optional attrs: buffer avoids List.filter_map allocation overhead"
