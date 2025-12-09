@@ -243,6 +243,186 @@ let generate_buffer_code ~loc parts =
     [%e seq];
     JSX.unsafe (Buffer.contents [%e buf_ident])]
 
+(* Generate code for optional attribute rendering.
+   For boolean attrs: Some true -> " name", Some false / None -> ""
+   For string attrs: Some v -> " name=\"v\"", None -> ""
+   For int attrs: Some v -> " name=\"v\"", None -> ""
+   For booleanish attrs: Some true -> " name=\"true\"", Some false / None -> "" *)
+let generate_optional_attr_code ~loc buf_ident
+    (info : Static_analysis.attr_render_info) expr =
+  let name = info.html_name in
+  let name_expr = estring ~loc name in
+  let prefix = Printf.sprintf " %s=\"" name in
+  let prefix_expr = estring ~loc prefix in
+  match info.kind with
+  | Html_attributes.Bool ->
+      (* Boolean attribute: Some true -> " name", Some false -> "", None -> "" *)
+      [%expr
+        match [%e expr] with
+        | Some true ->
+            Buffer.add_char [%e buf_ident] ' ';
+            Buffer.add_string [%e buf_ident] [%e name_expr]
+        | Some false | None -> ()]
+  | Html_attributes.Int ->
+      (* Int attribute: Some v -> " name=\"v\"", None -> "" *)
+      [%expr
+        match [%e expr] with
+        | Some __v ->
+            Buffer.add_string [%e buf_ident] [%e prefix_expr];
+            Buffer.add_string [%e buf_ident] (Int.to_string __v);
+            Buffer.add_char [%e buf_ident] '"'
+        | None -> ()]
+  | Html_attributes.BooleanishString ->
+      (* BooleanishString: Some true -> " name=\"true\"", Some false / None -> "" *)
+      [%expr
+        match [%e expr] with
+        | Some true ->
+            Buffer.add_string [%e buf_ident] [%e prefix_expr];
+            Buffer.add_string [%e buf_ident] "true";
+            Buffer.add_char [%e buf_ident] '"'
+        | Some false | None -> ()]
+  | Html_attributes.String | Html_attributes.Style ->
+      (* String/Style attribute: Some v -> " name=\"v\"", None -> "" *)
+      [%expr
+        match [%e expr] with
+        | Some __v ->
+            Buffer.add_string [%e buf_ident] [%e prefix_expr];
+            JSX.escape [%e buf_ident] __v;
+            Buffer.add_char [%e buf_ident] '"'
+        | None -> ()]
+
+(* Estimate buffer size for conditional case *)
+let estimate_conditional_buffer_size ~tag_name ~static_attrs ~optional_attrs
+    ~children_analysis =
+  let base_size =
+    (* Opening tag: "<tag" + static_attrs + ">" or " />" *)
+    1 + String.length tag_name + String.length static_attrs + 1
+  in
+  let close_size =
+    if Static_analysis.is_self_closing_tag tag_name then 2
+    else 2 + String.length tag_name + 1
+  in
+  let optional_estimate = List.length optional_attrs * 32 in
+  let children_estimate =
+    match children_analysis with
+    | Static_analysis.No_children -> 0
+    | Static_analysis.All_static_children s -> String.length s
+    | Static_analysis.All_string_dynamic parts
+    | Static_analysis.Mixed_children parts ->
+        List.fold_left parts ~init:0 ~f:(fun acc part ->
+            match part with
+            | Static_analysis.Static_str s -> acc + String.length s
+            | _ -> acc + 64)
+  in
+  let total = base_size + close_size + optional_estimate + children_estimate in
+  (* Round up to next power of 2, minimum 64 *)
+  let rec next_power_of_2 n acc =
+    if acc >= n then acc else next_power_of_2 n (acc * 2)
+  in
+  max 64 (next_power_of_2 total 64)
+
+(* Generate children rendering code for a buffer *)
+let generate_children_code ~loc buf_ident children_analysis =
+  match children_analysis with
+  | Static_analysis.No_children -> [%expr ()]
+  | Static_analysis.All_static_children s ->
+      let s_expr = estring ~loc s in
+      [%expr Buffer.add_string [%e buf_ident] [%e s_expr]]
+  | Static_analysis.All_string_dynamic parts
+  | Static_analysis.Mixed_children parts ->
+      let ops =
+        List.map parts ~f:(fun part ->
+            match part with
+            | Static_analysis.Static_str s ->
+                let s_expr = estring ~loc s in
+                [%expr Buffer.add_string [%e buf_ident] [%e s_expr]]
+            | Static_analysis.Dynamic_string expr ->
+                [%expr JSX.escape [%e buf_ident] [%e expr]]
+            | Static_analysis.Dynamic_int expr ->
+                [%expr
+                  Buffer.add_string [%e buf_ident] (Int.to_string [%e expr])]
+            | Static_analysis.Dynamic_float expr ->
+                [%expr
+                  Buffer.add_string [%e buf_ident] (Float.to_string [%e expr])]
+            | Static_analysis.Dynamic_element expr ->
+                [%expr JSX.write [%e buf_ident] [%e expr]])
+      in
+      List.fold_right ops ~init:[%expr ()] ~f:(fun op acc ->
+          [%expr
+            [%e op];
+            [%e acc]])
+
+(* Generate buffer code for elements with optional attributes *)
+let generate_conditional_buffer_code ~loc ~tag_name ~static_attrs
+    ~optional_attrs ~children_analysis =
+  let buf_var = "__html_buf" in
+  let buf_ident = pexp_ident ~loc { loc; txt = Lident buf_var } in
+  let buf_pat = ppat_var ~loc { loc; txt = buf_var } in
+  let buffer_size =
+    estimate_conditional_buffer_size ~tag_name ~static_attrs ~optional_attrs
+      ~children_analysis
+  in
+  let buffer_size_expr = eint ~loc buffer_size in
+
+  (* Opening tag: "<tag" + static_attrs *)
+  let open_tag = Printf.sprintf "<%s%s" tag_name static_attrs in
+  let open_tag_expr = estring ~loc open_tag in
+
+  (* Generate optional attribute code *)
+  let optional_ops =
+    List.map optional_attrs ~f:(fun (info, expr) ->
+        generate_optional_attr_code ~loc buf_ident info expr)
+  in
+
+  (* Close opening tag and handle children *)
+  let is_self_closing = Static_analysis.is_self_closing_tag tag_name in
+  let close_open_tag_expr =
+    if is_self_closing then estring ~loc " />" else estring ~loc ">"
+  in
+
+  (* Generate children code *)
+  let children_code = generate_children_code ~loc buf_ident children_analysis in
+
+  (* Closing tag (if not self-closing) *)
+  let close_tag_code =
+    if is_self_closing then [%expr ()]
+    else
+      let close_tag = Printf.sprintf "</%s>" tag_name in
+      let close_tag_expr = estring ~loc close_tag in
+      [%expr Buffer.add_string [%e buf_ident] [%e close_tag_expr]]
+  in
+
+  (* Combine all operations *)
+  let all_ops =
+    [ [%expr Buffer.add_string [%e buf_ident] [%e open_tag_expr]] ]
+    @ optional_ops
+    @ [
+        [%expr Buffer.add_string [%e buf_ident] [%e close_open_tag_expr]];
+        children_code;
+        close_tag_code;
+      ]
+  in
+
+  let seq =
+    List.fold_right all_ops ~init:[%expr ()] ~f:(fun op acc ->
+        [%expr
+          [%e op];
+          [%e acc]])
+  in
+
+  (* Handle DOCTYPE for html tag *)
+  let maybe_doctype =
+    if tag_name = "html" then
+      [%expr Buffer.add_string [%e buf_ident] "<!DOCTYPE html>"]
+    else [%expr ()]
+  in
+
+  [%expr
+    let [%p buf_pat] = Buffer.create [%e buffer_size_expr] in
+    [%e maybe_doctype];
+    [%e seq];
+    JSX.unsafe (Buffer.contents [%e buf_ident])]
+
 let rewrite_node_unoptimized ~loc tag_name args children =
   let dom_node_name = estring ~loc tag_name in
   let attributes = transform_attributes ~loc ~tag_name args in
@@ -265,7 +445,11 @@ let rewrite_node_optimized ~loc tag_name args children =
   | Static_analysis.Needs_string_concat parts
   | Static_analysis.Needs_buffer parts ->
       generate_buffer_code ~loc parts
-  | Static_analysis.Needs_conditional _ | Static_analysis.Cannot_optimize ->
+  | Static_analysis.Needs_conditional
+      { optional_attrs; static_attrs; tag_name; children_analysis } ->
+      generate_conditional_buffer_code ~loc ~tag_name ~static_attrs
+        ~optional_attrs ~children_analysis
+  | Static_analysis.Cannot_optimize ->
       rewrite_node_unoptimized ~loc tag_name args children
 
 let rewrite_node ~loc tag_name args children =

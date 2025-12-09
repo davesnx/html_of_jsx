@@ -15,20 +15,25 @@
       ),
       [],
     );
-  let lower_opt_attr =
-    JSX.node(
-      "div",
-      Stdlib.List.filter_map(
-        Stdlib.Fun.id,
-        [
-          Stdlib.Option.map(
-            v => ("tabindex", `Int(v)),
-            tabindex: option(int),
-          ),
-        ],
-      ),
-      [],
-    );
+  let lower_opt_attr = {
+    let __html_buf = Buffer.create(64);
+    ();
+    {
+      Buffer.add_string(__html_buf, "<div");
+      switch (tabindex) {
+      | Some(__v) =>
+        Buffer.add_string(__html_buf, " tabindex=\"");
+        Buffer.add_string(__html_buf, Int.to_string(__v));
+        Buffer.add_char(__html_buf, '"');
+      | None => ()
+      };
+      Buffer.add_string(__html_buf, ">");
+      ();
+      Buffer.add_string(__html_buf, "</div>");
+      ();
+    };
+    JSX.unsafe(Buffer.contents(__html_buf));
+  };
   let lowerWithChildAndProps = foo => {
     let __html_buf = Buffer.create(128);
     {
