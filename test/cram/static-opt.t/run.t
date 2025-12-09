@@ -16,7 +16,7 @@ Test static JSX optimization
   let static_html =
     JSX.unsafe("<!DOCTYPE html><html><body><div>static</div></body></html>");
   let dynamic_child = name => {
-    let __html_buf = Buffer.create(128);
+    let __html_buf = Buffer.create(64);
     {
       Buffer.add_string(__html_buf, "<div>");
       JSX.escape(__html_buf, name);
@@ -26,7 +26,7 @@ Test static JSX optimization
     JSX.unsafe(Buffer.contents(__html_buf));
   };
   let dynamic_two_strings = (a, b) => {
-    let __html_buf = Buffer.create(256);
+    let __html_buf = Buffer.create(128);
     {
       Buffer.add_string(__html_buf, "<div>");
       JSX.escape(__html_buf, a);
@@ -37,7 +37,7 @@ Test static JSX optimization
     JSX.unsafe(Buffer.contents(__html_buf));
   };
   let dynamic_three_strings = (a, b, c) => {
-    let __html_buf = Buffer.create(256);
+    let __html_buf = Buffer.create(128);
     {
       Buffer.add_string(__html_buf, "<p>");
       JSX.escape(__html_buf, a);
@@ -49,7 +49,7 @@ Test static JSX optimization
     JSX.unsafe(Buffer.contents(__html_buf));
   };
   let dynamic_five_strings = (a, b, c, d, e) => {
-    let __html_buf = Buffer.create(512);
+    let __html_buf = Buffer.create(256);
     {
       Buffer.add_string(__html_buf, "<span>");
       JSX.escape(__html_buf, a);
@@ -72,7 +72,7 @@ Test static JSX optimization
       [],
     );
   let dynamic_element = child => {
-    let __html_buf = Buffer.create(128);
+    let __html_buf = Buffer.create(512);
     {
       Buffer.add_string(__html_buf, "<div>");
       JSX.write(__html_buf, child);
@@ -82,7 +82,7 @@ Test static JSX optimization
     JSX.unsafe(Buffer.contents(__html_buf));
   };
   let mixed_string_element = (name, child) => {
-    let __html_buf = Buffer.create(256);
+    let __html_buf = Buffer.create(512);
     {
       Buffer.add_string(__html_buf, "<div>");
       JSX.escape(__html_buf, name);
@@ -123,7 +123,7 @@ Test static JSX optimization
     JSX.unsafe(Buffer.contents(__html_buf));
   };
   let mixed_int_string = (count, name) => {
-    let __html_buf = Buffer.create(128);
+    let __html_buf = Buffer.create(64);
     {
       Buffer.add_string(__html_buf, "<p>");
       Buffer.add_string(__html_buf, Int.to_string(count));

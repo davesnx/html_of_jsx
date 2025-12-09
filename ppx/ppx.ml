@@ -187,20 +187,23 @@ let transform_attributes ~loc ~tag_name attrs =
       [%expr Stdlib.List.filter_map Stdlib.Fun.id [%e attrs]]
 
 (** Estimate buffer size based on static content and number of dynamic parts.
-    Static parts: exact length known at compile time Dynamic parts: estimate ~64
-    bytes each (reasonable for typical element content), int/float ~16 bytes *)
+    Static parts: exact length known at compile time Dynamic strings: ~32 bytes
+    (typical short text like names, labels) Dynamic elements: ~256 bytes (nested
+    elements are typically larger) Int/float: ~16 bytes (numeric strings) *)
 let estimate_buffer_size parts =
-  let static_size, dynamic_count =
-    List.fold_left parts ~init:(0, 0) ~f:(fun (static, dynamic) part ->
+  let static_size, string_count, element_count =
+    List.fold_left parts ~init:(0, 0, 0)
+      ~f:(fun (static, strings, elements) part ->
         match part with
-        | Static_analysis.Static_str s -> (static + String.length s, dynamic)
-        | Static_analysis.Dynamic_string _ -> (static, dynamic + 1)
-        | Static_analysis.Dynamic_int _ -> (static + 16, dynamic)
-        | Static_analysis.Dynamic_float _ -> (static + 16, dynamic)
-        | Static_analysis.Dynamic_element _ -> (static, dynamic + 1))
+        | Static_analysis.Static_str s ->
+            (static + String.length s, strings, elements)
+        | Static_analysis.Dynamic_string _ -> (static, strings + 1, elements)
+        | Static_analysis.Dynamic_int _ -> (static + 16, strings, elements)
+        | Static_analysis.Dynamic_float _ -> (static + 16, strings, elements)
+        | Static_analysis.Dynamic_element _ -> (static, strings, elements + 1))
   in
-  (* Add estimated size for dynamic content + some padding to avoid resizing *)
-  let estimated = static_size + (dynamic_count * 64) in
+  (* Different estimates for strings vs elements to reduce buffer resizing *)
+  let estimated = static_size + (string_count * 32) + (element_count * 256) in
   (* Round up to next power of 2 for efficiency, minimum 64 *)
   let rec next_power_of_2 n acc =
     if acc >= n then acc else next_power_of_2 n (acc * 2)

@@ -2,7 +2,7 @@ Since we generate invalid syntax for the argument of the make fn `(Props : <>)`
 We need to output ML syntax here, otherwise refmt could not parse it.
   $ ../ppx.sh --output ml input.re
   let hello ~lola =
-    let __html_buf = Buffer.create 128 in
+    let __html_buf = Buffer.create 512 in
     Buffer.add_string __html_buf "<div>";
     JSX.write __html_buf (React.string lola);
     Buffer.add_string __html_buf "</div>";
@@ -14,14 +14,14 @@ We need to output ML syntax here, otherwise refmt could not parse it.
   let cositas ?lola =
     match lola with
     | ((Some lola) [@explicit_arity]) ->
-        let __html_buf = Buffer.create 128 in
+        let __html_buf = Buffer.create 512 in
         Buffer.add_string __html_buf "<div>";
         JSX.write __html_buf (React.string lola);
         Buffer.add_string __html_buf "</div>";
         ();
         JSX.unsafe (Buffer.contents __html_buf)
     | None ->
-        let __html_buf = Buffer.create 128 in
+        let __html_buf = Buffer.create 512 in
         Buffer.add_string __html_buf "<div>";
         JSX.write __html_buf (React.string "no lola");
         Buffer.add_string __html_buf "</div>";
