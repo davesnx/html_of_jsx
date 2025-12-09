@@ -36,7 +36,7 @@ let write_attribute out (attr : attribute) =
       (* false attributes don't get rendered *)
       ()
   | name, `Bool true ->
-      (* true attributes render solely the attribute name *)
+      (* true attributes render only the attribute name *)
       Buffer.add_char out ' ';
       Buffer.add_string out name
   | name, `String value ->
@@ -61,6 +61,8 @@ let write_attribute out (attr : attribute) =
 type element =
   | Null
   | String of string
+  | Int of int
+  | Float of float
   | Unsafe of string (* text without encoding *)
   | Node of {
       tag : string;
@@ -73,8 +75,8 @@ let string txt = String txt
 let text = string
 let unsafe txt = Unsafe txt
 let null = Null
-let int i = String (Int.to_string i)
-let float f = String (Float.to_string f)
+let int i = Int i
+let float f = Float f
 let list arr = List arr
 let fragment arr = List arr
 let node tag attributes children = Node { tag; attributes; children }
@@ -101,6 +103,8 @@ let write out element =
         Buffer.add_char out '>'
     | String text -> escape out text
     | Unsafe text -> Buffer.add_string out text
+    | Int i -> Buffer.add_string out (Int.to_string i)
+    | Float f -> Buffer.add_string out (Float.to_string f)
   in
   write element
 
