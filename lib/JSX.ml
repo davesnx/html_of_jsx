@@ -70,6 +70,7 @@ type element =
       children : element list;
     }
   | List of element list
+  | Array of element array
 
 let string txt = String txt
 let text = string
@@ -78,6 +79,7 @@ let null = Null
 let int i = Int i
 let float f = Float f
 let list arr = List arr
+let array arr = Array arr
 let fragment arr = List arr
 let node tag attributes children = Node { tag; attributes; children }
 
@@ -105,6 +107,7 @@ let write out element =
     | Unsafe text -> Buffer.add_string out text
     | Int i -> Buffer.add_string out (Int.to_string i)
     | Float f -> Buffer.add_string out (Float.to_string f)
+    | Array arr -> Array.iter write arr
   in
   write element
 
