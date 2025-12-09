@@ -34,12 +34,6 @@ type attribute =
   string * [ `Bool of bool | `Int of int | `Float of float | `String of string ]
 
 let write_attribute out (attr : attribute) =
-  let write_name_and_value name value =
-    Buffer.add_string out name;
-    Buffer.add_string out "=\"";
-    escape out value;
-    Buffer.add_char out '"'
-  in
   match attr with
   | _name, `Bool false ->
       (* false attributes don't get rendered *)
@@ -50,13 +44,24 @@ let write_attribute out (attr : attribute) =
       Buffer.add_string out name
   | name, `String value ->
       Buffer.add_char out ' ';
-      write_name_and_value name value
+      Buffer.add_string out name;
+      Buffer.add_string out "=\"";
+      escape out value;
+      Buffer.add_char out '"'
   | name, `Int value ->
+      (* Int.to_string cannot produce escapable characters, skip escape *)
       Buffer.add_char out ' ';
-      write_name_and_value name (Int.to_string value)
+      Buffer.add_string out name;
+      Buffer.add_string out "=\"";
+      Buffer.add_string out (Int.to_string value);
+      Buffer.add_char out '"'
   | name, `Float value ->
+      (* Float.to_string cannot produce escapable characters, skip escape *)
       Buffer.add_char out ' ';
-      write_name_and_value name (Float.to_string value)
+      Buffer.add_string out name;
+      Buffer.add_string out "=\"";
+      Buffer.add_string out (Float.to_string value);
+      Buffer.add_char out '"'
 
 type element =
   | Null
