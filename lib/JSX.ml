@@ -5,9 +5,6 @@ let is_self_closing_tag = function
       true
   | _ -> false
 
-(* Hybrid escape: exception-based fast path for no-escape case (common),
-   char-by-char loop when escaping is needed. Benchmarks show this is
-   10-15% faster than tail-recursive find + loop for typical HTML content. *)
 let escape buf s =
   let len = String.length s in
   let exception Needs_escape of int in
@@ -17,7 +14,7 @@ let escape buf s =
       | '&' | '<' | '>' | '\'' | '"' -> raise_notrace (Needs_escape i)
       | _ -> ()
     done;
-    Buffer.add_string buf s (* Fast path: no escaping needed *)
+    Buffer.add_string buf s
   with Needs_escape first ->
     if first > 0 then Buffer.add_substring buf s 0 first;
     for i = first to len - 1 do
@@ -49,14 +46,12 @@ let write_attribute out (attr : attribute) =
       escape out value;
       Buffer.add_char out '"'
   | name, `Int value ->
-      (* Int.to_string cannot produce escapable characters, skip escape *)
       Buffer.add_char out ' ';
       Buffer.add_string out name;
       Buffer.add_string out "=\"";
       Buffer.add_string out (Int.to_string value);
       Buffer.add_char out '"'
   | name, `Float value ->
-      (* Float.to_string cannot produce escapable characters, skip escape *)
       Buffer.add_char out ' ';
       Buffer.add_string out name;
       Buffer.add_string out "=\"";
