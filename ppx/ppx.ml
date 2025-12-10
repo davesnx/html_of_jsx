@@ -4,7 +4,7 @@ module List = ListLabels
 
 let issues_url = "https://github.com/davesnx/html_of_jsx/issues"
 
-(* Flag to disable static optimization *)
+(* Flags to control optimizations *)
 let disable_static_optimization = ref false
 
 (* There's no pexp_list on Ppxlib since is not a constructor of the Parsetree *)
@@ -186,33 +186,13 @@ let transform_attributes ~loc ~tag_name attrs =
       (* We need to filter attributes since optionals are represented as None *)
       [%expr Stdlib.List.filter_map Stdlib.Fun.id [%e attrs]]
 
-(** Estimate buffer size based on static content and number of dynamic parts.
-    Static parts: exact length known at compile time Dynamic parts: estimate ~64
-    bytes each (reasonable for typical element content), int/float ~16 bytes *)
-let estimate_buffer_size parts =
-  let static_size, dynamic_count =
-    List.fold_left parts ~init:(0, 0) ~f:(fun (static, dynamic) part ->
-        match part with
-        | Static_analysis.Static_str s -> (static + String.length s, dynamic)
-        | Static_analysis.Dynamic_string _ -> (static, dynamic + 1)
-        | Static_analysis.Dynamic_int _ -> (static + 16, dynamic)
-        | Static_analysis.Dynamic_float _ -> (static + 16, dynamic)
-        | Static_analysis.Dynamic_element _ -> (static, dynamic + 1))
-  in
-  (* Add estimated size for dynamic content + some padding to avoid resizing *)
-  let estimated = static_size + (dynamic_count * 64) in
-  (* Round up to next power of 2 for efficiency, minimum 64 *)
-  let rec next_power_of_2 n acc =
-    if acc >= n then acc else next_power_of_2 n (acc * 2)
-  in
-  max 64 (next_power_of_2 estimated 64)
+let default_buffer_size = 1024
 
 let generate_buffer_code ~loc parts =
   let buf_var = "__html_buf" in
   let buf_ident = pexp_ident ~loc { loc; txt = Lident buf_var } in
   let buf_pat = ppat_var ~loc { loc; txt = buf_var } in
-  let buffer_size = estimate_buffer_size parts in
-  let buffer_size_expr = eint ~loc buffer_size in
+  let buffer_size_expr = eint ~loc default_buffer_size in
   let generate_part_code part =
     match part with
     | Static_analysis.Static_str s ->
@@ -265,7 +245,7 @@ let rewrite_node_optimized ~loc tag_name args children =
   | Static_analysis.Needs_string_concat parts
   | Static_analysis.Needs_buffer parts ->
       generate_buffer_code ~loc parts
-  | Static_analysis.Needs_conditional _ | Static_analysis.Cannot_optimize ->
+  | Static_analysis.Cannot_optimize ->
       rewrite_node_unoptimized ~loc tag_name args children
 
 let rewrite_node ~loc tag_name args children =
@@ -387,9 +367,6 @@ let () =
       ( "Disable static HTML optimization (use JSX.node for all elements)",
         "-disable-static-opt",
         Arg.Unit (fun () -> disable_static_optimization := true) );
-      (* ( "-custom",
-         Arg.String (fun file -> Static_attributes.extra_properties := Some file),
-         "FILE Load inferred types from cmo file." ); *)
     ]
   in
 

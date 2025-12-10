@@ -30,7 +30,7 @@
       [],
     );
   let lowerWithChildAndProps = foo => {
-    let __html_buf = Buffer.create(128);
+    let __html_buf = Buffer.create(1024);
     {
       Buffer.add_string(
         __html_buf,
@@ -44,7 +44,7 @@
   };
   let lower_child_static = JSX.unsafe("<div><span></span></div>");
   let lower_child_ident = {
-    let __html_buf = Buffer.create(128);
+    let __html_buf = Buffer.create(1024);
     {
       Buffer.add_string(__html_buf, "<div>");
       JSX.write(__html_buf, lolaspa);
@@ -56,7 +56,7 @@
   let lower_child_single = JSX.unsafe("<div><div></div></div>");
   let lower_children_multiple = (foo, bar) => lower(~children=[foo, bar], ());
   let lower_child_with_upper_as_children = {
-    let __html_buf = Buffer.create(128);
+    let __html_buf = Buffer.create(1024);
     {
       Buffer.add_string(__html_buf, "<div>");
       JSX.write(__html_buf, App.make());
@@ -66,19 +66,19 @@
     JSX.unsafe(Buffer.contents(__html_buf));
   };
   let lower_children_nested = {
-    let __html_buf = Buffer.create(128);
+    let __html_buf = Buffer.create(1024);
     {
       Buffer.add_string(__html_buf, "<div class=\"flex-container\">");
       JSX.write(
         __html_buf,
         {
-          let __html_buf = Buffer.create(256);
+          let __html_buf = Buffer.create(1024);
           {
             Buffer.add_string(__html_buf, "<div class=\"sidebar\">");
             JSX.write(
               __html_buf,
               {
-                let __html_buf = Buffer.create(128);
+                let __html_buf = Buffer.create(1024);
                 {
                   Buffer.add_string(__html_buf, "<h2 class=\"title\">");
                   JSX.write(__html_buf, "jsoo-react" |> s);
@@ -91,20 +91,20 @@
             JSX.write(
               __html_buf,
               {
-                let __html_buf = Buffer.create(128);
+                let __html_buf = Buffer.create(1024);
                 {
                   Buffer.add_string(__html_buf, "<nav class=\"menu\">");
                   JSX.write(
                     __html_buf,
                     {
-                      let __html_buf = Buffer.create(128);
+                      let __html_buf = Buffer.create(1024);
                       {
                         Buffer.add_string(__html_buf, "<ul>");
                         JSX.write(
                           __html_buf,
                           examples
                           |> List.map(e => {
-                               let __html_buf = Buffer.create(128);
+                               let __html_buf = Buffer.create(1024);
                                {
                                  Buffer.add_string(__html_buf, "<li>");
                                  JSX.write(
@@ -158,7 +158,7 @@
     JSX.unsafe(Buffer.contents(__html_buf));
   };
   let lower_ref_with_children = {
-    let __html_buf = Buffer.create(128);
+    let __html_buf = Buffer.create(1024);
     {
       Buffer.add_string(__html_buf, "<button class=\"FancyButton\">");
       JSX.write(__html_buf, children);

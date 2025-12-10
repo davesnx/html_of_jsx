@@ -63,6 +63,19 @@ val list : element list -> element
           [ JSX.string "Item 1"; JSX.string "Item 2"; JSX.string "Item 3" ]
     ]} *)
 
+val array : element array -> element
+(** Helper to render an array of elements.
+
+    This function takes a array of JSX elements and returns a single JSX element
+    that contains all of them. This is useful for rendering dynamic array of
+    elements.
+
+    {[
+      let element : JSX.element =
+        JSX.array
+          [| JSX.string "Item 1"; JSX.string "Item 2"; JSX.string "Item 3" |]
+    ]} *)
+
 type attribute =
   string * [ `Bool of bool | `Int of int | `Float of float | `String of string ]
 (** Represents an attribute of an HTML element. It consists of a name and a

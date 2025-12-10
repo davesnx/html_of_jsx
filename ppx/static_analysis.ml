@@ -117,11 +117,15 @@ let render_attr_value = function
   | Static_bool true -> "true"
   | Static_bool false -> "false"
 
-type attr_render_info = { html_name : string; is_boolean : bool }
+type attr_render_info = {
+  html_name : string;
+  is_boolean : bool;
+  kind : Html_attributes.kind;
+}
 
 type parsed_attr =
   | Static_attr of attr_render_info * static_attr_value
-  | Optional_attr of string * expression
+  | Optional_attr of attr_render_info * expression
   | Dynamic_attr of string * expression
 
 type attr_validation_result = Valid_attr of attr_render_info | Invalid_attr
@@ -131,14 +135,15 @@ let validate_attr_for_static ~tag_name jsx_name =
   | Error _ -> Invalid_attr
   | Ok prop ->
       let html_name = Html.getName prop in
-      let is_boolean =
+      let kind =
         match prop with
-        | Html_attributes.Attribute { type_ = Bool; _ }
-        | Html_attributes.Rich_attribute { type_ = Bool; _ } ->
-            true
-        | _ -> false
+        | Html_attributes.Attribute { type_; _ }
+        | Html_attributes.Rich_attribute { type_; _ } ->
+            type_
+        | Html_attributes.Event _ -> Html_attributes.String
       in
-      Valid_attr { html_name; is_boolean }
+      let is_boolean = kind = Html_attributes.Bool in
+      Valid_attr { html_name; is_boolean; kind }
 
 let render_static_attr_with_info info value =
   match value with
@@ -156,7 +161,7 @@ let analyze_attribute ~tag_name (label, expr) : attr_analysis_result =
   | Optional name -> (
       match validate_attr_for_static ~tag_name name with
       | Invalid_attr -> Invalid
-      | Valid_attr info -> Ok (Some (Optional_attr (info.html_name, expr))))
+      | Valid_attr info -> Ok (Some (Optional_attr (info, expr))))
   | Labelled name -> (
       match validate_attr_for_static ~tag_name name with
       | Invalid_attr -> Invalid
@@ -167,7 +172,7 @@ let analyze_attribute ~tag_name (label, expr) : attr_analysis_result =
 
 type attrs_analysis =
   | All_static of string
-  | Has_optional of (string * expression) list * string
+  | Has_optional of (attr_render_info * expression) list * string
   | Has_dynamic
   | Validation_failed
 
@@ -184,8 +189,8 @@ let analyze_attributes ~tag_name attrs =
             Buffer.add_string static_buf
               (render_static_attr_with_info info value);
             loop static_buf optionals rest
-        | Ok (Some (Optional_attr (name, expr))) ->
-            loop static_buf ((name, expr) :: optionals) rest
+        | Ok (Some (Optional_attr (info, expr))) ->
+            loop static_buf ((info, expr) :: optionals) rest
         | Ok (Some (Dynamic_attr _)) -> Has_dynamic)
   in
   loop (Buffer.create 64) [] attrs
@@ -279,12 +284,6 @@ type element_analysis =
   | Fully_static of string
   | Needs_string_concat of static_part list
   | Needs_buffer of static_part list
-  | Needs_conditional of {
-      optional_attrs : (string * expression) list;
-      static_attrs : string;
-      tag_name : string;
-      children_analysis : children_analysis;
-    }
   | Cannot_optimize
 
 let analyze_element ~tag_name ~attrs ~children =
@@ -320,14 +319,7 @@ let analyze_element ~tag_name ~attrs ~children =
         [ Static_str open_tag ] @ parts @ [ Static_str close_tag ]
       in
       Needs_buffer (coalesce_static_parts all_parts)
-  | Has_optional (optionals, static_attrs), children_result ->
-      Needs_conditional
-        {
-          optional_attrs = optionals;
-          static_attrs;
-          tag_name;
-          children_analysis = children_result;
-        }
+  | Has_optional _, _ -> Cannot_optimize
 
 let maybe_add_doctype tag_name html =
   if tag_name = "html" then "<!DOCTYPE html>" ^ html else html

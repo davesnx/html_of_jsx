@@ -5,61 +5,65 @@ let is_self_closing_tag = function
       true
   | _ -> false
 
-let rec find_first_to_escape s len i =
-  if i >= len then -1
-  else
-    match String.unsafe_get s i with
-    | '&' | '<' | '>' | '\'' | '"' -> i
-    | _ -> find_first_to_escape s len (i + 1)
-
 let escape buf s =
-  let len = String.length s in
-  let first = find_first_to_escape s len 0 in
-  if first < 0 then Buffer.add_string buf s
-  else begin
-    if first > 0 then Buffer.add_substring buf s 0 first;
-    for i = first to len - 1 do
+  let length = String.length s in
+  let exception First_char_to_escape of int in
+  match
+    for i = 0 to length - 1 do
       match String.unsafe_get s i with
-      | '&' -> Buffer.add_string buf "&amp;"
-      | '<' -> Buffer.add_string buf "&lt;"
-      | '>' -> Buffer.add_string buf "&gt;"
-      | '\'' -> Buffer.add_string buf "&apos;"
-      | '"' -> Buffer.add_string buf "&quot;"
-      | c -> Buffer.add_char buf c
+      | '&' | '<' | '>' | '\'' | '"' -> raise_notrace (First_char_to_escape i)
+      | _ -> ()
     done
-  end
+  with
+  | exception First_char_to_escape first ->
+      if first > 0 then Buffer.add_substring buf s 0 first;
+      for i = first to length - 1 do
+        match String.unsafe_get s i with
+        | '&' -> Buffer.add_string buf "&amp;"
+        | '<' -> Buffer.add_string buf "&lt;"
+        | '>' -> Buffer.add_string buf "&gt;"
+        | '\'' -> Buffer.add_string buf "&apos;"
+        | '"' -> Buffer.add_string buf "&quot;"
+        | c -> Buffer.add_char buf c
+      done
+  | _ -> Buffer.add_string buf s
 
 type attribute =
   string * [ `Bool of bool | `Int of int | `Float of float | `String of string ]
 
 let write_attribute out (attr : attribute) =
-  let write_name_and_value name value =
-    Buffer.add_string out name;
-    Buffer.add_string out "=\"";
-    escape out value;
-    Buffer.add_char out '"'
-  in
   match attr with
   | _name, `Bool false ->
       (* false attributes don't get rendered *)
       ()
   | name, `Bool true ->
-      (* true attributes render solely the attribute name *)
+      (* true attributes render only the attribute name *)
       Buffer.add_char out ' ';
       Buffer.add_string out name
   | name, `String value ->
       Buffer.add_char out ' ';
-      write_name_and_value name value
+      Buffer.add_string out name;
+      Buffer.add_string out "=\"";
+      escape out value;
+      Buffer.add_char out '"'
   | name, `Int value ->
       Buffer.add_char out ' ';
-      write_name_and_value name (Int.to_string value)
+      Buffer.add_string out name;
+      Buffer.add_string out "=\"";
+      Buffer.add_string out (Int.to_string value);
+      Buffer.add_char out '"'
   | name, `Float value ->
       Buffer.add_char out ' ';
-      write_name_and_value name (Float.to_string value)
+      Buffer.add_string out name;
+      Buffer.add_string out "=\"";
+      Buffer.add_string out (Float.to_string value);
+      Buffer.add_char out '"'
 
 type element =
   | Null
   | String of string
+  | Int of int
+  | Float of float
   | Unsafe of string (* text without encoding *)
   | Node of {
       tag : string;
@@ -67,14 +71,16 @@ type element =
       children : element list;
     }
   | List of element list
+  | Array of element array
 
 let string txt = String txt
 let text = string
 let unsafe txt = Unsafe txt
 let null = Null
-let int i = String (Int.to_string i)
-let float f = String (Float.to_string f)
+let int i = Int i
+let float f = Float f
 let list arr = List arr
+let array arr = Array arr
 let fragment arr = List arr
 let node tag attributes children = Node { tag; attributes; children }
 
@@ -100,6 +106,9 @@ let write out element =
         Buffer.add_char out '>'
     | String text -> escape out text
     | Unsafe text -> Buffer.add_string out text
+    | Int i -> Buffer.add_string out (Int.to_string i)
+    | Float f -> Buffer.add_string out (Float.to_string f)
+    | Array arr -> Array.iter write arr
   in
   write element
 
