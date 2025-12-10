@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>index (html_of_jsx.index)</title><meta charset="utf-8"/><link rel="stylesheet" href="../odoc.support/odoc.css"/><meta name="generator" content="odoc 3.1.0"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><script src="../odoc.support/highlight.pack.js"></script><script>hljs.initHighlightingOnLoad();</script></head><body class="odoc"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../index.html">Index</a> &#x00BB; html_of_jsx</nav><header class="odoc-preamble"><h2 id="html_of_jsx-render-html-with-jsx"><a href="#html_of_jsx-render-html-with-jsx" class="anchor"></a>html_of_jsx <b>Render HTML with JSX</b></h2><p><b>html_of_jsx</b> is a library and a ppx to write HTML declaratively in <a href="https://ocaml.org">OCaml</a>, <a href="https://reasonml.github.io">Reason</a> and <a href="https://github.com/ocaml-mlx/mlx">mlx</a>.</p><p>This library was extracted from <a href="https://github.com/ml-in-barcelona/server-reason-react">server-reason-react</a> and simplified to only work with HTML and SVG.</p><h2 id="installation"><a href="#installation" class="anchor"></a>Installation</h2><pre class="language-bash"><code>opam install html_of_jsx</code></pre><p>add it to your <b>dune</b> file</p><pre class="language-ocaml"><code>(libraries html_of_jsx)
+(preprocess (pps html_of_jsx.ppx))</code></pre><h2 id="overview"><a href="#overview" class="anchor"></a>Overview</h2><ul><li><b>Minimal design</b>. It should just get out of the way. The ppx is seamless and the interface only exposes 5 functions and 2 types.</li><li><b>Type-safe</b> validates correct attributes and its types</li><li>Works with <a href="https://ocaml.org">OCaml</a>, <a href="https://reasonml.github.io">Reason</a> and <a href="https://github.com/ocaml-mlx/mlx">mlx</a></li><li>Brings the &quot;component model&quot; to HTML</li><li>Supports all of <a href="https://reasonml.github.io/docs/syntax/jsx">Reason's JSX</a> features (uppercase components, fragments, optional attributes, punning)</li><li>but with a few improvements (lowercase components, no need for a ppx annotation)</li><li>No React idioms (no <code>className</code>, no <code>htmlFor</code>, no <code>onChange</code>, etc...), just plain HTML5</li><li>Integrates well with <a href="https://htmx.org/">Htmx</a> and others (see the <a href="htmx.html"><code>htmx</code></a> page)</li><li>Designed to work on the server, but can be used on the client-side (with <a href="https://melange.re">Melange</a> or <a href="https://ocsigen.org/js_of_ocaml/">jsoo</a>)</li></ul><h2 id="api"><a href="#api" class="anchor"></a>API</h2><p>The library exposes a single module <a href="JSX/index.html"><code>JSX</code></a> with a minimal API:</p><ul><li>A way to create DOM elements and nodes (<code>JSX.string</code>, <code>JSX.int</code>, <code>JSX.null</code>, <code>JSX.list</code>, <code>JSX.unsafe</code>) into a <code>JSX.t</code> tree</li><li>and <code>JSX.render</code> wich transforms a <code>JSX.t</code> tree into an HTML string</li><li>the rest are your functions that return <code>JSX.t</code> trees, which are known as &quot;components&quot;</li></ul><p><b>Visit the <a href="JSX/index.html"><code>JSX</code></a> page for the complete interface documentation</b></p></header><div class="odoc-tocs"><nav class="odoc-toc odoc-local-toc"><ul><li><a href="#it's-just-html">It's just HTML</a></li><li><a href="#components-are-functions-with-labeled-arguments">Components are functions with labeled arguments</a></li><li><a href="#children:-elements-can-be-nested-in-other-components">children: elements can be nested in other components</a></li><li><a href="#uppercase-components-default-to-the-make-function">Uppercase components default to the <code>make</code> function</a></li><li><a href="#brings-the-power-of-interleaving-expressions-within-your-jsx">Brings the power of interleaving expressions within your JSX</a></li><li><a href="#list-of-childrens-are-available-with-jsx.list">List of childrens are available with <code>JSX.list</code></a><ul><li><a href="#supports-list-of-elements-as-children">Supports list of elements as children</a></li></ul></li><li><a href="#type-safe">Type-safe</a></li><li><a href="#works-with-reason">Works with Reason</a></li><li><a href="#works-with-mlx">Works with mlx</a></li><li><a href="#ppx-flags">ppx flags</a><ul><li><a href="#-htmx"><code>-htmx</code></a></li><li><a href="#-react"><code>-react</code></a></li><li><a href="#-disable-static-opt"><code>-disable-static-opt</code></a></li></ul></li></ul></nav></div><div class="odoc-content"><h3 id="it's-just-html"><a href="#it's-just-html" class="anchor"></a>It's just HTML</h3><p>We stick to the HTML standard, so no react idioms like <code>className</code>, no <code>htmlFor</code>, etc.</p><pre class="language-reasonml"><code>let element = &lt;span&gt; {JSX.string(&quot;Hello world!&quot;)} &lt;/span&gt;;</code></pre><p><b>Note</b>: <a href="https://v2.ocaml.org/manual/lex.html#sss:keywords">reserved keywords</a> aren't possible as props. For example: <code>class</code> =&gt; <code>class_</code> or <code>type</code> =&gt; <code>type_</code>.</p><h3 id="components-are-functions-with-labeled-arguments"><a href="#components-are-functions-with-labeled-arguments" class="anchor"></a>Components are functions with labeled arguments</h3><pre class="language-reasonml"><code>let component = (~name, ()) =&gt; {
+  &lt;div&gt; &lt;h1&gt; {JSX.string(&quot;Hello, &quot; ++ name ++ &quot;!&quot;)} &lt;/h1&gt; &lt;/div&gt;;
+};
+
+JSX.render(&lt;component name=&quot;lola&quot; /&gt;);</code></pre><p>&gt; <b>Note</b> that the <code>component</code> function needs to have a last argument of type <code>unit</code> in order to work properly with labelled arguments. Explained on the <a href="https://v2.ocaml.org/manual/lablexamples.html#s:optional-arguments">OCaml manual</a>: Functions with only labelled arguments, need a last non labelled argument to be able to be called as a non curried function.</p><h3 id="children:-elements-can-be-nested-in-other-components"><a href="#children:-elements-can-be-nested-in-other-components" class="anchor"></a>children: elements can be nested in other components</h3><p>This makes possible to compose any HTML and abstract those components away. <code>~children</code> is a prop that recieves the nested elements from the component invocation.</p><pre class="language-reasonml"><code>let hero = (~children, ()) =&gt; {
+  &lt;main class_=&quot;fancy-hero&quot;&gt; {children} &lt;/main&gt;;
+};
+
+JSX.render(&lt;hero&gt; {JSX.string(&quot;Hello, world!&quot;)} &lt;/hero&gt;);</code></pre><p>In this example, the <code>hero</code> component is a function that takes a <code>children</code> prop and returns a <code>main</code> element with the class <code>fancy-hero</code>. The <code>children</code> prop is the nested elements from the component invocation.</p><h3 id="uppercase-components-default-to-the-make-function"><a href="#uppercase-components-default-to-the-make-function" class="anchor"></a>Uppercase components default to the <code>make</code> function</h3><pre class="language-reasonml"><code>module Button = {
+  let make = () =&gt; {
+    &lt;button onclick=&quot;onClickHandler&quot;&gt; {JSX.string(&quot;Click me&quot;)} &lt;/button&gt;;
+  };
+};
+
+JSX.render(&lt;Button /&gt;);
+// is equivalent to
+JSX.render(&lt;Button.make /&gt;);</code></pre><h3 id="brings-the-power-of-interleaving-expressions-within-your-jsx"><a href="#brings-the-power-of-interleaving-expressions-within-your-jsx" class="anchor"></a>Brings the power of interleaving expressions within your JSX</h3><pre class="language-reasonml"><code>let component = (~name, ~children, ()) =&gt; {
+  &lt;div&gt;
+    &lt;h1&gt; {(&quot;Hello, &quot; ++ name ++ &quot;!&quot;) |&gt; JSX.string} &lt;/h1&gt;
+    &lt;h2&gt; children &lt;/h2&gt;
+  &lt;/div&gt;;
+};
+
+JSX.render(
+  &lt;component name=&quot;World&quot;&gt; {JSX.string(&quot;This is a children!&quot;)} &lt;/component&gt;,
+);</code></pre><h3 id="list-of-childrens-are-available-with-jsx.list"><a href="#list-of-childrens-are-available-with-jsx.list" class="anchor"></a>List of childrens are available with <code>JSX.list</code></h3><p>A component can receive more than one children, which is the case for the <code>ul</code> element, but many other elements too. To make sure a list of elements is an element, use the <code>JSX.list</code> function.</p><pre class="language-reasonml"><code>JSX.render(
+  &lt;ul&gt;
+    {[&quot;This&quot;, &quot;is&quot;, &quot;an&quot;, &quot;unordered&quot;, &quot;list&quot;]
+     |&gt; List.map(item =&gt; &lt;li&gt; {JSX.string(item)} &lt;/li&gt;)
+     |&gt; JSX.list}
+  &lt;/ul&gt;,
+);</code></pre><h4 id="supports-list-of-elements-as-children"><a href="#supports-list-of-elements-as-children" class="anchor"></a>Supports list of elements as children</h4><p>There are other cases where you want to construct many <code>JSX.element</code> without wrapping them in a HTML element, that's what <code>Fragment</code> is for: <code>&lt;&gt; ... &lt;/&gt;</code>.</p><pre class="language-reasonml"><code>let component: JSX.element =
+  &lt;&gt;
+    &lt;div class_=&quot;md:w-1/3&quot; /&gt;
+    &lt;div class_=&quot;md:w-2/3&quot; /&gt;
+  &lt;/&gt;;
+
+let output = JSX.render(&lt;component/&gt;);
+/* &lt;div class=&quot;md:w-1/3&quot;&gt;&lt;/div&gt;&lt;div class=&quot;md:w-2/3&quot;&gt;&lt;/div&gt; */</code></pre><h3 id="type-safe"><a href="#type-safe" class="anchor"></a>Type-safe</h3><p>HTML attributes are type-checked and only valid attributes are allowed. It also ensures that the value is correct.</p><pre class="language-reasonml"><code>    &lt;h1 noop=1&gt; {JSX.string(&quot;Hello, world!&quot;)} &lt;/h1&gt;
+    ^^^
+// Error: prop 'noop' is not valid on a 'h1' element.</code></pre><pre class="language-reasonml"><code>    &lt;h1 class_=1&gt; {JSX.string(&quot;Hello, world!&quot;)} &lt;/h1&gt;
+               ^
+// Error: This expression has type int but an expression was expected of type string</code></pre><p>And also in case of a misspell, it recommends the closest attribute</p><pre class="language-reasonml"><code>
+          &lt;div ?onClick /&gt;
+          ^^^^
+// Error: prop 'onClick' is not valid on a 'div' element.
+//        Hint: Maybe you mean 'onclick'?</code></pre><h3 id="works-with-reason"><a href="#works-with-reason" class="anchor"></a>Works with <a href="https://reasonml.github.io">Reason</a></h3><pre class="language-reasonml"><code>let component = (~name, ()) =&gt; {
+  &lt;div&gt;
+    &lt;h1&gt; {JSX.string(&quot;Hello, &quot; ++ name ++ &quot;!&quot;)} &lt;/h1&gt;
+  &lt;/div&gt;;
+};
+
+JSX.render(&lt;component name=&quot;World&quot; /&gt;);</code></pre><h3 id="works-with-mlx"><a href="#works-with-mlx" class="anchor"></a>Works with <a href="https://github.com/ocaml-mlx/mlx">mlx</a></h3><p><a href="https://github.com/ocaml-mlx/mlx">mlx</a> is an OCaml syntax dialect which adds JSX syntax expressions</p><pre class="language-ocaml"><code>let component ~name () =
+  &lt;div&gt;
+    &lt;h1&gt; (&quot;Hello, &quot; ^ name ^ &quot;!&quot;) &lt;/h1&gt;
+  &lt;/div&gt;
+
+JSX.render &lt;component name=&quot;World&quot; /&gt;</code></pre><h3 id="ppx-flags"><a href="#ppx-flags" class="anchor"></a>ppx flags</h3><p>The ppx supports several flags to customize its behavior:</p><h4 id="-htmx"><a href="#-htmx" class="anchor"></a><code>-htmx</code></h4><p>Enables htmx attributes in HTML and SVG elements. See <a href="htmx.html" title="htmx">the htmx page</a> for more information.</p><pre class="language-ocaml"><code>(preprocess (pps html_of_jsx.ppx -htmx))</code></pre><h4 id="-react"><a href="#-react" class="anchor"></a><code>-react</code></h4><p>Enables React-specific attributes (like <code>className</code>, <code>htmlFor</code>, etc.) in HTML and SVG elements. See <a href="react.html" title="react">the react page</a> for more information.</p><pre class="language-ocaml"><code>(preprocess (pps html_of_jsx.ppx -react))</code></pre><h4 id="-disable-static-opt"><a href="#-disable-static-opt" class="anchor"></a><code>-disable-static-opt</code></h4><p>Disables static HTML optimization. By default, the ppx pre-renders elements with static content at compile time for <a href="https://sancho.dev/blog/making-html-of-jsx-10x-faster">better performance</a>. This flag forces all elements to use <code>JSX.node</code> at runtime instead of pre-rendered HTML.</p><pre class="language-ocaml"><code>(preprocess (pps html_of_jsx.ppx -disable-static-opt))</code></pre><p>This flag may be useful for:</p><ul><li>Debugging: inspect the actual <code>JSX.node</code> calls being generated</li><li>Compatibility: if you need the old behavior for some reason</li><li>Benchmarking: compare optimized vs unoptimized rendering performance</li></ul><p><b>Example:</b></p><pre class="language-reasonml"><code>(* With static optimization (default): *)
+let element = &lt;div class_=&quot;container&quot;&gt;&lt;/div&gt;;
+(* Compiles to: JSX.unsafe {|&lt;div class=&quot;container&quot;&gt;&lt;/div&gt;|} *)
+
+(* With -disable-static-opt: *)
+let element = &lt;div class_=&quot;container&quot;&gt;&lt;/div&gt;;
+(* Compiles to: JSX.node(&quot;div&quot;, [(&quot;class&quot;, `String &quot;container&quot;)], []) *)</code></pre></div></body></html>
