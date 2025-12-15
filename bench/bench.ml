@@ -1,12 +1,7 @@
 (* Benchmark comparing different optimizations *)
 
-(* ============================================================ *)
-(* JSON output support for CI integration                       *)
-(* ============================================================ *)
-
 let json_mode = ref false
 
-(* Extract average throughput (ops/sec) from benchmark results *)
 let extract_rate samples =
   let total_rate =
     List.fold_left
@@ -19,7 +14,6 @@ let extract_rate samples =
   in
   total_rate /. float_of_int (List.length samples)
 
-(* Convert benchmark results to JSON format for github-action-benchmark *)
 let results_to_json ~group_name results =
   List.map
     (fun (name, samples) ->
@@ -197,7 +191,6 @@ let escape_a = "a < b && c > d"
 let escape_b = "\"quoted\" & 'apostrophe'"
 
 let () =
-  (* Parse command line arguments *)
   let args = Array.to_list Sys.argv in
   json_mode := List.mem "--json" args;
 
@@ -259,7 +252,6 @@ let () =
   if not !json_mode then Benchmark.tabulate two_with_escape;
 
   if !json_mode then begin
-    (* Output JSON for github-action-benchmark *)
     let all_json =
       results_to_json ~group_name:"single_no_escape" single_no_escape
       @ results_to_json ~group_name:"two_no_escape" two_no_escape
