@@ -22,10 +22,6 @@ let results_to_json ~group_name results =
         group_name name rate)
     results
 
-(* ============================================================ *)
-(* 1. Escape function implementations                           *)
-(* ============================================================ *)
-
 (* Loop everything: flush-based, always scans entire string *)
 let escape_loop_all buf s =
   let len = String.length s in
@@ -101,7 +97,7 @@ let escape_raphael buf s =
     else
       let first = find_first s len i in
       if first < 0 then Buffer.add_substring buf s i (len - i)
-      else begin
+      else (
         if first > i then Buffer.add_substring buf s i (first - i);
         (match String.unsafe_get s first with
         | '&' -> Buffer.add_string buf "&amp;"
@@ -110,14 +106,9 @@ let escape_raphael buf s =
         | '\'' -> Buffer.add_string buf "&apos;"
         | '"' -> Buffer.add_string buf "&quot;"
         | _ -> ());
-        go (first + 1)
-      end
+        go (first + 1))
   in
   go 0
-
-(* ============================================================ *)
-(* Escape benchmark helpers                                     *)
-(* ============================================================ *)
 
 let with_loop_all name =
   let buf = Buffer.create 128 in
@@ -179,10 +170,6 @@ let two_raphael a b =
   Buffer.add_string buf "</div>";
   JSX.unsafe (Buffer.contents buf)
 
-(* ============================================================ *)
-(* Test data                                                    *)
-(* ============================================================ *)
-
 let test_name = "Hello, World!"
 let test_a = "Hello"
 let test_b = "World"
@@ -194,9 +181,6 @@ let () =
   let args = Array.to_list Sys.argv in
   json_mode := List.mem "--json" args;
 
-  (* ============================================================ *)
-  (* ESCAPE FUNCTION COMPARISON                                   *)
-  (* ============================================================ *)
   if not !json_mode then
     print_endline "=== 1. Escape Implementation Comparison ===\n";
 
@@ -251,7 +235,7 @@ let () =
   in
   if not !json_mode then Benchmark.tabulate two_with_escape;
 
-  if !json_mode then begin
+  if !json_mode then (
     let all_json =
       results_to_json ~group_name:"single_no_escape" single_no_escape
       @ results_to_json ~group_name:"two_no_escape" two_no_escape
@@ -260,13 +244,8 @@ let () =
     in
     print_endline "[";
     print_endline (String.concat ",\n" all_json);
-    print_endline "]"
-  end
-  else begin
-    (* ============================================================ *)
-    (* SUMMARY                                                      *)
-    (* ============================================================ *)
+    print_endline "]")
+  else (
     print_endline "\n=== Summary ===";
     print_endline
-      "Escape: exception = current JSX.escape (fast path for no-escape case)"
-  end
+      "Escape: exception = current JSX.escape (fast path for no-escape case)")

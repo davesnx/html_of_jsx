@@ -28,8 +28,6 @@ let measure_alloc_n n f =
 
 let () =
   Printf.printf "=== Memory Layout Benchmark ===\n\n";
-
-  (* === Part 1: Static sizes === *)
   Printf.printf "--- Part 1: Static Object Sizes (reachable words) ---\n\n";
 
   (* Use Bytes.to_string to create unique strings and avoid compiler sharing *)
@@ -76,7 +74,6 @@ let () =
     (words_of attrs_5_list - words_of attrs_5_array)
     (float_of_int (words_of attrs_5_list - words_of attrs_5_array) /. 5.);
 
-  (* === Part 2: Allocation costs === *)
   Printf.printf "--- Part 2: Allocation Cost (words per construction) ---\n\n";
 
   let n = 10000 in
@@ -123,7 +120,6 @@ let () =
   Printf.printf "  %.1f minor words, %.1f major words\n\n" minor_nested
     major_nested;
 
-  (* === Part 3: List vs Array construction cost === *)
   Printf.printf "--- Part 3: List vs Array Construction Cost ---\n\n";
 
   (* Use Sys.opaque_identity to prevent compiler from optimizing away allocations *)
@@ -183,7 +179,6 @@ let () =
       ((minor_list_5 -. minor_array_5) /. minor_list_5 *. 100.)
   else Printf.printf "  (compiler optimized literals - see note below)\n\n";
 
-  (* === Part 4: Iteration cost === *)
   Printf.printf "--- Part 4: Iteration Cost ---\n\n";
 
   let test_list = List.init 10 make_attr in
@@ -205,7 +200,6 @@ let () =
   Printf.printf "  Array.iter: %.1f words\n" minor_array_iter;
   Printf.printf "  (Both should be ~0 - iteration itself doesn't allocate)\n";
 
-  (* === Part 5: Full render comparison === *)
   Printf.printf "\n--- Part 5: Full Render Allocation ---\n\n";
 
   let simple_node = JSX.node "div" [ ("class", `String "container") ] [] in
@@ -221,7 +215,6 @@ let () =
     (minor_render -. minor_render_opt)
     ((minor_render -. minor_render_opt) /. minor_render *. 100.);
 
-  (* === Summary === *)
   Printf.printf "=== Summary ===\n\n";
   Printf.printf "Node record: 4 words (header + tag + attributes + children)\n";
   Printf.printf "Per-cons-cell overhead: 3 words (header + car + cdr)\n";
