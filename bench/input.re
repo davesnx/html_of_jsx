@@ -10,11 +10,7 @@ module Styles = {
     );
 
   module Align = {
-    type t = [
-      | `center
-      | `start
-      | `end_
-    ];
+    type t = [ | `center | `start | `end_];
     let to_s = align =>
       switch (align) {
       | `center => "center"
