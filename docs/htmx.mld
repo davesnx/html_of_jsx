@@ -1,20 +1,201 @@
 {0 Enable {{:https://htmx.org/}Htmx} attributes}
 
-{1 {b (Experimental)}}
-
-Support htmx properties as attributes in all HTML elements
+Support htmx properties as attributes in all HTML elements.
 
 {2 {b Enable the htmx mode}}
 
-Adding the [-htmx] flag into the ppx
+Adding the [-htmx] flag into the ppx:
 {[
   (libraries html_of_jsx)
   (preprocess (pps html_of_jsx.ppx -htmx))
 ]}
 
-{2 {b Example}}
+{2 {b Basic Example}}
 {[
 JSX.render(<div hx_boost=true />)
+(* Outputs: <div hx-boost="true"></div> *)
 ]}
 
-The htmx attributes are scoped with the prefix {b hx_}
+The htmx attributes use underscores in place of hyphens: {b hx_get} becomes {b hx-get} in the output.
+
+{2 {b Core Attributes}}
+
+These are the main htmx attributes for AJAX requests:
+
+{ul
+  {- [hx_get] - issues a GET to the specified URL}
+  {- [hx_post] - issues a POST to the specified URL}
+  {- [hx_put] - issues a PUT to the specified URL}
+  {- [hx_patch] - issues a PATCH to the specified URL}
+  {- [hx_delete] - issues a DELETE to the specified URL}
+  {- [hx_boost] - add or remove progressive enhancement for links and forms}
+  {- [hx_push_url] - pushes the URL into the browser location bar}
+  {- [hx_select] - select content to swap in from a response}
+  {- [hx_select_oob] - select content to swap in from a response, out of band}
+  {- [hx_swap] - controls how content is swapped in}
+  {- [hx_swap_oob] - marks content to be swapped out of band}
+  {- [hx_target] - specifies the target element to be swapped}
+  {- [hx_trigger] - specifies the event that triggers the request}
+  {- [hx_vals] - adds values to the parameters to submit with the request}
+}
+
+{2 {b Additional Attributes}}
+
+{ul
+  {- [hx_confirm] - shows a confirm() dialog before issuing a request}
+  {- [hx_disable] - disables htmx processing for the given node}
+  {- [hx_disabled_elt] - adds the disabled attribute during requests}
+  {- [hx_disinherit] - control automatic attribute inheritance}
+  {- [hx_encoding] - changes the request encoding type}
+  {- [hx_ext] - extensions to use for this element}
+  {- [hx_headers] - adds headers to the request}
+  {- [hx_history] - prevent sensitive data being saved to history cache}
+  {- [hx_history_elt] - the element to snapshot during history navigation}
+  {- [hx_include] - include additional data in requests}
+  {- [hx_indicator] - the element to put the htmx-request class on}
+  {- [hx_params] - filters the parameters submitted with a request}
+  {- [hx_preserve] - specifies elements to keep unchanged between requests}
+  {- [hx_prompt] - shows a prompt() before submitting a request}
+  {- [hx_replace_url] - replace the URL in the browser location bar}
+  {- [hx_request] - configures various aspects of the request}
+  {- [hx_sync] - control how requests are synchronized}
+  {- [hx_validate] - force elements to validate before a request}
+}
+
+{2 {b Event Handlers (hx-on)}}
+
+The [hx-on:*] attributes allow handling events with inline scripts. htmx-specific events use a double underscore prefix (representing [hx-on::event]), while standard DOM events use a single underscore (representing [hx-on:event]).
+
+{3 htmx-specific events}
+
+{[
+(* Handle htmx:afterSwap event *)
+<div hx_get="/data" hx_on__after_swap="console.log('swapped!')" />
+(* Outputs: <div hx-get="/data" hx-on::after-swap="console.log('swapped!')"></div> *)
+]}
+
+Available htmx events:
+{ul
+  {- [hx_on__abort] - htmx:abort}
+  {- [hx_on__after_on_load] - htmx:afterOnLoad}
+  {- [hx_on__after_process_node] - htmx:afterProcessNode}
+  {- [hx_on__after_request] - htmx:afterRequest}
+  {- [hx_on__after_settle] - htmx:afterSettle}
+  {- [hx_on__after_swap] - htmx:afterSwap}
+  {- [hx_on__before_cleanup] - htmx:beforeCleanupElement}
+  {- [hx_on__before_on_load] - htmx:beforeOnLoad}
+  {- [hx_on__before_process_node] - htmx:beforeProcessNode}
+  {- [hx_on__before_request] - htmx:beforeRequest}
+  {- [hx_on__before_swap] - htmx:beforeSwap}
+  {- [hx_on__before_send] - htmx:beforeSend}
+  {- [hx_on__before_history_save] - htmx:beforeHistorySave}
+  {- [hx_on__config_request] - htmx:configRequest}
+  {- [hx_on__confirm] - htmx:confirm}
+  {- [hx_on__history_cache_error] - htmx:historyCacheError}
+  {- [hx_on__history_cache_miss] - htmx:historyCacheMiss}
+  {- [hx_on__history_cache_miss_error] - htmx:historyCacheMissError}
+  {- [hx_on__history_cache_miss_load] - htmx:historyCacheMissLoad}
+  {- [hx_on__history_restore] - htmx:historyRestore}
+  {- [hx_on__load] - htmx:load}
+  {- [hx_on__no_sse_source_error] - htmx:noSSESourceError}
+  {- [hx_on__oob_after_swap] - htmx:oobAfterSwap}
+  {- [hx_on__oob_before_swap] - htmx:oobBeforeSwap}
+  {- [hx_on__oob_error_no_target] - htmx:oobErrorNoTarget}
+  {- [hx_on__prompt] - htmx:prompt}
+  {- [hx_on__pushed_into_history] - htmx:pushedIntoHistory}
+  {- [hx_on__response_error] - htmx:responseError}
+  {- [hx_on__send_error] - htmx:sendError}
+  {- [hx_on__sse_error] - htmx:sseError}
+  {- [hx_on__sse_open] - htmx:sseOpen}
+  {- [hx_on__swap_error] - htmx:swapError}
+  {- [hx_on__target_error] - htmx:targetError}
+  {- [hx_on__timeout] - htmx:timeout}
+  {- [hx_on__validation_validate] - htmx:validation:validate}
+  {- [hx_on__validation_failed] - htmx:validation:failed}
+  {- [hx_on__validation_halted] - htmx:validation:halted}
+  {- [hx_on__xhr_abort] - htmx:xhr:abort}
+  {- [hx_on__xhr_loadend] - htmx:xhr:loadend}
+  {- [hx_on__xhr_loadstart] - htmx:xhr:loadstart}
+  {- [hx_on__xhr_progress] - htmx:xhr:progress}
+}
+
+{3 Standard DOM events}
+
+{[
+(* Handle click event *)
+<button hx_on_click="alert('clicked!')">Click me</button>
+(* Outputs: <button hx-on:click="alert('clicked!')">Click me</button> *)
+]}
+
+Available DOM events:
+{ul
+  {- [hx_on_click] - click}
+  {- [hx_on_submit] - submit}
+  {- [hx_on_change] - change}
+  {- [hx_on_input] - input}
+  {- [hx_on_focus] - focus}
+  {- [hx_on_blur] - blur}
+  {- [hx_on_keyup] - keyup}
+  {- [hx_on_keydown] - keydown}
+  {- [hx_on_keypress] - keypress}
+  {- [hx_on_mouseenter] - mouseenter}
+  {- [hx_on_mouseleave] - mouseleave}
+  {- [hx_on_mouseover] - mouseover}
+  {- [hx_on_mouseout] - mouseout}
+  {- [hx_on_load] - load}
+  {- [hx_on_scroll] - scroll}
+}
+
+{2 {b SSE (Server-Sent Events) Extension}}
+
+For using the {{:https://htmx.org/extensions/sse/}SSE extension}:
+
+{[
+<div hx_ext="sse" sse_connect="/events" sse_swap="message">
+  {JSX.string("Waiting for events...")}
+</div>
+(* Outputs: <div hx-ext="sse" sse-connect="/events" sse-swap="message">Waiting for events...</div> *)
+]}
+
+Available SSE attributes:
+{ul
+  {- [sse_connect] - specifies the URL for SSE connection}
+  {- [sse_swap] - specifies the SSE message name to swap content on}
+  {- [sse_close] - specifies the SSE message name that closes the connection}
+}
+
+{2 {b WebSocket Extension}}
+
+For using the {{:https://htmx.org/extensions/ws/}WebSocket extension}:
+
+{[
+<div hx_ext="ws" ws_connect="/chat">
+  <form ws_send=true>
+    <input type_="text" name="message" />
+  </form>
+</div>
+]}
+
+Available WebSocket attributes:
+{ul
+  {- [ws_connect] - specifies the URL for WebSocket connection}
+  {- [ws_send] - sends a message to the WebSocket when triggered}
+}
+
+{2 {b Combining Attributes}}
+
+{[
+<button
+  hx_post="/api/submit"
+  hx_target="#result"
+  hx_swap="innerHTML"
+  hx_confirm="Are you sure?"
+  hx_indicator="#spinner"
+>
+  {JSX.string("Submit")}
+</button>
+]}
+
+{2 {b Limitations}}
+
+For arbitrary [hx-on:*] events not listed above, you can use the generic [dangerouslySetInnerHTML] approach or contribute additional events to the library.
