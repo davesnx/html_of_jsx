@@ -23,6 +23,10 @@ build-prod: ## Build for production (--profile=prod)
 bench: ## Run bench mark executable
 	$(DUNE) exec bench/bench.exe
 
+.PHONY: bench-json
+bench-json: ## Run benchmarks with JSON output for CI
+	$(DUNE) exec bench/bench.exe -- --json > bench_results.json
+
 .PHONY: dev
 dev: ## Build in watch mode
 	$(DUNE) build -w @all
