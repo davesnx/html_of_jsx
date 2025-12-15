@@ -18,3 +18,132 @@ JSX.render(<div hx_boost=true />)
 ]}
 
 The htmx attributes are scoped with the prefix {b hx_}
+
+{1 Extensions}
+
+htmx extensions add custom behaviors and require additional attributes. To use
+an extension, you need to:
+
+{ol
+{- Load the extension script}
+{- Add the {b hx_ext} attribute to enable it}
+{- Use extension-specific attributes}
+}
+
+{2 SSE (Server-Sent Events)}
+
+The {{:https://htmx.org/extensions/sse/}SSE extension} allows you to connect
+to a Server-Sent Events source and update content when events are received.
+
+{b Attributes:}
+{ul
+{- {b sse_connect}: URL to connect to for SSE}
+{- {b sse_swap}: event name to swap content on}
+{- {b sse_close}: event name to close the connection on}
+}
+
+{b Example:}
+{[
+<div hx_ext="sse" sse_connect="/events" sse_swap="message">
+  {JSX.string("Loading...")}
+</div>
+]}
+
+{2 WebSocket}
+
+The {{:https://htmx.org/extensions/ws/}WebSocket extension} enables WebSocket
+communication.
+
+{b Attributes:}
+{ul
+{- {b ws_connect}: URL to connect to for WebSocket}
+{- {b ws_send}: when true, sends a message to the WebSocket server on trigger}
+}
+
+{b Example:}
+{[
+<div hx_ext="ws" ws_connect="/chat">
+  <form ws_send=true>
+    <input type_="text" name="message" />
+  </form>
+</div>
+]}
+
+{2 Class-tools}
+
+The {{:https://htmx.org/extensions/class-tools/}Class-tools extension} allows
+you to add, remove, or toggle CSS classes on a schedule.
+
+{b Attributes:}
+{ul
+{- {b classes}: a run list of class operations (e.g., "add highlight:1s")}
+}
+
+{b Example:}
+{[
+<div hx_ext="class-tools" classes="add highlight:1s">
+  {JSX.string("This will be highlighted after 1 second")}
+</div>
+]}
+
+{2 Preload}
+
+The {{:https://htmx.org/extensions/preload/}Preload extension} preloads linked
+resources to make page navigation feel instant.
+
+{b Attributes:}
+{ul
+{- {b preload}: when to preload ("mousedown" or "mouseover")}
+}
+
+{b Example:}
+{[
+<a hx_ext="preload" preload="mouseover" href="/page">
+  {JSX.string("Hover to preload")}
+</a>
+]}
+
+{2 Path-deps}
+
+The {{:https://htmx.org/extensions/path-deps/}Path-deps extension} refreshes
+elements when paths they depend on are modified.
+
+{b Attributes:}
+{ul
+{- {b path_deps}: path(s) this element depends on}
+}
+
+{b Example:}
+{[
+<div hx_ext="path-deps" path_deps="/api/todos" hx_get="/todos" hx_trigger="path-deps">
+  {JSX.string("Todo list")}
+</div>
+]}
+
+{2 Loading-states}
+
+The {{:https://htmx.org/extensions/loading-states/}Loading-states extension}
+provides fine-grained control over loading indicators.
+
+{b Attributes:}
+{ul
+{- {b data_loading}: show element during request}
+{- {b data_loading_class}: add CSS class during request}
+{- {b data_loading_class_remove}: remove CSS class during request}
+{- {b data_loading_disable}: disable element during request}
+{- {b data_loading_aria_busy}: set aria-busy during request}
+{- {b data_loading_delay}: delay before applying loading state (e.g., "200ms")}
+{- {b data_loading_target}: CSS selector for target element}
+{- {b data_loading_path}: only trigger for requests to this path}
+{- {b data_loading_states}: marker to enable the extension}
+}
+
+{b Example:}
+{[
+<button hx_post="/submit" data_loading_disable=true>
+  {JSX.string("Submit")}
+</button>
+<div data_loading=true data_loading_delay="200ms">
+  {JSX.string("Loading...")}
+</div>
+]}

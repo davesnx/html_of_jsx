@@ -1688,23 +1688,25 @@ let find_closest_name invalid domPropNames =
 
 let findByName tag jsxName =
   let byName p = getJSXName p = jsxName in
-  if isDataAttribute jsxName then
-    let name = camelcaseToKebabcase jsxName in
-    Ok (Attribute { name; jsxName; type_ = String })
-  else
-    match getAttributes tag with
-    | Ok { attributes; _ } ->
-        let found =
-          match List.find_opt byName attributes with
-          | Some prop -> Ok prop
-          | None -> (
-              let jsxNames = List.map getJSXName attributes in
-              match find_closest_name jsxName jsxNames with
-              | Some closest -> Error (`AttributeNotFound (Some closest))
-              | None -> Error (`AttributeNotFound None))
-        in
-        found
-    | Error err -> Error err
+  match getAttributes tag with
+  | Ok { attributes; _ } -> (
+      match List.find_opt byName attributes with
+      | Some prop -> Ok prop
+      | None -> (
+          if
+            (* Attribute not found in the defined list.
+             Fall back to data-* attribute handling if applicable,
+             otherwise report an error with suggestions. *)
+            isDataAttribute jsxName
+          then
+            let name = camelcaseToKebabcase jsxName in
+            Ok (Attribute { name; jsxName; type_ = String })
+          else
+            let jsxNames = List.map getJSXName attributes in
+            match find_closest_name jsxName jsxNames with
+            | Some closest -> Error (`AttributeNotFound (Some closest))
+            | None -> Error (`AttributeNotFound None)))
+  | Error err -> Error err
 
 let is_html_element tag =
   match tag with
