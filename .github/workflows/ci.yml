@@ -79,6 +79,25 @@ jobs:
       - name: Run benchmarks
         run: make bench
 
+      - name: Run benchmarks (JSON output for tracking)
+        if: matrix.os == 'ubuntu-latest' && matrix.ocaml-compiler == '5.3.0'
+        run: make bench-json
+
+      - name: Store benchmark result
+        if: matrix.os == 'ubuntu-latest' && matrix.ocaml-compiler == '5.3.0'
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          name: html_of_jsx Benchmarks
+          tool: 'customBiggerIsBetter'
+          output-file-path: bench_results.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: ${{ github.ref == 'refs/heads/main' }}
+          gh-pages-branch: gh-pages
+          benchmark-data-dir-path: dev/bench
+          fail-on-alert: true
+          comment-on-alert: true
+          alert-comment-cc-users: '@davesnx'
+
       - name: Generate docs
         if: github.ref == 'refs/heads/main'
         run: make docs

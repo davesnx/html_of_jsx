@@ -1,6 +1,34 @@
 (* Benchmark comparing different optimizations *)
 
 (* ============================================================ *)
+(* JSON output support for CI integration                       *)
+(* ============================================================ *)
+
+let json_mode = ref false
+
+(* Extract average throughput (ops/sec) from benchmark results *)
+let extract_rate samples =
+  let total_rate =
+    List.fold_left
+      (fun acc sample ->
+        let rate =
+          Int64.to_float sample.Benchmark.iters /. sample.Benchmark.wall
+        in
+        acc +. rate)
+      0.0 samples
+  in
+  total_rate /. float_of_int (List.length samples)
+
+(* Convert benchmark results to JSON format for github-action-benchmark *)
+let results_to_json ~group_name results =
+  List.map
+    (fun (name, samples) ->
+      let rate = extract_rate samples in
+      Printf.sprintf {|{"name": "%s/%s", "unit": "ops/sec", "value": %.2f}|}
+        group_name name rate)
+    results
+
+(* ============================================================ *)
 (* 1. Escape function implementations                           *)
 (* ============================================================ *)
 
@@ -169,14 +197,22 @@ let escape_a = "a < b && c > d"
 let escape_b = "\"quoted\" & 'apostrophe'"
 
 let () =
+  (* Parse command line arguments *)
+  let args = Array.to_list Sys.argv in
+  json_mode := List.mem "--json" args;
+
   (* ============================================================ *)
   (* ESCAPE FUNCTION COMPARISON                                   *)
   (* ============================================================ *)
-  print_endline "=== 1. Escape Implementation Comparison ===\n";
+  if not !json_mode then
+    print_endline "=== 1. Escape Implementation Comparison ===\n";
 
-  print_endline "--- Single string WITHOUT escaping ---";
+  (* Use ~style:Nil in JSON mode to suppress verbose output *)
+  let style = if !json_mode then Benchmark.Nil else Benchmark.Auto in
+
+  if not !json_mode then print_endline "--- Single string WITHOUT escaping ---";
   let single_no_escape =
-    Benchmark.throughputN ~repeat:3 2
+    Benchmark.throughputN ~style ~repeat:3 2
       [
         ("loop_all", (fun () -> with_loop_all test_name), ());
         ("exception", (fun () -> with_exception test_name), ());
@@ -184,11 +220,11 @@ let () =
         ("raphael", (fun () -> with_raphael test_name), ());
       ]
   in
-  Benchmark.tabulate single_no_escape;
+  if not !json_mode then Benchmark.tabulate single_no_escape;
 
-  print_endline "\n--- Two strings WITHOUT escaping ---";
+  if not !json_mode then print_endline "\n--- Two strings WITHOUT escaping ---";
   let two_no_escape =
-    Benchmark.throughputN ~repeat:3 2
+    Benchmark.throughputN ~style ~repeat:3 2
       [
         ("loop_all", (fun () -> two_loop_all test_a test_b), ());
         ("exception", (fun () -> two_exception test_a test_b), ());
@@ -196,11 +232,11 @@ let () =
         ("raphael", (fun () -> two_raphael test_a test_b), ());
       ]
   in
-  Benchmark.tabulate two_no_escape;
+  if not !json_mode then Benchmark.tabulate two_no_escape;
 
-  print_endline "\n--- Single string WITH escaping ---";
+  if not !json_mode then print_endline "\n--- Single string WITH escaping ---";
   let single_with_escape =
-    Benchmark.throughputN ~repeat:3 2
+    Benchmark.throughputN ~style ~repeat:3 2
       [
         ("loop_all", (fun () -> with_loop_all escape_name), ());
         ("exception", (fun () -> with_exception escape_name), ());
@@ -208,11 +244,11 @@ let () =
         ("raphael", (fun () -> with_raphael escape_name), ());
       ]
   in
-  Benchmark.tabulate single_with_escape;
+  if not !json_mode then Benchmark.tabulate single_with_escape;
 
-  print_endline "\n--- Two strings WITH escaping ---";
+  if not !json_mode then print_endline "\n--- Two strings WITH escaping ---";
   let two_with_escape =
-    Benchmark.throughputN ~repeat:3 2
+    Benchmark.throughputN ~style ~repeat:3 2
       [
         ("loop_all", (fun () -> two_loop_all escape_a escape_b), ());
         ("exception", (fun () -> two_exception escape_a escape_b), ());
@@ -220,11 +256,25 @@ let () =
         ("raphael", (fun () -> two_raphael escape_a escape_b), ());
       ]
   in
-  Benchmark.tabulate two_with_escape;
+  if not !json_mode then Benchmark.tabulate two_with_escape;
 
-  (* ============================================================ *)
-  (* SUMMARY                                                      *)
-  (* ============================================================ *)
-  print_endline "\n=== Summary ===";
-  print_endline
-    "Escape: exception = current JSX.escape (fast path for no-escape case)"
+  if !json_mode then begin
+    (* Output JSON for github-action-benchmark *)
+    let all_json =
+      results_to_json ~group_name:"single_no_escape" single_no_escape
+      @ results_to_json ~group_name:"two_no_escape" two_no_escape
+      @ results_to_json ~group_name:"single_with_escape" single_with_escape
+      @ results_to_json ~group_name:"two_with_escape" two_with_escape
+    in
+    print_endline "[";
+    print_endline (String.concat ",\n" all_json);
+    print_endline "]"
+  end
+  else begin
+    (* ============================================================ *)
+    (* SUMMARY                                                      *)
+    (* ============================================================ *)
+    print_endline "\n=== Summary ===";
+    print_endline
+      "Escape: exception = current JSX.escape (fast path for no-escape case)"
+  end
