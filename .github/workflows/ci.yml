@@ -94,6 +94,7 @@ jobs:
           auto-push: ${{ github.ref == 'refs/heads/main' }}
           gh-pages-branch: gh-pages
           benchmark-data-dir-path: dev/bench
+          comment-always: true # Shows benchmark comparison on every PR
           fail-on-alert: true
           comment-on-alert: true
           alert-comment-cc-users: '@davesnx'
@@ -108,6 +109,7 @@ jobs:
         with:
           target_branch: gh-pages
           build_dir: _build/default/_doc/_html/
+          keep_history: true
         env:
           GITHUB_TOKEN: ${{ github.token }}
 
