@@ -297,4 +297,179 @@ let additional_attributes =
       };
   ]
 
-let attributes = core_attributes @ additional_attributes
+(** SSE (Server-Sent Events) extension attributes
+    https://htmx.org/extensions/sse/ *)
+let sse_extension_attributes =
+  [
+    Rich_attribute
+      {
+        name = "sse-connect";
+        jsxName = "sse_connect";
+        type_ = String;
+        description = "URL to connect to for SSE";
+        url = "https://htmx.org/extensions/sse/";
+      };
+    Rich_attribute
+      {
+        name = "sse-swap";
+        jsxName = "sse_swap";
+        type_ = String;
+        description = "event name to swap content on";
+        url = "https://htmx.org/extensions/sse/";
+      };
+    Rich_attribute
+      {
+        name = "sse-close";
+        jsxName = "sse_close";
+        type_ = String;
+        description = "event name to close the SSE connection on";
+        url = "https://htmx.org/extensions/sse/";
+      };
+  ]
+
+(** WebSocket extension attributes https://htmx.org/extensions/ws/ *)
+let ws_extension_attributes =
+  [
+    Rich_attribute
+      {
+        name = "ws-connect";
+        jsxName = "ws_connect";
+        type_ = String;
+        description = "URL to connect to for WebSocket";
+        url = "https://htmx.org/extensions/ws/";
+      };
+    Rich_attribute
+      {
+        name = "ws-send";
+        jsxName = "ws_send";
+        type_ = Bool;
+        description = "send a message to the WebSocket server";
+        url = "https://htmx.org/extensions/ws/";
+      };
+  ]
+
+(** Class-tools extension attributes https://htmx.org/extensions/class-tools/ *)
+let class_tools_extension_attributes =
+  [
+    Rich_attribute
+      {
+        name = "classes";
+        jsxName = "classes";
+        type_ = String;
+        description = "add, remove, or toggle classes on a schedule";
+        url = "https://htmx.org/extensions/class-tools/";
+      };
+  ]
+
+(** Preload extension attributes https://htmx.org/extensions/preload/ *)
+let preload_extension_attributes =
+  [
+    Rich_attribute
+      {
+        name = "preload";
+        jsxName = "preload";
+        type_ = String;
+        description =
+          "preload linked resources on mousedown or touchstart (values: \
+           mousedown, mouseover)";
+        url = "https://htmx.org/extensions/preload/";
+      };
+  ]
+
+(** Path-deps extension attributes https://htmx.org/extensions/path-deps/ *)
+let path_deps_extension_attributes =
+  [
+    Rich_attribute
+      {
+        name = "path-deps";
+        jsxName = "path_deps";
+        type_ = String;
+        description =
+          "path this element depends on for refresh via path-deps extension";
+        url = "https://htmx.org/extensions/path-deps/";
+      };
+  ]
+
+(** Loading-states extension attributes
+    https://htmx.org/extensions/loading-states/ *)
+let loading_states_extension_attributes =
+  [
+    Rich_attribute
+      {
+        name = "data-loading";
+        jsxName = "data_loading";
+        type_ = Bool;
+        description = "show element during request";
+        url = "https://htmx.org/extensions/loading-states/";
+      };
+    Rich_attribute
+      {
+        name = "data-loading-class";
+        jsxName = "data_loading_class";
+        type_ = String;
+        description = "add class to element during request";
+        url = "https://htmx.org/extensions/loading-states/";
+      };
+    Rich_attribute
+      {
+        name = "data-loading-class-remove";
+        jsxName = "data_loading_class_remove";
+        type_ = String;
+        description = "remove class from element during request";
+        url = "https://htmx.org/extensions/loading-states/";
+      };
+    Rich_attribute
+      {
+        name = "data-loading-disable";
+        jsxName = "data_loading_disable";
+        type_ = Bool;
+        description = "disable element during request";
+        url = "https://htmx.org/extensions/loading-states/";
+      };
+    Rich_attribute
+      {
+        name = "data-loading-aria-busy";
+        jsxName = "data_loading_aria_busy";
+        type_ = Bool;
+        description = "set aria-busy attribute during request";
+        url = "https://htmx.org/extensions/loading-states/";
+      };
+    Rich_attribute
+      {
+        name = "data-loading-delay";
+        jsxName = "data_loading_delay";
+        type_ = String;
+        description = "delay before showing loading state (e.g., '200ms')";
+        url = "https://htmx.org/extensions/loading-states/";
+      };
+    Rich_attribute
+      {
+        name = "data-loading-target";
+        jsxName = "data_loading_target";
+        type_ = String;
+        description = "CSS selector for element to apply loading state to";
+        url = "https://htmx.org/extensions/loading-states/";
+      };
+    Rich_attribute
+      {
+        name = "data-loading-path";
+        jsxName = "data_loading_path";
+        type_ = String;
+        description = "only trigger loading state for requests to this path";
+        url = "https://htmx.org/extensions/loading-states/";
+      };
+    Rich_attribute
+      {
+        name = "data-loading-states";
+        jsxName = "data_loading_states";
+        type_ = Bool;
+        description = "marker attribute to enable loading-states extension";
+        url = "https://htmx.org/extensions/loading-states/";
+      };
+  ]
+
+let attributes =
+  core_attributes @ additional_attributes @ sse_extension_attributes
+  @ ws_extension_attributes @ class_tools_extension_attributes
+  @ preload_extension_attributes @ path_deps_extension_attributes
+  @ loading_states_extension_attributes
