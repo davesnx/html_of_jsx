@@ -31,14 +31,11 @@
   (ocamlformat
    (and (>= 0.26.1)
     (or :with-dev-setup :with-test)))
-  (mlx (or :with-test :with-dev-setup))
+  ; (mlx (or :with-test :with-dev-setup))
 
   ;; Dev dependencies
   (ocaml-lsp-server :with-dev-setup)
   (tiny_httpd :with-dev-setup)
-  (ocamlformat-mlx
-   (and (>= 0.26.1)
-    (or :with-dev-setup)))
 ))
 
 (dialect

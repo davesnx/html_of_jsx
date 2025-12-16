@@ -18,8 +18,12 @@ let bool_attribute =
 
 let bool_attributes =
   test("bool_attributes", () => {
-    let input = <input type_="checkbox" name="cheese" checked=true disabled=false />;
-    assert_string(JSX.render(input), {|<input type="checkbox" name="cheese" checked />|});
+    let input =
+      <input type_="checkbox" name="cheese" checked=true disabled=false />;
+    assert_string(
+      JSX.render(input),
+      {|<input type="checkbox" name="cheese" checked />|},
+    );
   });
 
 let innerhtml =
@@ -37,13 +41,20 @@ let int_attribute =
 let style_attribute =
   test("style_attribute", () => {
     let div = <div style="background-color:gainsboro" />;
-    assert_string(JSX.render(div), {|<div style="background-color:gainsboro"></div>|});
+    assert_string(
+      JSX.render(div),
+      {|<div style="background-color:gainsboro"></div>|},
+    );
   });
 
 let link_as_attribute =
   test("link_as_attribute", () => {
-    let link = <link as_="image" rel="preload" href="https://sancho.dev/blog" />;
-    assert_string(JSX.render(link), {|<link as="image" rel="preload" href="https://sancho.dev/blog" />|});
+    let link =
+      <link as_="image" rel="preload" href="https://sancho.dev/blog" />;
+    assert_string(
+      JSX.render(link),
+      {|<link as="image" rel="preload" href="https://sancho.dev/blog" />|},
+    );
   });
 
 let int_opt_attribute_some =
@@ -63,7 +74,10 @@ let int_opt_attribute_none =
 let lists_as_children =
   test("lists_as_children", () => {
     let div = <> <div class_="md:w-1/3" /> <div class_="md:w-2/3" /> </>;
-    assert_string(JSX.render(div), {|<div class="md:w-1/3"></div><div class="md:w-2/3"></div>|});
+    assert_string(
+      JSX.render(div),
+      {|<div class="md:w-1/3"></div><div class="md:w-2/3"></div>|},
+    );
   });
 
 module Container = {
@@ -139,14 +153,21 @@ let onclick_inline_string =
   test("onclick_inline_string", () => {
     let onClick = "console.log('clicked')";
     let div = <div onclick=onClick />;
-    assert_string(JSX.render(div), {|<div onclick="console.log(&apos;clicked&apos;)"></div>|});
+    assert_string(
+      JSX.render(div),
+      {|<div onclick="console.log(&apos;clicked&apos;)"></div>|},
+    );
   });
 
 let svg =
   test("svg", () => {
     assert_string(
       JSX.render(
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24px" height="24px">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          width="24px"
+          height="24px">
           <path
             d="M 5 3 C 3.9069372 3 3 3.9069372 3 5 L 3 19 C 3 20.093063 3.9069372 21 5 21 L 19 21 C 20.093063 21 21 20.093063 21 19 L 21 12 L 19 12 L 19 19 L 5 19 L 5 5 L 12 5 L 12 3 L 5 3 z M 14 3 L 14 5 L 17.585938 5 L 8.2929688 14.292969 L 9.7070312 15.707031 L 19 6.4140625 L 19 10 L 21 10 L 21 3 L 14 3 z"
           />
@@ -164,13 +185,20 @@ module Component = {
 
 let children_one_element =
   test("children_one_element", () => {
-    assert_string(JSX.render(<Component cosas=true> <span /> </Component>), {|<div><span></span></div>|})
+    assert_string(
+      JSX.render(<Component cosas=true> <span /> </Component>),
+      {|<div><span></span></div>|},
+    )
   });
 
 let children_multiple_elements =
   test("children_multiple_elements", () => {
     assert_string(
-      JSX.render(<Component cosas=false> <> <div> <span /> </div> <span /> </> </Component>),
+      JSX.render(
+        <Component cosas=false>
+          <> <div> <span /> </div> <span /> </>
+        </Component>,
+      ),
       {|<div><div><span></span></div><span></span></div>|},
     )
   });
@@ -202,7 +230,10 @@ let create_element_variadic =
 
 let aria_props =
   test("aria_props", () => {
-    let component = <h1 aria_hidden=true aria_label="send email" aria_atomic=true> {JSX.string("Hello")} </h1>;
+    let component =
+      <h1 aria_hidden=true aria_label="send email" aria_atomic=true>
+        {JSX.string("Hello")}
+      </h1>;
     assert_string(
       JSX.render(component),
       {|<h1 aria-hidden="true" aria-label="send email" aria-atomic="true">Hello</h1>|},
@@ -213,7 +244,10 @@ let lowercase_component =
   test("lowercase_component", () => {
     let component = (~text, ()) => <h1> {JSX.string(text)} </h1>;
 
-    assert_string(JSX.render(<component text="Hello" />), {|<h1>Hello</h1>|});
+    assert_string(
+      JSX.render(<component text="Hello" />),
+      {|<h1>Hello</h1>|},
+    );
   });
 
 let tests = (

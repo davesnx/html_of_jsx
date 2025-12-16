@@ -1,7 +1,2 @@
-(env
- (_
-  (env-vars
-   (REFMT_PRINT_WIDTH 80))))
-
 (documentation
  (package html_of_jsx))
