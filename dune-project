@@ -1,4 +1,4 @@
-(lang dune 3.16)
+(lang dune 3.20)
 (generate_opam_files true)
 (implicit_transitive_deps false)
 
@@ -32,13 +32,11 @@
    (and (>= 0.26.1)
     (or :with-dev-setup :with-test)))
   (mlx (or :with-test :with-dev-setup))
+  (ocamlformat-mlx (or :with-dev-setup :with-test))
 
   ;; Dev dependencies
   (ocaml-lsp-server :with-dev-setup)
   (tiny_httpd :with-dev-setup)
-  (ocamlformat-mlx
-   (and (>= 0.26.1)
-    (or :with-dev-setup)))
 ))
 
 (dialect

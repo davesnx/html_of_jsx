@@ -1,0 +1,311 @@
+(* Scenario: Analytics Dashboard
+   Complex dashboard with stats, charts placeholders, and data tables
+   Purpose: Test admin/dashboard UI rendering performance *)
+
+let stat_card ~title ~value ~change ~icon ~trend =
+  let trend_color =
+    if trend > 0.0 then "text-green-500"
+    else if trend < 0.0 then "text-red-500"
+    else "text-gray-500"
+  in
+  let trend_icon =
+    if trend > 0.0 then "↑" else if trend < 0.0 then "↓" else "→"
+  in
+  let trend_cls =
+    Cx.make [ "text-sm font-medium flex items-center gap-1"; trend_color ]
+  in
+  let trend_label = Printf.sprintf "%.1f%%" (Float.abs trend) in
+  <div class_="bg-white rounded-xl p-6 shadow-sm">
+    <div class_="flex items-center justify-between mb-4">
+      <span class_="text-2xl">(JSX.string icon)</span>
+      <span class_=trend_cls>
+        (JSX.string trend_icon) (JSX.string trend_label)
+      </span>
+    </div>
+    <div>
+      <h3 class_="text-gray-500 text-sm font-medium">(JSX.string title)</h3>
+      <p class_="text-3xl font-bold text-gray-900 mt-1">(JSX.string value)</p>
+      <p class_="text-sm text-gray-500 mt-1">(JSX.string change)</p>
+    </div>
+  </div>
+
+let chart_placeholder ~title ~height =
+  let style = Printf.sprintf "height: %dpx" height in
+  <div class_="bg-white rounded-xl p-6 shadow-sm">
+    <h3 class_="text-lg font-semibold text-gray-900 mb-4">
+      (JSX.string title)
+    </h3>
+    <div
+      class_="bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg flex \
+              items-center justify-center"
+      style>
+      <div class_="text-center">
+        <div class_="text-4xl mb-2">(JSX.string "📊")</div>
+        <p class_="text-gray-500 text-sm">(JSX.string "Chart visualization")</p>
+      </div>
+    </div>
+  </div>
+
+let activity_item ~user ~action ~target ~time ~avatar =
+  <div
+    class_="flex items-start gap-4 py-4 border-b border-gray-100 last:border-0">
+    <div
+      class_="w-10 h-10 rounded-full bg-gray-200 flex items-center \
+              justify-center flex-shrink-0">
+      <span class_="text-lg">(JSX.string avatar)</span>
+    </div>
+    <div class_="flex-1 min-w-0">
+      <p class_="text-sm text-gray-900">
+        <span class_="font-medium">(JSX.string user)</span>
+        (JSX.string " ")
+        (JSX.string action)
+        (JSX.string " ")
+        <span class_="font-medium text-blue-600">(JSX.string target)</span>
+      </p>
+      <p class_="text-xs text-gray-500 mt-1">(JSX.string time)</p>
+    </div>
+  </div>
+
+let activity_feed () =
+  let activities =
+    [
+      ("Alice Chen", "updated", "Marketing Campaign Q4", "2 minutes ago", "👩");
+      ( "Bob Smith",
+        "commented on",
+        "Product Roadmap 2024",
+        "15 minutes ago",
+        "👨" );
+      ("Carol Davis", "completed", "User Research Report", "1 hour ago", "👩‍💼");
+      ("David Kim", "created", "New Feature Proposal", "2 hours ago", "👨‍💻");
+      ("Eve Johnson", "approved", "Budget Request #127", "3 hours ago", "👩‍💼");
+      ("Frank Wilson", "assigned", "Bug Fix #892", "4 hours ago", "👨‍🔧");
+    ]
+  in
+  <div class_="bg-white rounded-xl shadow-sm">
+    <div class_="p-6 border-b border-gray-100">
+      <h3 class_="text-lg font-semibold text-gray-900">
+        (JSX.string "Recent Activity")
+      </h3>
+    </div>
+    <div class_="px-6">
+      (JSX.list
+         (List.map
+            (fun (user, action, target, time, avatar) ->
+              activity_item ~user ~action ~target ~time ~avatar)
+            activities))
+    </div>
+    <div class_="p-4 border-t border-gray-100">
+      <button class_="text-sm text-blue-600 hover:text-blue-700 font-medium">
+        (JSX.string "View all activity →")
+      </button>
+    </div>
+  </div>
+
+let top_performers () =
+  let performers =
+    [
+      ("Sarah Johnson", "Sales Lead", 156, "👩‍💼");
+      ("Mike Chen", "Account Executive", 142, "👨‍💼");
+      ("Emily Davis", "Sales Rep", 128, "👩");
+      ("James Wilson", "Sales Rep", 115, "👨");
+      ("Lisa Brown", "Account Executive", 108, "👩‍💼");
+    ]
+  in
+  <div class_="bg-white rounded-xl shadow-sm">
+    <div class_="p-6 border-b border-gray-100">
+      <h3 class_="text-lg font-semibold text-gray-900">
+        (JSX.string "Top Performers")
+      </h3>
+    </div>
+    <div class_="p-6">
+      <div class_="space-y-4">
+        (JSX.list
+           (List.mapi
+              (fun i (name, role, metric, avatar) ->
+                let rank = Printf.sprintf "#%d" (i + 1) in
+                <div class_="flex items-center gap-4">
+                  <span class_="text-lg text-gray-400 w-6">
+                    (JSX.string rank)
+                  </span>
+                  <div
+                    class_="w-10 h-10 rounded-full bg-gray-200 flex \
+                            items-center justify-center">
+                    <span class_="text-lg">(JSX.string avatar)</span>
+                  </div>
+                  <div class_="flex-1">
+                    <p class_="font-medium text-gray-900">(JSX.string name)</p>
+                    <p class_="text-sm text-gray-500">(JSX.string role)</p>
+                  </div>
+                  <div class_="text-right">
+                    <p class_="font-bold text-gray-900">(JSX.int metric)</p>
+                    <p class_="text-xs text-gray-500">(JSX.string "deals")</p>
+                  </div>
+                </div>)
+              performers))
+      </div>
+    </div>
+  </div>
+
+let quick_actions () =
+  let actions =
+    [
+      ("📝", "New Report", "bg-blue-100 text-blue-600");
+      ("👥", "Add User", "bg-green-100 text-green-600");
+      ("📧", "Send Email", "bg-purple-100 text-purple-600");
+      ("📊", "Export Data", "bg-orange-100 text-orange-600");
+      ("⚙️", "Settings", "bg-gray-100 text-gray-600");
+      ("❓", "Get Help", "bg-yellow-100 text-yellow-600");
+    ]
+  in
+  <div class_="bg-white rounded-xl shadow-sm p-6">
+    <h3 class_="text-lg font-semibold text-gray-900 mb-4">
+      (JSX.string "Quick Actions")
+    </h3>
+    <div class_="grid grid-cols-3 gap-4">
+      (JSX.list
+         (List.map
+            (fun (icon, label, colors) ->
+              let cls =
+                Cx.make
+                  [
+                    "flex flex-col items-center p-4 rounded-xl \
+                     transition-colors";
+                    colors;
+                    "hover:opacity-80";
+                  ]
+              in
+              <button class_=cls>
+                <span class_="text-2xl mb-2">(JSX.string icon)</span>
+                <span class_="text-sm font-medium">(JSX.string label)</span>
+              </button>)
+            actions))
+    </div>
+  </div>
+
+let sidebar ~current_path =
+  let menu_items =
+    [
+      ("🏠", "Dashboard", "/");
+      ("📊", "Analytics", "/analytics");
+      ("👥", "Users", "/users");
+      ("📦", "Products", "/products");
+      ("🛒", "Orders", "/orders");
+      ("💰", "Revenue", "/revenue");
+      ("📈", "Reports", "/reports");
+      ("⚙️", "Settings", "/settings");
+    ]
+  in
+  <aside class_="w-64 bg-gray-900 text-white min-h-screen flex-shrink-0">
+    <div class_="p-6">
+      <h1 class_="text-xl font-bold">(JSX.string "📊 Dashboard")</h1>
+    </div>
+    <nav class_="px-4">
+      (JSX.list
+         (List.map
+            (fun (icon, label, path) ->
+              let cls =
+                Cx.make
+                  [
+                    "flex items-center gap-3 px-4 py-3 rounded-lg mb-1 \
+                     transition-colors";
+                    (if path = current_path then "bg-blue-600 text-white"
+                     else "text-gray-400 hover:bg-gray-800 hover:text-white");
+                  ]
+              in
+              <a href=path class_=cls>
+                <span class_="text-lg">(JSX.string icon)</span>
+                <span class_="font-medium">(JSX.string label)</span>
+              </a>)
+            menu_items))
+    </nav>
+    <div class_="absolute bottom-0 left-0 w-64 p-4 border-t border-gray-800">
+      <div class_="flex items-center gap-3">
+        <div
+          class_="w-10 h-10 rounded-full bg-gray-700 flex items-center \
+                  justify-center">
+          <span>(JSX.string "👤")</span>
+        </div>
+        <div>
+          <p class_="font-medium text-sm">(JSX.string "Admin User")</p>
+          <p class_="text-xs text-gray-400">(JSX.string "admin@company.com")</p>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+let header () =
+  <header class_="bg-white border-b border-gray-200 px-8 py-4">
+    <div class_="flex items-center justify-between">
+      <div>
+        <h2 class_="text-2xl font-bold text-gray-900">
+          (JSX.string "Dashboard Overview")
+        </h2>
+        <p class_="text-gray-500 text-sm">
+          (JSX.string "Welcome back! Here's what's happening.")
+        </p>
+      </div>
+      <div class_="flex items-center gap-4">
+        <div class_="relative">
+          <input
+            type_="search"
+            placeholder="Search..."
+            class_="pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm \
+                    w-64"
+          />
+          <span class_="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+            (JSX.string "🔍")
+          </span>
+        </div>
+        <button class_="p-2 text-gray-500 hover:text-gray-700 relative">
+          (JSX.string "🔔")
+          <span class_="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"
+          />
+        </button>
+        <button class_="p-2 text-gray-500 hover:text-gray-700">
+          (JSX.string "⚙️")
+        </button>
+      </div>
+    </div>
+  </header>
+
+let page () =
+  <html lang="en">
+    <head>
+      <meta charset="utf-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1" />
+      <title>(JSX.string "Analytics Dashboard")</title>
+    </head>
+    <body class_="bg-gray-100">
+      <div class_="flex">
+        (sidebar ~current_path:"/")
+        <div class_="flex-1">
+          (header ())
+          <main class_="p-8">
+            <div class_="grid grid-cols-4 gap-6 mb-8">
+              (stat_card ~title:"Total Revenue" ~value:"$284,532"
+                 ~change:"vs last month" ~icon:"💰" ~trend:12.5)
+              (stat_card ~title:"Active Users" ~value:"14,832"
+                 ~change:"vs last month" ~icon:"👥" ~trend:8.2)
+              (stat_card ~title:"Total Orders" ~value:"3,427"
+                 ~change:"vs last month" ~icon:"📦" ~trend:(-2.4))
+              (stat_card ~title:"Conversion Rate" ~value:"3.24%"
+                 ~change:"vs last month" ~icon:"📈" ~trend:0.8)
+            </div>
+            <div class_="grid grid-cols-2 gap-6 mb-8">
+              (chart_placeholder ~title:"Revenue Over Time" ~height:300)
+              (chart_placeholder ~title:"User Growth" ~height:300)
+            </div>
+            <div class_="grid grid-cols-3 gap-6">
+              <div class_="col-span-2">(activity_feed ())</div>
+              <div class_="space-y-6">
+                (top_performers ()) (quick_actions ())
+              </div>
+            </div>
+          </main>
+        </div>
+      </div>
+    </body>
+  </html>
+
+let make () = page ()
+let render () = JSX.render (make ())

@@ -1,0 +1,227 @@
+(* Scenario: Table Rendering
+   Real-world data table patterns
+   Purpose: Test realistic table rendering performance *)
+
+type status = Active | Inactive | Pending
+
+type user = {
+  id : int;
+  name : string;
+  email : string;
+  role : string;
+  status : status;
+  department : string;
+  join_date : string;
+  salary : float;
+  manager : string option;
+  projects : int;
+}
+
+let generate_users count =
+  let departments =
+    [| "Engineering"; "Design"; "Product"; "Marketing"; "Sales"; "HR" |]
+  in
+  let roles =
+    [| "Engineer"; "Senior Engineer"; "Lead"; "Manager"; "Director" |]
+  in
+  let statuses = [| Active; Inactive; Pending |] in
+  let first_names =
+    [| "Alice"; "Bob"; "Charlie"; "Diana"; "Eve"; "Frank"; "Grace"; "Henry" |]
+  in
+  let last_names =
+    [| "Smith"; "Johnson"; "Williams"; "Brown"; "Jones"; "Garcia"; "Miller" |]
+  in
+  Array.init count (fun i ->
+      let id = i + 1 in
+      let first_name = first_names.(i mod Array.length first_names) in
+      let last_name = last_names.(i mod Array.length last_names) in
+      {
+        id;
+        name = Printf.sprintf "%s %s" first_name last_name;
+        email =
+          Printf.sprintf "%s.%s@company.com"
+            (String.lowercase_ascii first_name)
+            (String.lowercase_ascii last_name);
+        role = roles.(i mod Array.length roles);
+        status = statuses.(i mod Array.length statuses);
+        department = departments.(i mod Array.length departments);
+        join_date =
+          Printf.sprintf "2%03d-%02d-%02d"
+            (20 + (i mod 5))
+            (1 + (i mod 12))
+            (1 + (i mod 28));
+        salary = 50000.0 +. float_of_int (i * 1000);
+        manager =
+          (if i mod 5 = 0 then None
+           else Some (Printf.sprintf "Manager %d" (i / 5)));
+        projects = (i mod 10) + 1;
+      })
+
+let status_badge status =
+  let bg_color, text_color, label =
+    match status with
+    | Active -> ("bg-green-100", "text-green-800", "Active")
+    | Inactive -> ("bg-red-100", "text-red-800", "Inactive")
+    | Pending -> ("bg-yellow-100", "text-yellow-800", "Pending")
+  in
+  let cls =
+    Cx.make
+      [
+        "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs \
+         font-medium";
+        bg_color;
+        text_color;
+      ]
+  in
+  <span class_=cls>(JSX.string label)</span>
+
+let table_row ~user ~is_even =
+  let row_cls = if is_even then "bg-white" else "bg-gray-50" in
+  let initials = String.sub user.name 0 2 in
+  let salary_str = Printf.sprintf "$%.0f" user.salary in
+  <tr class_=row_cls>
+    <td class_="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+      (JSX.int user.id)
+    </td>
+    <td class_="px-6 py-4 whitespace-nowrap">
+      <div class_="flex items-center">
+        <div class_="flex-shrink-0 h-10 w-10">
+          <div
+            class_="h-10 w-10 rounded-full bg-gray-300 flex items-center \
+                    justify-center">
+            <span class_="text-sm font-medium text-gray-600">
+              (JSX.string initials)
+            </span>
+          </div>
+        </div>
+        <div class_="ml-4">
+          <div class_="text-sm font-medium text-gray-900">
+            (JSX.string user.name)
+          </div>
+          <div class_="text-sm text-gray-500">(JSX.string user.email)</div>
+        </div>
+      </div>
+    </td>
+    <td class_="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+      (JSX.string user.role)
+    </td>
+    <td class_="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+      (JSX.string user.department)
+    </td>
+    <td class_="px-6 py-4 whitespace-nowrap">(status_badge user.status)</td>
+    <td class_="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+      (JSX.string user.join_date)
+    </td>
+    <td class_="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+      (JSX.string salary_str)
+    </td>
+    <td class_="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+      (match user.manager with
+      | Some m -> JSX.string m
+      | None -> <span class_="text-gray-400 italic">(JSX.string "None")</span>)
+    </td>
+    <td class_="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+      (JSX.int user.projects)
+    </td>
+    <td class_="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+      <a href="#" class_="text-blue-600 hover:text-blue-900 mr-3">
+        (JSX.string "Edit")
+      </a>
+      <a href="#" class_="text-red-600 hover:text-red-900">
+        (JSX.string "Delete")
+      </a>
+    </td>
+  </tr>
+
+let data_table users =
+  <div class_="flex flex-col">
+    <div class_="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+      <div class_="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
+        <div
+          class_="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
+          <table class_="min-w-full divide-y divide-gray-200">
+            <thead class_="bg-gray-50">
+              <tr>
+                <th
+                  scope="col"
+                  class_="px-6 py-3 text-left text-xs font-medium \
+                          text-gray-500 uppercase tracking-wider">
+                  (JSX.string "ID")
+                </th>
+                <th
+                  scope="col"
+                  class_="px-6 py-3 text-left text-xs font-medium \
+                          text-gray-500 uppercase tracking-wider">
+                  (JSX.string "Employee")
+                </th>
+                <th
+                  scope="col"
+                  class_="px-6 py-3 text-left text-xs font-medium \
+                          text-gray-500 uppercase tracking-wider">
+                  (JSX.string "Role")
+                </th>
+                <th
+                  scope="col"
+                  class_="px-6 py-3 text-left text-xs font-medium \
+                          text-gray-500 uppercase tracking-wider">
+                  (JSX.string "Department")
+                </th>
+                <th
+                  scope="col"
+                  class_="px-6 py-3 text-left text-xs font-medium \
+                          text-gray-500 uppercase tracking-wider">
+                  (JSX.string "Status")
+                </th>
+                <th
+                  scope="col"
+                  class_="px-6 py-3 text-left text-xs font-medium \
+                          text-gray-500 uppercase tracking-wider">
+                  (JSX.string "Join Date")
+                </th>
+                <th
+                  scope="col"
+                  class_="px-6 py-3 text-left text-xs font-medium \
+                          text-gray-500 uppercase tracking-wider">
+                  (JSX.string "Salary")
+                </th>
+                <th
+                  scope="col"
+                  class_="px-6 py-3 text-left text-xs font-medium \
+                          text-gray-500 uppercase tracking-wider">
+                  (JSX.string "Manager")
+                </th>
+                <th
+                  scope="col"
+                  class_="px-6 py-3 text-left text-xs font-medium \
+                          text-gray-500 uppercase tracking-wider">
+                  (JSX.string "Projects")
+                </th>
+                <th
+                  scope="col"
+                  class_="px-6 py-3 text-right text-xs font-medium \
+                          text-gray-500 uppercase tracking-wider">
+                  (JSX.string "Actions")
+                </th>
+              </tr>
+            </thead>
+            <tbody class_="bg-white divide-y divide-gray-200">
+              (JSX.list
+                 (Array.to_list
+                    (Array.mapi
+                       (fun i user -> table_row ~user ~is_even:(i mod 2 = 0))
+                       users)))
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+let users_10 = generate_users 10
+let users_50 = generate_users 50
+let users_100 = generate_users 100
+let table_10 () = data_table users_10
+let table_50 () = data_table users_50
+let table_100 () = data_table users_100
+let make () = table_100 ()
+let render () = JSX.render (make ())

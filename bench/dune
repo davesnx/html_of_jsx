@@ -1,7 +1,7 @@
 (executable
  (name bench)
  (modules bench input)
- (libraries html_of_jsx benchmark)
+ (libraries html_of_jsx benchmark scenarios)
  (preprocess
   (pps html_of_jsx.ppx)))
 

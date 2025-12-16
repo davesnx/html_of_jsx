@@ -1,0 +1,362 @@
+(* Scenario: Complex Form
+   Multi-step form with many inputs and validation UI
+   Purpose: Test form-heavy page rendering *)
+
+let form_field ~id ~label ?(type_ = "text") ?(required = true)
+    ?(placeholder = "") ?help_text ?error () =
+  let cls =
+    Cx.make
+      [
+        "w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500";
+        (match error with
+        | Some _ -> "border-red-500 bg-red-50"
+        | None -> "border-gray-300");
+      ]
+  in
+  <div class_="mb-4">
+    <label for_=id class_="block text-sm font-medium text-gray-700 mb-1">
+      (JSX.string label)
+      (if required then <span class_="text-red-500 ml-1">(JSX.string "*")</span>
+       else JSX.null)
+    </label>
+    <input type_ id name=id required placeholder class_=cls />
+    (match help_text with
+    | Some text ->
+        let help_id = id ^ "-help" in
+        <p id=help_id class_="mt-1 text-sm text-gray-500">(JSX.string text)</p>
+    | None -> JSX.null)
+    (match error with
+    | Some text ->
+        let err_id = id ^ "-error" in
+        <p id=err_id class_="mt-1 text-sm text-red-600 flex items-center gap-1">
+          <span>(JSX.string "⚠️")</span> (JSX.string text)
+        </p>
+    | None -> JSX.null)
+  </div>
+
+let select_field ~id ~label ~options ?(required = true) () =
+  <div class_="mb-4">
+    <label for_=id class_="block text-sm font-medium text-gray-700 mb-1">
+      (JSX.string label)
+      (if required then <span class_="text-red-500 ml-1">(JSX.string "*")</span>
+       else JSX.null)
+    </label>
+    <select
+      id
+      name=id
+      required
+      class_="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 \
+              focus:ring-blue-500">
+      <option value="">(JSX.string "Select an option...")</option>
+      (JSX.list
+         (List.map
+            (fun (value, opt_label) ->
+              <option value>(JSX.string opt_label)</option>)
+            options))
+    </select>
+  </div>
+
+let textarea_field ~id ~label ?(rows = 4) ?(required = true) ?(placeholder = "")
+    () =
+  <div class_="mb-4">
+    <label for_=id class_="block text-sm font-medium text-gray-700 mb-1">
+      (JSX.string label)
+      (if required then <span class_="text-red-500 ml-1">(JSX.string "*")</span>
+       else JSX.null)
+    </label>
+    <textarea
+      id
+      name=id
+      rows
+      required
+      placeholder
+      class_="w-full px-4 py-2 border border-gray-300 rounded-lg resize-none"
+    />
+  </div>
+
+let checkbox_field ~id ~label ?description () =
+  <div class_="mb-4">
+    <div class_="flex items-start gap-3">
+      <input
+        type_="checkbox"
+        id
+        name=id
+        class_="mt-1 h-4 w-4 text-blue-600 border-gray-300 rounded"
+      />
+      <div>
+        <label for_=id class_="text-sm font-medium text-gray-700">
+          (JSX.string label)
+        </label>
+        (match description with
+        | Some desc -> <p class_="text-sm text-gray-500">(JSX.string desc)</p>
+        | None -> JSX.null)
+      </div>
+    </div>
+  </div>
+
+let radio_group ~name ~label ~options =
+  <fieldset class_="mb-4">
+    <legend class_="block text-sm font-medium text-gray-700 mb-2">
+      (JSX.string label)
+    </legend>
+    <div class_="space-y-2">
+      (JSX.list
+         (List.map
+            (fun (value, opt_label, description) ->
+              let radio_id = name ^ "-" ^ value in
+              <div class_="flex items-start gap-3">
+                <input
+                  type_="radio"
+                  id=radio_id
+                  name
+                  value
+                  class_="mt-1 h-4 w-4 text-blue-600 border-gray-300"
+                />
+                <div>
+                  <label
+                    for_=radio_id class_="text-sm font-medium text-gray-700">
+                    (JSX.string opt_label)
+                  </label>
+                  (match description with
+                  | Some desc ->
+                      <p class_="text-sm text-gray-500">(JSX.string desc)</p>
+                  | None -> JSX.null)
+                </div>
+              </div>)
+            options))
+    </div>
+  </fieldset>
+
+let form_section ~title ?description children =
+  <div class_="mb-8 pb-8 border-b border-gray-200 last:border-0">
+    <h3 class_="text-lg font-semibold text-gray-900 mb-1">
+      (JSX.string title)
+    </h3>
+    (match description with
+    | Some desc -> <p class_="text-sm text-gray-500 mb-4">(JSX.string desc)</p>
+    | None -> JSX.null)
+    children
+  </div>
+
+let progress_steps ~steps ~current_step =
+  <nav class_="mb-8">
+    <ol class_="flex items-center">
+      (JSX.list
+         (List.mapi
+            (fun i (label, _) ->
+              let is_complete = i < current_step in
+              let is_current = i = current_step in
+              let step_cls =
+                Cx.make
+                  [
+                    "w-8 h-8 rounded-full flex items-center justify-center \
+                     text-sm font-medium";
+                    (if is_complete then "bg-blue-600 text-white"
+                     else if is_current then
+                       "border-2 border-blue-600 text-blue-600"
+                     else "border-2 border-gray-300 text-gray-500");
+                  ]
+              in
+              let label_cls =
+                Cx.make
+                  [
+                    "ml-2 text-sm font-medium";
+                    (if is_current then "text-blue-600" else "text-gray-500");
+                  ]
+              in
+              let line_cls =
+                Cx.make
+                  [
+                    "w-16 h-0.5 mx-4";
+                    (if is_complete then "bg-blue-600" else "bg-gray-300");
+                  ]
+              in
+              <li class_="flex items-center">
+                <div class_="flex items-center">
+                  <span class_=step_cls>
+                    (if is_complete then JSX.string "✓" else JSX.int (i + 1))
+                  </span>
+                  <span class_=label_cls>(JSX.string label)</span>
+                </div>
+                (if i < List.length steps - 1 then <div class_=line_cls />
+                 else JSX.null)
+              </li>)
+            steps))
+    </ol>
+  </nav>
+
+let personal_info_form () =
+  form_section ~title:"Personal Information"
+    ~description:"Please provide your basic personal details."
+    (JSX.list
+       [
+         <div class_="grid grid-cols-2 gap-4">
+           (form_field ~id:"firstName" ~label:"First Name" ~placeholder:"John"
+              ())
+           (form_field ~id:"lastName" ~label:"Last Name" ~placeholder:"Doe" ())
+         </div>;
+         form_field ~id:"email" ~label:"Email Address" ~type_:"email"
+           ~placeholder:"john@example.com" ();
+         form_field ~id:"phone" ~label:"Phone Number" ~type_:"tel"
+           ~placeholder:"+1 (555) 000-0000" ();
+         form_field ~id:"dob" ~label:"Date of Birth" ~type_:"date"
+           ~help_text:"You must be at least 18 years old" ();
+         select_field ~id:"gender" ~label:"Gender" ~required:false
+           ~options:
+             [
+               ("male", "Male");
+               ("female", "Female");
+               ("other", "Other");
+               ("prefer-not", "Prefer not to say");
+             ]
+           ();
+       ])
+
+let address_form () =
+  form_section ~title:"Address Information"
+    ~description:"Your residential address for correspondence."
+    (JSX.list
+       [
+         form_field ~id:"address1" ~label:"Address Line 1"
+           ~placeholder:"123 Main Street" ();
+         form_field ~id:"address2" ~label:"Address Line 2" ~required:false
+           ~placeholder:"Apt 4B" ();
+         <div class_="grid grid-cols-2 gap-4">
+           (form_field ~id:"city" ~label:"City" ~placeholder:"New York" ())
+           (form_field ~id:"state" ~label:"State/Province" ~placeholder:"NY" ())
+         </div>;
+         <div class_="grid grid-cols-2 gap-4">
+           (form_field ~id:"zip" ~label:"ZIP/Postal Code" ~placeholder:"10001"
+              ())
+           (select_field ~id:"country" ~label:"Country"
+              ~options:
+                [
+                  ("us", "United States");
+                  ("ca", "Canada");
+                  ("uk", "United Kingdom");
+                  ("de", "Germany");
+                  ("fr", "France");
+                ]
+              ())
+         </div>;
+       ])
+
+let preferences_form () =
+  form_section ~title:"Preferences" ~description:"Customize your experience."
+    (JSX.list
+       [
+         select_field ~id:"language" ~label:"Preferred Language"
+           ~options:
+             [
+               ("en", "English");
+               ("es", "Spanish");
+               ("fr", "French");
+               ("de", "German");
+             ]
+           ();
+         radio_group ~name:"theme" ~label:"Theme Preference"
+           ~options:
+             [
+               ("light", "Light", Some "Best for daytime use");
+               ("dark", "Dark", Some "Easier on the eyes at night");
+               ("auto", "System", Some "Follows your device settings");
+             ];
+         <div class_="mt-6">
+           <h4 class_="text-sm font-medium text-gray-700 mb-3">
+             (JSX.string "Notification Preferences")
+           </h4>
+           (checkbox_field ~id:"notifyEmail" ~label:"Email notifications"
+              ~description:"Receive updates via email" ())
+           (checkbox_field ~id:"notifySms" ~label:"SMS notifications"
+              ~description:"Receive text message alerts" ())
+           (checkbox_field ~id:"notifyPush" ~label:"Push notifications"
+              ~description:"Receive browser notifications" ())
+         </div>;
+       ])
+
+let terms_form () =
+  form_section ~title:"Terms and Conditions"
+    (JSX.list
+       [
+         <div
+           class_="bg-gray-50 rounded-lg p-4 mb-4 h-48 overflow-y-auto text-sm \
+                   text-gray-600">
+           <p class_="mb-2">
+             (JSX.string
+                "By using our services, you agree to these terms. Please read \
+                 them carefully.")
+           </p>
+           <p class_="mb-2">
+             (JSX.string
+                "Lorem ipsum dolor sit amet, consectetur adipiscing elit.")
+           </p>
+         </div>;
+         checkbox_field ~id:"acceptTerms"
+           ~label:"I accept the Terms and Conditions"
+           ~description:"You must accept to continue" ();
+         checkbox_field ~id:"acceptPrivacy" ~label:"I accept the Privacy Policy"
+           ~description:"Your data will be handled according to our policy" ();
+       ])
+
+let page () =
+  let steps =
+    [
+      ("Personal", "Basic info");
+      ("Address", "Location");
+      ("Preferences", "Settings");
+      ("Review", "Confirm");
+    ]
+  in
+  <html lang="en">
+    <head>
+      <meta charset="utf-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1" />
+      <title>(JSX.string "Registration Form")</title>
+    </head>
+    <body class_="bg-gray-100 min-h-screen py-12">
+      <div class_="max-w-3xl mx-auto">
+        <div class_="text-center mb-8">
+          <h1 class_="text-3xl font-bold text-gray-900 mb-2">
+            (JSX.string "Create Your Account")
+          </h1>
+          <p class_="text-gray-600">
+            (JSX.string "Complete the form below to get started")
+          </p>
+        </div>
+        <div class_="bg-white rounded-xl shadow-sm p-6 mb-6">
+          (progress_steps ~steps ~current_step:2)
+        </div>
+        <form class_="bg-white rounded-xl shadow-sm p-8">
+          (personal_info_form ())
+          (address_form ())
+          (preferences_form ())
+          (terms_form ())
+          <div
+            class_="flex items-center justify-between pt-6 border-t \
+                    border-gray-200">
+            <button
+              type_="button"
+              class_="px-6 py-2 border border-gray-300 rounded-lg text-gray-700">
+              (JSX.string "← Previous")
+            </button>
+            <div class_="flex gap-4">
+              <button
+                type_="button"
+                class_="px-6 py-2 border border-gray-300 rounded-lg \
+                        text-gray-700">
+                (JSX.string "Save Draft")
+              </button>
+              <button
+                type_="submit"
+                class_="px-8 py-2 bg-blue-600 text-white rounded-lg font-medium">
+                (JSX.string "Continue →")
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </body>
+  </html>
+
+let make () = page ()
+let render () = JSX.render (make ())
