@@ -1693,12 +1693,7 @@ let findByName tag jsxName =
       match List.find_opt byName attributes with
       | Some prop -> Ok prop
       | None -> (
-          if
-            (* Attribute not found in the defined list.
-             Fall back to data-* attribute handling if applicable,
-             otherwise report an error with suggestions. *)
-            isDataAttribute jsxName
-          then
+          if isDataAttribute jsxName then
             let name = camelcaseToKebabcase jsxName in
             Ok (Attribute { name; jsxName; type_ = String })
           else
