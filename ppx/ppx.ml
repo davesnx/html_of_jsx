@@ -194,7 +194,9 @@ let generate_buffer_code ~loc ~parts ~static_size ~dynamic_count =
   let buf_pat = ppat_var ~loc { loc; txt = buf_var } in
   (* Estimate buffer size: static + 64 bytes per dynamic part *)
   let estimated_size = static_size + (dynamic_count * 64) in
-  let buffer_size = if estimated_size > 0 then estimated_size else default_buffer_size in
+  let buffer_size =
+    if estimated_size > 0 then estimated_size else default_buffer_size
+  in
   let buffer_size_expr = eint ~loc buffer_size in
   let generate_part_code part =
     match part with
@@ -276,11 +278,12 @@ let generate_dynamic_attrs_static_children_code ~loc analysis =
           | Html_attributes.Int ->
               [%expr Buffer.add_string [%e buf_ident] (Int.to_string [%e expr])]
           | Html_attributes.Bool ->
-              [%expr Buffer.add_string [%e buf_ident] (Bool.to_string [%e expr])]
+              [%expr
+                Buffer.add_string [%e buf_ident] (Bool.to_string [%e expr])]
           | Html_attributes.BooleanishString ->
-              [%expr Buffer.add_string [%e buf_ident] (Bool.to_string [%e expr])]
-          | Html_attributes.Style ->
-              [%expr JSX.escape [%e buf_ident] [%e expr]]
+              [%expr
+                Buffer.add_string [%e buf_ident] (Bool.to_string [%e expr])]
+          | Html_attributes.Style -> [%expr JSX.escape [%e buf_ident] [%e expr]]
         in
         [%expr
           Buffer.add_char [%e buf_ident] ' ';
@@ -294,16 +297,13 @@ let generate_dynamic_attrs_static_children_code ~loc analysis =
 
   (* Generate opening tag end *)
   let open_tag_end =
-    if is_self_closing then
-      [%expr Buffer.add_string [%e buf_ident] " />"]
-    else
-      [%expr Buffer.add_char [%e buf_ident] '>']
+    if is_self_closing then [%expr Buffer.add_string [%e buf_ident] " />"]
+    else [%expr Buffer.add_char [%e buf_ident] '>']
   in
 
   (* Generate closing tag *)
   let close_tag =
-    if is_self_closing then
-      [%expr ()]
+    if is_self_closing then [%expr ()]
     else
       [%expr
         Buffer.add_string [%e buf_ident] "</";
@@ -313,8 +313,10 @@ let generate_dynamic_attrs_static_children_code ~loc analysis =
 
   (* Combine all operations *)
   let all_ops =
-    open_tag_start :: dynamic_attr_ops @ [ open_tag_end ]
-    @ (if children_html = "" then [] else [ [%expr Buffer.add_string [%e buf_ident] [%e children_html_expr]] ])
+    (open_tag_start :: dynamic_attr_ops)
+    @ [ open_tag_end ]
+    @ (if children_html = "" then []
+       else [ [%expr Buffer.add_string [%e buf_ident] [%e children_html_expr]] ])
     @ [ close_tag ]
   in
   let seq =

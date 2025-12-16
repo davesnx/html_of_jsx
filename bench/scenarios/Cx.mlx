@@ -1,0 +1,6 @@
+(* Simple classname utility for benchmarks *)
+
+let make cns =
+  cns |> List.filter (fun x -> x <> "") |> String.concat " " |> String.trim
+
+let if_true cn x = if x then cn else ""

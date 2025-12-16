@@ -1,0 +1,5 @@
+(library
+ (name scenarios)
+ (libraries html_of_jsx)
+ (preprocess
+  (pps html_of_jsx.ppx)))

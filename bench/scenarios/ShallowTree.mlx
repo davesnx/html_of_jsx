@@ -1,0 +1,52 @@
+(* Scenario: Shallow Tree
+   5 components deep with multiple props each
+   Purpose: Test prop passing and shallow component hierarchies *)
+
+let level5 ~title ~subtitle ~active ~count =
+  let cls = Cx.make [ "p-4"; "rounded"; Cx.if_true "bg-blue-500" active ] in
+  <div class_=cls>
+    <h5 class_="font-bold">(JSX.string title)</h5>
+    <p class_="text-sm text-gray-500">(JSX.string subtitle)</p>
+    <span class_="badge">(JSX.int count)</span>
+  </div>
+
+let level4 ~title ~description ~is_highlighted ~item_count =
+  let cls =
+    Cx.make [ "mb-4"; Cx.if_true "border-l-4 border-blue-500" is_highlighted ]
+  in
+  <section class_=cls>
+    (level5 ~title ~subtitle:description ~active:is_highlighted
+       ~count:item_count)
+    (level5 ~title:(title ^ " Alt") ~subtitle:"Secondary" ~active:false
+       ~count:(item_count * 2))
+  </section>
+
+let level3 ~group_name ~expanded ~total_items =
+  let cls = Cx.make [ "p-6"; Cx.if_true "shadow-lg" expanded ] in
+  <article class_=cls>
+    <h3 class_="text-xl font-semibold mb-4">(JSX.string group_name)</h3>
+    (level4 ~title:"First Item" ~description:"Description A"
+       ~is_highlighted:true ~item_count:total_items)
+    (level4 ~title:"Second Item" ~description:"Description B"
+       ~is_highlighted:false ~item_count:(total_items / 2))
+  </article>
+
+let level2 ~section_title ~is_visible =
+  let cls = Cx.make [ "container mx-auto"; Cx.if_true "block" is_visible ] in
+  <div class_=cls>
+    <h2 class_="text-2xl font-bold mb-6">(JSX.string section_title)</h2>
+    (level3 ~group_name:"Group Alpha" ~expanded:true ~total_items:42)
+    (level3 ~group_name:"Group Beta" ~expanded:false ~total_items:17)
+  </div>
+
+let level1 ~page_title =
+  <main class_="min-h-screen bg-gray-100 py-8">
+    <h1 class_="text-4xl font-extrabold text-center mb-8">
+      (JSX.string page_title)
+    </h1>
+    (level2 ~section_title:"Primary Section" ~is_visible:true)
+    (level2 ~section_title:"Secondary Section" ~is_visible:true)
+  </main>
+
+let make () = level1 ~page_title:"Shallow Tree Benchmark"
+let render () = JSX.render (make ())

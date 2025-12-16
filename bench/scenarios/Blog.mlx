@@ -1,0 +1,412 @@
+(* Scenario: Blog Article Page
+   Article with comments, sidebar, rich content
+   Purpose: Test content-heavy page rendering *)
+
+type comment = {
+  id : int;
+  author : string;
+  avatar : string;
+  content : string;
+  date : string;
+  likes : int;
+  replies : comment list;
+}
+
+let generate_comments count depth =
+  let authors = [| "Alice"; "Bob"; "Charlie"; "Diana"; "Eve"; "Frank" |] in
+  let avatars = [| "A"; "B"; "C"; "D"; "E"; "F" |] in
+  List.init count (fun i ->
+      {
+        id = i + 1;
+        author = authors.(i mod Array.length authors);
+        avatar = avatars.(i mod Array.length avatars);
+        content =
+          Printf.sprintf
+            "This is comment #%d. Lorem ipsum dolor sit amet, consectetur \
+             adipiscing elit."
+            (i + 1);
+        date = Printf.sprintf "%d hours ago" (1 + (i mod 24));
+        likes = i * 3 mod 50;
+        replies =
+          (if depth > 0 then
+             List.init (i mod 3) (fun j ->
+                 {
+                   id = (i * 100) + j;
+                   author = authors.((i + j + 1) mod Array.length authors);
+                   avatar = avatars.((i + j + 1) mod Array.length avatars);
+                   content =
+                     Printf.sprintf "Reply to comment #%d. Great point!" (i + 1);
+                   date = Printf.sprintf "%d minutes ago" (5 + (j * 10));
+                   likes = j * 2;
+                   replies = [];
+                 })
+           else []);
+      })
+
+let rec comment_component ~comment ~depth =
+  let cls =
+    Cx.make
+      [
+        "py-4";
+        (if depth > 0 then "ml-12 border-l-2 border-gray-100 pl-4"
+         else "border-b border-gray-100");
+      ]
+  in
+  <div class_=cls>
+    <div class_="flex items-start gap-4">
+      <div
+        class_="w-10 h-10 rounded-full bg-gray-200 flex items-center \
+                justify-center flex-shrink-0">
+        <span class_="text-lg">(JSX.string comment.avatar)</span>
+      </div>
+      <div class_="flex-1">
+        <div class_="flex items-center gap-2 mb-1">
+          <span class_="font-semibold text-gray-900">
+            (JSX.string comment.author)
+          </span>
+          <span class_="text-sm text-gray-500">(JSX.string comment.date)</span>
+        </div>
+        <p class_="text-gray-700 mb-3">(JSX.string comment.content)</p>
+        <div class_="flex items-center gap-4 text-sm">
+          <button
+            class_="text-gray-500 hover:text-blue-600 flex items-center gap-1">
+            <span>(JSX.string "👍")</span> <span>(JSX.int comment.likes)</span>
+          </button>
+          <button class_="text-gray-500 hover:text-blue-600">
+            (JSX.string "Reply")
+          </button>
+          <button class_="text-gray-500 hover:text-blue-600">
+            (JSX.string "Share")
+          </button>
+        </div>
+        (if List.length comment.replies > 0 then
+           <div class_="mt-4">
+             (JSX.list
+                (List.map
+                   (fun reply ->
+                     comment_component ~comment:reply ~depth:(depth + 1))
+                   comment.replies))
+           </div>
+         else JSX.null)
+      </div>
+    </div>
+  </div>
+
+let article_content () =
+  <article class_="prose prose-lg max-w-none">
+    <p class_="text-xl text-gray-600 leading-relaxed mb-8">
+      (JSX.string
+         "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do \
+          eiusmod tempor incididunt ut labore et dolore magna aliqua.")
+    </p>
+    <h2 class_="text-2xl font-bold text-gray-900 mt-8 mb-4">
+      (JSX.string "Introduction")
+    </h2>
+    <p class_="text-gray-700 mb-4">
+      (JSX.string
+         "Duis aute irure dolor in reprehenderit in voluptate velit esse \
+          cillum dolore eu fugiat nulla pariatur.")
+    </p>
+    <blockquote
+      class_="border-l-4 border-blue-500 pl-4 py-2 my-6 bg-blue-50 rounded-r">
+      <p class_="text-gray-700 italic">
+        (JSX.string
+           "\"Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit \
+            aut fugit.\"")
+      </p>
+      <cite class_="text-sm text-gray-500">(JSX.string "— Famous Author")</cite>
+    </blockquote>
+    <h2 class_="text-2xl font-bold text-gray-900 mt-8 mb-4">
+      (JSX.string "Key Concepts")
+    </h2>
+    <ul class_="list-disc list-inside space-y-2 mb-6">
+      <li class_="text-gray-700">
+        (JSX.string "Ut enim ad minima veniam, quis nostrum exercitationem")
+      </li>
+      <li class_="text-gray-700">
+        (JSX.string
+           "Corporis suscipit laboriosam, nisi ut aliquid ex ea commodi")
+      </li>
+      <li class_="text-gray-700">
+        (JSX.string "Quis autem vel eum iure reprehenderit qui in ea voluptate")
+      </li>
+    </ul>
+    <div class_="bg-gray-100 rounded-lg p-6 my-6">
+      <h3 class_="font-bold text-gray-900 mb-2">(JSX.string "💡 Pro Tip")</h3>
+      <p class_="text-gray-700">
+        (JSX.string
+           "Temporibus autem quibusdam et aut officiis debitis aut rerum \
+            necessitatibus.")
+      </p>
+    </div>
+    <h2 class_="text-2xl font-bold text-gray-900 mt-8 mb-4">
+      (JSX.string "Code Example")
+    </h2>
+    <pre class_="bg-gray-900 text-gray-100 rounded-lg p-4 overflow-x-auto mb-6">
+      <code>
+        (JSX.string
+           {|let example = () => {
+  let value = computeValue();
+  let result = transform(value);
+  process(result);
+};|})
+      </code>
+    </pre>
+    <h2 class_="text-2xl font-bold text-gray-900 mt-8 mb-4">
+      (JSX.string "Conclusion")
+    </h2>
+    <p class_="text-gray-700 mb-4">
+      (JSX.string
+         "Itaque earum rerum hic tenetur a sapiente delectus, ut aut \
+          reiciendis voluptatibus maiores alias consequatur.")
+    </p>
+  </article>
+
+let sidebar () =
+  let related_posts =
+    [
+      "Understanding Server-Side Rendering";
+      "The Future of Web Development";
+      "Performance Optimization Tips";
+      "Building Scalable Applications";
+      "Modern JavaScript Frameworks";
+    ]
+  in
+  let tags =
+    [ "React"; "SSR"; "Performance"; "JavaScript"; "OCaml"; "Tutorial" ]
+  in
+  <aside class_="w-80 flex-shrink-0">
+    <div class_="sticky top-8 space-y-8">
+      <div class_="bg-white rounded-xl p-6 shadow-sm">
+        <div class_="flex items-center gap-4 mb-4">
+          <div
+            class_="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 \
+                    to-purple-500 flex items-center justify-center">
+            <span class_="text-2xl">(JSX.string "👨‍💻")</span>
+          </div>
+          <div>
+            <h3 class_="font-bold text-gray-900">
+              (JSX.string "John Developer")
+            </h3>
+            <p class_="text-sm text-gray-500">(JSX.string "Senior Engineer")</p>
+          </div>
+        </div>
+        <p class_="text-gray-600 text-sm mb-4">
+          (JSX.string
+             "Writing about web development, performance, and the joy of \
+              coding.")
+        </p>
+        <button
+          class_="w-full py-2 bg-blue-600 text-white rounded-lg font-medium \
+                  hover:bg-blue-700">
+          (JSX.string "Follow")
+        </button>
+      </div>
+      <div class_="bg-white rounded-xl p-6 shadow-sm">
+        <h3 class_="font-bold text-gray-900 mb-4">
+          (JSX.string "Related Posts")
+        </h3>
+        <ul class_="space-y-3">
+          (JSX.list
+             (List.map
+                (fun title ->
+                  <li>
+                    <a
+                      href="#"
+                      class_="text-gray-700 hover:text-blue-600 text-sm">
+                      (JSX.string title)
+                    </a>
+                  </li>)
+                related_posts))
+        </ul>
+      </div>
+      <div class_="bg-white rounded-xl p-6 shadow-sm">
+        <h3 class_="font-bold text-gray-900 mb-4">(JSX.string "Tags")</h3>
+        <div class_="flex flex-wrap gap-2">
+          (JSX.list
+             (List.map
+                (fun tag ->
+                  let href =
+                    Printf.sprintf "/tag/%s" (String.lowercase_ascii tag)
+                  in
+                  <a
+                    href
+                    class_="px-3 py-1 bg-gray-100 text-gray-700 rounded-full \
+                            text-sm hover:bg-gray-200">
+                    (JSX.string tag)
+                  </a>)
+                tags))
+        </div>
+      </div>
+      <div
+        class_="bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl p-6 \
+                text-white">
+        <h3 class_="font-bold mb-2">(JSX.string "📧 Newsletter")</h3>
+        <p class_="text-sm text-blue-100 mb-4">
+          (JSX.string "Get weekly insights delivered to your inbox.")
+        </p>
+        <input
+          type_="email"
+          placeholder="your@email.com"
+          class_="w-full px-4 py-2 rounded-lg text-gray-900 mb-3"
+        />
+        <button
+          class_="w-full py-2 bg-white text-blue-600 rounded-lg font-medium \
+                  hover:bg-gray-100">
+          (JSX.string "Subscribe")
+        </button>
+      </div>
+    </div>
+  </aside>
+
+let comments_section ~comments =
+  let count_label = Printf.sprintf "Comments (%d)" (List.length comments) in
+  <section class_="mt-12">
+    <h2 class_="text-2xl font-bold text-gray-900 mb-6">
+      (JSX.string count_label)
+    </h2>
+    <div class_="bg-gray-50 rounded-xl p-6 mb-8">
+      <h3 class_="font-medium text-gray-900 mb-4">
+        (JSX.string "Leave a comment")
+      </h3>
+      <textarea
+        rows=4
+        placeholder="Share your thoughts..."
+        class_="w-full px-4 py-3 border border-gray-200 rounded-lg resize-none"
+      />
+      <div class_="flex justify-end mt-4">
+        <button
+          class_="px-6 py-2 bg-blue-600 text-white rounded-lg font-medium \
+                  hover:bg-blue-700">
+          (JSX.string "Post Comment")
+        </button>
+      </div>
+    </div>
+    <div>
+      (JSX.list
+         (List.map
+            (fun comment -> comment_component ~comment ~depth:0)
+            comments))
+    </div>
+    <div class_="mt-8 text-center">
+      <button
+        class_="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 \
+                hover:bg-gray-50">
+        (JSX.string "Load more comments")
+      </button>
+    </div>
+  </section>
+
+let page ~comment_count =
+  let comments = generate_comments comment_count 1 in
+  <html lang="en">
+    <head>
+      <meta charset="utf-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1" />
+      <title>
+        (JSX.string "Blog Post - Understanding Server-Side Rendering")
+      </title>
+    </head>
+    <body class_="bg-gray-50">
+      <header class_="bg-white border-b border-gray-200">
+        <div class_="container mx-auto px-4 py-4">
+          <nav class_="flex items-center justify-between">
+            <a href="/" class_="text-2xl font-bold text-gray-900">
+              (JSX.string "TechBlog")
+            </a>
+            <div class_="flex items-center gap-6">
+              (JSX.list
+                 (List.map
+                    (fun item ->
+                      <a href="#" class_="text-gray-600 hover:text-gray-900">
+                        (JSX.string item)
+                      </a>)
+                    [ "Articles"; "Tutorials"; "Podcast"; "About" ]))
+              <button
+                class_="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium">
+                (JSX.string "Subscribe")
+              </button>
+            </div>
+          </nav>
+        </div>
+      </header>
+      <div
+        class_="bg-gradient-to-br from-blue-900 to-purple-900 text-white py-16">
+        <div class_="container mx-auto px-4">
+          <div class_="max-w-3xl">
+            <div class_="flex items-center gap-2 mb-4">
+              <span
+                class_="px-3 py-1 bg-blue-500 rounded-full text-sm font-medium">
+                (JSX.string "Tutorial")
+              </span>
+              <span class_="text-blue-200">(JSX.string "• 15 min read")</span>
+            </div>
+            <h1 class_="text-4xl md:text-5xl font-bold mb-4">
+              (JSX.string
+                 "Understanding Server-Side Rendering in Modern Web \
+                  Applications")
+            </h1>
+            <p class_="text-xl text-blue-100 mb-6">
+              (JSX.string
+                 "A comprehensive guide to SSR, its benefits, and how to \
+                  implement it effectively.")
+            </p>
+            <div class_="flex items-center gap-4">
+              <div
+                class_="w-12 h-12 rounded-full bg-white/20 flex items-center \
+                        justify-center">
+                <span class_="text-xl">(JSX.string "👨‍💻")</span>
+              </div>
+              <div>
+                <p class_="font-medium">(JSX.string "John Developer")</p>
+                <p class_="text-sm text-blue-200">
+                  (JSX.string "Published on November 15, 2024")
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <main class_="container mx-auto px-4 py-12">
+        <div class_="flex gap-12">
+          <div class_="flex-1 max-w-3xl">
+            <div
+              class_="flex items-center gap-4 mb-8 pb-8 border-b \
+                      border-gray-200">
+              <span class_="text-gray-500 text-sm">(JSX.string "Share:")</span>
+              (JSX.list
+                 (List.map
+                    (fun (icon, label) ->
+                      <button
+                        class_="p-2 bg-gray-100 rounded-full hover:bg-gray-200"
+                        aria_label=label>
+                        (JSX.string icon)
+                      </button>)
+                    [
+                      ("🐦", "Twitter");
+                      ("📘", "Facebook");
+                      ("💼", "LinkedIn");
+                      ("📋", "Copy Link");
+                    ]))
+            </div>
+            (article_content ())
+            (comments_section ~comments)
+          </div>
+          (sidebar ())
+        </div>
+      </main>
+      <footer class_="bg-gray-900 text-white py-12">
+        <div class_="container mx-auto px-4 text-center">
+          <p class_="text-gray-400">
+            (JSX.string "© 2024 TechBlog. All rights reserved.")
+          </p>
+        </div>
+      </footer>
+    </body>
+  </html>
+
+let blog_10 () = page ~comment_count:10
+let blog_50 () = page ~comment_count:50
+let blog_100 () = page ~comment_count:100
+let make () = blog_50 ()
+let render () = JSX.render (make ())

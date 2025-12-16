@@ -1,0 +1,180 @@
+(* Scenario: Props Heavy
+   Components with many HTML attributes/props
+   Purpose: Test attribute serialization performance *)
+
+let heavy_div ~id children =
+  let div_id = Printf.sprintf "heavy-div-%d" id in
+  let testid = Printf.sprintf "test-heavy-%d" id in
+  let label = Printf.sprintf "Heavy component number %d" id in
+  let describedby = Printf.sprintf "desc-%d" id in
+  <div
+    id=div_id
+    class_="heavy-component p-4 m-2 bg-white rounded-lg shadow-md border \
+            border-gray-200"
+    data_testid=testid
+    role="article"
+    aria_label=label
+    aria_describedby=describedby
+    tabindex=0
+    style="background-color: #ffffff; padding: 16px; margin: 8px; \
+           border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+    children
+  </div>
+
+let heavy_input ~id ~label =
+  let input_id = Printf.sprintf "input-%d" id in
+  let input_name = Printf.sprintf "field_%d" id in
+  let placeholder = Printf.sprintf "Enter %s..." label in
+  let aria_label = Printf.sprintf "Input for %s" label in
+  let testid = Printf.sprintf "input-test-%d" id in
+  <div class_="form-group mb-4">
+    <label for_=input_id class_="block text-sm font-medium text-gray-700 mb-1">
+      (JSX.string label)
+    </label>
+    <input
+      type_="text"
+      id=input_id
+      name=input_name
+      class_="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm"
+      placeholder
+      autocomplete="off"
+      spellcheck=false
+      required=true
+      minlength=1
+      maxlength=100
+      pattern="[A-Za-z0-9]+"
+      title="Only alphanumeric characters"
+      aria_label
+      aria_required=true
+      data_testid=testid
+      style="width: 100%; padding: 8px 12px; font-size: 14px;"
+    />
+  </div>
+
+let heavy_button ~id ~text ~variant =
+  let bg_color, text_color =
+    match variant with
+    | `primary -> ("bg-blue-600", "text-white")
+    | `secondary -> ("bg-gray-200", "text-gray-800")
+    | `danger -> ("bg-red-600", "text-white")
+    | `success -> ("bg-green-600", "text-white")
+  in
+  let btn_id = Printf.sprintf "btn-%d" id in
+  let cls =
+    Cx.make
+      [
+        "inline-flex items-center justify-center px-4 py-2 rounded-md \
+         font-medium";
+        "transition-colors duration-200";
+        bg_color;
+        text_color;
+      ]
+  in
+  let aria_label = Printf.sprintf "Button: %s" text in
+  let describedby = Printf.sprintf "btn-desc-%d" id in
+  let testid = Printf.sprintf "btn-test-%d" id in
+  <button
+    type_="button"
+    id=btn_id
+    class_=cls
+    disabled=false
+    aria_pressed="false"
+    aria_label
+    aria_describedby=describedby
+    data_testid=testid
+    role="button"
+    tabindex=0
+    style="display: inline-flex; align-items: center; padding: 8px 16px; \
+           font-size: 14px;">
+    (JSX.string text)
+  </button>
+
+let heavy_table ~rows ~cols =
+  <div class_="overflow-x-auto">
+    <table
+      class_="min-w-full divide-y divide-gray-200"
+      role="grid"
+      aria_label="Data table"
+      aria_rowcount=rows
+      aria_colcount=cols>
+      <thead class_="bg-gray-50">
+        <tr role="row">
+          (JSX.list
+             (List.init cols (fun col ->
+                  let col_label = Printf.sprintf "Column %d" (col + 1) in
+                  <th
+                    scope="col"
+                    role="columnheader"
+                    aria_sort="none"
+                    aria_colindex=(col + 1)
+                    class_="px-6 py-3 text-left text-xs font-medium \
+                            text-gray-500 uppercase">
+                    (JSX.string col_label)
+                  </th>)))
+        </tr>
+      </thead>
+      <tbody class_="bg-white divide-y divide-gray-200">
+        (JSX.list
+           (List.init rows (fun row ->
+                let row_cls =
+                  if row mod 2 = 0 then "bg-white" else "bg-gray-50"
+                in
+                <tr role="row" aria_rowindex=(row + 1) class_=row_cls>
+                  (JSX.list
+                     (List.init cols (fun col ->
+                          let cell_testid =
+                            Printf.sprintf "cell-%d-%d" row col
+                          in
+                          let cell_content =
+                            Printf.sprintf "R%dC%d" (row + 1) (col + 1)
+                          in
+                          <td
+                            role="gridcell"
+                            aria_colindex=(col + 1)
+                            class_="px-6 py-4 whitespace-nowrap text-sm \
+                                    text-gray-900"
+                            data_testid=cell_testid>
+                            (JSX.string cell_content)
+                          </td>)))
+                </tr>)))
+      </tbody>
+    </table>
+  </div>
+
+let small () =
+  <div class_="p-4">
+    (JSX.list
+       (List.init 10 (fun i ->
+            let label = Printf.sprintf "Field %d" i in
+            heavy_div ~id:i
+              (JSX.list
+                 [
+                   heavy_input ~id:i ~label;
+                   <div class_="flex gap-2 mt-2">
+                     (heavy_button ~id:(i * 3) ~text:"Primary" ~variant:`primary)
+                     (heavy_button
+                        ~id:((i * 3) + 1)
+                        ~text:"Secondary" ~variant:`secondary)
+                     (heavy_button
+                        ~id:((i * 3) + 2)
+                        ~text:"Delete" ~variant:`danger)
+                   </div>;
+                 ]))))
+  </div>
+
+let medium () =
+  <div class_="p-4">
+    (JSX.list
+       (List.init 50 (fun i ->
+            let label = Printf.sprintf "Field %d" i in
+            heavy_div ~id:i
+              (JSX.list
+                 [
+                   heavy_input ~id:i ~label;
+                   heavy_button ~id:i ~text:"Submit" ~variant:`primary;
+                 ]))))
+  </div>
+
+let large () = <div class_="p-4">(heavy_table ~rows:100 ~cols:10)</div>
+let make () = medium ()
+let render () = JSX.render (make ())

@@ -1,36 +1,60 @@
   $ ../ppx.sh --output re input.re
   let lower = JSX.unsafe("<div></div>");
   let lower_empty_attr = JSX.unsafe("<div class=\"\"></div>");
-  let lower_inline_styles =
-    JSX.node(
-      "div",
-      Stdlib.List.filter_map(
-        Stdlib.Fun.id,
-        [
-          Some((
-            "style",
-            `String(Style.make(~backgroundColor="gainsboro", ()): string),
-          )),
-        ],
-      ),
-      [],
-    );
-  let lower_opt_attr =
-    JSX.node(
-      "div",
-      Stdlib.List.filter_map(
-        Stdlib.Fun.id,
-        [
-          Stdlib.Option.map(
-            v => ("tabindex", `Int(v)),
-            tabindex: option(int),
-          ),
-        ],
-      ),
-      [],
-    );
-  let lowerWithChildAndProps = foo => {
+  let lower_inline_styles = {
     let __html_buf = Buffer.create(1024);
+    {
+      {
+        Buffer.add_char(__html_buf, '<');
+        Buffer.add_string(__html_buf, "div");
+        Buffer.add_string(__html_buf, "");
+      };
+      {
+        Buffer.add_char(__html_buf, ' ');
+        Buffer.add_string(__html_buf, "style");
+        Buffer.add_string(__html_buf, "=\"");
+        JSX.escape(__html_buf, Style.make(~backgroundColor="gainsboro", ()));
+        Buffer.add_char(__html_buf, '"');
+      };
+      Buffer.add_char(__html_buf, '>');
+      {
+        Buffer.add_string(__html_buf, "</");
+        Buffer.add_string(__html_buf, "div");
+        Buffer.add_char(__html_buf, '>');
+      };
+      ();
+    };
+    JSX.unsafe(Buffer.contents(__html_buf));
+  };
+  let lower_opt_attr = {
+    let __html_buf = Buffer.create(1024);
+    {
+      {
+        Buffer.add_char(__html_buf, '<');
+        Buffer.add_string(__html_buf, "div");
+        Buffer.add_string(__html_buf, "");
+      };
+      switch (tabindex) {
+      | Some(v) =>
+        Buffer.add_char(__html_buf, ' ');
+        Buffer.add_string(__html_buf, "tabindex");
+        Buffer.add_string(__html_buf, "=\"");
+        Buffer.add_string(__html_buf, Int.to_string(v));
+        Buffer.add_char(__html_buf, '"');
+      | None => ()
+      };
+      Buffer.add_char(__html_buf, '>');
+      {
+        Buffer.add_string(__html_buf, "</");
+        Buffer.add_string(__html_buf, "div");
+        Buffer.add_char(__html_buf, '>');
+      };
+      ();
+    };
+    JSX.unsafe(Buffer.contents(__html_buf));
+  };
+  let lowerWithChildAndProps = foo => {
+    let __html_buf = Buffer.create(111);
     {
       Buffer.add_string(
         __html_buf,
@@ -44,7 +68,7 @@
   };
   let lower_child_static = JSX.unsafe("<div><span></span></div>");
   let lower_child_ident = {
-    let __html_buf = Buffer.create(1024);
+    let __html_buf = Buffer.create(75);
     {
       Buffer.add_string(__html_buf, "<div>");
       JSX.write(__html_buf, lolaspa);
@@ -56,7 +80,7 @@
   let lower_child_single = JSX.unsafe("<div><div></div></div>");
   let lower_children_multiple = (foo, bar) => lower(~children=[foo, bar], ());
   let lower_child_with_upper_as_children = {
-    let __html_buf = Buffer.create(1024);
+    let __html_buf = Buffer.create(75);
     {
       Buffer.add_string(__html_buf, "<div>");
       JSX.write(__html_buf, App.make());
@@ -66,19 +90,19 @@
     JSX.unsafe(Buffer.contents(__html_buf));
   };
   let lower_children_nested = {
-    let __html_buf = Buffer.create(1024);
+    let __html_buf = Buffer.create(98);
     {
       Buffer.add_string(__html_buf, "<div class=\"flex-container\">");
       JSX.write(
         __html_buf,
         {
-          let __html_buf = Buffer.create(1024);
+          let __html_buf = Buffer.create(155);
           {
             Buffer.add_string(__html_buf, "<div class=\"sidebar\">");
             JSX.write(
               __html_buf,
               {
-                let __html_buf = Buffer.create(1024);
+                let __html_buf = Buffer.create(87);
                 {
                   Buffer.add_string(__html_buf, "<h2 class=\"title\">");
                   JSX.write(__html_buf, "jsoo-react" |> s);
@@ -91,20 +115,20 @@
             JSX.write(
               __html_buf,
               {
-                let __html_buf = Buffer.create(1024);
+                let __html_buf = Buffer.create(88);
                 {
                   Buffer.add_string(__html_buf, "<nav class=\"menu\">");
                   JSX.write(
                     __html_buf,
                     {
-                      let __html_buf = Buffer.create(1024);
+                      let __html_buf = Buffer.create(73);
                       {
                         Buffer.add_string(__html_buf, "<ul>");
                         JSX.write(
                           __html_buf,
                           examples
                           |> List.map(e => {
-                               let __html_buf = Buffer.create(1024);
+                               let __html_buf = Buffer.create(73);
                                {
                                  Buffer.add_string(__html_buf, "<li>");
                                  JSX.write(
@@ -158,7 +182,7 @@
     JSX.unsafe(Buffer.contents(__html_buf));
   };
   let lower_ref_with_children = {
-    let __html_buf = Buffer.create(1024);
+    let __html_buf = Buffer.create(101);
     {
       Buffer.add_string(__html_buf, "<button class=\"FancyButton\">");
       JSX.write(__html_buf, children);

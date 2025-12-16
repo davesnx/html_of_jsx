@@ -1,0 +1,31 @@
+(* Scenario: Deep Tree
+   50+ levels deep component tree
+   Purpose: Test deep recursion and call stack performance *)
+
+let wrapper ~depth ~max_depth children =
+  let percentage = float_of_int depth /. float_of_int max_depth *. 100.0 in
+  let cls = Printf.sprintf "depth-%d" depth in
+  let testid = Printf.sprintf "level-%d" depth in
+  let label = Printf.sprintf "Level %d (%.0f%%)" depth percentage in
+  <div
+    class_=cls
+    data_testid=testid
+    style="padding-left: 2px; border-left: 1px solid rgba(0,0,0,0.1);">
+    <span class_="text-xs text-gray-400">(JSX.string label)</span> children
+  </div>
+
+let rec render_depth current max =
+  if current >= max then
+    let label = Printf.sprintf "Reached depth %d" current in
+    <div class_="leaf-node bg-green-100 p-2 rounded">
+      <strong>(JSX.string "Leaf Node")</strong>
+      <p class_="text-sm">(JSX.string label)</p>
+    </div>
+  else wrapper ~depth:current ~max_depth:max (render_depth (current + 1) max)
+
+let depth_10 () = render_depth 0 10
+let depth_25 () = render_depth 0 25
+let depth_50 () = render_depth 0 50
+let depth_100 () = render_depth 0 100
+let make () = depth_50 ()
+let render () = JSX.render (make ())
