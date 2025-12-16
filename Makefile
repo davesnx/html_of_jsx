@@ -78,7 +78,7 @@ pin: # pin dependencies
 	opam pin add ocaml-lsp-server.dev "https://github.com/davesnx/ocaml-lsp.git#687d9f21af1256ba6c16bf851e597c9a292c75ed" -y
 
 .PHONY: init
-init: setup-githooks create-switch install ## Create a local dev enviroment
+init: setup-githooks create-switch install pin ## Create a local dev enviroment
 
 .PHONY: demo
 demo: ## Run demo executable
