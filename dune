@@ -1,3 +1,8 @@
+(env
+ (_
+  (env-vars
+   (REFMT_PRINT_WIDTH 80))))
+
 (dirs lib ppx test docs demo bench)
 
 (documentation
