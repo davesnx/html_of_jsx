@@ -116,3 +116,13 @@ let render element =
   let out = Buffer.create 1024 in
   write out element;
   Buffer.contents out
+
+let render_to_channel (chan : out_channel) element =
+  let out = Buffer.create 1024 in
+  write out element;
+  Buffer.output_buffer chan out
+
+let render_streaming (write_fn : string -> unit) element =
+  let out = Buffer.create 1024 in
+  write out element;
+  write_fn (Buffer.contents out)
