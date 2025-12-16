@@ -226,6 +226,109 @@ let generate_buffer_code ~loc ~parts ~static_size ~dynamic_count =
     [%e seq];
     JSX.unsafe (Buffer.contents [%e buf_ident])]
 
+let generate_dynamic_attrs_static_children_code ~loc analysis =
+  let tag_name, static_attrs, dynamic_attrs, children_html, is_self_closing =
+    match analysis with
+    | Static_analysis.Dynamic_attrs_static_children
+        {
+          tag_name;
+          static_attrs;
+          dynamic_attrs;
+          children_html;
+          is_self_closing;
+        } ->
+        (tag_name, static_attrs, dynamic_attrs, children_html, is_self_closing)
+    | _ -> assert false
+  in
+  let buf_var = "__html_buf" in
+  let buf_ident = pexp_ident ~loc { loc; txt = Lident buf_var } in
+  let buf_pat = ppat_var ~loc { loc; txt = buf_var } in
+  let buffer_size_expr = eint ~loc default_buffer_size in
+  let tag_name_expr = estring ~loc tag_name in
+  let static_attrs_expr = estring ~loc static_attrs in
+  let children_html_expr = estring ~loc children_html in
+
+  (* Generate opening tag start *)
+  let open_tag_start =
+    [%expr
+      Buffer.add_char [%e buf_ident] '<';
+      Buffer.add_string [%e buf_ident] [%e tag_name_expr];
+      Buffer.add_string [%e buf_ident] [%e static_attrs_expr]]
+  in
+
+  (* Generate code for each dynamic attribute *)
+  let generate_dynamic_attr_code
+      ((info : Static_analysis.attr_render_info), expr) =
+    let html_name_expr = estring ~loc info.html_name in
+    match info.is_boolean with
+    | true ->
+        (* Boolean attributes *)
+        [%expr
+          if [%e expr] then (
+            Buffer.add_char [%e buf_ident] ' ';
+            Buffer.add_string [%e buf_ident] [%e html_name_expr])]
+    | false ->
+        (* String/int attributes *)
+        let value_escape_code =
+          match info.kind with
+          | Html_attributes.String ->
+              [%expr JSX.escape [%e buf_ident] [%e expr]]
+          | Html_attributes.Int ->
+              [%expr Buffer.add_string [%e buf_ident] (Int.to_string [%e expr])]
+          | Html_attributes.Bool ->
+              [%expr Buffer.add_string [%e buf_ident] (Bool.to_string [%e expr])]
+          | Html_attributes.BooleanishString ->
+              [%expr Buffer.add_string [%e buf_ident] (Bool.to_string [%e expr])]
+          | Html_attributes.Style ->
+              [%expr JSX.escape [%e buf_ident] [%e expr]]
+        in
+        [%expr
+          Buffer.add_char [%e buf_ident] ' ';
+          Buffer.add_string [%e buf_ident] [%e html_name_expr];
+          Buffer.add_string [%e buf_ident] "=\"";
+          [%e value_escape_code];
+          Buffer.add_char [%e buf_ident] '"']
+  in
+
+  let dynamic_attr_ops = List.map ~f:generate_dynamic_attr_code dynamic_attrs in
+
+  (* Generate opening tag end *)
+  let open_tag_end =
+    if is_self_closing then
+      [%expr Buffer.add_string [%e buf_ident] " />"]
+    else
+      [%expr Buffer.add_char [%e buf_ident] '>']
+  in
+
+  (* Generate closing tag *)
+  let close_tag =
+    if is_self_closing then
+      [%expr ()]
+    else
+      [%expr
+        Buffer.add_string [%e buf_ident] "</";
+        Buffer.add_string [%e buf_ident] [%e tag_name_expr];
+        Buffer.add_char [%e buf_ident] '>']
+  in
+
+  (* Combine all operations *)
+  let all_ops =
+    open_tag_start :: dynamic_attr_ops @ [ open_tag_end ]
+    @ (if children_html = "" then [] else [ [%expr Buffer.add_string [%e buf_ident] [%e children_html_expr]] ])
+    @ [ close_tag ]
+  in
+  let seq =
+    List.fold_right all_ops ~init:[%expr ()] ~f:(fun op acc ->
+        [%expr
+          [%e op];
+          [%e acc]])
+  in
+
+  [%expr
+    let [%p buf_pat] = Buffer.create [%e buffer_size_expr] in
+    [%e seq];
+    JSX.unsafe (Buffer.contents [%e buf_ident])]
+
 let generate_optional_attrs_code ~loc analysis =
   let tag_name, static_attrs, optional_attrs, children_parts, is_self_closing =
     match analysis with
@@ -388,6 +491,8 @@ let rewrite_node_optimized ~loc tag_name args children =
       generate_buffer_code ~loc ~parts ~static_size ~dynamic_count
   | Static_analysis.Has_optional_attrs _ as optional_data ->
       generate_optional_attrs_code ~loc optional_data
+  | Static_analysis.Dynamic_attrs_static_children _ as dynamic_data ->
+      generate_dynamic_attrs_static_children_code ~loc dynamic_data
   | Static_analysis.Cannot_optimize ->
       rewrite_node_unoptimized ~loc tag_name args children
 
