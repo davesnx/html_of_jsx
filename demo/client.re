@@ -9,9 +9,15 @@ module Page = {
     <html lang="en">
       <head>
         <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1.0"
+        />
         <title> "HTML OF JSX" </title>
-        <link rel="shortcut icon" href="https://reasonml.github.io/img/icon_50.png" />
+        <link
+          rel="shortcut icon"
+          href="https://reasonml.github.io/img/icon_50.png"
+        />
         <style type_="text/css">
           {| html {
               height: 100vh;
@@ -31,7 +37,11 @@ module Page = {
       </head>
       <body>
         <div>
-          <main> <header> <Link to_="https://x.com/davesnx"> "@davesnx" </Link> </header> </main>
+          <main>
+            <header>
+              <Link to_="https://x.com/davesnx"> "@davesnx" </Link>
+            </header>
+          </main>
           <div>
             <main>
               <h1> "Html_of_jsx" </h1>

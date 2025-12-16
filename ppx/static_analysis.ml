@@ -189,10 +189,8 @@ let analyze_attributes ~tag_name attrs =
               static_attrs = Buffer.contents static_buf;
               dynamic_attrs = List.rev dynamic_attrs;
             }
-        else if optionals = [] then
-          All_static (Buffer.contents static_buf)
-        else
-          Has_optional (List.rev optionals, Buffer.contents static_buf)
+        else if optionals = [] then All_static (Buffer.contents static_buf)
+        else Has_optional (List.rev optionals, Buffer.contents static_buf)
     | attr :: rest -> (
         match analyze_attribute ~tag_name attr with
         | Invalid -> Validation_failed
@@ -324,7 +322,8 @@ let analyze_element ~tag_name ~attrs ~children =
   match (attrs_result, children_result) with
   | Validation_failed, _ -> Cannot_optimize
   | Has_dynamic, _ -> Cannot_optimize
-  | Has_dynamic_attrs { static_attrs; dynamic_attrs }, All_static_children children_html ->
+  | ( Has_dynamic_attrs { static_attrs; dynamic_attrs },
+      All_static_children children_html ) ->
       Dynamic_attrs_static_children
         {
           tag_name;

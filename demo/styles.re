@@ -36,7 +36,11 @@ let row = (~fullWidth=false, ~spread=false, ~align=`start, gap) =>
 
 let stack = (~fullWidth=false, gap) =>
   join(
-    ["display: flex", "flex-direction: column", Printf.sprintf("gap: %dpx", gap)]
+    [
+      "display: flex",
+      "flex-direction: column",
+      Printf.sprintf("gap: %dpx", gap),
+    ]
     @ (fullWidth ? ["width: 100%"] : []),
   );
 
@@ -51,7 +55,13 @@ let reset = ["margin: 0", "padding: 0"];
 let dark = "color-scheme: dark";
 
 let body =
-  join(["display: flex", "justify-items: center", "padding-top: 7em", "padding-left: 25%", "padding-right: 25%"]);
+  join([
+    "display: flex",
+    "justify-items: center",
+    "padding-top: 7em",
+    "padding-left: 25%",
+    "padding-right: 25%",
+  ]);
 
 let h1 =
   join([
@@ -63,7 +73,10 @@ let h1 =
   ]);
 
 let link = (~bold, color) => {
-  join([Printf.sprintf("color: %s", color), "text-decoration: underline"] @ (bold ? ["font-weight: bold"] : []));
+  join(
+    [Printf.sprintf("color: %s", color), "text-decoration: underline"]
+    @ (bold ? ["font-weight: bold"] : []),
+  );
 };
 
 let dimmed = "color: #666";
