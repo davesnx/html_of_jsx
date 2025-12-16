@@ -284,6 +284,13 @@ type element_analysis =
   | Fully_static of string
   | Needs_string_concat of static_part list
   | Needs_buffer of static_part list
+  | Has_optional_attrs of {
+      tag_name : string;
+      static_attrs : string;
+      optional_attrs : (attr_render_info * expression) list;
+      children_parts : static_part list;
+      is_self_closing : bool;
+    }
   | Cannot_optimize
 
 let analyze_element ~tag_name ~attrs ~children =
@@ -319,7 +326,43 @@ let analyze_element ~tag_name ~attrs ~children =
         [ Static_str open_tag ] @ parts @ [ Static_str close_tag ]
       in
       Needs_buffer (coalesce_static_parts all_parts)
-  | Has_optional _, _ -> Cannot_optimize
+  | Has_optional (optional_attrs, static_attrs), No_children ->
+      Has_optional_attrs
+        {
+          tag_name;
+          static_attrs;
+          optional_attrs;
+          children_parts = [];
+          is_self_closing = is_self_closing_tag tag_name;
+        }
+  | ( Has_optional (optional_attrs, static_attrs),
+      All_static_children children_html ) ->
+      Has_optional_attrs
+        {
+          tag_name;
+          static_attrs;
+          optional_attrs;
+          children_parts = [ Static_str children_html ];
+          is_self_closing = false;
+        }
+  | Has_optional (optional_attrs, static_attrs), All_string_dynamic parts ->
+      Has_optional_attrs
+        {
+          tag_name;
+          static_attrs;
+          optional_attrs;
+          children_parts = parts;
+          is_self_closing = false;
+        }
+  | Has_optional (optional_attrs, static_attrs), Mixed_children parts ->
+      Has_optional_attrs
+        {
+          tag_name;
+          static_attrs;
+          optional_attrs;
+          children_parts = parts;
+          is_self_closing = false;
+        }
 
 let maybe_add_doctype tag_name html =
   if tag_name = "html" then "<!DOCTYPE html>" ^ html else html
