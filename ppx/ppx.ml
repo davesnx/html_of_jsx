@@ -436,6 +436,83 @@ let transform_items_of_list ~loc ~mapper children =
   in
   run_mapper children [%expr []]
 
+(* Extract children from a list expression for analysis *)
+let extract_children_from_list expr =
+  let rec extract acc = function
+    | { pexp_desc = Pexp_construct ({ txt = Lident "[]"; _ }, None); _ } ->
+        List.rev acc
+    | {
+        pexp_desc =
+          Pexp_construct
+            ( { txt = Lident "::"; _ },
+              Some { pexp_desc = Pexp_tuple [ child; next ]; _ } );
+        _;
+      } ->
+        extract (child :: acc) next
+    | _ -> []
+  in
+  extract [] expr
+
+(* Analyze fragment children and generate optimized code if possible *)
+let optimize_fragment ~loc ~mapper children_expr =
+  let children_list = extract_children_from_list children_expr in
+  if children_list = [] then [%expr JSX.list []]
+  else
+    (* Analyze each child to see if we can optimize - check if they're static JSX elements *)
+    let can_optimize, static_parts =
+      List.fold_left
+        ~f:(fun (can_opt, parts) child ->
+          let transformed = mapper#expression child in
+          (* Check if the transformed child is a static JSX.unsafe or JSX.string *)
+          match transformed.pexp_desc with
+          | Pexp_apply
+              ( {
+                  pexp_desc =
+                    Pexp_ident
+                      { txt = Ldot (Lident "JSX", ("unsafe" | "string")); _ };
+                  _;
+                },
+                [ (Nolabel, arg) ] ) -> (
+              match arg.pexp_desc with
+              | Pexp_constant (Pconst_string (s, _, _)) ->
+                  (can_opt, Static_analysis.Static_str s :: parts)
+              | _ -> (false, parts))
+          | _ -> (false, parts))
+        ~init:(true, [])
+        children_list
+    in
+    (* If all children are static, generate direct buffer writes *)
+    if can_optimize && static_parts <> [] then
+      let buf_var = "__html_buf" in
+      let buf_ident = pexp_ident ~loc { loc; txt = Lident buf_var } in
+      let buf_pat = ppat_var ~loc { loc; txt = buf_var } in
+      let buffer_size_expr = eint ~loc default_buffer_size in
+      let static_parts_rev = List.rev static_parts in
+      let ops =
+        List.map
+          ~f:(function
+            | Static_analysis.Static_str s ->
+                let s_expr = estring ~loc s in
+                [%expr Buffer.add_string [%e buf_ident] [%e s_expr]]
+            | _ -> assert false)
+          static_parts_rev
+      in
+      let seq =
+        List.fold_right ops ~init:[%expr ()] ~f:(fun op acc ->
+            [%expr
+              [%e op];
+              [%e acc]])
+      in
+      [%expr
+        let [%p buf_pat] = Buffer.create [%e buffer_size_expr] in
+        [%e seq];
+        JSX.unsafe (Buffer.contents [%e buf_ident])]
+    else
+      (* Fall back to JSX.list for dynamic children - but generate sequential writes without list *)
+      let transformed_children = transform_items_of_list ~loc ~mapper children_expr in
+      (* For now, use JSX.list - we can optimize this further later *)
+      [%expr JSX.list [%e transformed_children]]
+
 let rewrite_jsx =
   object (self)
     inherit Ast_traverse.map as super
@@ -477,8 +554,7 @@ let rewrite_jsx =
             match (jsx_attr, rest_attributes) with
             | [], _ -> super#expression expr
             | _, _rest_attributes ->
-                let children = transform_items_of_list ~loc ~mapper:self expr in
-                [%expr JSX.list [%e children]])
+                optimize_fragment ~loc ~mapper:self expr)
         | _ -> super#expression expr
       with Error err -> [%expr [%e err]]
   end
