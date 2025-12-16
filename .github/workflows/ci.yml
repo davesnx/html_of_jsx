@@ -64,12 +64,12 @@ jobs:
         with:
           ocaml-compiler: ${{ matrix.ocaml-compiler }}
 
-      - name: Install
-        run: make install
-
       - name: Pin dependencies
         if: matrix.ocaml-compiler == '5.4.0'
         run: make pin
+
+      - name: Install
+        run: make install
 
       - name: Build
         run: make build
