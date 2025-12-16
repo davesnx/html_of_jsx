@@ -1,6 +1,9 @@
 let simple_hx_boost =
   test("simple_hx_boost", () => {
-    assert_string(JSX.render(<div hx_boost=true />), {|<div hx-boost="true"></div>|})
+    assert_string(
+      JSX.render(<div hx_boost=true />),
+      {|<div hx-boost="true"></div>|},
+    )
   });
 
 /* SSE Extension Tests */
@@ -14,18 +17,28 @@ let sse_connect =
 
 let sse_swap =
   test("sse_swap", () => {
-    assert_string(JSX.render(<div sse_swap="message" />), {|<div sse-swap="message"></div>|})
+    assert_string(
+      JSX.render(<div sse_swap="message" />),
+      {|<div sse-swap="message"></div>|},
+    )
   });
 
 let sse_close =
   test("sse_close", () => {
-    assert_string(JSX.render(<div sse_close="done" />), {|<div sse-close="done"></div>|})
+    assert_string(
+      JSX.render(<div sse_close="done" />),
+      {|<div sse-close="done"></div>|},
+    )
   });
 
 let sse_complete =
   test("sse_complete", () => {
     assert_string(
-      JSX.render(<div hx_ext="sse" sse_connect="/events" sse_swap="message"> {JSX.string("Loading...")} </div>),
+      JSX.render(
+        <div hx_ext="sse" sse_connect="/events" sse_swap="message">
+          {JSX.string("Loading...")}
+        </div>,
+      ),
       {|<div hx-ext="sse" sse-connect="/events" sse-swap="message">Loading...</div>|},
     )
   });
@@ -33,18 +46,27 @@ let sse_complete =
 /* WebSocket Extension Tests */
 let ws_connect =
   test("ws_connect", () => {
-    assert_string(JSX.render(<div hx_ext="ws" ws_connect="/chat" />), {|<div hx-ext="ws" ws-connect="/chat"></div>|})
+    assert_string(
+      JSX.render(<div hx_ext="ws" ws_connect="/chat" />),
+      {|<div hx-ext="ws" ws-connect="/chat"></div>|},
+    )
   });
 
-let ws_send = test("ws_send", () => {
-                assert_string(JSX.render(<form ws_send=true />), {|<form ws-send></form>|})
-              });
+let ws_send =
+  test("ws_send", () => {
+    assert_string(
+      JSX.render(<form ws_send=true />),
+      {|<form ws-send></form>|},
+    )
+  });
 
 let ws_complete =
   test("ws_complete", () => {
     assert_string(
       JSX.render(
-        <div hx_ext="ws" ws_connect="/chat"> <form ws_send=true> <input type_="text" name="message" /> </form> </div>,
+        <div hx_ext="ws" ws_connect="/chat">
+          <form ws_send=true> <input type_="text" name="message" /> </form>
+        </div>,
       ),
       {|<div hx-ext="ws" ws-connect="/chat"><form ws-send><input type="text" name="message" /></form></div>|},
     )
@@ -72,7 +94,14 @@ let preload =
 let path_deps =
   test("path_deps", () => {
     assert_string(
-      JSX.render(<div hx_ext="path-deps" path_deps="/api/todos" hx_get="/todos" hx_trigger="path-deps" />),
+      JSX.render(
+        <div
+          hx_ext="path-deps"
+          path_deps="/api/todos"
+          hx_get="/todos"
+          hx_trigger="path-deps"
+        />,
+      ),
       {|<div hx-ext="path-deps" path-deps="/api/todos" hx-get="/todos" hx-trigger="path-deps"></div>|},
     )
   });
@@ -96,7 +125,10 @@ let loading_states_class =
 
 let loading_states_disable =
   test("loading_states_disable", () => {
-    assert_string(JSX.render(<button data_loading_disable=true />), {|<button data-loading-disable></button>|})
+    assert_string(
+      JSX.render(<button data_loading_disable=true />),
+      {|<button data-loading-disable></button>|},
+    )
   });
 
 let loading_states_delay =
@@ -110,7 +142,9 @@ let loading_states_delay =
 let loading_states_target =
   test("loading_states_target", () => {
     assert_string(
-      JSX.render(<div data_loading_target="#spinner" data_loading_class="visible" />),
+      JSX.render(
+        <div data_loading_target="#spinner" data_loading_class="visible" />,
+      ),
       {|<div data-loading-target="#spinner" data-loading-class="visible"></div>|},
     )
   });
