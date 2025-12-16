@@ -31,7 +31,8 @@
   (ocamlformat
    (and (>= 0.26.1)
     (or :with-dev-setup :with-test)))
-  ; (mlx (or :with-test :with-dev-setup))
+  (mlx (or :with-test :with-dev-setup))
+  (ocamlformat-mlx (or :with-dev-setup :with-test))
 
   ;; Dev dependencies
   (ocaml-lsp-server :with-dev-setup)
