@@ -1,10 +1,6 @@
 (* List of attributes that bring type-safety and attribute validation based on the tag. Used at compile-time by the ppx *)
 
 open Html_attributes
-(* TODO:
-    - Add description + url in attributes
-    - Ensure html names are correct (take a look at server-reason-react-ppx and mdn)
-*)
 
 [@@@ocamlformat "disable"]
 (* This file is more like a spreadsheet, prefer to keep it with margin=300.
