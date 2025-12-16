@@ -188,11 +188,14 @@ let transform_attributes ~loc ~tag_name attrs =
 
 let default_buffer_size = 1024
 
-let generate_buffer_code ~loc parts =
+let generate_buffer_code ~loc ~parts ~static_size ~dynamic_count =
   let buf_var = "__html_buf" in
   let buf_ident = pexp_ident ~loc { loc; txt = Lident buf_var } in
   let buf_pat = ppat_var ~loc { loc; txt = buf_var } in
-  let buffer_size_expr = eint ~loc default_buffer_size in
+  (* Estimate buffer size: static + 64 bytes per dynamic part *)
+  let estimated_size = static_size + (dynamic_count * 64) in
+  let buffer_size = if estimated_size > 0 then estimated_size else default_buffer_size in
+  let buffer_size_expr = eint ~loc buffer_size in
   let generate_part_code part =
     match part with
     | Static_analysis.Static_str s ->
@@ -368,9 +371,21 @@ let rewrite_node_optimized ~loc tag_name args children =
       let html_with_doctype = Static_analysis.maybe_add_doctype tag_name html in
       let html_expr = estring ~loc html_with_doctype in
       [%expr JSX.unsafe [%e html_expr]]
-  | Static_analysis.Needs_string_concat parts
-  | Static_analysis.Needs_buffer parts ->
-      generate_buffer_code ~loc parts
+  | Static_analysis.Needs_string_concat parts_list ->
+      (* For string concat, estimate sizes *)
+      let static_size =
+        List.fold_left parts_list ~init:0 ~f:(fun acc part ->
+            match part with
+            | Static_analysis.Static_str s -> acc + String.length s
+            | _ -> acc)
+      in
+      let dynamic_count =
+        List.fold_left parts_list ~init:0 ~f:(fun acc part ->
+            match part with Static_analysis.Static_str _ -> acc | _ -> acc + 1)
+      in
+      generate_buffer_code ~loc ~parts:parts_list ~static_size ~dynamic_count
+  | Static_analysis.Needs_buffer { parts; static_size; dynamic_count } ->
+      generate_buffer_code ~loc ~parts ~static_size ~dynamic_count
   | Static_analysis.Has_optional_attrs _ as optional_data ->
       generate_optional_attrs_code ~loc optional_data
   | Static_analysis.Cannot_optimize ->
@@ -478,8 +493,7 @@ let optimize_fragment ~loc ~mapper children_expr =
                   (can_opt, Static_analysis.Static_str s :: parts)
               | _ -> (false, parts))
           | _ -> (false, parts))
-        ~init:(true, [])
-        children_list
+        ~init:(true, []) children_list
     in
     (* If all children are static, generate direct buffer writes *)
     if can_optimize && static_parts <> [] then
@@ -509,7 +523,9 @@ let optimize_fragment ~loc ~mapper children_expr =
         JSX.unsafe (Buffer.contents [%e buf_ident])]
     else
       (* Fall back to JSX.list for dynamic children - but generate sequential writes without list *)
-      let transformed_children = transform_items_of_list ~loc ~mapper children_expr in
+      let transformed_children =
+        transform_items_of_list ~loc ~mapper children_expr
+      in
       (* For now, use JSX.list - we can optimize this further later *)
       [%expr JSX.list [%e transformed_children]]
 
@@ -553,8 +569,7 @@ let rewrite_jsx =
             in
             match (jsx_attr, rest_attributes) with
             | [], _ -> super#expression expr
-            | _, _rest_attributes ->
-                optimize_fragment ~loc ~mapper:self expr)
+            | _, _rest_attributes -> optimize_fragment ~loc ~mapper:self expr)
         | _ -> super#expression expr
       with Error err -> [%expr [%e err]]
   end
