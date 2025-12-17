@@ -20,29 +20,29 @@ build-prod: ## Build for production (--profile=prod)
 	$(DUNE) build --profile=prod @all
 
 .PHONY: bench
-bench: ## Run benchmark automation script (compare with baseline)
-	./bench/run_benchmark.sh
+bench: ## Run benchmarks (human-readable output)
+	$(DUNE) exec bench/bench.exe
 
-.PHONY: bench-fast
-bench-fast: ## Run fast benchmark suite for quick iteration
-	$(DUNE) exec bench/bench_fast.exe
+.PHONY: bench-ci
+bench-ci: ## Run benchmarks with JSON output for CI mostly
+	$(DUNE) exec bench/bench.exe -- --json > bench_results.json
+
+.PHONY: bench-compare
+bench-compare: ## Compare with baseline (outputs latency diff)
+	@if [ ! -f bench/results/baseline.json ]; then \
+		echo "No baseline found. Run 'make bench-baseline' first."; \
+		exit 1; \
+	fi
+	$(DUNE) exec bench/bench.exe -- --compare bench/results/baseline.json
+
+.PHONY: bench-baseline
+bench-baseline: ## Save current results as new baseline
+	$(DUNE) exec bench/bench.exe -- --json > bench/results/baseline.json
+	@echo "Baseline saved to bench/results/baseline.json"
 
 .PHONY: bench-memory
 bench-memory: ## Run memory allocation benchmarks
 	$(DUNE) exec bench/memory.exe
-
-.PHONY: bench-compare
-bench-compare: ## Compare two benchmark results (usage: make bench-compare FILE1=a.json FILE2=b.json)
-	@if [ -z "$(FILE1)" ] || [ -z "$(FILE2)" ]; then \
-		echo "Error: FILE1 and FILE2 are required"; \
-		echo "Usage: make bench-compare FILE1=bench/results/baseline.json FILE2=bench/results/new.json"; \
-		exit 1; \
-	fi
-	$(DUNE) exec bench/compare_results.exe -- $(FILE1) $(FILE2)
-
-.PHONY: bench-json
-bench-json: ## Run benchmarks with JSON output for CI
-	$(DUNE) exec bench/bench.exe -- --json > bench_results.json
 
 .PHONY: dev
 dev: ## Build in watch mode

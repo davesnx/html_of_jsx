@@ -1,7 +1,39 @@
-(* Benchmarks for html_of_jsx optimizations *)
+(* html_of_jsx benchmarks
+   
+   Measures render latency (µs per render) for various scenarios.
+   
+   Usage:
+     dune exec bench/bench.exe                    # Human-readable output
+     dune exec bench/bench.exe -- --json          # JSON output for CI
+     dune exec bench/bench.exe -- --compare FILE  # Compare with baseline
+*)
 
+(* Command line arguments *)
 let json_mode = ref false
+let compare_file = ref None
 
+let parse_args () =
+  let args = Array.to_list Sys.argv in
+  let rec parse = function
+    | [] -> ()
+    | "--json" :: rest ->
+        json_mode := true;
+        parse rest
+    | "--compare" :: file :: rest ->
+        compare_file := Some file;
+        parse rest
+    | _ :: rest -> parse rest
+  in
+  parse (List.tl args)
+
+(* Benchmark result type *)
+type result = {
+  name : string;
+  latency_us : float; (* microseconds per render *)
+  ops_sec : float; (* operations per second *)
+}
+
+(* Extract average rate from benchmark samples *)
 let extract_rate samples =
   let total_rate =
     List.fold_left
@@ -14,446 +46,258 @@ let extract_rate samples =
   in
   total_rate /. float_of_int (List.length samples)
 
-let results_to_json ~group_name results =
-  List.map
-    (fun (name, samples) ->
-      let rate = extract_rate samples in
-      Printf.sprintf {|{"name": "%s/%s", "unit": "ops/sec", "value": %.2f}|}
-        group_name name rate)
-    results
-
-let no_escape buf s = Buffer.add_string buf s
-
-let with_no_escape name =
-  let buf = Buffer.create 128 in
-  Buffer.add_string buf "<div>";
-  no_escape buf name;
-  Buffer.add_string buf "</div>";
-  JSX.unsafe (Buffer.contents buf)
-
-let with_escape name =
-  let buf = Buffer.create 128 in
-  Buffer.add_string buf "<div>";
-  JSX.escape buf name;
-  Buffer.add_string buf "</div>";
-  JSX.unsafe (Buffer.contents buf)
-
-let test_clean = "Hello, World!"
-let test_dirty = "<script>alert('XSS')</script>"
-
-(* ==========================================================================
-   2. Optional Attributes Optimization
-   ========================================================================== *)
-
-let button_with_optional_disabled disabled =
-  let button =
-    <button ?disabled class_="btn-primary">(JSX.string "Click me")</button>
+(* Run a single benchmark and return result *)
+let run_bench ~name ~render =
+  let samples =
+    Benchmark.throughputN ~style:Benchmark.Nil ~repeat:3 2
+      [ (name, render, ()) ]
   in
-  JSX.render button
+  let ops_sec = match samples with [ (_, s) ] -> extract_rate s | _ -> 0.0 in
+  let latency_us = if ops_sec > 0.0 then 1_000_000.0 /. ops_sec else 0.0 in
+  { name; latency_us; ops_sec }
 
-let input_with_optional_aria label =
-  let input =
-    <input ?aria_label=label type_="text" placeholder="Enter text" />
+(* All scenarios to benchmark *)
+let scenarios =
+  [
+    (* Realistic pages *)
+    ("Trivial", Scenarios.Trivial.render);
+    ("Dashboard", Scenarios.Dashboard.render);
+    ("Blog (50 comments)", Scenarios.Blog.render);
+    ("Table (100 rows)", Scenarios.Table.render);
+    ("E-commerce", Scenarios.Ecommerce.render);
+    ("Form", Scenarios.Form.render);
+    (* Synthetic stress tests *)
+    ("Deep tree (50)", Scenarios.DeepTree.render);
+    ("Wide tree (100)", Scenarios.WideTree.render);
+    ("Shallow tree", Scenarios.ShallowTree.render);
+    ("Props heavy", Scenarios.PropsHeavy.render);
+  ]
+
+(* Micro-benchmarks for escape function *)
+let escape_benchmarks =
+  [
+    ( "escape (clean)",
+      fun () ->
+        let buf = Buffer.create 128 in
+        JSX.escape buf "Hello, World!";
+        ignore (Buffer.contents buf) );
+    ( "escape (dirty)",
+      fun () ->
+        let buf = Buffer.create 128 in
+        JSX.escape buf "<script>alert('XSS')</script>";
+        ignore (Buffer.contents buf) );
+  ]
+
+(* JSON output *)
+let results_to_json results =
+  let items =
+    List.map
+      (fun r ->
+        Printf.sprintf
+          {|  {"name": "%s", "latency_us": %.2f, "ops_sec": %.2f, "unit": "ops/sec", "value": %.2f}|}
+          r.name r.latency_us r.ops_sec r.ops_sec)
+      results
   in
-  JSX.render input
+  "[\n" ^ String.concat ",\n" items ^ "\n]"
 
-let div_with_multiple_optionals id title hidden =
-  let div =
-    <div ?id ?title ?hidden class_="container">(JSX.string "Content")</div>
-  in
-  JSX.render div
+(* Parse baseline JSON file - handles both old and new format *)
+let parse_baseline filename =
+  let ic = open_in filename in
+  let content = really_input_string ic (in_channel_length ic) in
+  close_in ic;
+  let results = Hashtbl.create 20 in
+  let lines = String.split_on_char '\n' content in
+  List.iter
+    (fun line ->
+      if String.contains line '"' && String.contains line ':' then
+        try
+          (* Find "name": "..." *)
+          let name_start = String.index line '"' + 1 in
+          let name_end = String.index_from line name_start '"' in
+          let key = String.sub line name_start (name_end - name_start) in
+          if key = "name" then
+            (* Get the actual name value *)
+            let colon = String.index_from line name_end ':' in
+            let val_start = String.index_from line colon '"' + 1 in
+            let val_end = String.index_from line val_start '"' in
+            let raw_name = String.sub line val_start (val_end - val_start) in
 
-let fragment_static () =
-  let fragment =
-    JSX.list
-      [
-        <div>(JSX.string "Item 1")</div>;
-        <div>(JSX.string "Item 2")</div>;
-        <div>(JSX.string "Item 3")</div>;
-      ]
-  in
-  JSX.render fragment
+            (* Normalize name: strip prefix like "scenario/" or "escape/" *)
+            let name =
+              if
+                String.length raw_name > 9
+                && String.sub raw_name 0 9 = "scenario/"
+              then String.sub raw_name 9 (String.length raw_name - 9)
+              else if
+                String.length raw_name > 7
+                && String.sub raw_name 0 7 = "escape/"
+              then String.sub raw_name 7 (String.length raw_name - 7)
+              else raw_name
+            in
 
-let fragment_many_static () =
-  let fragment =
-    JSX.list
-      [
-        <p>(JSX.string "Paragraph 1")</p>;
-        <p>(JSX.string "Paragraph 2")</p>;
-        <p>(JSX.string "Paragraph 3")</p>;
-        <p>(JSX.string "Paragraph 4")</p>;
-        <p>(JSX.string "Paragraph 5")</p>;
-      ]
-  in
-  JSX.render fragment
+            (* Map old names to new names *)
+            let name =
+              match name with
+              | "trivial" -> "Trivial"
+              | "dashboard" -> "Dashboard"
+              | "blog" -> "Blog (50 comments)"
+              | "table" -> "Table (100 rows)"
+              | "ecommerce" -> "E-commerce"
+              | "form" -> "Form"
+              | "deep_tree" -> "Deep tree (50)"
+              | "wide_tree" -> "Wide tree (100)"
+              | "shallow_tree" -> "Shallow tree"
+              | "props_heavy" -> "Props heavy"
+              | "escape_clean" -> "escape (clean)"
+              | "escape_dirty" -> "escape (dirty)"
+              | other -> other
+            in
 
-let wrapper_dynamic_attrs id class_name =
-  let div =
-    <div id class_=class_name>
-      <h1>(JSX.string "Static Title")</h1>
-      <p>
-        (JSX.string "Static paragraph with lots of content that doesn't change")
-      </p>
-      <ul>
-        <li>(JSX.string "Item 1")</li>
-        <li>(JSX.string "Item 2")</li>
-        <li>(JSX.string "Item 3")</li>
-      </ul>
-    </div>
-  in
-  JSX.render div
+            (* Try to find latency_us first (new format) *)
+            let latency =
+              try
+                let idx = Str.search_forward (Str.regexp "latency_us") line 0 in
+                let colon = String.index_from line idx ':' in
+                let start = ref (colon + 1) in
+                while !start < String.length line && line.[!start] = ' ' do
+                  incr start
+                done;
+                let end_pos = ref !start in
+                while
+                  !end_pos < String.length line
+                  &&
+                  let c = line.[!end_pos] in
+                  (c >= '0' && c <= '9') || c = '.'
+                do
+                  incr end_pos
+                done;
+                Some
+                  (float_of_string (String.sub line !start (!end_pos - !start)))
+              with Not_found | Invalid_argument _ | Failure _ -> None
+            in
 
-let article_dynamic_attrs data_id =
-  let article =
-    <article id=data_id class_="article">
-      <header><h2>(JSX.string "Article Title")</h2></header>
-      <section>
-        <p>
-          (JSX.string
-             "This is a long static paragraph that doesn't change. It contains \
-              lots of text to simulate real content.")
-        </p>
-        <p>
-          (JSX.string
-             "Another static paragraph with more content that remains constant \
-              across renders.")
-        </p>
-      </section>
-    </article>
-  in
-  JSX.render article
+            (* If no latency_us, try to find "value" (old format with ops/sec) *)
+            let latency =
+              match latency with
+              | Some l -> Some l
+              | None -> (
+                  try
+                    let idx =
+                      Str.search_forward (Str.regexp "\"value\"") line 0
+                    in
+                    let colon = String.index_from line idx ':' in
+                    let start = ref (colon + 1) in
+                    while !start < String.length line && line.[!start] = ' ' do
+                      incr start
+                    done;
+                    let end_pos = ref !start in
+                    while
+                      !end_pos < String.length line
+                      &&
+                      let c = line.[!end_pos] in
+                      (c >= '0' && c <= '9') || c = '.'
+                    do
+                      incr end_pos
+                    done;
+                    let ops_sec =
+                      float_of_string
+                        (String.sub line !start (!end_pos - !start))
+                    in
+                    (* Convert ops/sec to latency_us *)
+                    Some (1_000_000.0 /. ops_sec)
+                  with Not_found | Invalid_argument _ | Failure _ -> None)
+            in
 
-let large_static_page () =
-  let rec make_paragraphs n acc =
-    if n <= 0 then acc
-    else
-      let p =
-        <p>
-          (JSX.string
-             ("Paragraph " ^ string_of_int n ^ " with lots of static content"))
-        </p>
-      in
-      make_paragraphs (n - 1) (p :: acc)
-  in
-  let html =
-    <html>
-      <head><title>(JSX.string "Large Static Page")</title></head>
-      <body>
-        <div class_="container">
-          <h1>(JSX.string "Large Static Page Test")</h1>
-          (JSX.list (make_paragraphs 50 []))
-        </div>
-      </body>
-    </html>
-  in
-  JSX.render html
+            match latency with
+            | Some l -> Hashtbl.add results name l
+            | None -> ()
+        with _ -> ())
+    lines;
+  results
 
-let test_element =
-  <div class_="test">
-    <h1>(JSX.string "Test Title")</h1> <p>(JSX.string "Test content")</p>
-  </div>
+(* Format latency for display *)
+let format_latency us =
+  if us < 1.0 then Printf.sprintf "%.2f" us
+  else if us < 10.0 then Printf.sprintf "%.1f" us
+  else Printf.sprintf "%.0f" us
 
-let render_to_string () =
-  ignore (JSX.render test_element);
-  ()
+(* Format change percentage *)
+let format_change baseline current =
+  let pct = (current -. baseline) /. baseline *. 100.0 in
+  if pct > 5.0 then Printf.sprintf "    +%.1f%%" pct
+  else if pct < -5.0 then Printf.sprintf "✓   %.1f%%" pct
+  else if pct > 0.0 then Printf.sprintf "    +%.1f%%" pct
+  else Printf.sprintf "    %.1f%%" pct
 
-let render_to_channel () =
-  let chan = open_out "/dev/null" in
-  JSX.render_to_channel chan test_element;
-  close_out chan
+(* Human-readable output *)
+let print_results results baseline =
+  print_endline "=== html_of_jsx benchmark ===\n";
+  let has_baseline = Hashtbl.length baseline > 0 in
+  if has_baseline then (
+    Printf.printf "%-28s %12s    %s\n" "Scenario" "Time (µs)" "vs baseline";
+    print_endline (String.make 56 '-'))
+  else (
+    Printf.printf "%-28s %12s\n" "Scenario" "Time (µs)";
+    print_endline (String.make 44 '-'));
+  List.iter
+    (fun r ->
+      let time_str = format_latency r.latency_us in
+      if has_baseline then
+        match Hashtbl.find_opt baseline r.name with
+        | Some base_latency ->
+            let change = format_change base_latency r.latency_us in
+            Printf.printf "%-28s %12s %s\n" r.name time_str change
+        | None -> Printf.printf "%-28s %12s     NEW\n" r.name time_str
+      else Printf.printf "%-28s %12s\n" r.name time_str)
+    results;
+  if has_baseline then print_endline (String.make 56 '-')
+  else print_endline (String.make 44 '-')
 
-let render_streaming () = JSX.render_streaming (fun _ -> ()) test_element
+(* Count improvements/regressions *)
+let summarize results baseline =
+  if Hashtbl.length baseline = 0 then ()
+  else
+    let improved = ref 0 in
+    let regressed = ref 0 in
+    let unchanged = ref 0 in
+    List.iter
+      (fun r ->
+        match Hashtbl.find_opt baseline r.name with
+        | Some base_latency ->
+            let pct = (r.latency_us -. base_latency) /. base_latency *. 100.0 in
+            if pct < -5.0 then incr improved
+            else if pct > 5.0 then incr regressed
+            else incr unchanged
+        | None -> ())
+      results;
+    Printf.printf "\nSummary: %d improved (>5%%), %d regressed, %d unchanged\n"
+      !improved !regressed !unchanged
 
 let () =
-  let args = Array.to_list Sys.argv in
-  json_mode := List.mem "--json" args;
+  parse_args ();
 
-  let style = if !json_mode then Benchmark.Nil else Benchmark.Auto in
-
-  if not !json_mode then
-    print_endline "=== Escape: baseline vs JSX.escape ===\n";
-
-  if not !json_mode then
-    print_endline "--- Clean string (no escaping needed) ---";
-  let escape_clean =
-    Benchmark.throughputN ~style ~repeat:3 2
-      [
-        ("no_escape", (fun () -> with_no_escape test_clean), ());
-        ("JSX.escape", (fun () -> with_escape test_clean), ());
-      ]
+  (* Load baseline if specified *)
+  let baseline =
+    match !compare_file with
+    | Some file -> parse_baseline file
+    | None -> Hashtbl.create 0
   in
-  if not !json_mode then Benchmark.tabulate escape_clean;
 
-  if not !json_mode then
-    print_endline "\n--- Dirty string (escaping needed) ---";
-  let escape_dirty =
-    Benchmark.throughputN ~style ~repeat:3 2
-      [
-        ("no_escape", (fun () -> with_no_escape test_dirty), ());
-        ("JSX.escape", (fun () -> with_escape test_dirty), ());
-      ]
+  (* Run scenario benchmarks *)
+  let scenario_results =
+    List.map (fun (name, render) -> run_bench ~name ~render) scenarios
   in
-  if not !json_mode then Benchmark.tabulate escape_dirty;
 
-  (* === 2. Optional Attributes === *)
-  if not !json_mode then
-    print_endline "\n=== 2. Optional Attributes Optimization ===\n";
-
-  if not !json_mode then
-    print_endline "--- Button with optional disabled (Some true) ---";
-  let optional_disabled_some =
-    Benchmark.throughputN ~style ~repeat:3 2
-      [
-        ( "optional_disabled_some",
-          (fun () ->
-            ignore (button_with_optional_disabled (Some true));
-            ()),
-          () );
-      ]
+  (* Run escape micro-benchmarks *)
+  let escape_results =
+    List.map (fun (name, render) -> run_bench ~name ~render) escape_benchmarks
   in
-  if not !json_mode then Benchmark.tabulate optional_disabled_some;
 
-  if not !json_mode then
-    print_endline "\n--- Button with optional disabled (None) ---";
-  let optional_disabled_none =
-    Benchmark.throughputN ~style ~repeat:3 2
-      [
-        ( "optional_disabled_none",
-          (fun () ->
-            ignore (button_with_optional_disabled None);
-            ()),
-          () );
-      ]
-  in
-  if not !json_mode then Benchmark.tabulate optional_disabled_none;
+  let all_results = scenario_results @ escape_results in
 
-  if not !json_mode then
-    print_endline "\n--- Input with optional aria-label ---";
-  let optional_aria =
-    Benchmark.throughputN ~style ~repeat:3 2
-      [
-        ( "optional_aria",
-          (fun () ->
-            ignore (input_with_optional_aria (Some "Search input"));
-            ()),
-          () );
-      ]
-  in
-  if not !json_mode then Benchmark.tabulate optional_aria;
-
-  if not !json_mode then
-    print_endline "\n--- Div with multiple optional attributes ---";
-  let optional_multiple =
-    Benchmark.throughputN ~style ~repeat:3 2
-      [
-        ( "optional_multiple",
-          (fun () ->
-            ignore
-              (div_with_multiple_optionals (Some "main-content")
-                 (Some "Main container") (Some false));
-            ()),
-          () );
-      ]
-  in
-  if not !json_mode then Benchmark.tabulate optional_multiple;
-
-  (* === 3. Fragment Flattening === *)
-  if not !json_mode then
-    print_endline "\n=== 3. Fragment Flattening Optimization ===\n";
-
-  if not !json_mode then print_endline "--- Fragment with 3 static children ---";
-  let fragment_three =
-    Benchmark.throughputN ~style ~repeat:3 2
-      [ ("fragment_three", fragment_static, ()) ]
-  in
-  if not !json_mode then Benchmark.tabulate fragment_three;
-
-  if not !json_mode then
-    print_endline "\n--- Fragment with 5 static children ---";
-  let fragment_five =
-    Benchmark.throughputN ~style ~repeat:3 2
-      [ ("fragment_five", fragment_many_static, ()) ]
-  in
-  if not !json_mode then Benchmark.tabulate fragment_five;
-
-  (* === 4. Dynamic Attrs with Static Children === *)
-  if not !json_mode then
-    print_endline "\n=== 4. Dynamic Attrs with Static Children ===\n";
-
-  if not !json_mode then
-    print_endline "--- Wrapper with dynamic id/class, static children ---";
-  let dynamic_attrs_wrapper =
-    Benchmark.throughputN ~style ~repeat:3 2
-      [
-        ( "dynamic_attrs_wrapper",
-          (fun () ->
-            ignore (wrapper_dynamic_attrs "main" "container");
-            ()),
-          () );
-      ]
-  in
-  if not !json_mode then Benchmark.tabulate dynamic_attrs_wrapper;
-
-  if not !json_mode then
-    print_endline "\n--- Article with dynamic data-id, static content ---";
-  let dynamic_attrs_article =
-    Benchmark.throughputN ~style ~repeat:3 2
-      [
-        ( "dynamic_attrs_article",
-          (fun () ->
-            ignore (article_dynamic_attrs "article-123");
-            ()),
-          () );
-      ]
-  in
-  if not !json_mode then Benchmark.tabulate dynamic_attrs_article;
-
-  (* === 5. Large Static Page (Buffer Size Estimation) === *)
-  if not !json_mode then
-    print_endline "\n=== 5. Large Static Page (Buffer Size Estimation) ===\n";
-
-  if not !json_mode then
-    print_endline "--- Large static page (50 paragraphs) ---";
-  let large_page =
-    Benchmark.throughputN ~style ~repeat:3 2
-      [ ("large_static_page", large_static_page, ()) ]
-  in
-  if not !json_mode then Benchmark.tabulate large_page;
-
-  (* === 6. Streaming API === *)
-  if not !json_mode then print_endline "\n=== 6. Streaming API Comparison ===\n";
-
-  if not !json_mode then print_endline "--- render (to string) ---";
-  let render_string =
-    Benchmark.throughputN ~style ~repeat:3 2
-      [ ("render_to_string", render_to_string, ()) ]
-  in
-  if not !json_mode then Benchmark.tabulate render_string;
-
-  if not !json_mode then print_endline "\n--- render_to_channel ---";
-  let render_channel =
-    Benchmark.throughputN ~style ~repeat:3 2
-      [ ("render_to_channel", render_to_channel, ()) ]
-  in
-  if not !json_mode then Benchmark.tabulate render_channel;
-
-  if not !json_mode then print_endline "\n--- render_streaming ---";
-  let render_stream =
-    Benchmark.throughputN ~style ~repeat:3 2
-      [ ("render_streaming", render_streaming, ()) ]
-  in
-  if not !json_mode then Benchmark.tabulate render_stream;
-
-  (* === 7. Realistic Scenarios === *)
-  if not !json_mode then print_endline "\n=== 7. Realistic Scenarios ===\n";
-
-  if not !json_mode then print_endline "--- Trivial (baseline) ---";
-  let scenario_trivial =
-    Benchmark.throughputN ~style ~repeat:3 2
-      [ ("trivial", Scenarios.Trivial.render, ()) ]
-  in
-  if not !json_mode then Benchmark.tabulate scenario_trivial;
-
-  if not !json_mode then print_endline "\n--- Deep Tree (50 levels) ---";
-  let scenario_deep =
-    Benchmark.throughputN ~style ~repeat:3 2
-      [ ("deep_tree_50", Scenarios.DeepTree.render, ()) ]
-  in
-  if not !json_mode then Benchmark.tabulate scenario_deep;
-
-  if not !json_mode then
-    print_endline "\n--- Shallow Tree (5 levels, many props) ---";
-  let scenario_shallow =
-    Benchmark.throughputN ~style ~repeat:3 2
-      [ ("shallow_tree", Scenarios.ShallowTree.render, ()) ]
-  in
-  if not !json_mode then Benchmark.tabulate scenario_shallow;
-
-  if not !json_mode then print_endline "\n--- Wide Tree (100 siblings) ---";
-  let scenario_wide =
-    Benchmark.throughputN ~style ~repeat:3 2
-      [ ("wide_tree_100", Scenarios.WideTree.render, ()) ]
-  in
-  if not !json_mode then Benchmark.tabulate scenario_wide;
-
-  if not !json_mode then
-    print_endline "\n--- Props Heavy (50 heavy components) ---";
-  let scenario_props =
-    Benchmark.throughputN ~style ~repeat:3 2
-      [ ("props_heavy", Scenarios.PropsHeavy.render, ()) ]
-  in
-  if not !json_mode then Benchmark.tabulate scenario_props;
-
-  if not !json_mode then print_endline "\n--- Table (100 rows) ---";
-  let scenario_table =
-    Benchmark.throughputN ~style ~repeat:3 2
-      [ ("table_100", Scenarios.Table.render, ()) ]
-  in
-  if not !json_mode then Benchmark.tabulate scenario_table;
-
-  if not !json_mode then print_endline "\n--- Form (multi-step) ---";
-  let scenario_form =
-    Benchmark.throughputN ~style ~repeat:3 2
-      [ ("form", Scenarios.Form.render, ()) ]
-  in
-  if not !json_mode then Benchmark.tabulate scenario_form;
-
-  if not !json_mode then print_endline "\n--- Dashboard ---";
-  let scenario_dashboard =
-    Benchmark.throughputN ~style ~repeat:3 2
-      [ ("dashboard", Scenarios.Dashboard.render, ()) ]
-  in
-  if not !json_mode then Benchmark.tabulate scenario_dashboard;
-
-  if not !json_mode then print_endline "\n--- Blog (50 comments) ---";
-  let scenario_blog =
-    Benchmark.throughputN ~style ~repeat:3 2
-      [ ("blog_50", Scenarios.Blog.render, ()) ]
-  in
-  if not !json_mode then Benchmark.tabulate scenario_blog;
-
-  if not !json_mode then print_endline "\n--- E-commerce (48 products) ---";
-  let scenario_ecommerce =
-    Benchmark.throughputN ~style ~repeat:3 2
-      [ ("ecommerce_48", Scenarios.Ecommerce.render, ()) ]
-  in
-  if not !json_mode then Benchmark.tabulate scenario_ecommerce;
-
-  (* JSON output *)
-  if !json_mode then (
-    let all_json =
-      results_to_json ~group_name:"escape_clean" escape_clean
-      @ results_to_json ~group_name:"escape_dirty" escape_dirty
-      @ results_to_json ~group_name:"optional_disabled_some"
-          optional_disabled_some
-      @ results_to_json ~group_name:"optional_disabled_none"
-          optional_disabled_none
-      @ results_to_json ~group_name:"optional_aria" optional_aria
-      @ results_to_json ~group_name:"optional_multiple" optional_multiple
-      @ results_to_json ~group_name:"fragment_three" fragment_three
-      @ results_to_json ~group_name:"fragment_five" fragment_five
-      @ results_to_json ~group_name:"dynamic_attrs_wrapper"
-          dynamic_attrs_wrapper
-      @ results_to_json ~group_name:"dynamic_attrs_article"
-          dynamic_attrs_article
-      @ results_to_json ~group_name:"large_static_page" large_page
-      @ results_to_json ~group_name:"render_to_string" render_string
-      @ results_to_json ~group_name:"render_to_channel" render_channel
-      @ results_to_json ~group_name:"render_streaming" render_stream
-      @ results_to_json ~group_name:"scenario_trivial" scenario_trivial
-      @ results_to_json ~group_name:"scenario_deep" scenario_deep
-      @ results_to_json ~group_name:"scenario_shallow" scenario_shallow
-      @ results_to_json ~group_name:"scenario_wide" scenario_wide
-      @ results_to_json ~group_name:"scenario_props" scenario_props
-      @ results_to_json ~group_name:"scenario_table" scenario_table
-      @ results_to_json ~group_name:"scenario_form" scenario_form
-      @ results_to_json ~group_name:"scenario_dashboard" scenario_dashboard
-      @ results_to_json ~group_name:"scenario_blog" scenario_blog
-      @ results_to_json ~group_name:"scenario_ecommerce" scenario_ecommerce
-    in
-    print_endline "[";
-    print_endline (String.concat ",\n" all_json);
-    print_endline "]")
+  if !json_mode then print_endline (results_to_json all_results)
   else (
-    print_endline "\n=== Summary ===";
-    print_endline "All optimizations and scenarios verified.")
+    print_results scenario_results baseline;
+    print_newline ();
+    print_results escape_results baseline;
+    summarize all_results baseline)

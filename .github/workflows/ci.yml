@@ -85,7 +85,7 @@ jobs:
 
       - name: Run benchmarks (JSON output for tracking)
         if: matrix.os == 'ubuntu-latest' && matrix.ocaml-compiler == '5.3.0'
-        run: make bench-json
+        run: make bench-ci
 
       - name: Store benchmark result
         if: matrix.os == 'ubuntu-latest' && matrix.ocaml-compiler == '5.3.0'
@@ -98,10 +98,8 @@ jobs:
           auto-push: ${{ github.ref == 'refs/heads/main' }}
           gh-pages-branch: gh-pages
           benchmark-data-dir-path: dev/bench
-          comment-always: true # Shows benchmark comparison on every PR
           fail-on-alert: true
-          comment-on-alert: true
-          alert-comment-cc-users: '@davesnx'
+          summary-always: true
 
       - name: Generate docs
         if: github.ref == 'refs/heads/main'
