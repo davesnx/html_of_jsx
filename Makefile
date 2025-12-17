@@ -86,8 +86,8 @@ install: # Install dependencies
 
 .PHONY: pin
 pin: # pin dependencies
-	opam pin add mlx.dev "https://github.com/ocaml-mlx/mlx.git#ca15b7e960bf9593054c6d2fcb843c0b45dafe85" -y
-	opam pin add ocamlmerlin-mlx.dev "https://github.com/ocaml-mlx/mlx.git#ca15b7e960bf9593054c6d2fcb843c0b45dafe85" -y
+	opam pin add mlx.dev "https://github.com/ocaml-mlx/mlx.git#3d314aa8e7793b38150ebf25b2fe017778c714a5" -y
+	opam pin add ocamlmerlin-mlx.dev "https://github.com/ocaml-mlx/mlx.git#3d314aa8e7793b38150ebf25b2fe017778c714a5" -y
 	opam pin add ocamlformat-mlx-lib.dev "https://github.com/ocaml-mlx/ocamlformat-mlx.git#d3b159056eb65f9b76293389ba8e3c4b97031a42" -y
 	opam pin add ocamlformat-mlx.dev "https://github.com/ocaml-mlx/ocamlformat-mlx.git#d3b159056eb65f9b76293389ba8e3c4b97031a42" -y
 	opam pin add jsonrpc.dev "https://github.com/davesnx/ocaml-lsp.git#687d9f21af1256ba6c16bf851e597c9a292c75ed" -y
