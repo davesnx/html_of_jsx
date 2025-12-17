@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1765817224012,
+  "lastUpdate": 1765967780998,
   "repoUrl": "https://github.com/davesnx/html_of_jsx",
   "entries": {
     "html_of_jsx Benchmarks": [
@@ -103,6 +103,160 @@ window.BENCHMARK_DATA = {
           {
             "name": "two_with_escape/raphael",
             "value": 3872180.76,
+            "unit": "ops/sec"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "dsnxmoreno@gmail.com",
+            "name": "David Sancho",
+            "username": "davesnx"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "5b99997e012b2240a6424ce3ff17f9f54d98706d",
+          "message": "Merge pull request #36 from davesnx/issue_7",
+          "timestamp": "2025-12-17T11:26:36+01:00",
+          "tree_id": "209decf3ed25db92a62fac0f2daba5d6aa2c9fb6",
+          "url": "https://github.com/davesnx/html_of_jsx/commit/5b99997e012b2240a6424ce3ff17f9f54d98706d"
+        },
+        "date": 1765967780662,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "escape_clean/no_escape",
+            "value": 22466142.67,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "escape_clean/JSX.escape",
+            "value": 15780491.33,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "escape_dirty/no_escape",
+            "value": 23013325.83,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "escape_dirty/JSX.escape",
+            "value": 5647549.91,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "optional_disabled_some/optional_disabled_some",
+            "value": 8502795.5,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "optional_disabled_none/optional_disabled_none",
+            "value": 9493295.54,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "optional_aria/optional_aria",
+            "value": 7637310.26,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "optional_multiple/optional_multiple",
+            "value": 4751769.51,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "fragment_three/fragment_three",
+            "value": 14571961.78,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "fragment_five/fragment_five",
+            "value": 10544678.41,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "dynamic_attrs_wrapper/dynamic_attrs_wrapper",
+            "value": 4994711.04,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "dynamic_attrs_article/dynamic_attrs_article",
+            "value": 5775227.83,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "large_static_page/large_static_page",
+            "value": 66094.42,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "render_to_string/render_to_string",
+            "value": 30945694.01,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "render_to_channel/render_to_channel",
+            "value": 223809.31,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "render_streaming/render_streaming",
+            "value": 30241130.71,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "scenario_trivial/trivial",
+            "value": 30284455.51,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "scenario_deep/deep_tree_50",
+            "value": 14668.97,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "scenario_shallow/shallow_tree",
+            "value": 71723.6,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "scenario_wide/wide_tree_100",
+            "value": 4057.15,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "scenario_props/props_heavy",
+            "value": 3295.7,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "scenario_table/table_100",
+            "value": 1619.95,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "scenario_form/form",
+            "value": 19111.53,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "scenario_dashboard/dashboard",
+            "value": 14341.2,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "scenario_blog/blog_50",
+            "value": 2099.32,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "scenario_ecommerce/ecommerce_48",
+            "value": 2110.04,
             "unit": "ops/sec"
           }
         ]
