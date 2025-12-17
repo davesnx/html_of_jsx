@@ -40,7 +40,15 @@
   <span><span><span>(<span class="xref-unresolved">Ppxlib</span>.arg_label * <span class="xref-unresolved">Ppxlib_ast</span>.Ast.expression)</span> list</span> <span class="arrow">&#45;&gt;</span></span>
   <span class="xref-unresolved">Ppxlib_ast</span>.Ast.expression</span></code></div></div><div class="odoc-spec"><div class="spec value anchored" id="val-default_buffer_size"><a href="#val-default_buffer_size" class="anchor"></a><code><span><span class="keyword">val</span> default_buffer_size : int</span></code></div></div><div class="odoc-spec"><div class="spec value anchored" id="val-generate_buffer_code"><a href="#val-generate_buffer_code" class="anchor"></a><code><span><span class="keyword">val</span> generate_buffer_code : 
   <span><span class="label">loc</span>:<span class="xref-unresolved">Ppxlib__</span>.Location.t <span class="arrow">&#45;&gt;</span></span>
-  <span><span><span class="xref-unresolved">Ppx__.Static_analysis.static_part</span> list</span> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="label">parts</span>:<span><span class="xref-unresolved">Ppx__.Static_analysis.static_part</span> list</span> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="label">static_size</span>:int <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="label">dynamic_count</span>:int <span class="arrow">&#45;&gt;</span></span>
+  <span class="xref-unresolved">Ppxlib_ast</span>.Ast.expression</span></code></div></div><div class="odoc-spec"><div class="spec value anchored" id="val-generate_dynamic_attrs_static_children_code"><a href="#val-generate_dynamic_attrs_static_children_code" class="anchor"></a><code><span><span class="keyword">val</span> generate_dynamic_attrs_static_children_code : 
+  <span><span class="label">loc</span>:<span class="xref-unresolved">Ppxlib__</span>.Location.t <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="xref-unresolved">Ppx__.Static_analysis.element_analysis</span> <span class="arrow">&#45;&gt;</span></span>
+  <span class="xref-unresolved">Ppxlib_ast</span>.Ast.expression</span></code></div></div><div class="odoc-spec"><div class="spec value anchored" id="val-generate_optional_attrs_code"><a href="#val-generate_optional_attrs_code" class="anchor"></a><code><span><span class="keyword">val</span> generate_optional_attrs_code : 
+  <span><span class="label">loc</span>:<span class="xref-unresolved">Ppxlib__</span>.Location.t <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="xref-unresolved">Ppx__.Static_analysis.element_analysis</span> <span class="arrow">&#45;&gt;</span></span>
   <span class="xref-unresolved">Ppxlib_ast</span>.Ast.expression</span></code></div></div><div class="odoc-spec"><div class="spec value anchored" id="val-rewrite_node_unoptimized"><a href="#val-rewrite_node_unoptimized" class="anchor"></a><code><span><span class="keyword">val</span> rewrite_node_unoptimized : 
   <span><span class="label">loc</span>:<span class="xref-unresolved">Ppxlib__</span>.Location.t <span class="arrow">&#45;&gt;</span></span>
   <span>string <span class="arrow">&#45;&gt;</span></span>
@@ -67,4 +75,9 @@
   <span><span class="label">mapper</span>:
     <span>&lt; expression : <span><span class="xref-unresolved">Ppxlib_ast</span>.Ast.expression <span class="arrow">&#45;&gt;</span></span> <span class="xref-unresolved">Ppxlib_ast</span>.Ast.expression.. &gt;</span> <span class="arrow">&#45;&gt;</span></span>
   <span><span class="xref-unresolved">Ppxlib_ast</span>.Ast.expression <span class="arrow">&#45;&gt;</span></span>
+  <span class="xref-unresolved">Ppxlib_ast</span>.Ast.expression</span></code></div></div><div class="odoc-spec"><div class="spec value anchored" id="val-extract_children_from_list"><a href="#val-extract_children_from_list" class="anchor"></a><code><span><span class="keyword">val</span> extract_children_from_list : <span><span class="xref-unresolved">Ppxlib</span>.expression <span class="arrow">&#45;&gt;</span></span> <span><span class="xref-unresolved">Ppxlib</span>.expression list</span></span></code></div></div><div class="odoc-spec"><div class="spec value anchored" id="val-optimize_fragment"><a href="#val-optimize_fragment" class="anchor"></a><code><span><span class="keyword">val</span> optimize_fragment : 
+  <span><span class="label">loc</span>:<span class="xref-unresolved">Ppxlib</span>.location <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="label">mapper</span>:
+    <span>&lt; expression : <span><span class="xref-unresolved">Ppxlib_ast</span>.Ast.expression <span class="arrow">&#45;&gt;</span></span> <span class="xref-unresolved">Ppxlib_ast</span>.Ast.expression.. &gt;</span> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="xref-unresolved">Ppxlib</span>.expression <span class="arrow">&#45;&gt;</span></span>
   <span class="xref-unresolved">Ppxlib_ast</span>.Ast.expression</span></code></div></div><div class="odoc-spec"><div class="spec value anchored" id="val-rewrite_jsx"><a href="#val-rewrite_jsx" class="anchor"></a><code><span><span class="keyword">val</span> rewrite_jsx : <span class="xref-unresolved">Ppxlib</span>.Ast_traverse.map</span></code></div></div></div></body></html>
