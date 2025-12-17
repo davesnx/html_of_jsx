@@ -6,6 +6,17 @@
   (pps html_of_jsx.ppx)))
 
 (executable
+ (name bench_fast)
+ (modules bench_fast)
+ (libraries html_of_jsx benchmark scenarios)
+ (preprocess
+  (pps html_of_jsx.ppx)))
+
+(executable
  (name memory)
  (modules memory)
  (libraries html_of_jsx))
+
+(executable
+ (name compare_results)
+ (modules compare_results))

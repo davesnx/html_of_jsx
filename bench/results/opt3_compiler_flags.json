@@ -1,0 +1,14 @@
+[
+{"name": "escape/escape_clean", "unit": "ops/sec", "value": 40721377.09},
+{"name": "escape/escape_dirty", "unit": "ops/sec", "value": 10080247.71},
+{"name": "scenario/trivial", "unit": "ops/sec", "value": 58396342.41},
+{"name": "scenario/deep_tree", "unit": "ops/sec", "value": 27426.62},
+{"name": "scenario/shallow_tree", "unit": "ops/sec", "value": 124758.14},
+{"name": "scenario/wide_tree", "unit": "ops/sec", "value": 7617.14},
+{"name": "scenario/props_heavy", "unit": "ops/sec", "value": 5998.81},
+{"name": "scenario/table", "unit": "ops/sec", "value": 3136.44},
+{"name": "scenario/form", "unit": "ops/sec", "value": 34109.19},
+{"name": "scenario/dashboard", "unit": "ops/sec", "value": 25907.54},
+{"name": "scenario/blog", "unit": "ops/sec", "value": 3948.61},
+{"name": "scenario/ecommerce", "unit": "ops/sec", "value": 3878.93}
+]

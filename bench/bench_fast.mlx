@@ -1,0 +1,74 @@
+(* Fast benchmark for optimization iterations - reduced sample size *)
+
+let json_mode = ref false
+
+let extract_rate samples =
+  let total_rate =
+    List.fold_left
+      (fun acc sample ->
+        let rate =
+          Int64.to_float sample.Benchmark.iters /. sample.Benchmark.wall
+        in
+        acc +. rate)
+      0.0 samples
+  in
+  total_rate /. float_of_int (List.length samples)
+
+let results_to_json ~group_name results =
+  List.map
+    (fun (name, samples) ->
+      let rate = extract_rate samples in
+      Printf.sprintf {|{"name": "%s/%s", "unit": "ops/sec", "value": %.2f}|}
+        group_name name rate)
+    results
+
+(* Quick benchmark run: repeat:1, 1 second per test *)
+let quick_bench name fn =
+  Benchmark.throughputN ~style:Benchmark.Nil ~repeat:1 1 [(name, fn, ())]
+
+let () =
+  json_mode := true;
+  
+  (* Run only key benchmarks for faster iteration *)
+  let escape_clean =
+    quick_bench "escape_clean" (fun () ->
+        let buf = Buffer.create 128 in
+        JSX.escape buf "Hello, World!";
+        JSX.unsafe (Buffer.contents buf))
+  in
+  
+  let escape_dirty =
+    quick_bench "escape_dirty" (fun () ->
+        let buf = Buffer.create 128 in
+        JSX.escape buf "<script>alert('XSS')</script>";
+        JSX.unsafe (Buffer.contents buf))
+  in
+  
+  let trivial = quick_bench "trivial" Scenarios.Trivial.render in
+  let deep_tree = quick_bench "deep_tree" Scenarios.DeepTree.render in
+  let shallow_tree = quick_bench "shallow_tree" Scenarios.ShallowTree.render in
+  let wide_tree = quick_bench "wide_tree" Scenarios.WideTree.render in
+  let props_heavy = quick_bench "props_heavy" Scenarios.PropsHeavy.render in
+  let table = quick_bench "table" Scenarios.Table.render in
+  let form = quick_bench "form" Scenarios.Form.render in
+  let dashboard = quick_bench "dashboard" Scenarios.Dashboard.render in
+  let blog = quick_bench "blog" Scenarios.Blog.render in
+  let ecommerce = quick_bench "ecommerce" Scenarios.Ecommerce.render in
+  
+  let all_json =
+    results_to_json ~group_name:"escape" escape_clean
+    @ results_to_json ~group_name:"escape" escape_dirty
+    @ results_to_json ~group_name:"scenario" trivial
+    @ results_to_json ~group_name:"scenario" deep_tree
+    @ results_to_json ~group_name:"scenario" shallow_tree
+    @ results_to_json ~group_name:"scenario" wide_tree
+    @ results_to_json ~group_name:"scenario" props_heavy
+    @ results_to_json ~group_name:"scenario" table
+    @ results_to_json ~group_name:"scenario" form
+    @ results_to_json ~group_name:"scenario" dashboard
+    @ results_to_json ~group_name:"scenario" blog
+    @ results_to_json ~group_name:"scenario" ecommerce
+  in
+  print_endline "[";
+  print_endline (String.concat ",\n" all_json);
+  print_endline "]"
