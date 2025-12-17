@@ -64,6 +64,9 @@ jobs:
         with:
           ocaml-compiler: ${{ matrix.ocaml-compiler }}
 
+      - name: Pin
+        run: make pin
+
       - name: Install
         run: make install
 
