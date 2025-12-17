@@ -30,12 +30,13 @@ jobs:
         os:
           - macos-latest
           - ubuntu-latest
-          # - windows-latest
         ocaml-compiler:
           - 4.14.2
-          - 5.1.1
           - 5.3.0
           - 5.4.0
+        include:
+          - os: windows-latest
+            ocaml-compiler: 5.4.0
 
     steps:
       - name: Checkout code
@@ -84,11 +85,11 @@ jobs:
         run: make bench
 
       - name: Run benchmarks (JSON output for tracking)
-        if: matrix.os == 'ubuntu-latest' && matrix.ocaml-compiler == '5.3.0'
+        if: matrix.os == 'ubuntu-latest' && matrix.ocaml-compiler == '5.4.0'
         run: make bench-ci
 
       - name: Store benchmark result
-        if: matrix.os == 'ubuntu-latest' && matrix.ocaml-compiler == '5.3.0'
+        if: matrix.os == 'ubuntu-latest' && matrix.ocaml-compiler == '5.4.0'
         uses: benchmark-action/github-action-benchmark@v1
         with:
           name: html_of_jsx Benchmarks
