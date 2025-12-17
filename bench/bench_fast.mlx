@@ -1,7 +1,5 @@
 (* Fast benchmark for optimization iterations - reduced sample size *)
 
-let json_mode = ref false
-
 let extract_rate samples =
   let total_rate =
     List.fold_left
@@ -22,28 +20,24 @@ let results_to_json ~group_name results =
         group_name name rate)
     results
 
-(* Quick benchmark run: repeat:1, 1 second per test *)
 let quick_bench name fn =
-  Benchmark.throughputN ~style:Benchmark.Nil ~repeat:1 1 [(name, fn, ())]
+  Benchmark.throughputN ~style:Benchmark.Nil ~repeat:1 1 [ (name, fn, ()) ]
 
 let () =
-  json_mode := true;
-  
-  (* Run only key benchmarks for faster iteration *)
   let escape_clean =
     quick_bench "escape_clean" (fun () ->
         let buf = Buffer.create 128 in
         JSX.escape buf "Hello, World!";
         JSX.unsafe (Buffer.contents buf))
   in
-  
+
   let escape_dirty =
     quick_bench "escape_dirty" (fun () ->
         let buf = Buffer.create 128 in
         JSX.escape buf "<script>alert('XSS')</script>";
         JSX.unsafe (Buffer.contents buf))
   in
-  
+
   let trivial = quick_bench "trivial" Scenarios.Trivial.render in
   let deep_tree = quick_bench "deep_tree" Scenarios.DeepTree.render in
   let shallow_tree = quick_bench "shallow_tree" Scenarios.ShallowTree.render in
@@ -54,7 +48,7 @@ let () =
   let dashboard = quick_bench "dashboard" Scenarios.Dashboard.render in
   let blog = quick_bench "blog" Scenarios.Blog.render in
   let ecommerce = quick_bench "ecommerce" Scenarios.Ecommerce.render in
-  
+
   let all_json =
     results_to_json ~group_name:"escape" escape_clean
     @ results_to_json ~group_name:"escape" escape_dirty

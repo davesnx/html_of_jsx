@@ -20,8 +20,25 @@ build-prod: ## Build for production (--profile=prod)
 	$(DUNE) build --profile=prod @all
 
 .PHONY: bench
-bench: ## Run bench mark executable
-	$(DUNE) exec bench/bench.exe
+bench: ## Run benchmark automation script (compare with baseline)
+	./bench/run_benchmark.sh
+
+.PHONY: bench-fast
+bench-fast: ## Run fast benchmark suite for quick iteration
+	$(DUNE) exec bench/bench_fast.exe
+
+.PHONY: bench-memory
+bench-memory: ## Run memory allocation benchmarks
+	$(DUNE) exec bench/memory.exe
+
+.PHONY: bench-compare
+bench-compare: ## Compare two benchmark results (usage: make bench-compare FILE1=a.json FILE2=b.json)
+	@if [ -z "$(FILE1)" ] || [ -z "$(FILE2)" ]; then \
+		echo "Error: FILE1 and FILE2 are required"; \
+		echo "Usage: make bench-compare FILE1=bench/results/baseline.json FILE2=bench/results/new.json"; \
+		exit 1; \
+	fi
+	$(DUNE) exec bench/compare_results.exe -- $(FILE1) $(FILE2)
 
 .PHONY: bench-json
 bench-json: ## Run benchmarks with JSON output for CI
