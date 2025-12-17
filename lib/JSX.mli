@@ -30,6 +30,34 @@ val render : element -> string
       Printf.printf "%s" html; /* <div><h1>Hello, World!</h1></div> */
     ]} *)
 
+val render_to_channel : out_channel -> element -> unit
+(** Render a JSX.element directly to an output channel.
+
+    This function writes the HTML representation directly to the channel,
+    avoiding the intermediate string allocation that [render] requires.
+
+    {[
+      JSX.render_to_channel stdout (
+        <div>
+          <h1> {JSX.string("Hello, World!")} </h1>
+        </div>
+      );
+    ]} *)
+
+val render_streaming : (string -> unit) -> element -> unit
+(** Render a JSX.element using a streaming callback function.
+
+    This function renders the element and passes the result to the callback
+    function, useful for frameworks that support streaming responses.
+
+    {[
+      JSX.render_streaming (fun html -> Dream.write stream html) (
+        <div>
+          <h1> {JSX.string("Hello, World!")} </h1>
+        </div>
+      );
+    ]} *)
+
 val float : float -> element
 (** Helper to render a float.
 

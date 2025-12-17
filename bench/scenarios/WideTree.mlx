@@ -1,0 +1,86 @@
+(* Scenario: Wide Tree
+   Many siblings at the same level (tests list/array rendering)
+   Purpose: Test horizontal scaling and sibling handling *)
+
+let card ~id ~title ~description ~price ~rating ~in_stock =
+  let cls =
+    Cx.make
+      [
+        "border rounded-lg p-4 shadow-sm";
+        Cx.if_true "opacity-50" (not in_stock);
+      ]
+  in
+  let id_label = Printf.sprintf "#%d" id in
+  let price_label = Printf.sprintf "$%.2f" price in
+  let rating_label = Printf.sprintf "%.1f" rating in
+  <article class_=cls>
+    <div class_="flex justify-between items-start mb-2">
+      <h3 class_="font-semibold text-lg">(JSX.string title)</h3>
+      <span class_="text-xs bg-gray-100 px-2 py-1 rounded">
+        (JSX.string id_label)
+      </span>
+    </div>
+    <p class_="text-gray-600 text-sm mb-3">(JSX.string description)</p>
+    <div class_="flex justify-between items-center">
+      <span class_="text-xl font-bold text-green-600">
+        (JSX.string price_label)
+      </span>
+      <div class_="flex items-center gap-1">
+        <span class_="text-yellow-500">(JSX.string "★")</span>
+        <span class_="text-sm">(JSX.string rating_label)</span>
+      </div>
+    </div>
+    <div class_="mt-2">
+      (if in_stock then
+         <span class_="text-green-500 text-sm">(JSX.string "In Stock")</span>
+       else
+         <span class_="text-red-500 text-sm">(JSX.string "Out of Stock")</span>)
+    </div>
+  </article>
+
+let generate_items count =
+  Array.init count (fun i ->
+      let id = i + 1 in
+      let title = Printf.sprintf "Product %d" id in
+      let description = Printf.sprintf "Description for product %d." id in
+      let price = 9.99 +. float_of_int (i mod 100) in
+      let rating = 3.0 +. (float_of_int (i mod 20) /. 10.0) in
+      let in_stock = i mod 7 <> 0 in
+      (id, title, description, price, rating, in_stock))
+
+let items_10 = generate_items 10
+let items_100 = generate_items 100
+let items_500 = generate_items 500
+
+let wide_10 () =
+  <div class_="grid grid-cols-2 gap-4 p-4">
+    (JSX.list
+       (Array.to_list
+          (Array.map
+             (fun (id, title, description, price, rating, in_stock) ->
+               card ~id ~title ~description ~price ~rating ~in_stock)
+             items_10)))
+  </div>
+
+let wide_100 () =
+  <div class_="grid grid-cols-4 gap-4 p-4">
+    (JSX.list
+       (Array.to_list
+          (Array.map
+             (fun (id, title, description, price, rating, in_stock) ->
+               card ~id ~title ~description ~price ~rating ~in_stock)
+             items_100)))
+  </div>
+
+let wide_500 () =
+  <div class_="grid grid-cols-5 gap-4 p-4">
+    (JSX.list
+       (Array.to_list
+          (Array.map
+             (fun (id, title, description, price, rating, in_stock) ->
+               card ~id ~title ~description ~price ~rating ~in_stock)
+             items_500)))
+  </div>
+
+let make () = wide_100 ()
+let render () = JSX.render (make ())

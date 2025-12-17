@@ -1,0 +1,6 @@
+(* Scenario: Trivial
+   Baseline test - simplest possible component
+   Purpose: Measure baseline overhead of rendering *)
+
+let make () = <div>(JSX.string "Hello World")</div>
+let render () = JSX.render (make ())

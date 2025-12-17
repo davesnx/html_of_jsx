@@ -16,7 +16,7 @@ Test static JSX optimization
   let static_html =
     JSX.unsafe("<!DOCTYPE html><html><body><div>static</div></body></html>");
   let dynamic_child = name => {
-    let __html_buf = Buffer.create(1024);
+    let __html_buf = Buffer.create(75);
     {
       Buffer.add_string(__html_buf, "<div>");
       JSX.escape(__html_buf, name);
@@ -26,7 +26,7 @@ Test static JSX optimization
     JSX.unsafe(Buffer.contents(__html_buf));
   };
   let dynamic_two_strings = (a, b) => {
-    let __html_buf = Buffer.create(1024);
+    let __html_buf = Buffer.create(139);
     {
       Buffer.add_string(__html_buf, "<div>");
       JSX.escape(__html_buf, a);
@@ -37,7 +37,7 @@ Test static JSX optimization
     JSX.unsafe(Buffer.contents(__html_buf));
   };
   let dynamic_three_strings = (a, b, c) => {
-    let __html_buf = Buffer.create(1024);
+    let __html_buf = Buffer.create(199);
     {
       Buffer.add_string(__html_buf, "<p>");
       JSX.escape(__html_buf, a);
@@ -49,7 +49,7 @@ Test static JSX optimization
     JSX.unsafe(Buffer.contents(__html_buf));
   };
   let dynamic_five_strings = (a, b, c, d, e) => {
-    let __html_buf = Buffer.create(1024);
+    let __html_buf = Buffer.create(333);
     {
       Buffer.add_string(__html_buf, "<span>");
       JSX.escape(__html_buf, a);
@@ -62,17 +62,33 @@ Test static JSX optimization
     };
     JSX.unsafe(Buffer.contents(__html_buf));
   };
-  let dynamic_attr = className =>
-    JSX.node(
-      "div",
-      Stdlib.List.filter_map(
-        Stdlib.Fun.id,
-        [Some(("class", `String(className: string)))],
-      ),
-      [],
-    );
-  let dynamic_element = child => {
+  let dynamic_attr = className => {
     let __html_buf = Buffer.create(1024);
+    {
+      {
+        Buffer.add_char(__html_buf, '<');
+        Buffer.add_string(__html_buf, "div");
+        Buffer.add_string(__html_buf, "");
+      };
+      {
+        Buffer.add_char(__html_buf, ' ');
+        Buffer.add_string(__html_buf, "class");
+        Buffer.add_string(__html_buf, "=\"");
+        JSX.escape(__html_buf, className);
+        Buffer.add_char(__html_buf, '"');
+      };
+      Buffer.add_char(__html_buf, '>');
+      {
+        Buffer.add_string(__html_buf, "</");
+        Buffer.add_string(__html_buf, "div");
+        Buffer.add_char(__html_buf, '>');
+      };
+      ();
+    };
+    JSX.unsafe(Buffer.contents(__html_buf));
+  };
+  let dynamic_element = child => {
+    let __html_buf = Buffer.create(75);
     {
       Buffer.add_string(__html_buf, "<div>");
       JSX.write(__html_buf, child);
@@ -82,7 +98,7 @@ Test static JSX optimization
     JSX.unsafe(Buffer.contents(__html_buf));
   };
   let mixed_string_element = (name, child) => {
-    let __html_buf = Buffer.create(1024);
+    let __html_buf = Buffer.create(139);
     {
       Buffer.add_string(__html_buf, "<div>");
       JSX.escape(__html_buf, name);
@@ -100,10 +116,17 @@ Test static JSX optimization
     JSX.unsafe(
       "<div>&lt;script&gt;alert(&apos;xss&apos;)&lt;/script&gt;</div>",
     );
-  let static_fragment =
-    JSX.list([JSX.unsafe("<div></div>"), JSX.unsafe("<span></span>")]);
-  let dynamic_int = count => {
+  let static_fragment = {
     let __html_buf = Buffer.create(1024);
+    {
+      Buffer.add_string(__html_buf, "<div></div>");
+      Buffer.add_string(__html_buf, "<span></span>");
+      ();
+    };
+    JSX.unsafe(Buffer.contents(__html_buf));
+  };
+  let dynamic_int = count => {
+    let __html_buf = Buffer.create(75);
     {
       Buffer.add_string(__html_buf, "<div>");
       Buffer.add_string(__html_buf, Int.to_string(count));
@@ -113,7 +136,7 @@ Test static JSX optimization
     JSX.unsafe(Buffer.contents(__html_buf));
   };
   let dynamic_float = price => {
-    let __html_buf = Buffer.create(1024);
+    let __html_buf = Buffer.create(77);
     {
       Buffer.add_string(__html_buf, "<span>");
       Buffer.add_string(__html_buf, Float.to_string(price));
@@ -123,7 +146,7 @@ Test static JSX optimization
     JSX.unsafe(Buffer.contents(__html_buf));
   };
   let mixed_int_string = (count, name) => {
-    let __html_buf = Buffer.create(1024);
+    let __html_buf = Buffer.create(135);
     {
       Buffer.add_string(__html_buf, "<p>");
       Buffer.add_string(__html_buf, Int.to_string(count));

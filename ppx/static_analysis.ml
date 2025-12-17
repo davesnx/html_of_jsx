@@ -126,7 +126,7 @@ type attr_render_info = {
 type parsed_attr =
   | Static_attr of attr_render_info * static_attr_value
   | Optional_attr of attr_render_info * expression
-  | Dynamic_attr of string * expression
+  | Dynamic_attr of attr_render_info * expression
 
 type attr_validation_result = Valid_attr of attr_render_info | Invalid_attr
 
@@ -168,32 +168,43 @@ let analyze_attribute ~tag_name (label, expr) : attr_analysis_result =
       | Valid_attr info -> (
           match extract_static_attr_value expr with
           | Some value -> Ok (Some (Static_attr (info, value)))
-          | None -> Ok (Some (Dynamic_attr (info.html_name, expr)))))
+          | None -> Ok (Some (Dynamic_attr (info, expr)))))
 
 type attrs_analysis =
   | All_static of string
   | Has_optional of (attr_render_info * expression) list * string
+  | Has_dynamic_attrs of {
+      static_attrs : string;
+      dynamic_attrs : (attr_render_info * expression) list;
+    }
   | Has_dynamic
   | Validation_failed
 
 let analyze_attributes ~tag_name attrs =
-  let rec loop static_buf optionals = function
+  let rec loop static_buf optionals dynamic_attrs = function
     | [] ->
-        if optionals = [] then All_static (Buffer.contents static_buf)
+        if dynamic_attrs <> [] then
+          Has_dynamic_attrs
+            {
+              static_attrs = Buffer.contents static_buf;
+              dynamic_attrs = List.rev dynamic_attrs;
+            }
+        else if optionals = [] then All_static (Buffer.contents static_buf)
         else Has_optional (List.rev optionals, Buffer.contents static_buf)
     | attr :: rest -> (
         match analyze_attribute ~tag_name attr with
         | Invalid -> Validation_failed
-        | Ok None -> loop static_buf optionals rest
+        | Ok None -> loop static_buf optionals dynamic_attrs rest
         | Ok (Some (Static_attr (info, value))) ->
             Buffer.add_string static_buf
               (render_static_attr_with_info info value);
-            loop static_buf optionals rest
+            loop static_buf optionals dynamic_attrs rest
         | Ok (Some (Optional_attr (info, expr))) ->
-            loop static_buf ((info, expr) :: optionals) rest
-        | Ok (Some (Dynamic_attr _)) -> Has_dynamic)
+            loop static_buf ((info, expr) :: optionals) dynamic_attrs rest
+        | Ok (Some (Dynamic_attr (info, expr))) ->
+            loop static_buf optionals ((info, expr) :: dynamic_attrs) rest)
   in
-  loop (Buffer.create 64) [] attrs
+  loop (Buffer.create 64) [] [] attrs
 
 type children_analysis =
   | No_children
@@ -283,7 +294,25 @@ let analyze_children children =
 type element_analysis =
   | Fully_static of string
   | Needs_string_concat of static_part list
-  | Needs_buffer of static_part list
+  | Needs_buffer of {
+      parts : static_part list;
+      static_size : int;
+      dynamic_count : int;
+    }
+  | Has_optional_attrs of {
+      tag_name : string;
+      static_attrs : string;
+      optional_attrs : (attr_render_info * expression) list;
+      children_parts : static_part list;
+      is_self_closing : bool;
+    }
+  | Dynamic_attrs_static_children of {
+      tag_name : string;
+      static_attrs : string;
+      dynamic_attrs : (attr_render_info * expression) list;
+      children_html : string;
+      is_self_closing : bool;
+    }
   | Cannot_optimize
 
 let analyze_element ~tag_name ~attrs ~children =
@@ -293,6 +322,27 @@ let analyze_element ~tag_name ~attrs ~children =
   match (attrs_result, children_result) with
   | Validation_failed, _ -> Cannot_optimize
   | Has_dynamic, _ -> Cannot_optimize
+  | ( Has_dynamic_attrs { static_attrs; dynamic_attrs },
+      All_static_children children_html ) ->
+      Dynamic_attrs_static_children
+        {
+          tag_name;
+          static_attrs;
+          dynamic_attrs;
+          children_html;
+          is_self_closing = is_self_closing_tag tag_name;
+        }
+  | Has_dynamic_attrs { static_attrs; dynamic_attrs }, No_children ->
+      Dynamic_attrs_static_children
+        {
+          tag_name;
+          static_attrs;
+          dynamic_attrs;
+          children_html = "";
+          is_self_closing = is_self_closing_tag tag_name;
+        }
+  | Has_dynamic_attrs _, (All_string_dynamic _ | Mixed_children _) ->
+      Cannot_optimize
   | All_static attrs_html, No_children when is_self_closing_tag tag_name ->
       let html = Printf.sprintf "<%s%s />" tag_name attrs_html in
       Fully_static html
@@ -316,10 +366,58 @@ let analyze_element ~tag_name ~attrs ~children =
       let open_tag = Printf.sprintf "<%s%s>" tag_name attrs_html in
       let close_tag = Printf.sprintf "</%s>" tag_name in
       let all_parts =
-        [ Static_str open_tag ] @ parts @ [ Static_str close_tag ]
+        coalesce_static_parts
+          ([ Static_str open_tag ] @ parts @ [ Static_str close_tag ])
       in
-      Needs_buffer (coalesce_static_parts all_parts)
-  | Has_optional _, _ -> Cannot_optimize
+      let static_size =
+        List.fold_left
+          (fun acc part ->
+            match part with Static_str s -> acc + String.length s | _ -> acc)
+          0 all_parts
+      in
+      let dynamic_count =
+        List.fold_left
+          (fun acc part -> match part with Static_str _ -> acc | _ -> acc + 1)
+          0 all_parts
+      in
+      Needs_buffer { parts = all_parts; static_size; dynamic_count }
+  | Has_optional (optional_attrs, static_attrs), No_children ->
+      Has_optional_attrs
+        {
+          tag_name;
+          static_attrs;
+          optional_attrs;
+          children_parts = [];
+          is_self_closing = is_self_closing_tag tag_name;
+        }
+  | ( Has_optional (optional_attrs, static_attrs),
+      All_static_children children_html ) ->
+      Has_optional_attrs
+        {
+          tag_name;
+          static_attrs;
+          optional_attrs;
+          children_parts = [ Static_str children_html ];
+          is_self_closing = false;
+        }
+  | Has_optional (optional_attrs, static_attrs), All_string_dynamic parts ->
+      Has_optional_attrs
+        {
+          tag_name;
+          static_attrs;
+          optional_attrs;
+          children_parts = parts;
+          is_self_closing = false;
+        }
+  | Has_optional (optional_attrs, static_attrs), Mixed_children parts ->
+      Has_optional_attrs
+        {
+          tag_name;
+          static_attrs;
+          optional_attrs;
+          children_parts = parts;
+          is_self_closing = false;
+        }
 
 let maybe_add_doctype tag_name html =
   if tag_name = "html" then "<!DOCTYPE html>" ^ html else html

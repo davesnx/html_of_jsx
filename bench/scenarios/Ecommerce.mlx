@@ -1,0 +1,424 @@
+(* Scenario: E-commerce Page
+   Realistic product listing page with complex UI patterns
+   Purpose: Test real-world SSR performance for e-commerce use case *)
+
+type product = {
+  id : int;
+  name : string;
+  brand : string;
+  price : float;
+  original_price : float option;
+  rating : float;
+  review_count : int;
+  image : string;
+  category : string;
+  tags : string list;
+  in_stock : bool;
+  free_shipping : bool;
+  prime : bool;
+}
+
+let generate_products count =
+  let brands =
+    [|
+      "Apple"; "Samsung"; "Sony"; "LG"; "Nike"; "Adidas"; "Microsoft"; "Google";
+    |]
+  in
+  let categories =
+    [| "Electronics"; "Clothing"; "Home"; "Sports"; "Books"; "Toys" |]
+  in
+  let tag_options =
+    [| "Best Seller"; "New"; "Sale"; "Limited"; "Trending"; "Eco-Friendly" |]
+  in
+  List.init count (fun i ->
+      let id = i + 1 in
+      let has_discount = i mod 3 = 0 in
+      let base_price = 19.99 +. float_of_int (i mod 500) in
+      {
+        id;
+        name = Printf.sprintf "Product %d - Premium Edition" id;
+        brand = brands.(i mod Array.length brands);
+        price = (if has_discount then base_price *. 0.8 else base_price);
+        original_price = (if has_discount then Some base_price else None);
+        rating = 3.0 +. (float_of_int (i mod 21) /. 10.0);
+        review_count = 10 + (i mod 5000);
+        image = Printf.sprintf "https://picsum.photos/seed/%d/300/300" id;
+        category = categories.(i mod Array.length categories);
+        tags =
+          List.init
+            (1 + (i mod 3))
+            (fun j -> tag_options.((i + j) mod Array.length tag_options));
+        in_stock = i mod 10 <> 0;
+        free_shipping = i mod 4 = 0;
+        prime = i mod 2 = 0;
+      })
+
+let star_rating ~rating ~count =
+  let full_stars = int_of_float rating in
+  let has_half_star = rating -. float_of_int full_stars >= 0.5 in
+  let rating_label = Printf.sprintf "%.1f (%d)" rating count in
+  <div class_="flex items-center gap-1">
+    <div class_="flex text-yellow-400">
+      (JSX.list
+         (List.init 5 (fun i ->
+              let star =
+                if i < full_stars then "★"
+                else if i = full_stars && has_half_star then "⯨"
+                else "☆"
+              in
+              <span>(JSX.string star)</span>)))
+    </div>
+    <span class_="text-sm text-gray-500">(JSX.string rating_label)</span>
+  </div>
+
+let price_badge ~price ~original_price =
+  let price_str = Printf.sprintf "$%.2f" price in
+  <div class_="flex items-baseline gap-2">
+    <span class_="text-2xl font-bold text-gray-900">
+      (JSX.string price_str)
+    </span>
+    (match original_price with
+    | Some orig ->
+        let orig_str = Printf.sprintf "$%.2f" orig in
+        let discount_str =
+          Printf.sprintf "%.0f%% off" ((1.0 -. (price /. orig)) *. 100.0)
+        in
+        JSX.list
+          [
+            <span class_="text-sm text-gray-500 line-through">
+              (JSX.string orig_str)
+            </span>;
+            <span class_="text-sm font-medium text-red-600">
+              (JSX.string discount_str)
+            </span>;
+          ]
+    | None -> JSX.null)
+  </div>
+
+let product_card ~product =
+  let product_url = Printf.sprintf "/product/%d" product.id in
+  let btn_cls =
+    Cx.make
+      [
+        "mt-3 w-full py-2 px-4 rounded-lg font-medium transition-colors";
+        (if product.in_stock then
+           "bg-yellow-400 hover:bg-yellow-500 text-gray-900"
+         else "bg-gray-200 text-gray-500 cursor-not-allowed");
+      ]
+  in
+  <article
+    class_="group relative bg-white rounded-xl shadow-sm hover:shadow-xl \
+            transition-all duration-300 overflow-hidden">
+    <div class_="aspect-square overflow-hidden bg-gray-100">
+      <img
+        src=product.image
+        alt=product.name
+        class_="w-full h-full object-cover group-hover:scale-105 \
+                transition-transform duration-300"
+        loading="lazy"
+      />
+      <div class_="absolute top-2 left-2 flex flex-col gap-1">
+        (JSX.list
+           (List.map
+              (fun tag ->
+                <span
+                  class_="px-2 py-1 text-xs font-medium bg-black/70 text-white \
+                          rounded">
+                  (JSX.string tag)
+                </span>)
+              product.tags))
+      </div>
+      <button
+        class_="absolute top-2 right-2 p-2 bg-white/90 rounded-full \
+                hover:bg-white transition-colors"
+        aria_label="Add to wishlist">
+        (JSX.string "♡")
+      </button>
+    </div>
+    <div class_="p-4">
+      <div class_="mb-1">
+        <span
+          class_="text-xs font-medium text-gray-500 uppercase tracking-wide">
+          (JSX.string product.brand)
+        </span>
+      </div>
+      <h3 class_="text-sm font-medium text-gray-900 mb-2 line-clamp-2">
+        <a href=product_url class_="hover:text-blue-600">
+          (JSX.string product.name)
+        </a>
+      </h3>
+      (star_rating ~rating:product.rating ~count:product.review_count)
+      <div class_="mt-2">
+        (price_badge ~price:product.price ~original_price:product.original_price)
+      </div>
+      <div class_="mt-2 flex items-center gap-2 text-xs">
+        (if product.prime then
+           <span class_="text-blue-600 font-medium">
+             (JSX.string "✓ Prime")
+           </span>
+         else JSX.null)
+        (if product.free_shipping then
+           <span class_="text-green-600">(JSX.string "Free Shipping")</span>
+         else JSX.null)
+      </div>
+      <div class_="mt-3">
+        (if product.in_stock then
+           <span class_="text-sm text-green-600">(JSX.string "In Stock")</span>
+         else
+           <span class_="text-sm text-red-600">
+             (JSX.string "Out of Stock")
+           </span>)
+      </div>
+      <button class_=btn_cls disabled=(not product.in_stock)>
+        (JSX.string (if product.in_stock then "Add to Cart" else "Unavailable"))
+      </button>
+    </div>
+  </article>
+
+let filter_sidebar () =
+  <aside class_="w-64 flex-shrink-0">
+    <div class_="sticky top-4 space-y-6">
+      <div class_="bg-white rounded-lg p-4 shadow-sm">
+        <h3 class_="font-medium text-gray-900 mb-3">(JSX.string "Category")</h3>
+        <div class_="space-y-2">
+          (JSX.list
+             (List.map
+                (fun cat ->
+                  <label class_="flex items-center gap-2 cursor-pointer">
+                    <input type_="checkbox" class_="rounded text-blue-600" />
+                    <span class_="text-sm text-gray-700">(JSX.string cat)</span>
+                  </label>)
+                [ "Electronics"; "Clothing"; "Home"; "Sports"; "Books"; "Toys" ]))
+        </div>
+      </div>
+      <div class_="bg-white rounded-lg p-4 shadow-sm">
+        <h3 class_="font-medium text-gray-900 mb-3">(JSX.string "Price")</h3>
+        <div class_="space-y-2">
+          (JSX.list
+             (List.map
+                (fun label ->
+                  <label class_="flex items-center gap-2 cursor-pointer">
+                    <input type_="radio" name="price" class_="text-blue-600" />
+                    <span class_="text-sm text-gray-700">
+                      (JSX.string label)
+                    </span>
+                  </label>)
+                [
+                  "Under $25";
+                  "$25 - $50";
+                  "$50 - $100";
+                  "$100 - $200";
+                  "Over $200";
+                ]))
+        </div>
+      </div>
+      <div class_="bg-white rounded-lg p-4 shadow-sm">
+        <h3 class_="font-medium text-gray-900 mb-3">(JSX.string "Brand")</h3>
+        <div class_="space-y-2">
+          (JSX.list
+             (List.map
+                (fun brand ->
+                  <label class_="flex items-center gap-2 cursor-pointer">
+                    <input type_="checkbox" class_="rounded text-blue-600" />
+                    <span class_="text-sm text-gray-700">
+                      (JSX.string brand)
+                    </span>
+                  </label>)
+                [ "Apple"; "Samsung"; "Sony"; "LG"; "Nike"; "Adidas" ]))
+        </div>
+      </div>
+    </div>
+  </aside>
+
+let product_grid ~products =
+  let results_label =
+    Printf.sprintf "Showing %d results" (List.length products)
+  in
+  <div class_="flex-1">
+    <div class_="mb-4 flex items-center justify-between">
+      <p class_="text-sm text-gray-600">(JSX.string results_label)</p>
+      <select class_="px-3 py-2 border rounded-lg text-sm">
+        <option>(JSX.string "Sort by: Featured")</option>
+        <option>(JSX.string "Price: Low to High")</option>
+        <option>(JSX.string "Price: High to Low")</option>
+        <option>(JSX.string "Avg. Customer Review")</option>
+      </select>
+    </div>
+    <div
+      class_="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 \
+              gap-6">
+      (JSX.list (List.map (fun product -> product_card ~product) products))
+    </div>
+    <nav class_="mt-8 flex items-center justify-center gap-2">
+      <button class_="px-4 py-2 border rounded-lg text-sm hover:bg-gray-50">
+        (JSX.string "Previous")
+      </button>
+      (JSX.list
+         (List.init 5 (fun i ->
+              let cls =
+                Cx.make
+                  [
+                    "px-4 py-2 rounded-lg text-sm";
+                    (if i = 0 then "bg-blue-600 text-white"
+                     else "border hover:bg-gray-50");
+                  ]
+              in
+              <button class_=cls>(JSX.int (i + 1))</button>)))
+      <span class_="px-2">(JSX.string "...")</span>
+      <button class_="px-4 py-2 border rounded-lg text-sm hover:bg-gray-50">
+        (JSX.int 20)
+      </button>
+      <button class_="px-4 py-2 border rounded-lg text-sm hover:bg-gray-50">
+        (JSX.string "Next")
+      </button>
+    </nav>
+  </div>
+
+let header () =
+  <header class_="bg-gray-900 text-white">
+    <div class_="container mx-auto px-4">
+      <div class_="py-2 text-xs border-b border-gray-700 flex justify-between">
+        <div class_="flex gap-4">
+          <a href="#" class_="hover:text-gray-300">(JSX.string "Help")</a>
+          <a href="#" class_="hover:text-gray-300">
+            (JSX.string "Track Order")
+          </a>
+        </div>
+        <div class_="flex gap-4">
+          <a href="#" class_="hover:text-gray-300">
+            (JSX.string "Sell on Store")
+          </a>
+          <a href="#" class_="hover:text-gray-300">
+            (JSX.string "Language: EN")
+          </a>
+        </div>
+      </div>
+      <div class_="py-4 flex items-center gap-8">
+        <a href="/" class_="text-2xl font-bold">(JSX.string "STORE")</a>
+        <div class_="flex-1 max-w-2xl">
+          <div class_="flex">
+            <select
+              class_="px-3 py-2 bg-gray-100 text-gray-900 rounded-l-lg \
+                      border-r text-sm">
+              <option>(JSX.string "All Categories")</option>
+            </select>
+            <input
+              type_="search"
+              placeholder="Search products..."
+              class_="flex-1 px-4 py-2 text-gray-900"
+            />
+            <button
+              class_="px-6 py-2 bg-yellow-400 text-gray-900 rounded-r-lg \
+                      font-medium hover:bg-yellow-500">
+              (JSX.string "Search")
+            </button>
+          </div>
+        </div>
+        <div class_="flex items-center gap-6">
+          <a
+            href="/account"
+            class_="flex flex-col items-center text-xs hover:text-gray-300">
+            <span class_="text-lg">(JSX.string "👤")</span>
+            (JSX.string "Account")
+          </a>
+          <a
+            href="/orders"
+            class_="flex flex-col items-center text-xs hover:text-gray-300">
+            <span class_="text-lg">(JSX.string "📦")</span> (JSX.string "Orders")
+          </a>
+          <a
+            href="/cart"
+            class_="flex flex-col items-center text-xs hover:text-gray-300 \
+                    relative">
+            <span class_="text-lg">(JSX.string "🛒")</span>
+            (JSX.string "Cart")
+            <span
+              class_="absolute -top-1 -right-1 bg-yellow-400 text-gray-900 \
+                      text-xs rounded-full w-5 h-5 flex items-center \
+                      justify-center font-medium">
+              (JSX.string "3")
+            </span>
+          </a>
+        </div>
+      </div>
+      <nav class_="py-2 flex gap-6 text-sm">
+        (JSX.list
+           (List.map
+              (fun item ->
+                <a href="#" class_="hover:text-gray-300">(JSX.string item)</a>)
+              [
+                "Today's Deals";
+                "Customer Service";
+                "Registry";
+                "Gift Cards";
+                "Sell";
+              ]))
+      </nav>
+    </div>
+  </header>
+
+let page ~products =
+  <html lang="en">
+    <head>
+      <meta charset="utf-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1" />
+      <title>(JSX.string "Shop - Products")</title>
+    </head>
+    <body class_="bg-gray-100 min-h-screen">
+      (header ())
+      <div class_="container mx-auto px-4 py-4">
+        <nav class_="text-sm text-gray-500">
+          <a href="/" class_="hover:text-gray-700">(JSX.string "Home")</a>
+          (JSX.string " / ")
+          <a href="/products" class_="hover:text-gray-700">
+            (JSX.string "Products")
+          </a>
+          (JSX.string " / ")
+          <span class_="text-gray-900">(JSX.string "All")</span>
+        </nav>
+      </div>
+      <main class_="container mx-auto px-4 py-6">
+        <div class_="flex gap-8">
+          (filter_sidebar ()) (product_grid ~products)
+        </div>
+      </main>
+      <footer class_="bg-gray-900 text-white mt-12 py-12">
+        <div class_="container mx-auto px-4">
+          <div class_="grid grid-cols-4 gap-8">
+            (JSX.list
+               (List.map
+                  (fun (title, links) ->
+                    <div>
+                      <h4 class_="font-medium mb-4">(JSX.string title)</h4>
+                      <ul class_="space-y-2 text-sm text-gray-400">
+                        (JSX.list
+                           (List.map
+                              (fun link ->
+                                <li>
+                                  <a href="#" class_="hover:text-white">
+                                    (JSX.string link)
+                                  </a>
+                                </li>)
+                              links))
+                      </ul>
+                    </div>)
+                  [
+                    ("Get to Know Us", [ "Careers"; "Blog"; "About" ]);
+                    ("Make Money with Us", [ "Sell"; "Affiliate"; "Advertise" ]);
+                    ("Payment Products", [ "Business Card"; "Shop with Points" ]);
+                    ("Let Us Help You", [ "Your Account"; "Returns"; "Help" ]);
+                  ]))
+          </div>
+        </div>
+      </footer>
+    </body>
+  </html>
+
+let products_24 = generate_products 24
+let products_48 = generate_products 48
+let products_100 = generate_products 100
+let ecommerce_24 () = page ~products:products_24
+let ecommerce_48 () = page ~products:products_48
+let ecommerce_100 () = page ~products:products_100
+let make () = ecommerce_48 ()
+let render () = JSX.render (make ())
