@@ -1,15 +1,11 @@
 (* Benchmark comparison tool
-   
+
    Usage:
      compare_results baseline.json new.json           # Human-readable output
      compare_results --markdown baseline.json new.json # Markdown for PR comments
 *)
 
-type result = {
-  name : string;
-  latency_us : float;
-  ops_sec : float; [@warning "-69"]
-}
+type result = { name : string; latency_us : float }
 
 (* Parse JSON benchmark results file *)
 let parse_json_file filename =
@@ -23,7 +19,6 @@ let parse_json_file filename =
   (* Track current object's fields *)
   let current_name = ref None in
   let current_latency = ref None in
-  let current_ops = ref None in
 
   let extract_string_value line key =
     try
@@ -72,17 +67,12 @@ let parse_json_file filename =
       (match extract_float_value line "latency_us" with
       | Some l -> current_latency := Some l
       | None -> ());
-      (* Check for ops_sec field *)
-      (match extract_float_value line "ops_sec" with
-      | Some o -> current_ops := Some o
-      | None -> ());
       (* If we have all fields, create result *)
-      match (!current_name, !current_latency, !current_ops) with
-      | Some name, Some latency_us, Some ops_sec ->
-          results := { name; latency_us; ops_sec } :: !results;
+      match (!current_name, !current_latency) with
+      | Some name, Some latency_us ->
+          results := { name; latency_us } :: !results;
           current_name := None;
-          current_latency := None;
-          current_ops := None
+          current_latency := None
       | _ -> ())
     lines;
 
