@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1766067286590,
+  "lastUpdate": 1771868571659,
   "repoUrl": "https://github.com/davesnx/html_of_jsx",
   "entries": {
     "html_of_jsx Benchmarks": [
@@ -677,6 +677,90 @@ window.BENCHMARK_DATA = {
           {
             "name": "escape (dirty)",
             "value": 7292166.49,
+            "unit": "ops/sec"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "dsnxmoreno@gmail.com",
+            "name": "David Sancho",
+            "username": "davesnx"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "e3fa4bce6b0eee909ea1a2c6b569f463be429fbf",
+          "message": "Merge pull request #40 from davesnx/Implement-polyvariants-as-attributes\n\nImplement polyvariants as attributes",
+          "timestamp": "2026-02-23T18:32:09+01:00",
+          "tree_id": "86e6d8c0c59c6e347fbf132b9bb2717d3e3bafa7",
+          "url": "https://github.com/davesnx/html_of_jsx/commit/e3fa4bce6b0eee909ea1a2c6b569f463be429fbf"
+        },
+        "date": 1771868571277,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Trivial",
+            "value": 31150096.64,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Dashboard",
+            "value": 14525.47,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Blog (50 comments)",
+            "value": 1957.02,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Table (100 rows)",
+            "value": 1586.76,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "E-commerce",
+            "value": 2093.12,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Form",
+            "value": 18880.62,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Deep tree (50)",
+            "value": 15670.21,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Wide tree (100)",
+            "value": 4007.71,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Shallow tree",
+            "value": 73088.41,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Props heavy",
+            "value": 3308.35,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "escape (clean)",
+            "value": 22219013.6,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "escape (dirty)",
+            "value": 6655067.59,
             "unit": "ops/sec"
           }
         ]
