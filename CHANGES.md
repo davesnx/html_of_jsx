@@ -1,6 +1,6 @@
 # Changes
 
-## Unreleased
+## 0.0.8
 
 - Remove temporal string on each JSX.escape, and make escape faster (#9c64ba4)
 - Skip escape for Int/Float attribute values (#8e8cf26)
