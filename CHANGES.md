@@ -5,6 +5,8 @@
 - Remove temporal string on each JSX.escape, and make escape faster (#9c64ba4)
 - Skip escape for Int/Float attribute values (#8e8cf26)
 - Adds JSX.array (#3154012)
+- Add `Polyvariant` attribute type for type-safe enumerated HTML attributes (e.g. `target`, `loading`, `dir`, `role`, ARIA attributes, SVG attributes)
+- Add polyvariant validation test suite (keyword escaping, identifier validity, consistency checks)
 
 ## 0.0.7
 
