@@ -78,6 +78,17 @@ If this is not correct, please open an issue at %s|}
 If this is not correct, please open an issue at %s.|}
         name id suggestion issues_url
 
+let build_polyvariant_type ~loc options =
+  let row_fields =
+    List.map options ~f:(fun (opt : Html_attributes.polyvariant) ->
+        {
+          prf_desc = Rtag ({ loc; txt = opt.type_ }, true, []);
+          prf_loc = loc;
+          prf_attributes = [];
+        })
+  in
+  ptyp_variant ~loc row_fields Closed None
+
 let add_attribute_type_constraint ~loc ~is_optional
     (type_ : Html_attributes.kind) value =
   match (type_, is_optional) with
@@ -89,9 +100,36 @@ let add_attribute_type_constraint ~loc ~is_optional
   | Bool, true -> [%expr ([%e value] : bool option)]
   | BooleanishString, false -> [%expr ([%e value] : bool)]
   | BooleanishString, true -> [%expr ([%e value] : bool option)]
-  (* We treat `Style` as string *)
-  | Style, false -> [%expr ([%e value] : string)]
-  | Style, true -> [%expr ([%e value] : string option)]
+  | Polyvariant options, false ->
+      let poly_type = build_polyvariant_type ~loc options in
+      pexp_constraint ~loc value poly_type
+  | Polyvariant options, true ->
+      let poly_type = build_polyvariant_type ~loc options in
+      let option_type =
+        ptyp_constr ~loc { loc; txt = Lident "option" } [ poly_type ]
+      in
+      pexp_constraint ~loc value option_type
+
+let polyvariant_to_string_match ~loc options scrutinee =
+  let poly_type = build_polyvariant_type ~loc options in
+  let constrained = pexp_constraint ~loc scrutinee poly_type in
+  let cases =
+    List.map options ~f:(fun (opt : Html_attributes.polyvariant) ->
+        case
+          ~lhs:(ppat_variant ~loc opt.type_ None)
+          ~guard:None ~rhs:(estring ~loc opt.jsxName))
+  in
+  let match_expr = pexp_match ~loc constrained cases in
+  {
+    match_expr with
+    pexp_attributes =
+      {
+        attr_name = { loc; txt = "warning" };
+        attr_payload = PStr [ pstr_eval ~loc (estring ~loc "-8") [] ];
+        attr_loc = loc;
+      }
+      :: match_expr.pexp_attributes;
+  }
 
 let make_attribute ~loc ~is_optional ~prop attribute_name attribute_value =
   let open Html_attributes in
@@ -134,13 +172,19 @@ let make_attribute ~loc ~is_optional ~prop attribute_name attribute_value =
         Stdlib.Option.map
           (fun v -> ([%e attribute_name], `String v))
           (Bool.to_string [%e attribute_value])]
-  | Rich_attribute { type_ = Style; _ }, false
-  | Attribute { type_ = Style; _ }, false ->
-      [%expr Some ("style", `String [%e attribute_value])]
-  | Rich_attribute { type_ = Style; _ }, true
-  | Attribute { type_ = Style; _ }, true ->
+  | Rich_attribute { type_ = Polyvariant options; _ }, false
+  | Attribute { type_ = Polyvariant options; _ }, false ->
+      let match_expr =
+        polyvariant_to_string_match ~loc options attribute_value
+      in
+      [%expr Some ([%e attribute_name], `String [%e match_expr])]
+  | Rich_attribute { type_ = Polyvariant options; _ }, true
+  | Attribute { type_ = Polyvariant options; _ }, true ->
+      let match_expr = polyvariant_to_string_match ~loc options [%expr v] in
       [%expr
-        Stdlib.Option.map (fun v -> ("style", `String v)) [%e attribute_value]]
+        Stdlib.Option.map
+          (fun v -> ([%e attribute_name], `String [%e match_expr]))
+          [%e attribute_value]]
   | Event _, false ->
       [%expr Some ([%e attribute_name], `String [%e attribute_value])]
   | Event _, true ->
@@ -283,7 +327,9 @@ let generate_dynamic_attrs_static_children_code ~loc analysis =
           | Html_attributes.BooleanishString ->
               [%expr
                 Buffer.add_string [%e buf_ident] (Bool.to_string [%e expr])]
-          | Html_attributes.Style -> [%expr JSX.escape [%e buf_ident] [%e expr]]
+          | Html_attributes.Polyvariant options ->
+              let match_expr = polyvariant_to_string_match ~loc options expr in
+              [%expr Buffer.add_string [%e buf_ident] [%e match_expr]]
         in
         [%expr
           Buffer.add_char [%e buf_ident] ' ';
@@ -390,7 +436,11 @@ let generate_optional_attrs_code ~loc analysis =
               [%expr Buffer.add_string [%e buf_ident] (Bool.to_string v)]
           | Html_attributes.BooleanishString ->
               [%expr Buffer.add_string [%e buf_ident] (Bool.to_string v)]
-          | Html_attributes.Style -> [%expr JSX.escape [%e buf_ident] v]
+          | Html_attributes.Polyvariant options ->
+              let match_expr =
+                polyvariant_to_string_match ~loc options [%expr v]
+              in
+              [%expr Buffer.add_string [%e buf_ident] [%e match_expr]]
         in
         [%expr
           match [%e expr] with

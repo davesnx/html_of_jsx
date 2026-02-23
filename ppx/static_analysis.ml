@@ -166,7 +166,23 @@ let analyze_attribute ~tag_name (label, expr) : attr_analysis_result =
       match validate_attr_for_static ~tag_name name with
       | Invalid_attr -> Invalid
       | Valid_attr info -> (
-          match extract_static_attr_value expr with
+          let static_value =
+            match info.kind with
+            | Html_attributes.Polyvariant options -> (
+                match expr.pexp_desc with
+                | Pexp_variant (constructor, None) -> (
+                    match
+                      List.find_opt
+                        (fun (opt : Html_attributes.polyvariant) ->
+                          opt.type_ = constructor)
+                        options
+                    with
+                    | Some opt -> Some (Static_string opt.jsxName)
+                    | None -> None)
+                | _ -> None)
+            | _ -> extract_static_attr_value expr
+          in
+          match static_value with
           | Some value -> Ok (Some (Static_attr (info, value)))
           | None -> Ok (Some (Dynamic_attr (info, expr)))))
 

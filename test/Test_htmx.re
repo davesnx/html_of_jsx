@@ -65,7 +65,7 @@ let ws_complete =
     assert_string(
       JSX.render(
         <div hx_ext="ws" ws_connect="/chat">
-          <form ws_send=true> <input type_="text" name="message" /> </form>
+          <form ws_send=true> <input type_=`text name="message" /> </form>
         </div>,
       ),
       {|<div hx-ext="ws" ws-connect="/chat"><form ws-send><input type="text" name="message" /></form></div>|},
@@ -149,6 +149,38 @@ let loading_states_target =
     )
   });
 
+let hx_swap_polyvariant =
+  test("hx_swap_polyvariant", () => {
+    assert_string(
+      JSX.render(<div hx_swap=`innerHTML />),
+      {|<div hx-swap="innerHTML"></div>|},
+    )
+  });
+
+let hx_swap_polyvariant_dynamic =
+  test("hx_swap_polyvariant_dynamic", () => {
+    let swap = `outerHTML;
+    assert_string(
+      JSX.render(<div hx_swap=swap />),
+      {|<div hx-swap="outerHTML"></div>|},
+    );
+  });
+
+let hx_swap_polyvariant_opt_some =
+  test("hx_swap_polyvariant_opt_some", () => {
+    let hx_swap = Some(`afterbegin);
+    assert_string(
+      JSX.render(<div ?hx_swap />),
+      {|<div hx-swap="afterbegin"></div>|},
+    );
+  });
+
+let hx_swap_polyvariant_opt_none =
+  test("hx_swap_polyvariant_opt_none", () => {
+    let hx_swap = None;
+    assert_string(JSX.render(<div ?hx_swap />), {|<div></div>|});
+  });
+
 let tests = (
   "Htmx",
   [
@@ -175,5 +207,10 @@ let tests = (
     loading_states_disable,
     loading_states_delay,
     loading_states_target,
+    /* Polyvariant typed attributes */
+    hx_swap_polyvariant,
+    hx_swap_polyvariant_dynamic,
+    hx_swap_polyvariant_opt_some,
+    hx_swap_polyvariant_opt_none,
   ],
 );

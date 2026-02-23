@@ -246,7 +246,7 @@ let sidebar () =
           (JSX.string "Get weekly insights delivered to your inbox.")
         </p>
         <input
-          type_="email"
+          type_=`email
           placeholder="your@email.com"
           class_="w-full px-4 py-2 rounded-lg text-gray-900 mb-3"
         />
