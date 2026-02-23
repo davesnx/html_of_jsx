@@ -19,7 +19,7 @@ let bool_attribute =
 let bool_attributes =
   test("bool_attributes", () => {
     let input =
-      <input type_="checkbox" name="cheese" checked=true disabled=false />;
+      <input type_=`checkbox name="cheese" checked=true disabled=false />;
     assert_string(
       JSX.render(input),
       {|<input type="checkbox" name="cheese" checked />|},

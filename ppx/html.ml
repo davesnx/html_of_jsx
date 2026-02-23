@@ -7,14 +7,157 @@ open Html_attributes
    Since @@@ocamlformat "margin=300" is not possible, we disable it entirely. *)
 
 (* https://developer.mozilla.org/en-US/docs/Web/HTML/Element/a#referrerpolicy *)
-let attributeReferrerPolicy = String
-(* | Empty | NoReferrer | NoReferrerWhenDowngrade | Origin |
-   OriginWhencrossorigin | OriginWhenCrossOrigin | SameOrigin | StrictOrigin |
-   StrictOriginWhenCrossOrigin | UnsafeUrl *)
+let referrerPolicy = Polyvariant [
+  { type_ = "no_referrer"; jsxName = "no-referrer" };
+  { type_ = "no_referrer_when_downgrade"; jsxName = "no-referrer-when-downgrade" };
+  { type_ = "origin"; jsxName = "origin" };
+  { type_ = "origin_when_cross_origin"; jsxName = "origin-when-cross-origin" };
+  { type_ = "same_origin"; jsxName = "same-origin" };
+  { type_ = "strict_origin"; jsxName = "strict-origin" };
+  { type_ = "strict_origin_when_cross_origin"; jsxName = "strict-origin-when-cross-origin" };
+  { type_ = "unsafe_url"; jsxName = "unsafe-url" };
+]
 
-(* https://developer.mozilla.org/en-US/docs/Web/HTML/Element/a#target *)
-let attributeAnchorTarget = String
-(* | Self | Blank | Parent | Top | Custom of String *)
+(* https://developer.mozilla.org/en-US/docs/Web/HTML/Element/img#loading *)
+let loading = Polyvariant [
+  { type_ = "lazy_"; jsxName = "lazy" };
+  { type_ = "eager"; jsxName = "eager" };
+]
+
+(* https://developer.mozilla.org/en-US/docs/Web/HTML/Element/img#fetchpriority *)
+let fetchpriority = Polyvariant [
+  { type_ = "high"; jsxName = "high" };
+  { type_ = "low"; jsxName = "low" };
+  { type_ = "auto"; jsxName = "auto" };
+]
+
+(* https://developer.mozilla.org/en-US/docs/Web/HTML/Element/button#popovertargetaction *)
+let popovertargetaction = Polyvariant [
+  { type_ = "hide"; jsxName = "hide" };
+  { type_ = "show"; jsxName = "show" };
+  { type_ = "toggle"; jsxName = "toggle" };
+]
+
+(* https://developer.mozilla.org/en-US/docs/Web/HTML/Element/td#align *)
+let align = Polyvariant [
+  { type_ = "left"; jsxName = "left" };
+  { type_ = "center"; jsxName = "center" };
+  { type_ = "right"; jsxName = "right" };
+  { type_ = "justify"; jsxName = "justify" };
+  { type_ = "char"; jsxName = "char" };
+]
+
+(* https://developer.mozilla.org/en-US/docs/Web/HTML/Element/th#scope *)
+let scope = Polyvariant [
+  { type_ = "row"; jsxName = "row" };
+  { type_ = "col"; jsxName = "col" };
+  { type_ = "rowgroup"; jsxName = "rowgroup" };
+  { type_ = "colgroup"; jsxName = "colgroup" };
+]
+
+(* https://developer.mozilla.org/en-US/docs/Web/HTML/Element/link#blocking *)
+let blocking = Polyvariant [
+  { type_ = "render"; jsxName = "render" };
+]
+
+(* https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/type *)
+let inputType = Polyvariant [
+  { type_ = "button"; jsxName = "button" };
+  { type_ = "checkbox"; jsxName = "checkbox" };
+  { type_ = "color"; jsxName = "color" };
+  { type_ = "date"; jsxName = "date" };
+  { type_ = "datetime_local"; jsxName = "datetime-local" };
+  { type_ = "email"; jsxName = "email" };
+  { type_ = "file"; jsxName = "file" };
+  { type_ = "hidden"; jsxName = "hidden" };
+  { type_ = "image"; jsxName = "image" };
+  { type_ = "month"; jsxName = "month" };
+  { type_ = "number"; jsxName = "number" };
+  { type_ = "password"; jsxName = "password" };
+  { type_ = "radio"; jsxName = "radio" };
+  { type_ = "range"; jsxName = "range" };
+  { type_ = "reset"; jsxName = "reset" };
+  { type_ = "search"; jsxName = "search" };
+  { type_ = "submit"; jsxName = "submit" };
+  { type_ = "tel"; jsxName = "tel" };
+  { type_ = "text"; jsxName = "text" };
+  { type_ = "time"; jsxName = "time" };
+  { type_ = "url"; jsxName = "url" };
+  { type_ = "week"; jsxName = "week" };
+]
+
+(* https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Roles *)
+let ariaRole = Polyvariant [
+  { type_ = "alert"; jsxName = "alert" };
+  { type_ = "alertdialog"; jsxName = "alertdialog" };
+  { type_ = "application"; jsxName = "application" };
+  { type_ = "article"; jsxName = "article" };
+  { type_ = "banner"; jsxName = "banner" };
+  { type_ = "button"; jsxName = "button" };
+  { type_ = "cell"; jsxName = "cell" };
+  { type_ = "checkbox"; jsxName = "checkbox" };
+  { type_ = "columnheader"; jsxName = "columnheader" };
+  { type_ = "combobox"; jsxName = "combobox" };
+  { type_ = "complementary"; jsxName = "complementary" };
+  { type_ = "contentinfo"; jsxName = "contentinfo" };
+  { type_ = "definition"; jsxName = "definition" };
+  { type_ = "dialog"; jsxName = "dialog" };
+  { type_ = "directory"; jsxName = "directory" };
+  { type_ = "document"; jsxName = "document" };
+  { type_ = "feed"; jsxName = "feed" };
+  { type_ = "figure"; jsxName = "figure" };
+  { type_ = "form"; jsxName = "form" };
+  { type_ = "grid"; jsxName = "grid" };
+  { type_ = "gridcell"; jsxName = "gridcell" };
+  { type_ = "group"; jsxName = "group" };
+  { type_ = "heading"; jsxName = "heading" };
+  { type_ = "img"; jsxName = "img" };
+  { type_ = "link"; jsxName = "link" };
+  { type_ = "list"; jsxName = "list" };
+  { type_ = "listbox"; jsxName = "listbox" };
+  { type_ = "listitem"; jsxName = "listitem" };
+  { type_ = "log"; jsxName = "log" };
+  { type_ = "main"; jsxName = "main" };
+  { type_ = "marquee"; jsxName = "marquee" };
+  { type_ = "math"; jsxName = "math" };
+  { type_ = "menu"; jsxName = "menu" };
+  { type_ = "menubar"; jsxName = "menubar" };
+  { type_ = "menuitem"; jsxName = "menuitem" };
+  { type_ = "menuitemcheckbox"; jsxName = "menuitemcheckbox" };
+  { type_ = "menuitemradio"; jsxName = "menuitemradio" };
+  { type_ = "navigation"; jsxName = "navigation" };
+  { type_ = "none"; jsxName = "none" };
+  { type_ = "note"; jsxName = "note" };
+  { type_ = "option"; jsxName = "option" };
+  { type_ = "presentation"; jsxName = "presentation" };
+  { type_ = "progressbar"; jsxName = "progressbar" };
+  { type_ = "radio"; jsxName = "radio" };
+  { type_ = "radiogroup"; jsxName = "radiogroup" };
+  { type_ = "region"; jsxName = "region" };
+  { type_ = "row"; jsxName = "row" };
+  { type_ = "rowgroup"; jsxName = "rowgroup" };
+  { type_ = "rowheader"; jsxName = "rowheader" };
+  { type_ = "scrollbar"; jsxName = "scrollbar" };
+  { type_ = "search"; jsxName = "search" };
+  { type_ = "searchbox"; jsxName = "searchbox" };
+  { type_ = "separator"; jsxName = "separator" };
+  { type_ = "slider"; jsxName = "slider" };
+  { type_ = "spinbutton"; jsxName = "spinbutton" };
+  { type_ = "status"; jsxName = "status" };
+  { type_ = "switch"; jsxName = "switch" };
+  { type_ = "tab"; jsxName = "tab" };
+  { type_ = "table"; jsxName = "table" };
+  { type_ = "tablist"; jsxName = "tablist" };
+  { type_ = "tabpanel"; jsxName = "tabpanel" };
+  { type_ = "term"; jsxName = "term" };
+  { type_ = "textbox"; jsxName = "textbox" };
+  { type_ = "timer"; jsxName = "timer" };
+  { type_ = "toolbar"; jsxName = "toolbar" };
+  { type_ = "tooltip"; jsxName = "tooltip" };
+  { type_ = "tree"; jsxName = "tree" };
+  { type_ = "treegrid"; jsxName = "treegrid" };
+  { type_ = "treeitem"; jsxName = "treeitem" };
+]
 
 (* https://developer.mozilla.org/en-US/docs/Web/Events/Event_handlers *)
 let globalEventHandlers =
@@ -237,7 +380,7 @@ let ariaAttributes =
     (* Indicates whether inputting text could trigger display of one or more predictions of the user's intended value for an input and specifies how predictions would be
      * presented if they are made.
      *)
-    Attribute { name = "aria-autocomplete"; jsxName = "aria_autocomplete"; type_ = String (* 'none' | 'inline' | 'list' | 'both' *) };
+    Attribute { name = "aria-autocomplete"; jsxName = "aria_autocomplete"; type_ = Polyvariant [{ type_ = "none"; jsxName = "none" }; { type_ = "inline"; jsxName = "inline" }; { type_ = "list"; jsxName = "list" }; { type_ = "both"; jsxName = "both" }] };
 
     (* Indicates an element is being modified and that assistive technologies
        MAY want to wait until the modifications are complete before exposing
@@ -248,7 +391,7 @@ let ariaAttributes =
     widgets.
     * @see aria-pressed @see aria-selected.
     *)
-    Attribute { name = "aria-checked"; jsxName = "aria_checked"; type_ = String (* Bool | 'false' | 'mixed' | 'true' *) };
+    Attribute { name = "aria-checked"; jsxName = "aria_checked"; type_ = Polyvariant [{ type_ = "false_"; jsxName = "false" }; { type_ = "mixed"; jsxName = "mixed" }; { type_ = "true_"; jsxName = "true" }] };
 
     (* Defines the total number of columns in a table, grid, or treegrid.
     * @see aria-colindex.
@@ -273,7 +416,7 @@ let ariaAttributes =
 
     (* Indicates the element that represents the current item within a container
        or set of related elements. *)
-    Attribute { name = "aria-current"; jsxName = "aria_current"; type_ = String (* Bool | 'false' | 'true' | 'page' | 'step' | 'location' | 'date' | 'time' *) };
+    Attribute { name = "aria-current"; jsxName = "aria_current"; type_ = Polyvariant [{ type_ = "false_"; jsxName = "false" }; { type_ = "true_"; jsxName = "true" }; { type_ = "page"; jsxName = "page" }; { type_ = "step"; jsxName = "step" }; { type_ = "location"; jsxName = "location" }; { type_ = "date"; jsxName = "date" }; { type_ = "time"; jsxName = "time" }] };
 
     (* Identifies the element (or elements) that describes the object.
      * @see aria-labelledby
@@ -305,7 +448,7 @@ let ariaAttributes =
 
     (* Indicates the availability and type of interactive popup element, such as
        menu or dialog, that can be triggered by an element. *)
-    Attribute { name = "aria-haspopup"; jsxName = "aria_haspopup"; type_ = String (* Bool | 'false' | 'true' | 'menu' | 'listbox' | 'tree' | 'grid' | 'dialog'; *)};
+    Attribute { name = "aria-haspopup"; jsxName = "aria_haspopup"; type_ = Polyvariant [{ type_ = "false_"; jsxName = "false" }; { type_ = "true_"; jsxName = "true" }; { type_ = "menu"; jsxName = "menu" }; { type_ = "listbox"; jsxName = "listbox" }; { type_ = "tree"; jsxName = "tree" }; { type_ = "grid"; jsxName = "grid" }; { type_ = "dialog"; jsxName = "dialog" }] };
 
     (* Indicates whether the element is exposed to an accessibility API.
      * @see aria-disabled.
@@ -316,7 +459,7 @@ let ariaAttributes =
     application.
     * @see aria-errormessage.
     *)
-    Attribute { name = "aria-invalid"; jsxName = "aria_invalid"; type_ = String (* Bool | 'false' | 'true' | 'grammar' | 'spelling'; *) };
+    Attribute { name = "aria-invalid"; jsxName = "aria_invalid"; type_ = Polyvariant [{ type_ = "false_"; jsxName = "false" }; { type_ = "true_"; jsxName = "true" }; { type_ = "grammar"; jsxName = "grammar" }; { type_ = "spelling"; jsxName = "spelling" }] };
 
     (* Indicates keyboard shortcuts that an author has implemented to activate
        or give focus to an element. *)
@@ -338,7 +481,7 @@ let ariaAttributes =
     (* Indicates that an element will be updated, and describes the types of
        updates the user agents, assistive technologies, and user can expect ;rom
        the live region. *)
-    Attribute { name = "aria-live"; jsxName = "aria_live"; type_ = String (* 'off' | 'assertive' | 'polite' *) };
+    Attribute { name = "aria-live"; jsxName = "aria_live"; type_ = Polyvariant [{ type_ = "off"; jsxName = "off" }; { type_ = "assertive"; jsxName = "assertive" }; { type_ = "polite"; jsxName = "polite" }] };
 
     (* Indicates whether an element is modal when displayed. *)
 
@@ -354,7 +497,7 @@ let ariaAttributes =
 
     (* Indicates whether the element's orientation is horizontal, vertical, or
        unknown/ambiguous. *)
-    Attribute { name = "aria-orientation"; jsxName = "aria_orientation"; type_ = String (* 'horizontal' | 'vertical' *) };
+    Attribute { name = "aria-orientation"; jsxName = "aria_orientation"; type_ = Polyvariant [{ type_ = "horizontal"; jsxName = "horizontal" }; { type_ = "vertical"; jsxName = "vertical" }] };
 
     (* Identifies an element (or elements) in order to define a visual, functional, or contextual parent/child relationship
      * between DOM elements where the DOM hierarchy cannot be used to represent the relationship.
@@ -376,7 +519,7 @@ let ariaAttributes =
     (* Indicates the current "pressed" state of toggle buttons.
     * @see aria-checked @see aria-selected.
     *)
-    Attribute { name = "aria-pressed"; jsxName = "aria_pressed"; type_ = String (* Bool | 'false' | 'mixed' | 'true' *) };
+    Attribute { name = "aria-pressed"; jsxName = "aria_pressed"; type_ = Polyvariant [{ type_ = "false_"; jsxName = "false" }; { type_ = "mixed"; jsxName = "mixed" }; { type_ = "true_"; jsxName = "true" }] };
 
     (* Indicates that the element is not editable, but is otherwise
     operable.
@@ -431,7 +574,7 @@ let ariaAttributes =
 
     (* Indicates if items in a table or grid are sorted in ascending or
        descending order. *)
-    Attribute { name = "aria-sort"; jsxName = "aria_sort"; type_ = String (* 'none' | 'ascending' | 'descending' | 'other' *) };
+    Attribute { name = "aria-sort"; jsxName = "aria_sort"; type_ = Polyvariant [{ type_ = "none"; jsxName = "none" }; { type_ = "ascending"; jsxName = "ascending" }; { type_ = "descending"; jsxName = "descending" }; { type_ = "other"; jsxName = "other" }] };
 
     (* Defines the maximum allowed value for a range widget. *)
 
@@ -452,31 +595,17 @@ let ariaAttributes =
 
   ]
 
-(* https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Roles *)
-(* All the WAI-ARIA 1.1 role attribute values from
-   https://www.w3.org/TR/wai-aria-1.1/#role_definitions *)
-let ariaRole = String
-(* | Alert | Alertdialog | Application | Article | Banner | Button | Cell |
-   Checkbox | Columnheader | Combobox | Complementary | Contentinfo | Definition
-   | Dialog | Directory | Document | Feed | Figure | Form | Grid | Gridcell |
-   Group | Heading | Img | Link | List | Listbox | Listitem | Log | Main |
-   Marquee | Math | Menu | Menubar | Menuitem | Menuitemcheckbox | Menuitemradio
-   | Navigation | None | Note | Option | Presentation | Progressbar | Radio |
-   Radiogroup | Region | Row | Rowgroup | Rowheader | Scrollbar | Search |
-   Searchbox | Separator | Slider | Spinbutton | Status | Switch | Tab | Table |
-   Tablist | Tabpanel | Term | Textbox | Timer | Toolbar | Tooltip | Tree |
-   Treegrid | Treeitem | Custom of String *)
 
 (* https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes *)
 let globalAttributes =
   [
     (* Standard HTML Attributes *)
     Attribute { name = "accesskey"; jsxName = "accesskey"; type_ = String };
-    Attribute { name = "autocapitalize"; jsxName = "autocapitalize"; type_ = String };
+    Attribute { name = "autocapitalize"; jsxName = "autocapitalize"; type_ = Polyvariant [{ type_ = "off"; jsxName = "off" }; { type_ = "none"; jsxName = "none" }; { type_ = "on"; jsxName = "on" }; { type_ = "sentences"; jsxName = "sentences" }; { type_ = "words"; jsxName = "words" }; { type_ = "characters"; jsxName = "characters" }] };
     (* Attribute { name = "contextMenu"; jsxName = "contextMenu"; type_ = String }; *)
     Attribute { name = "class"; jsxName = "class_"; type_ = String };
     Attribute { name = "contenteditable"; jsxName = "contenteditable"; type_ = BooleanishString };
-    Attribute { name = "dir"; jsxName = "dir"; type_ = String };
+    Attribute { name = "dir"; jsxName = "dir"; type_ = Polyvariant [{ type_ = "ltr"; jsxName = "ltr" }; { type_ = "rtl"; jsxName = "rtl" }; { type_ = "auto"; jsxName = "auto" }] };
     Attribute { name = "draggable"; jsxName = "draggable"; type_ = BooleanishString };
     Attribute { name = "hidden"; jsxName = "hidden"; type_ = Bool };
     Attribute { name = "id"; jsxName = "id"; type_ = String };
@@ -491,19 +620,19 @@ let globalAttributes =
     Attribute { name = "nonce"; jsxName = "nonce"; type_ = String };
     Attribute { name = "slot"; jsxName = "slot"; type_ = String };
     Attribute { name = "spellcheck"; jsxName = "spellcheck"; type_ = BooleanishString };
-    Attribute { name = "style"; jsxName = "style"; type_ = Style };
+    Attribute { name = "style"; jsxName = "style"; type_ = String };
     Attribute { name = "tabindex"; jsxName = "tabindex"; type_ = Int };
-    Attribute { name = "enterkeyhint"; jsxName = "enterkeyhint"; type_ = String (* 'enter' | 'done' | 'go' | 'next' | 'previous' | 'search' | 'send' *) };
+    Attribute { name = "enterkeyhint"; jsxName = "enterkeyhint"; type_ = Polyvariant [{ type_ = "enter"; jsxName = "enter" }; { type_ = "done_"; jsxName = "done" }; { type_ = "go"; jsxName = "go" }; { type_ = "next"; jsxName = "next" }; { type_ = "previous"; jsxName = "previous" }; { type_ = "search"; jsxName = "search" }; { type_ = "send"; jsxName = "send" }] };
     (* data-* attributes are globaly available *)
     (* Experimental ; Attribute {name= "exportParts"; jsxName= "exportParts";
        type_= Int} *)
     Attribute { name = "title"; jsxName = "title"; type_ = String };
-    Attribute { name = "translate"; jsxName = "translate"; type_ = String (* 'yes' | 'no' *) };
+    Attribute { name = "translate"; jsxName = "translate"; type_ = Polyvariant [{ type_ = "yes"; jsxName = "yes" }; { type_ = "no"; jsxName = "no" }] };
 
     (* Living Standard * Hints at the type of data that might be entered by the
        user while editing the element or its contents * @see
        https://html.spec.whatwg.org/multipage/interaction.html#input-modalities:-the-inputmode-attribute *)
-    Attribute { name = "inputmode"; jsxName = "inputmode"; type_ = String (* 'none' | 'text' | 'tel' | 'url' | 'email' | 'numeric' | 'decimal' | 'search' *) };
+    Attribute { name = "inputmode"; jsxName = "inputmode"; type_ = Polyvariant [{ type_ = "none"; jsxName = "none" }; { type_ = "text"; jsxName = "text" }; { type_ = "tel"; jsxName = "tel" }; { type_ = "url"; jsxName = "url" }; { type_ = "email"; jsxName = "email" }; { type_ = "numeric"; jsxName = "numeric" }; { type_ = "decimal"; jsxName = "decimal" }; { type_ = "search"; jsxName = "search" }] };
 
     (* Specify that a standard HTML element should behave like a defined custom
        built-in element * @see
@@ -514,7 +643,7 @@ let globalAttributes =
     Attribute { name = "inert"; jsxName = "inert"; type_ = Bool };
 
     (* https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/popover *)
-    Attribute { name = "popover"; jsxName = "popover"; type_ = String (* 'auto' | 'manual' | 'hint' *) };
+    Attribute { name = "popover"; jsxName = "popover"; type_ = Polyvariant [{ type_ = "auto"; jsxName = "auto" }; { type_ = "manual"; jsxName = "manual" }; { type_ = "hint"; jsxName = "hint" }] };
 
     (* https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/autofocus *)
     Attribute { name = "autofocus"; jsxName = "autofocus"; type_ = Bool };
@@ -526,10 +655,10 @@ let globalAttributes =
     Attribute { name = "anchor"; jsxName = "anchor"; type_ = String };
 
     (* https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/virtualkeyboardpolicy *)
-    Attribute { name = "virtualkeyboardpolicy"; jsxName = "virtualkeyboardpolicy"; type_ = String (* 'auto' | 'manual' *) };
+    Attribute { name = "virtualkeyboardpolicy"; jsxName = "virtualkeyboardpolicy"; type_ = Polyvariant [{ type_ = "auto"; jsxName = "auto" }; { type_ = "manual"; jsxName = "manual" }] };
 
     (* https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/writingsuggestions *)
-    Attribute { name = "writingsuggestions"; jsxName = "writingsuggestions"; type_ = String (* 'true' | 'false' *) };
+    Attribute { name = "writingsuggestions"; jsxName = "writingsuggestions"; type_ = Polyvariant [{ type_ = "true_"; jsxName = "true" }; { type_ = "false_"; jsxName = "false" }] };
   ]
 
 (* https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes *)
@@ -567,9 +696,9 @@ let anchorHTMLAttributes =
     Attribute { name = "media"; jsxName = "media"; type_ = String };
     Attribute { name = "ping"; jsxName = "ping"; type_ = String };
     Attribute { name = "rel"; jsxName = "rel"; type_ = String };
-    Attribute { name = "target"; jsxName = "target"; type_ = attributeAnchorTarget };
+    Attribute { name = "target"; jsxName = "target"; type_ = Polyvariant [{ type_ = "_blank"; jsxName = "_blank" }; { type_ = "_self"; jsxName = "_self" }; { type_ = "_parent"; jsxName = "_parent" }; { type_ = "_top"; jsxName = "_top" }] };
     Attribute { name = "type"; jsxName = "type_"; type_ = String };
-    Attribute { name = "referrerpolicy"; jsxName = "referrerpolicy"; type_ = attributeReferrerPolicy };
+    Attribute { name = "referrerpolicy"; jsxName = "referrerpolicy"; type_ = referrerPolicy };
   ]
 
 (* https://developer.mozilla.org/en-US/docs/Web/HTML/Element/area *)
@@ -581,10 +710,10 @@ let areaHTMLAttributes =
     Attribute { name = "href"; jsxName = "href"; type_ = String };
     Attribute { name = "hreflang"; jsxName = "hreflang"; type_ = String };
     Attribute { name = "media"; jsxName = "media"; type_ = String };
-    Attribute { name = "referrerpolicy"; jsxName = "referrerpolicy"; type_ = attributeReferrerPolicy };
+    Attribute { name = "referrerpolicy"; jsxName = "referrerpolicy"; type_ = referrerPolicy };
     Attribute { name = "rel"; jsxName = "rel"; type_ = String };
     Attribute { name = "shape"; jsxName = "shape"; type_ = String };
-    Attribute { name = "target"; jsxName = "target"; type_ = String };
+    Attribute { name = "target"; jsxName = "target"; type_ = Polyvariant [{ type_ = "_blank"; jsxName = "_blank" }; { type_ = "_self"; jsxName = "_self" }; { type_ = "_parent"; jsxName = "_parent" }; { type_ = "_top"; jsxName = "_top" }] };
   ]
 
 (* https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base *)
@@ -612,10 +741,10 @@ let buttonHTMLAttributes =
     Attribute { name = "formnovalidate"; jsxName = "formnovalidate"; type_ = Bool };
     Attribute { name = "formtarget"; jsxName = "formtarget"; type_ = String };
     Attribute { name = "name"; jsxName = "name"; type_ = String };
-    Attribute { name = "type"; jsxName = "type_"; type_ = String (* 'submit' | 'reset' | 'button' *) };
+    Attribute { name = "type"; jsxName = "type_"; type_ = Polyvariant [{ type_ = "submit"; jsxName = "submit" }; { type_ = "reset"; jsxName = "reset" }; { type_ = "button"; jsxName = "button" }] };
     Attribute { name = "value"; jsxName = "value"; type_ = String (* | ReadonlyArray<String> | number *) };
     Attribute { name = "popovertarget"; jsxName = "popovertarget"; type_ = String };
-    Attribute { name = "popovertargetaction"; jsxName = "popovertargetaction"; type_ = String (* 'hide' | 'show' | 'toggle' *) };
+    Attribute { name = "popovertargetaction"; jsxName = "popovertargetaction"; type_ = popovertargetaction };
   ]
 
 (* https://developer.mozilla.org/en-US/docs/Web/HTML/Element/canvas *)
@@ -686,8 +815,8 @@ let formHTMLAttributes =
     Attribute { name = "accept-charset"; jsxName = "acceptCharset"; type_ = String };
     Attribute { name = "action"; jsxName = "action"; type_ = String };
     Attribute { name = "autocomplete"; jsxName = "autocomplete"; type_ = String };
-    Attribute { name = "enctype"; jsxName = "enctype"; type_ = String };
-    Attribute { name = "method"; jsxName = "method_"; type_ = String };
+    Attribute { name = "enctype"; jsxName = "enctype"; type_ = Polyvariant [{ type_ = "application_x_www_form_urlencoded"; jsxName = "application/x-www-form-urlencoded" }; { type_ = "multipart_form_data"; jsxName = "multipart/form-data" }; { type_ = "text_plain"; jsxName = "text/plain" }] };
+    Attribute { name = "method"; jsxName = "method_"; type_ = Polyvariant [{ type_ = "get"; jsxName = "get" }; { type_ = "post"; jsxName = "post" }; { type_ = "dialog"; jsxName = "dialog" }] };
     Attribute { name = "name"; jsxName = "name"; type_ = String };
     Attribute { name = "novalidate"; jsxName = "novalidate"; type_ = Bool };
     Attribute { name = "target"; jsxName = "target"; type_ = String };
@@ -709,11 +838,11 @@ let iframeHTMLAttributes =
     (* Attribute { name = "allowTransparency"; jsxName = "allowTransparency"; type_ = Bool }; *)
     (* deprecated *) Attribute { name = "frameborder"; jsxName = "frameborder"; type_ = String (* number | *) };
     Attribute { name = "height"; jsxName = "height"; type_ = String (* number | *) };
-    Attribute { name = "loading"; jsxName = "loading"; type_ = String (* "lazy" | "eager" *) };
+    Attribute { name = "loading"; jsxName = "loading"; type_ = loading };
     (* deprecated *) Attribute { name = "marginheight"; jsxName = "marginheight"; type_ = Int (* number *) };
     (* deprecated *) Attribute { name = "marginwidth"; jsxName = "marginwidth"; type_ = Int (* number *) };
     Attribute { name = "name"; jsxName = "name"; type_ = String };
-    Attribute { name = "referrerpolicy"; jsxName = "referrerpolicy"; type_ = attributeReferrerPolicy };
+    Attribute { name = "referrerpolicy"; jsxName = "referrerpolicy"; type_ = referrerPolicy };
     Attribute { name = "sandbox"; jsxName = "sandbox"; type_ = String };
     (* deprecated *) Attribute { name = "scrolling"; jsxName = "scrolling"; type_ = String };
     Attribute { name = "seamless"; jsxName = "seamless"; type_ = Bool };
@@ -727,11 +856,11 @@ let imgHTMLAttributes =
   [
     Attribute { name = "alt"; jsxName = "alt"; type_ = String };
     Attribute { name = "crossorigin"; jsxName = "crossorigin"; type_ = String (* "anonymous" | "use-credentials" | "" *) };
-    Attribute { name = "decoding"; jsxName = "decoding"; type_ = String (* "async" | "auto" | "sync" *) };
+    Attribute { name = "decoding"; jsxName = "decoding"; type_ = Polyvariant [{ type_ = "async"; jsxName = "async" }; { type_ = "auto"; jsxName = "auto" }; { type_ = "sync"; jsxName = "sync" }] };
     Attribute { name = "height"; jsxName = "height"; type_ = String (* number | *) };
-    Attribute { name = "loading"; jsxName = "loading"; type_ = String (* "lazy" | "eager" *) };
-    Attribute { name = "referrerpolicy"; jsxName = "referrerpolicy"; type_ = attributeReferrerPolicy };
-    Attribute { name = "fetchpriority"; jsxName = "fetchpriority"; type_ = String (* "high" | "low" | "auto" *) };
+    Attribute { name = "loading"; jsxName = "loading"; type_ = loading };
+    Attribute { name = "referrerpolicy"; jsxName = "referrerpolicy"; type_ = referrerPolicy };
+    Attribute { name = "fetchpriority"; jsxName = "fetchpriority"; type_ = fetchpriority };
     Attribute { name = "ismap"; jsxName = "ismap"; type_ = Bool };
     Attribute { name = "sizes"; jsxName = "sizes"; type_ = String };
     Attribute { name = "src"; jsxName = "src"; type_ = String };
@@ -746,13 +875,6 @@ let insHTMLAttributes =
     Attribute { name = "cite"; jsxName = "cite"; type_ = String };
     Attribute { name = "datetime"; jsxName = "datetime"; type_ = String };
   ]
-
-(* https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input#type *)
-let inputTypeAttribute = String
-(* | 'button' | 'checkbox' | 'color' | 'date' | 'datetime-local' | 'email' |
-   'file' | 'hidden' | 'image' | 'month' | 'number' | 'password' | 'radio' |
-   'range' | 'reset' | 'search' | 'submit' | 'tel' | 'text' | 'time' | 'url' |
-   'week' | (String @ {}); *)
 
 (* https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input *)
 let inputHTMLAttributes =
@@ -783,13 +905,13 @@ let inputHTMLAttributes =
     Attribute { name = "pattern"; jsxName = "pattern"; type_ = String };
     Attribute { name = "placeholder"; jsxName = "placeholder"; type_ = String };
     Attribute { name = "popovertarget"; jsxName = "popovertarget"; type_ = String };
-    Attribute { name = "popovertargetaction"; jsxName = "popovertargetaction"; type_ = String (* 'hide' | 'show' | 'toggle' *) };
+    Attribute { name = "popovertargetaction"; jsxName = "popovertargetaction"; type_ = popovertargetaction };
     Attribute { name = "readonly"; jsxName = "readonly"; type_ = Bool };
     Attribute { name = "required"; jsxName = "required"; type_ = Bool };
     Attribute { name = "size"; jsxName = "size"; type_ = Int (* number *) };
     Attribute { name = "src"; jsxName = "src"; type_ = String };
     Attribute { name = "step"; jsxName = "step"; type_ = String (* number | *) };
-    Attribute { name = "type"; jsxName = "type_"; type_ = inputTypeAttribute };
+    Attribute { name = "type"; jsxName = "type_"; type_ = inputType };
     Attribute { name = "value"; jsxName = "value"; type_ = String (* | ReadonlyArray<String> | number *) };
     Attribute { name = "width"; jsxName = "width"; type_ = String (* number | *) };
   ]
@@ -833,8 +955,8 @@ let linkHTMLAttributes =
     Attribute { name = "sizes"; jsxName = "sizes"; type_ = String };
     Attribute { name = "type"; jsxName = "type_"; type_ = String };
     Attribute { name = "charset"; jsxName = "charset"; type_ = String };
-    Attribute { name = "fetchpriority"; jsxName = "fetchpriority"; type_ = String (* "high" | "low" | "auto" *) };
-    Attribute { name = "blocking"; jsxName = "blocking"; type_ = String (* "render" *) };
+    Attribute { name = "fetchpriority"; jsxName = "fetchpriority"; type_ = fetchpriority };
+    Attribute { name = "blocking"; jsxName = "blocking"; type_ = blocking };
     Attribute { name = "disabled"; jsxName = "disabled"; type_ = Bool };
   ]
 
@@ -863,7 +985,7 @@ let mediaHTMLAttributes =
     (* Attribute { name = "mediaGroup"; jsxName = "mediaGroup"; type_ = String }; *)
     Attribute { name = "muted"; jsxName = "muted"; type_ = Bool };
     Attribute { name = "playsinline"; jsxName = "playsinline"; type_ = Bool };
-    Attribute { name = "preload"; jsxName = "preload"; type_ = String };
+    Attribute { name = "preload"; jsxName = "preload"; type_ = Polyvariant [{ type_ = "none"; jsxName = "none" }; { type_ = "metadata"; jsxName = "metadata" }; { type_ = "auto"; jsxName = "auto" }] };
     Attribute { name = "src"; jsxName = "src"; type_ = String };
   ]
 
@@ -973,10 +1095,10 @@ let scriptHTMLAttributes =
     Attribute { name = "nomodule"; jsxName = "nomodule"; type_ = Bool };
     Attribute { name = "nonce"; jsxName = "nonce"; type_ = String };
     Attribute { name = "src"; jsxName = "src"; type_ = String };
-    Attribute { name = "referrerpolicy"; jsxName = "referrerpolicy"; type_ = attributeReferrerPolicy };
+    Attribute { name = "referrerpolicy"; jsxName = "referrerpolicy"; type_ = referrerPolicy };
     Attribute { name = "type"; jsxName = "type_"; type_ = String };
-    Attribute { name = "blocking"; jsxName = "blocking"; type_ = String (* "render" *) };
-    Attribute { name = "fetchpriority"; jsxName = "fetchpriority"; type_ = String (* "high" | "low" | "auto" *) };
+    Attribute { name = "blocking"; jsxName = "blocking"; type_ = blocking };
+    Attribute { name = "fetchpriority"; jsxName = "fetchpriority"; type_ = fetchpriority };
   ]
 
 (* https://developer.mozilla.org/en-US/docs/Web/HTML/Element/select *)
@@ -1041,31 +1163,31 @@ let textareaHTMLAttributes =
     Attribute { name = "required"; jsxName = "required"; type_ = Bool };
     Attribute { name = "rows"; jsxName = "rows"; type_ = Int (* number *) };
     Attribute { name = "value"; jsxName = "value"; type_ = String (* | ReadonlyArray<String> | number *) };
-    Attribute { name = "wrap"; jsxName = "wrap"; type_ = String };
+    Attribute { name = "wrap"; jsxName = "wrap"; type_ = Polyvariant [{ type_ = "hard"; jsxName = "hard" }; { type_ = "soft"; jsxName = "soft" }] };
   ]
 
 (* https://developer.mozilla.org/en-US/docs/Web/HTML/Element/td *)
 let tdHTMLAttributes =
   [
-    Attribute { name = "align"; jsxName = "align"; type_ = String (* type_= "left" | "center" | "right" | "justify" | "char" *) };
+    Attribute { name = "align"; jsxName = "align"; type_ = align };
     Attribute { name = "colspan"; jsxName = "colspan"; type_ = Int (* number *) };
     Attribute { name = "headers"; jsxName = "headers"; type_ = String };
     Attribute { name = "rowspan"; jsxName = "rowspan"; type_ = Int (* number *) };
-    Attribute { name = "scope"; jsxName = "scope"; type_ = String };
+    Attribute { name = "scope"; jsxName = "scope"; type_ = scope };
     Attribute { name = "abbr"; jsxName = "abbr"; type_ = String };
     Attribute { name = "height"; jsxName = "height"; type_ = String (* number | *) };
     Attribute { name = "width"; jsxName = "width"; type_ = String (* number | *) };
-    Attribute { name = "valign"; jsxName = "valign"; type_ = String (* "top" | "middle" | "bottom" | "baseline" *) };
+    Attribute { name = "valign"; jsxName = "valign"; type_ = Polyvariant [{ type_ = "top"; jsxName = "top" }; { type_ = "middle"; jsxName = "middle" }; { type_ = "bottom"; jsxName = "bottom" }; { type_ = "baseline"; jsxName = "baseline" }] };
   ]
 
 (* https://developer.mozilla.org/en-US/docs/Web/HTML/Element/th *)
 let thHTMLAttributes =
   [
-    Attribute { name = "align"; jsxName = "align"; type_ = String (* "left" | "center" | "right" | "justify" | "char" *) };
+    Attribute { name = "align"; jsxName = "align"; type_ = align };
     Attribute { name = "colspan"; jsxName = "colspan"; type_ = Int (* number *) };
     Attribute { name = "headers"; jsxName = "headers"; type_ = String };
     Attribute { name = "rowspan"; jsxName = "rowspan"; type_ = Int (* number *) };
-    Attribute { name = "scope"; jsxName = "scope"; type_ = String };
+    Attribute { name = "scope"; jsxName = "scope"; type_ = scope };
     Attribute { name = "abbr"; jsxName = "abbr"; type_ = String };
   ]
 
@@ -1079,7 +1201,7 @@ let timeHTMLAttributes =
 let trackHTMLAttributes =
   [
     Attribute { name = "default"; jsxName = "default"; type_ = Bool };
-    Attribute { name = "kind"; jsxName = "kind"; type_ = String };
+    Attribute { name = "kind"; jsxName = "kind"; type_ = Polyvariant [{ type_ = "subtitles"; jsxName = "subtitles" }; { type_ = "captions"; jsxName = "captions" }; { type_ = "descriptions"; jsxName = "descriptions" }; { type_ = "chapters"; jsxName = "chapters" }; { type_ = "metadata"; jsxName = "metadata" }] };
     Attribute { name = "label"; jsxName = "label"; type_ = String };
     Attribute { name = "src"; jsxName = "src"; type_ = String };
     Attribute { name = "srclang"; jsxName = "srclang"; type_ = String };
@@ -1113,7 +1235,7 @@ module SVG = struct
   let stylingAttributes =
     [
       Attribute { name = "class"; jsxName = "class_"; type_ = String };
-      Attribute { name = "style"; jsxName = "style"; type_ = Style }
+      Attribute { name = "style"; jsxName = "style"; type_ = String }
     ]
 
   (* https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/Presentation *)
@@ -1135,14 +1257,14 @@ module SVG = struct
       Attribute { name = "textAnchor"; jsxName = "textAnchor"; type_ = String };
       Attribute { name = "transform"; jsxName = "transform"; type_ = String };
       Attribute { name = "transformOrigin"; jsxName = "transformOrigin"; type_ = String };
-      Attribute { name = "alignmentBaseline"; jsxName = "alignmentBaseline"; type_ = String (* "auto" | "baseline" | "before-edge" | "text-before-edge" | "middle" | "central" | "after-edge" "text-after-edge" | "ideographic" | "alphabetic" | "hanging" | "mathematical" | "inherit" *) };
-      Attribute { name = "clip-rule"; jsxName = "clipRule"; type_ = (* number | "linearRGB" | "inherit" *) String };
+      Attribute { name = "alignmentBaseline"; jsxName = "alignmentBaseline"; type_ = Polyvariant [{ type_ = "auto"; jsxName = "auto" }; { type_ = "baseline"; jsxName = "baseline" }; { type_ = "before_edge"; jsxName = "before-edge" }; { type_ = "text_before_edge"; jsxName = "text-before-edge" }; { type_ = "middle"; jsxName = "middle" }; { type_ = "central"; jsxName = "central" }; { type_ = "after_edge"; jsxName = "after-edge" }; { type_ = "text_after_edge"; jsxName = "text-after-edge" }; { type_ = "ideographic"; jsxName = "ideographic" }; { type_ = "alphabetic"; jsxName = "alphabetic" }; { type_ = "hanging"; jsxName = "hanging" }; { type_ = "mathematical"; jsxName = "mathematical" }; { type_ = "inherit_"; jsxName = "inherit" }] };
+      Attribute { name = "clip-rule"; jsxName = "clipRule"; type_ = Polyvariant [{ type_ = "nonzero"; jsxName = "nonzero" }; { type_ = "evenodd"; jsxName = "evenodd" }; { type_ = "inherit_"; jsxName = "inherit" }] };
       Attribute { name = "colorProfile"; jsxName = "colorProfile"; type_ = String (* number | *) };
       Attribute { name = "direction"; jsxName = "direction"; type_ = String (* number | *) };
       Attribute { name = "display"; jsxName = "display"; type_ = String (* number | *) };
       Attribute { name = "divisor"; jsxName = "divisor"; type_ = String (* number | *) };
       Attribute { name = "fillOpacity"; jsxName = "fillOpacity"; type_ = String (* number | *) };
-      Attribute { name = "fill-rule"; jsxName = "fillRule"; type_ = String (* type_= "nonzero" | "evenodd" | "inherit" *) };
+      Attribute { name = "fill-rule"; jsxName = "fillRule"; type_ = Polyvariant [{ type_ = "nonzero"; jsxName = "nonzero" }; { type_ = "evenodd"; jsxName = "evenodd" }; { type_ = "inherit_"; jsxName = "inherit" }] };
       Attribute { name = "floodColor"; jsxName = "floodColor"; type_ = String (* number | *) };
       Attribute { name = "floodOpacity"; jsxName = "floodOpacity"; type_ = String (* number | *) };
       Attribute { name = "fontSize"; jsxName = "fontSize"; type_ = String (* number | *) };
@@ -1158,8 +1280,8 @@ module SVG = struct
       Attribute { name = "operator"; jsxName = "operator"; type_ = String (* number | *) };
       Attribute { name = "overflow"; jsxName = "overflow"; type_ = String (* number | *) };
       Attribute { name = "stop-opacity"; jsxName = "stopOpacity"; type_ = String (* number | *) };
-      Attribute { name = "stroke-linecap"; jsxName = "strokeLinecap"; type_ = String (* type_= "butt" | "round" | "square" | "inherit" *) };
-      Attribute { name = "stroke-linejoin"; jsxName = "strokeLinejoin"; type_ = String (* type_= "arcs" | "bevel" | "miter" | "miter-clip" | "round" *) };
+      Attribute { name = "stroke-linecap"; jsxName = "strokeLinecap"; type_ = Polyvariant [{ type_ = "butt"; jsxName = "butt" }; { type_ = "round"; jsxName = "round" }; { type_ = "square"; jsxName = "square" }; { type_ = "inherit_"; jsxName = "inherit" }] };
+      Attribute { name = "stroke-linejoin"; jsxName = "strokeLinejoin"; type_ = Polyvariant [{ type_ = "arcs"; jsxName = "arcs" }; { type_ = "bevel"; jsxName = "bevel" }; { type_ = "miter"; jsxName = "miter" }; { type_ = "miter_clip"; jsxName = "miter-clip" }; { type_ = "round"; jsxName = "round" }] };
       Attribute { name = "unicodeBidi"; jsxName = "unicodeBidi"; type_ = String (* number | *) };
       Attribute { name = "vectorEffect"; jsxName = "vectorEffect"; type_ = String (* number | *) };
       Attribute { name = "wordSpacing"; jsxName = "wordSpacing"; type_ = String (* number | *) };
@@ -1213,8 +1335,8 @@ module SVG = struct
       Attribute { name = "by"; jsxName = "by"; type_ = String (* number | *) };
 
       (* Animation addition attributes *)
-      Attribute { name = "accumulate"; jsxName = "accumulate"; type_ = String (* type_= "none" | "sum" *) };
-      Attribute { name = "additive"; jsxName = "additive"; type_ = String (* type_= "replace" | "sum" *) };
+      Attribute { name = "accumulate"; jsxName = "accumulate"; type_ = Polyvariant [{ type_ = "none"; jsxName = "none" }; { type_ = "sum"; jsxName = "sum" }] };
+      Attribute { name = "additive"; jsxName = "additive"; type_ = Polyvariant [{ type_ = "replace"; jsxName = "replace" }; { type_ = "sum"; jsxName = "sum" }] };
     ]
 
   (* https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute *)
@@ -1226,7 +1348,7 @@ module SVG = struct
       Attribute { name = "media"; jsxName = "media"; type_ = String };
       Attribute { name = "method"; jsxName = "method_"; type_ = String };
       Attribute { name = "name"; jsxName = "name"; type_ = String };
-      Attribute { name = "style"; jsxName = "style"; type_ = Style };
+      Attribute { name = "style"; jsxName = "style"; type_ = String };
       Attribute { name = "target"; jsxName = "target"; type_ = String };
 
       (* Other HTML properties supported by SVG elements in browsers *)
@@ -1236,9 +1358,9 @@ module SVG = struct
 
       (* SVG Specific attributes *)
       Attribute { name = "accentHeight"; jsxName = "accentHeight"; type_ = String (* number | *) };
-      Attribute { name = "allowReorder"; jsxName = "allowReorder"; type_ = String (* type_= "no" | "yes" *) };
+      Attribute { name = "allowReorder"; jsxName = "allowReorder"; type_ = Polyvariant [{ type_ = "no"; jsxName = "no" }; { type_ = "yes"; jsxName = "yes" }] };
       Attribute { name = "alphabetic"; jsxName = "alphabetic"; type_ = String (* number | *) };
-      Attribute { name = "arabicForm"; jsxName = "arabicForm"; type_ = String (* type_= "initial" | "medial" | "terminal" | "isolated" *) };
+      Attribute { name = "arabicForm"; jsxName = "arabicForm"; type_ = Polyvariant [{ type_ = "initial"; jsxName = "initial" }; { type_ = "medial"; jsxName = "medial" }; { type_ = "terminal"; jsxName = "terminal" }; { type_ = "isolated"; jsxName = "isolated" }] };
       Attribute { name = "ascent"; jsxName = "ascent"; type_ = String (* number | *) };
       Attribute { name = "autoReverse"; jsxName = "autoReverse"; type_ = BooleanishString };
       Attribute { name = "azimuth"; jsxName = "azimuth"; type_ = String (* number | *) };

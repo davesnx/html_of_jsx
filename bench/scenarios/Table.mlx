@@ -143,61 +143,61 @@ let data_table users =
             <thead class_="bg-gray-50">
               <tr>
                 <th
-                  scope="col"
+                  scope=`col
                   class_="px-6 py-3 text-left text-xs font-medium \
                           text-gray-500 uppercase tracking-wider">
                   (JSX.string "ID")
                 </th>
                 <th
-                  scope="col"
+                  scope=`col
                   class_="px-6 py-3 text-left text-xs font-medium \
                           text-gray-500 uppercase tracking-wider">
                   (JSX.string "Employee")
                 </th>
                 <th
-                  scope="col"
+                  scope=`col
                   class_="px-6 py-3 text-left text-xs font-medium \
                           text-gray-500 uppercase tracking-wider">
                   (JSX.string "Role")
                 </th>
                 <th
-                  scope="col"
+                  scope=`col
                   class_="px-6 py-3 text-left text-xs font-medium \
                           text-gray-500 uppercase tracking-wider">
                   (JSX.string "Department")
                 </th>
                 <th
-                  scope="col"
+                  scope=`col
                   class_="px-6 py-3 text-left text-xs font-medium \
                           text-gray-500 uppercase tracking-wider">
                   (JSX.string "Status")
                 </th>
                 <th
-                  scope="col"
+                  scope=`col
                   class_="px-6 py-3 text-left text-xs font-medium \
                           text-gray-500 uppercase tracking-wider">
                   (JSX.string "Join Date")
                 </th>
                 <th
-                  scope="col"
+                  scope=`col
                   class_="px-6 py-3 text-left text-xs font-medium \
                           text-gray-500 uppercase tracking-wider">
                   (JSX.string "Salary")
                 </th>
                 <th
-                  scope="col"
+                  scope=`col
                   class_="px-6 py-3 text-left text-xs font-medium \
                           text-gray-500 uppercase tracking-wider">
                   (JSX.string "Manager")
                 </th>
                 <th
-                  scope="col"
+                  scope=`col
                   class_="px-6 py-3 text-left text-xs font-medium \
                           text-gray-500 uppercase tracking-wider">
                   (JSX.string "Projects")
                 </th>
                 <th
-                  scope="col"
+                  scope=`col
                   class_="px-6 py-3 text-right text-xs font-medium \
                           text-gray-500 uppercase tracking-wider">
                   (JSX.string "Actions")

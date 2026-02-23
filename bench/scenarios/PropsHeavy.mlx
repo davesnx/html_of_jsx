@@ -12,7 +12,7 @@ let heavy_div ~id children =
     class_="heavy-component p-4 m-2 bg-white rounded-lg shadow-md border \
             border-gray-200"
     data_testid=testid
-    role="article"
+    role=`article
     aria_label=label
     aria_describedby=describedby
     tabindex=0
@@ -32,7 +32,7 @@ let heavy_input ~id ~label =
       (JSX.string label)
     </label>
     <input
-      type_="text"
+      type_=`text
       id=input_id
       name=input_name
       class_="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm"
@@ -74,15 +74,15 @@ let heavy_button ~id ~text ~variant =
   let describedby = Printf.sprintf "btn-desc-%d" id in
   let testid = Printf.sprintf "btn-test-%d" id in
   <button
-    type_="button"
+    type_=`button
     id=btn_id
     class_=cls
     disabled=false
-    aria_pressed="false"
+    aria_pressed=`false_
     aria_label
     aria_describedby=describedby
     data_testid=testid
-    role="button"
+    role=`button
     tabindex=0
     style="display: inline-flex; align-items: center; padding: 8px 16px; \
            font-size: 14px;">
@@ -93,19 +93,19 @@ let heavy_table ~rows ~cols =
   <div class_="overflow-x-auto">
     <table
       class_="min-w-full divide-y divide-gray-200"
-      role="grid"
+      role=`grid
       aria_label="Data table"
       aria_rowcount=rows
       aria_colcount=cols>
       <thead class_="bg-gray-50">
-        <tr role="row">
+        <tr role=`row>
           (JSX.list
              (List.init cols (fun col ->
                   let col_label = Printf.sprintf "Column %d" (col + 1) in
                   <th
-                    scope="col"
-                    role="columnheader"
-                    aria_sort="none"
+                    scope=`col
+                    role=`columnheader
+                    aria_sort=`none
                     aria_colindex=(col + 1)
                     class_="px-6 py-3 text-left text-xs font-medium \
                             text-gray-500 uppercase">
@@ -119,7 +119,7 @@ let heavy_table ~rows ~cols =
                 let row_cls =
                   if row mod 2 = 0 then "bg-white" else "bg-gray-50"
                 in
-                <tr role="row" aria_rowindex=(row + 1) class_=row_cls>
+                <tr role=`row aria_rowindex=(row + 1) class_=row_cls>
                   (JSX.list
                      (List.init cols (fun col ->
                           let cell_testid =
@@ -129,7 +129,7 @@ let heavy_table ~rows ~cols =
                             Printf.sprintf "R%dC%d" (row + 1) (col + 1)
                           in
                           <td
-                            role="gridcell"
+                            role=`gridcell
                             aria_colindex=(col + 1)
                             class_="px-6 py-4 whitespace-nowrap text-sm \
                                     text-gray-900"

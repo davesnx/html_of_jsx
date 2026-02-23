@@ -12,7 +12,7 @@ let bool_attribute () =
 
 let bool_attributes () =
   let input =
-    <input type_="checkbox" name="cheese" checked=true disabled=false />
+    <input type_=`checkbox name="cheese" checked=true disabled=false />
   in
   assert_string (JSX.render input)
     {|<input type="checkbox" name="cheese" checked />|}
@@ -165,6 +165,25 @@ let lowercase_component () =
 
   assert_string (JSX.render <component text="Hello" />) {|<h1>Hello</h1>|}
 
+let target_polyvariant () =
+  let a = <a href="/" target=`_blank /> in
+  assert_string (JSX.render a) {|<a href="/" target="_blank"></a>|}
+
+let target_polyvariant_dynamic () =
+  let t = `_self in
+  let a = <a href="/" target=t /> in
+  assert_string (JSX.render a) {|<a href="/" target="_self"></a>|}
+
+let target_polyvariant_opt_some () =
+  let target = Some `_parent in
+  let a = <a href="/" ?target /> in
+  assert_string (JSX.render a) {|<a href="/" target="_parent"></a>|}
+
+let target_polyvariant_opt_none () =
+  let target = None in
+  let a = <a href="/" ?target /> in
+  assert_string (JSX.render a) {|<a href="/"></a>|}
+
 let tests =
   ( "Test with mlx",
     [
@@ -192,4 +211,8 @@ let tests =
       test "create_element_variadic" create_element_variadic;
       test "aria_props" aria_props;
       test "lowercase_component" lowercase_component;
+      test "target_polyvariant" target_polyvariant;
+      test "target_polyvariant_dynamic" target_polyvariant_dynamic;
+      test "target_polyvariant_opt_some" target_polyvariant_opt_some;
+      test "target_polyvariant_opt_none" target_polyvariant_opt_none;
     ] )

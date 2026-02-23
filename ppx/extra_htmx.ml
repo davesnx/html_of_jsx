@@ -74,7 +74,18 @@ let core_attributes =
       {
         name = "hx-swap";
         jsxName = "hx_swap";
-        type_ = String;
+        type_ =
+          Polyvariant
+            [
+              { type_ = "innerHTML"; jsxName = "innerHTML" };
+              { type_ = "outerHTML"; jsxName = "outerHTML" };
+              { type_ = "afterbegin"; jsxName = "afterbegin" };
+              { type_ = "beforebegin"; jsxName = "beforebegin" };
+              { type_ = "beforeend"; jsxName = "beforeend" };
+              { type_ = "afterend"; jsxName = "afterend" };
+              { type_ = "delete"; jsxName = "delete" };
+              { type_ = "none"; jsxName = "none" };
+            ];
         description =
           "marks content in a response to be out of band (should swap in \
            somewhere other than the target)";

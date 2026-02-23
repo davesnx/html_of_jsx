@@ -2,7 +2,7 @@
    Multi-step form with many inputs and validation UI
    Purpose: Test form-heavy page rendering *)
 
-let form_field ~id ~label ?(type_ = "text") ?(required = true)
+let form_field ~id ~label ?(type_ = `text) ?(required = true)
     ?(placeholder = "") ?help_text ?error () =
   let cls =
     Cx.make
@@ -78,7 +78,7 @@ let checkbox_field ~id ~label ?description () =
   <div class_="mb-4">
     <div class_="flex items-start gap-3">
       <input
-        type_="checkbox"
+        type_=`checkbox
         id
         name=id
         class_="mt-1 h-4 w-4 text-blue-600 border-gray-300 rounded"
@@ -106,7 +106,7 @@ let radio_group ~name ~label ~options =
               let radio_id = name ^ "-" ^ value in
               <div class_="flex items-start gap-3">
                 <input
-                  type_="radio"
+                  type_=`radio
                   id=radio_id
                   name
                   value
@@ -195,11 +195,11 @@ let personal_info_form () =
               ())
            (form_field ~id:"lastName" ~label:"Last Name" ~placeholder:"Doe" ())
          </div>;
-         form_field ~id:"email" ~label:"Email Address" ~type_:"email"
+         form_field ~id:"email" ~label:"Email Address" ~type_:`email
            ~placeholder:"john@example.com" ();
-         form_field ~id:"phone" ~label:"Phone Number" ~type_:"tel"
+         form_field ~id:"phone" ~label:"Phone Number" ~type_:`tel
            ~placeholder:"+1 (555) 000-0000" ();
-         form_field ~id:"dob" ~label:"Date of Birth" ~type_:"date"
+         form_field ~id:"dob" ~label:"Date of Birth" ~type_:`date
            ~help_text:"You must be at least 18 years old" ();
          select_field ~id:"gender" ~label:"Gender" ~required:false
            ~options:
@@ -335,19 +335,19 @@ let page () =
             class_="flex items-center justify-between pt-6 border-t \
                     border-gray-200">
             <button
-              type_="button"
+              type_=`button
               class_="px-6 py-2 border border-gray-300 rounded-lg text-gray-700">
               (JSX.string "← Previous")
             </button>
             <div class_="flex gap-4">
               <button
-                type_="button"
+                type_=`button
                 class_="px-6 py-2 border border-gray-300 rounded-lg \
                         text-gray-700">
                 (JSX.string "Save Draft")
               </button>
               <button
-                type_="submit"
+                type_=`submit
                 class_="px-8 py-2 bg-blue-600 text-white rounded-lg font-medium">
                 (JSX.string "Continue →")
               </button>

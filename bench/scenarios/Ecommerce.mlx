@@ -115,7 +115,7 @@ let product_card ~product =
         alt=product.name
         class_="w-full h-full object-cover group-hover:scale-105 \
                 transition-transform duration-300"
-        loading="lazy"
+        loading=`lazy_
       />
       <div class_="absolute top-2 left-2 flex flex-col gap-1">
         (JSX.list
@@ -185,7 +185,7 @@ let filter_sidebar () =
              (List.map
                 (fun cat ->
                   <label class_="flex items-center gap-2 cursor-pointer">
-                    <input type_="checkbox" class_="rounded text-blue-600" />
+                    <input type_=`checkbox class_="rounded text-blue-600" />
                     <span class_="text-sm text-gray-700">(JSX.string cat)</span>
                   </label>)
                 [ "Electronics"; "Clothing"; "Home"; "Sports"; "Books"; "Toys" ]))
@@ -198,7 +198,7 @@ let filter_sidebar () =
              (List.map
                 (fun label ->
                   <label class_="flex items-center gap-2 cursor-pointer">
-                    <input type_="radio" name="price" class_="text-blue-600" />
+                    <input type_=`radio name="price" class_="text-blue-600" />
                     <span class_="text-sm text-gray-700">
                       (JSX.string label)
                     </span>
@@ -219,7 +219,7 @@ let filter_sidebar () =
              (List.map
                 (fun brand ->
                   <label class_="flex items-center gap-2 cursor-pointer">
-                    <input type_="checkbox" class_="rounded text-blue-600" />
+                    <input type_=`checkbox class_="rounded text-blue-600" />
                     <span class_="text-sm text-gray-700">
                       (JSX.string brand)
                     </span>
@@ -303,7 +303,7 @@ let header () =
               <option>(JSX.string "All Categories")</option>
             </select>
             <input
-              type_="search"
+              type_=`search
               placeholder="Search products..."
               class_="flex-1 px-4 py-2 text-gray-900"
             />

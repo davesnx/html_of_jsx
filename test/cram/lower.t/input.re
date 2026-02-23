@@ -31,7 +31,7 @@ let lower_children_nested =
 let lower_ref_with_children = <button class_="FancyButton"> children </button>;
 
 let lower_with_many_props =
-  <div translate="yes">
+  <div translate=`yes>
     <picture id="idpicture">
       <img src="picture/img.png" alt="test picture/img.png" id="idimg" />
       <source type_="image/webp" src="picture/img1.webp" />
