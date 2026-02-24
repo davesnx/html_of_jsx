@@ -2,6 +2,7 @@
 
 ## 0.0.8
 
+- Create `html_of_jsx.htmx` library with script and extension support
 - Remove temporal string on each JSX.escape, and make escape faster (#9c64ba4)
 - Skip escape for Int/Float attribute values (#8e8cf26)
 - Adds JSX.array (#3154012)
