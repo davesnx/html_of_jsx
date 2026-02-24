@@ -110,6 +110,33 @@ module Page = {
 };
 
 let get = Httpd.add_route_handler(~meth=`GET);
+let post = Httpd.add_route_handler(~meth=`POST);
+let delete = Httpd.add_route_handler(~meth=`DELETE);
+
+let counter = ref(0);
+
+let get_body = req => {
+  let body = Tiny_httpd.Request.body(req);
+  switch (body) {
+  | "" => ""
+  | s => s
+  };
+};
+
+let parse_form_value = (body, key) => {
+  let parts = String.split_on_char('&', body);
+  let rec find =
+    fun
+    | [] => ""
+    | [part, ...rest] => {
+        switch (String.split_on_char('=', part)) {
+        | [k, v] when k == key =>
+          String.split_on_char('+', v) |> String.concat(" ")
+        | _ => find(rest)
+        };
+      };
+  find(parts);
+};
 
 let () = {
   let project_url = "https://github.com/davesnx/html_of_jsx";
@@ -125,6 +152,68 @@ let () = {
       Httpd.Response.make_string(Ok(html));
     },
   );
+
+  get(
+    server,
+    Httpd.Route.(exact("htmx") @/ return),
+    _req => {
+      let html = JSX.render(Htmx_demo.page());
+      Httpd.Response.make_string(Ok(html));
+    },
+  );
+
+  get(
+    server,
+    Httpd.Route.(exact("htmx") @/ exact("click") @/ return),
+    _req => {
+      let html = JSX.render(Htmx_demo.fragment_click());
+      Httpd.Response.make_string(Ok(html));
+    },
+  );
+
+  post(
+    server,
+    Httpd.Route.(
+      exact("htmx") @/ exact("counter") @/ exact("increment") @/ return
+    ),
+    req => {
+      ignore(get_body(req));
+      counter := counter^ + 1;
+      let html = JSX.render(Htmx_demo.fragment_counter(counter^));
+      Httpd.Response.make_string(Ok(html));
+    },
+  );
+
+  post(
+    server,
+    Httpd.Route.(
+      exact("htmx") @/ exact("counter") @/ exact("decrement") @/ return
+    ),
+    req => {
+      ignore(get_body(req));
+      counter := counter^ - 1;
+      let html = JSX.render(Htmx_demo.fragment_counter(counter^));
+      Httpd.Response.make_string(Ok(html));
+    },
+  );
+
+  post(
+    server,
+    Httpd.Route.(exact("htmx") @/ exact("search") @/ return),
+    req => {
+      let body = get_body(req);
+      let query = parse_form_value(body, "query");
+      let html = JSX.render(Htmx_demo.fragment_search(query));
+      Httpd.Response.make_string(Ok(html));
+    },
+  );
+
+  delete(
+    server,
+    Httpd.Route.(exact("htmx") @/ exact("todos") @/ int @/ return),
+    (_id, _req) => {
+    Httpd.Response.make_string(Ok(""))
+  });
 
   switch (
     Httpd.run(server, ~after_init=() =>

@@ -1,25 +1,105 @@
-{0 Enable {{:https://htmx.org/}Htmx} attributes}
+{0 {{:https://htmx.org/}Htmx} support}
 
-{1 {b (Experimental)}}
+html_of_jsx provides two packages for working with htmx:
 
-Support htmx properties as attributes in all HTML elements
+{ul
+{- {b html_of_jsx.ppx [-htmx]}: Enables htmx attributes ([hx_get], [hx_post], [hx_swap], etc.) on all HTML elements}
+{- {b html_of_jsx.htmx}: A runtime library with JSX components for loading the htmx script and its extensions}
+}
 
-{2 {b Enable the htmx mode}}
+{1 Setup}
 
-Adding the [-htmx] flag into the ppx
 {[
-  (libraries html_of_jsx)
+  (libraries html_of_jsx html_of_jsx.htmx)
   (preprocess (pps html_of_jsx.ppx -htmx))
 ]}
 
-{2 {b Example}}
-{[
+{1 Attributes}
+
+The [-htmx] ppx flag enables htmx attributes on all HTML elements, scoped with the prefix {b hx_}.
+
+{@reasonml[
 JSX.render(<div hx_boost=true />)
+(* <div hx-boost="true"></div> *)
 ]}
 
-The htmx attributes are scoped with the prefix {b hx_}
+{1 Script and extensions}
 
-{1 Extensions}
+The {b html_of_jsx.htmx} library provides JSX components to load the htmx
+script and its extensions from a CDN.
+
+{2 Loading htmx}
+
+Use [<Htmx />] to render a script tag that loads htmx:
+
+{@reasonml[
+<head>
+  <Htmx version="2.0.4" />
+</head>
+(* <head><script src="https://unpkg.com/htmx.org@2.0.4"></script></head> *)
+]}
+
+For subresource integrity, pass the [integrity] prop:
+
+{@reasonml[
+<Htmx
+  version="2.0.4"
+  integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+"
+/>
+]}
+
+{2 Loading extension scripts}
+
+Each htmx extension has its own JSX component under [Htmx.Extensions] that
+renders a [<script>] tag loading the extension from a CDN:
+
+{@reasonml[
+<head>
+  <Htmx version="2.0.4" />
+  <Htmx.Extensions.SSE version="2.2.2" />
+  <Htmx.Extensions.WS version="2.2.0" />
+</head>
+]}
+
+Available extensions:
+{ul
+{- [<Htmx.Extensions.SSE />] — {{:https://htmx.org/extensions/sse/}Server-Sent Events}}
+{- [<Htmx.Extensions.WS />] — {{:https://htmx.org/extensions/ws/}WebSocket}}
+{- [<Htmx.Extensions.Class_tools />] — {{:https://htmx.org/extensions/class-tools/}Class-tools}}
+{- [<Htmx.Extensions.Preload />] — {{:https://htmx.org/extensions/preload/}Preload}}
+{- [<Htmx.Extensions.Path_deps />] — {{:https://htmx.org/extensions/path-deps/}Path-deps}}
+{- [<Htmx.Extensions.Loading_states />] — {{:https://htmx.org/extensions/loading-states/}Loading-states}}
+{- [<Htmx.Extensions.Response_targets />] — {{:https://htmx.org/extensions/response-targets/}Response-targets}}
+{- [<Htmx.Extensions.Head_support />] — {{:https://htmx.org/extensions/head-support/}Head-support}}
+}
+
+All extension components accept an optional [?version] prop. Without it, the
+latest version is loaded from unpkg.
+
+{1 Full example}
+
+{@reasonml[
+let make = (~name, ()) => {
+  <html lang="en">
+    <head>
+      <title> "My App" </title>
+      <Htmx version="2.0.4" />
+      <Htmx.Extensions.SSE version="2.2.2" />
+    </head>
+    <body>
+      <h1> {JSX.string("Hello, " ++ name)} </h1>
+      <button hx_get="/clicked" hx_swap=`outerHTML>
+        "Click me"
+      </button>
+      <div hx_ext="sse" sse_connect="/events" sse_swap="message">
+        "Waiting for events..."
+      </div>
+    </body>
+  </html>;
+};
+]}
+
+{1 Extension attributes reference}
 
 htmx extensions add custom behaviors and require additional attributes. To use
 an extension, you need to:

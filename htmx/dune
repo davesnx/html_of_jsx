@@ -1,0 +1,4 @@
+(library
+ (name Htmx)
+ (public_name html_of_jsx.htmx)
+ (libraries html_of_jsx))
