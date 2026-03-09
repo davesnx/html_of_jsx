@@ -10,48 +10,80 @@ type static_part =
 let rec coalesce_static_parts = function
   | Static_str a :: Static_str b :: rest ->
       coalesce_static_parts (Static_str (a ^ b) :: rest)
-  | x :: rest -> x :: coalesce_static_parts rest
-  | [] -> []
+  | x :: rest ->
+      x :: coalesce_static_parts rest
+  | [] ->
+      []
 
 let escape_html s =
   let len = String.length s in
   let buf = Buffer.create (len * 2) in
   for i = 0 to len - 1 do
     match s.[i] with
-    | '&' -> Buffer.add_string buf "&amp;"
-    | '<' -> Buffer.add_string buf "&lt;"
-    | '>' -> Buffer.add_string buf "&gt;"
-    | '\'' -> Buffer.add_string buf "&apos;"
-    | '"' -> Buffer.add_string buf "&quot;"
-    | c -> Buffer.add_char buf c
+    | '&' ->
+        Buffer.add_string buf "&amp;"
+    | '<' ->
+        Buffer.add_string buf "&lt;"
+    | '>' ->
+        Buffer.add_string buf "&gt;"
+    | '\'' ->
+        Buffer.add_string buf "&apos;"
+    | '"' ->
+        Buffer.add_string buf "&quot;"
+    | c ->
+        Buffer.add_char buf c
   done;
   Buffer.contents buf
 
 (* Duplicated from JSX.Html.is_self_closing_tag - keep in sync *)
 let is_self_closing_tag = function
-  | "area" | "base" | "br" | "col" | "embed" | "hr" | "img" | "input" | "link"
-  | "meta" | "param" | "source" | "track" | "wbr" | "menuitem" ->
+  | "area"
+  | "base"
+  | "br"
+  | "col"
+  | "embed"
+  | "hr"
+  | "img"
+  | "input"
+  | "link"
+  | "meta"
+  | "param"
+  | "source"
+  | "track"
+  | "wbr"
+  | "menuitem" ->
       true
-  | _ -> false
+  | _ ->
+      false
 
 let rec extract_literal_string expr =
   match expr.pexp_desc with
-  | Pexp_constant (Pconst_string (s, _, _)) -> Some s
-  | Pexp_constraint (inner, _) -> extract_literal_string inner
-  | _ -> None
+  | Pexp_constant (Pconst_string (s, _, _)) ->
+      Some s
+  | Pexp_constraint (inner, _) ->
+      extract_literal_string inner
+  | _ ->
+      None
 
 let rec extract_literal_int expr =
   match expr.pexp_desc with
-  | Pexp_constant (Pconst_integer (s, _)) -> Some (int_of_string s)
-  | Pexp_constraint (inner, _) -> extract_literal_int inner
-  | _ -> None
+  | Pexp_constant (Pconst_integer (s, _)) ->
+      Some (int_of_string s)
+  | Pexp_constraint (inner, _) ->
+      extract_literal_int inner
+  | _ ->
+      None
 
 let rec extract_literal_bool expr =
   match expr.pexp_desc with
-  | Pexp_construct ({ txt = Lident "true"; _ }, None) -> Some true
-  | Pexp_construct ({ txt = Lident "false"; _ }, None) -> Some false
-  | Pexp_constraint (inner, _) -> extract_literal_bool inner
-  | _ -> None
+  | Pexp_construct ({ txt = Lident "true"; _ }, None) ->
+      Some true
+  | Pexp_construct ({ txt = Lident "false"; _ }, None) ->
+      Some false
+  | Pexp_constraint (inner, _) ->
+      extract_literal_bool inner
+  | _ ->
+      None
 
 let extract_jsx_string_arg expr =
   match expr.pexp_desc with
@@ -61,39 +93,50 @@ let extract_jsx_string_arg expr =
             Pexp_ident { txt = Ldot (Lident "JSX", ("text" | "string")); _ };
           _;
         },
-        [ (Nolabel, arg) ] )
+        [ (Nolabel, arg) ]
+      )
   | Pexp_apply
       ( { pexp_desc = Pexp_ident { txt = Lident ("text" | "string"); _ }; _ },
-        [ (Nolabel, arg) ] ) ->
+        [ (Nolabel, arg) ]
+      ) ->
       Some arg
-  | _ -> None
+  | _ ->
+      None
 
 let extract_jsx_int_arg expr =
   match expr.pexp_desc with
   | Pexp_apply
       ( { pexp_desc = Pexp_ident { txt = Ldot (Lident "JSX", "int"); _ }; _ },
-        [ (Nolabel, arg) ] )
+        [ (Nolabel, arg) ]
+      )
   | Pexp_apply
       ( { pexp_desc = Pexp_ident { txt = Lident "int"; _ }; _ },
-        [ (Nolabel, arg) ] ) ->
+        [ (Nolabel, arg) ]
+      ) ->
       Some arg
-  | _ -> None
+  | _ ->
+      None
 
 let extract_jsx_float_arg expr =
   match expr.pexp_desc with
   | Pexp_apply
       ( { pexp_desc = Pexp_ident { txt = Ldot (Lident "JSX", "float"); _ }; _ },
-        [ (Nolabel, arg) ] )
+        [ (Nolabel, arg) ]
+      )
   | Pexp_apply
       ( { pexp_desc = Pexp_ident { txt = Lident "float"; _ }; _ },
-        [ (Nolabel, arg) ] ) ->
+        [ (Nolabel, arg) ]
+      ) ->
       Some arg
-  | _ -> None
+  | _ ->
+      None
 
 let extract_jsx_text_literal expr =
   match extract_jsx_string_arg expr with
-  | Some arg -> extract_literal_string arg
-  | None -> None
+  | Some arg ->
+      extract_literal_string arg
+  | None ->
+      None
 
 type static_attr_value =
   | Static_string of string
@@ -102,20 +145,30 @@ type static_attr_value =
 
 let extract_static_attr_value expr =
   match extract_literal_string expr with
-  | Some s -> Some (Static_string s)
+  | Some s ->
+      Some (Static_string s)
   | None -> (
       match extract_literal_int expr with
-      | Some i -> Some (Static_int i)
+      | Some i ->
+          Some (Static_int i)
       | None -> (
           match extract_literal_bool expr with
-          | Some b -> Some (Static_bool b)
-          | None -> None))
+          | Some b ->
+              Some (Static_bool b)
+          | None ->
+              None
+        )
+    )
 
 let render_attr_value = function
-  | Static_string s -> escape_html s
-  | Static_int i -> string_of_int i
-  | Static_bool true -> "true"
-  | Static_bool false -> "false"
+  | Static_string s ->
+      escape_html s
+  | Static_int i ->
+      string_of_int i
+  | Static_bool true ->
+      "true"
+  | Static_bool false ->
+      "false"
 
 type attr_render_info = {
   html_name : string;
@@ -132,7 +185,8 @@ type attr_validation_result = Valid_attr of attr_render_info | Invalid_attr
 
 let validate_attr_for_static ~tag_name jsx_name =
   match Html.findByName tag_name jsx_name with
-  | Error _ -> Invalid_attr
+  | Error _ ->
+      Invalid_attr
   | Ok prop ->
       let html_name = Html.getName prop in
       let kind =
@@ -140,15 +194,18 @@ let validate_attr_for_static ~tag_name jsx_name =
         | Html_attributes.Attribute { type_; _ }
         | Html_attributes.Rich_attribute { type_; _ } ->
             type_
-        | Html_attributes.Event _ -> Html_attributes.String
+        | Html_attributes.Event _ ->
+            Html_attributes.String
       in
       let is_boolean = kind = Html_attributes.Bool in
       Valid_attr { html_name; is_boolean; kind }
 
 let render_static_attr_with_info info value =
   match value with
-  | Static_bool false when info.is_boolean -> ""
-  | Static_bool true when info.is_boolean -> " " ^ info.html_name
+  | Static_bool false when info.is_boolean ->
+      ""
+  | Static_bool true when info.is_boolean ->
+      " " ^ info.html_name
   | _ ->
       let value_str = render_attr_value value in
       Printf.sprintf " %s=\"%s\"" info.html_name value_str
@@ -157,14 +214,19 @@ type attr_analysis_result = Ok of parsed_attr option | Invalid
 
 let analyze_attribute ~tag_name (label, expr) : attr_analysis_result =
   match label with
-  | Nolabel -> Ok None (* Children, handled separately *)
+  | Nolabel ->
+      Ok None (* Children, handled separately *)
   | Optional name -> (
       match validate_attr_for_static ~tag_name name with
-      | Invalid_attr -> Invalid
-      | Valid_attr info -> Ok (Some (Optional_attr (info, expr))))
+      | Invalid_attr ->
+          Invalid
+      | Valid_attr info ->
+          Ok (Some (Optional_attr (info, expr)))
+    )
   | Labelled name -> (
       match validate_attr_for_static ~tag_name name with
-      | Invalid_attr -> Invalid
+      | Invalid_attr ->
+          Invalid
       | Valid_attr info -> (
           let static_value =
             match info.kind with
@@ -174,17 +236,28 @@ let analyze_attribute ~tag_name (label, expr) : attr_analysis_result =
                     match
                       List.find_opt
                         (fun (opt : Html_attributes.polyvariant) ->
-                          opt.type_ = constructor)
+                          opt.type_ = constructor
+                        )
                         options
                     with
-                    | Some opt -> Some (Static_string opt.jsxName)
-                    | None -> None)
-                | _ -> None)
-            | _ -> extract_static_attr_value expr
+                    | Some opt ->
+                        Some (Static_string opt.jsxName)
+                    | None ->
+                        None
+                  )
+                | _ ->
+                    None
+              )
+            | _ ->
+                extract_static_attr_value expr
           in
           match static_value with
-          | Some value -> Ok (Some (Static_attr (info, value)))
-          | None -> Ok (Some (Dynamic_attr (info, expr)))))
+          | Some value ->
+              Ok (Some (Static_attr (info, value)))
+          | None ->
+              Ok (Some (Dynamic_attr (info, expr)))
+        )
+    )
 
 type attrs_analysis =
   | All_static of string
@@ -205,12 +278,16 @@ let analyze_attributes ~tag_name attrs =
               static_attrs = Buffer.contents static_buf;
               dynamic_attrs = List.rev dynamic_attrs;
             }
-        else if optionals = [] then All_static (Buffer.contents static_buf)
-        else Has_optional (List.rev optionals, Buffer.contents static_buf)
+        else if optionals = [] then
+          All_static (Buffer.contents static_buf)
+        else
+          Has_optional (List.rev optionals, Buffer.contents static_buf)
     | attr :: rest -> (
         match analyze_attribute ~tag_name attr with
-        | Invalid -> Validation_failed
-        | Ok None -> loop static_buf optionals dynamic_attrs rest
+        | Invalid ->
+            Validation_failed
+        | Ok None ->
+            loop static_buf optionals dynamic_attrs rest
         | Ok (Some (Static_attr (info, value))) ->
             Buffer.add_string static_buf
               (render_static_attr_with_info info value);
@@ -218,7 +295,8 @@ let analyze_attributes ~tag_name attrs =
         | Ok (Some (Optional_attr (info, expr))) ->
             loop static_buf ((info, expr) :: optionals) dynamic_attrs rest
         | Ok (Some (Dynamic_attr (info, expr))) ->
-            loop static_buf optionals ((info, expr) :: dynamic_attrs) rest)
+            loop static_buf optionals ((info, expr) :: dynamic_attrs) rest
+      )
   in
   loop (Buffer.create 64) [] [] attrs
 
@@ -232,63 +310,84 @@ let extract_jsx_unsafe_literal expr =
   match expr.pexp_desc with
   | Pexp_apply
       ( { pexp_desc = Pexp_ident { txt = Ldot (Lident "JSX", "unsafe"); _ }; _ },
-        [ (Nolabel, arg) ] ) ->
+        [ (Nolabel, arg) ]
+      ) ->
       extract_literal_string arg
-  | _ -> None
+  | _ ->
+      None
 
 let extract_jsx_int_literal expr =
   match extract_jsx_int_arg expr with
-  | Some arg -> extract_literal_int arg
-  | None -> None
+  | Some arg ->
+      extract_literal_int arg
+  | None ->
+      None
 
 let extract_jsx_float_literal expr =
   match expr.pexp_desc with
   | Pexp_apply
       ( { pexp_desc = Pexp_ident { txt = Ldot (Lident "JSX", "float"); _ }; _ },
-        [ (Nolabel, arg) ] )
+        [ (Nolabel, arg) ]
+      )
   | Pexp_apply
       ( { pexp_desc = Pexp_ident { txt = Lident "float"; _ }; _ },
-        [ (Nolabel, arg) ] ) -> (
+        [ (Nolabel, arg) ]
+      ) -> (
       match arg.pexp_desc with
-      | Pexp_constant (Pconst_float (s, _)) -> Some (float_of_string s)
+      | Pexp_constant (Pconst_float (s, _)) ->
+          Some (float_of_string s)
       | Pexp_constraint (inner, _) -> (
           match inner.pexp_desc with
-          | Pexp_constant (Pconst_float (s, _)) -> Some (float_of_string s)
-          | _ -> None)
-      | _ -> None)
-  | _ -> None
+          | Pexp_constant (Pconst_float (s, _)) ->
+              Some (float_of_string s)
+          | _ ->
+              None
+        )
+      | _ ->
+          None
+    )
+  | _ ->
+      None
 
 let analyze_child (expr : expression) : static_part =
   List.find_map
     (fun fn -> fn ())
     [
       (fun () ->
-        extract_jsx_unsafe_literal expr |> Option.map (fun s -> Static_str s));
+        extract_jsx_unsafe_literal expr |> Option.map (fun s -> Static_str s)
+      );
       (fun () ->
         extract_jsx_text_literal expr
-        |> Option.map (fun s -> Static_str (escape_html s)));
+        |> Option.map (fun s -> Static_str (escape_html s))
+      );
       (fun () ->
         extract_literal_string expr
-        |> Option.map (fun s -> Static_str (escape_html s)));
+        |> Option.map (fun s -> Static_str (escape_html s))
+      );
       (fun () ->
         extract_jsx_int_literal expr
-        |> Option.map (fun i -> Static_str (string_of_int i)));
+        |> Option.map (fun i -> Static_str (string_of_int i))
+      );
       (fun () ->
         extract_jsx_float_literal expr
-        |> Option.map (fun f -> Static_str (Float.to_string f)));
+        |> Option.map (fun f -> Static_str (Float.to_string f))
+      );
       (fun () ->
-        extract_jsx_string_arg expr |> Option.map (fun e -> Dynamic_string e));
+        extract_jsx_string_arg expr |> Option.map (fun e -> Dynamic_string e)
+      );
+      (fun () -> extract_jsx_int_arg expr |> Option.map (fun e -> Dynamic_int e));
       (fun () ->
-        extract_jsx_int_arg expr |> Option.map (fun e -> Dynamic_int e));
-      (fun () ->
-        extract_jsx_float_arg expr |> Option.map (fun e -> Dynamic_float e));
+        extract_jsx_float_arg expr |> Option.map (fun e -> Dynamic_float e)
+      );
     ]
   |> Option.value ~default:(Dynamic_element expr)
 
 let analyze_children children =
   match children with
-  | None -> No_children
-  | Some [] -> No_children
+  | None ->
+      No_children
+  | Some [] ->
+      No_children
   | Some children ->
       let parts = List.map analyze_child children in
       let all_static =
@@ -302,10 +401,11 @@ let analyze_children children =
         List.iter
           (function Static_str s -> Buffer.add_string buf s | _ -> ())
           parts;
-        All_static_children (Buffer.contents buf))
-      else if not has_element_dynamic then
+        All_static_children (Buffer.contents buf)
+      ) else if not has_element_dynamic then
         All_string_dynamic (coalesce_static_parts parts)
-      else Mixed_children (coalesce_static_parts parts)
+      else
+        Mixed_children (coalesce_static_parts parts)
 
 type element_analysis =
   | Fully_static of string
@@ -336,8 +436,10 @@ let analyze_element ~tag_name ~attrs ~children =
   let children_result = analyze_children children in
 
   match (attrs_result, children_result) with
-  | Validation_failed, _ -> Cannot_optimize
-  | Has_dynamic, _ -> Cannot_optimize
+  | Validation_failed, _ ->
+      Cannot_optimize
+  | Has_dynamic, _ ->
+      Cannot_optimize
   | ( Has_dynamic_attrs { static_attrs; dynamic_attrs },
       All_static_children children_html ) ->
       Dynamic_attrs_static_children
@@ -388,7 +490,8 @@ let analyze_element ~tag_name ~attrs ~children =
       let static_size =
         List.fold_left
           (fun acc part ->
-            match part with Static_str s -> acc + String.length s | _ -> acc)
+            match part with Static_str s -> acc + String.length s | _ -> acc
+          )
           0 all_parts
       in
       let dynamic_count =
@@ -436,4 +539,7 @@ let analyze_element ~tag_name ~attrs ~children =
         }
 
 let maybe_add_doctype tag_name html =
-  if tag_name = "html" then "<!DOCTYPE html>" ^ html else html
+  if tag_name = "html" then
+    "<!DOCTYPE html>" ^ html
+  else
+    html

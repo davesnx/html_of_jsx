@@ -4,7 +4,8 @@ let script_node src = JSX.node "script" [ ("src", `String src) ] []
 let make ?(version = "2.0.4") ?integrity () =
   let src = Printf.sprintf "%s/htmx.org@%s" cdn_base version in
   match integrity with
-  | None -> script_node src
+  | None ->
+      script_node src
   | Some hash ->
       JSX.node "script"
         [
@@ -18,8 +19,10 @@ module Extensions = struct
   let extension_script ~package ?version () =
     let src =
       match version with
-      | Some v -> Printf.sprintf "%s/htmx-ext-%s@%s" cdn_base package v
-      | None -> Printf.sprintf "%s/htmx-ext-%s" cdn_base package
+      | Some v ->
+          Printf.sprintf "%s/htmx-ext-%s@%s" cdn_base package v
+      | None ->
+          Printf.sprintf "%s/htmx-ext-%s" cdn_base package
     in
     script_node src
 

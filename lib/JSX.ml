@@ -1,9 +1,23 @@
 (* https://github.com/facebook/react/blob/97d75c9c8bcddb0daed1ed062101c7f5e9b825f4/packages/react-dom-bindings/src/shared/omittedCloseTags.js *)
 let is_self_closing_tag = function
-  | "area" | "base" | "br" | "col" | "embed" | "hr" | "img" | "input" | "link"
-  | "meta" | "param" | "source" | "track" | "wbr" | "menuitem" ->
+  | "area"
+  | "base"
+  | "br"
+  | "col"
+  | "embed"
+  | "hr"
+  | "img"
+  | "input"
+  | "link"
+  | "meta"
+  | "param"
+  | "source"
+  | "track"
+  | "wbr"
+  | "menuitem" ->
       true
-  | _ -> false
+  | _ ->
+      false
 
 let escape buf s =
   let length = String.length s in
@@ -11,22 +25,31 @@ let escape buf s =
   match
     for i = 0 to length - 1 do
       match String.unsafe_get s i with
-      | '&' | '<' | '>' | '\'' | '"' -> raise_notrace (First_char_to_escape i)
-      | _ -> ()
+      | '&' | '<' | '>' | '\'' | '"' ->
+          raise_notrace (First_char_to_escape i)
+      | _ ->
+          ()
     done
   with
   | exception First_char_to_escape first ->
       if first > 0 then Buffer.add_substring buf s 0 first;
       for i = first to length - 1 do
         match String.unsafe_get s i with
-        | '&' -> Buffer.add_string buf "&amp;"
-        | '<' -> Buffer.add_string buf "&lt;"
-        | '>' -> Buffer.add_string buf "&gt;"
-        | '\'' -> Buffer.add_string buf "&apos;"
-        | '"' -> Buffer.add_string buf "&quot;"
-        | c -> Buffer.add_char buf c
+        | '&' ->
+            Buffer.add_string buf "&amp;"
+        | '<' ->
+            Buffer.add_string buf "&lt;"
+        | '>' ->
+            Buffer.add_string buf "&gt;"
+        | '\'' ->
+            Buffer.add_string buf "&apos;"
+        | '"' ->
+            Buffer.add_string buf "&quot;"
+        | c ->
+            Buffer.add_char buf c
       done
-  | _ -> Buffer.add_string buf s
+  | _ ->
+      Buffer.add_string buf s
 
 type attribute =
   string * [ `Bool of bool | `Int of int | `Float of float | `String of string ]
@@ -87,8 +110,10 @@ let node tag attributes children = Node { tag; attributes; children }
 let write out element =
   let rec write element =
     match element with
-    | Null -> ()
-    | List list -> List.iter write list
+    | Null ->
+        ()
+    | List list ->
+        List.iter write list
     | Node { tag; attributes; _ } when is_self_closing_tag tag ->
         Buffer.add_char out '<';
         Buffer.add_string out tag;
@@ -104,11 +129,16 @@ let write out element =
         Buffer.add_string out "</";
         Buffer.add_string out tag;
         Buffer.add_char out '>'
-    | String text -> escape out text
-    | Unsafe text -> Buffer.add_string out text
-    | Int i -> Buffer.add_string out (Int.to_string i)
-    | Float f -> Buffer.add_string out (Float.to_string f)
-    | Array arr -> Array.iter write arr
+    | String text ->
+        escape out text
+    | Unsafe text ->
+        Buffer.add_string out text
+    | Int i ->
+        Buffer.add_string out (Int.to_string i)
+    | Float f ->
+        Buffer.add_string out (Float.to_string f)
+    | Array arr ->
+        Array.iter write arr
   in
   write element
 

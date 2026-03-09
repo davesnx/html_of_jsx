@@ -1,6 +1,6 @@
 (** JSX module
 
-    The JSX module provides a set of functions and render HTML elements in a
+    The JSX module provides a set of functions to render HTML elements in a
     declarative manner
 
     {[
@@ -120,10 +120,9 @@ val node : string -> attribute list -> element list -> element
 
     {[
       let link : JSX.element =
-        JSX.node
-          ( "a",
-            [ ("href", `String "https://ocaml.org") ],
-            [ JSX.string "OCaml" ] )
+        JSX.node "a"
+          [ ("href", `String "https://ocaml.org") ]
+          [ JSX.string "OCaml" ]
     ]} *)
 
 val null : element
@@ -160,7 +159,7 @@ val unsafe : string -> element
     HTML escaping problems, XSS injections, and other security concerns. Use
     with caution.
 
-    A common use case for bypassing the HTML encoding is to render a script o
+    A common use case for bypassing the HTML encoding is to render a script or
     style tag.
 
     {[

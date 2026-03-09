@@ -1722,14 +1722,20 @@ let svgElements =
 [@@@ocamlformat "enable"]
 
 let getName = function
-  | Rich_attribute { name; _ } -> name
-  | Attribute { name; _ } -> name
-  | Event { jsxName; _ } -> jsxName
+  | Rich_attribute { name; _ } ->
+      name
+  | Attribute { name; _ } ->
+      name
+  | Event { jsxName; _ } ->
+      jsxName
 
 let getJSXName = function
-  | Rich_attribute { jsxName; _ } -> jsxName
-  | Attribute { jsxName; _ } -> jsxName
-  | Event { jsxName; _ } -> jsxName
+  | Rich_attribute { jsxName; _ } ->
+      jsxName
+  | Attribute { jsxName; _ } ->
+      jsxName
+  | Event { jsxName; _ } ->
+      jsxName
 
 let domPropNames =
   commonSvgAttributes () @ getCommonHtmlAttributes () |> List.map getJSXName
@@ -1752,12 +1758,15 @@ let chars_of_string str = List.init (String.length str) (String.get str)
 
 let camelcaseToKebabcase str =
   let rec loop acc = function
-    | [] -> acc
-    | [ x ] -> x :: acc
+    | [] ->
+        acc
+    | [ x ] ->
+        x :: acc
     | x :: y :: xs ->
         if Char.uppercase_ascii y == y then
           loop ('-' :: x :: acc) (Char.lowercase_ascii y :: xs)
-        else loop (x :: acc) (y :: xs)
+        else
+          loop (x :: acc) (y :: xs)
   in
   str |> chars_of_string |> loop [] |> List.rev |> string_of_chars
 
@@ -1777,7 +1786,8 @@ module Levenshtein = struct
     done;
     for j = 1 to second do
       for i = 1 to first do
-        if s.[i - 1] = t.[j - 1] then matrix.(i).(j) <- matrix.(i - 1).(j - 1)
+        if s.[i - 1] = t.[j - 1] then
+          matrix.(i).(j) <- matrix.(i - 1).(j - 1)
         else
           matrix.(i).(j) <-
             minimum
@@ -1795,21 +1805,27 @@ let find_closest_name invalid domPropNames =
   let accumulate_distance name bestMatch =
     let distance = Levenshtein.distance invalid name in
     match distance < bestMatch.distance with
-    | true -> { name; distance }
-    | false -> bestMatch
+    | true ->
+        { name; distance }
+    | false ->
+        bestMatch
   in
   let { name; distance } =
     List.fold_right accumulate_distance domPropNames
       { name = ""; distance = max_int }
   in
-  if distance > 2 then None else Some name
+  if distance > 2 then
+    None
+  else
+    Some name
 
 let findByName tag jsxName =
   let byName p = getJSXName p = jsxName in
   match getAttributes tag with
   | Ok { attributes; _ } -> (
       match List.find_opt byName attributes with
-      | Some prop -> Ok prop
+      | Some prop ->
+          Ok prop
       | None -> (
           if isDataAttribute jsxName then
             let name = camelcaseToKebabcase jsxName in
@@ -1817,43 +1833,198 @@ let findByName tag jsxName =
           else
             let jsxNames = List.map getJSXName attributes in
             match find_closest_name jsxName jsxNames with
-            | Some closest -> Error (`AttributeNotFound (Some closest))
-            | None -> Error (`AttributeNotFound None)))
-  | Error err -> Error err
+            | Some closest ->
+                Error (`AttributeNotFound (Some closest))
+            | None ->
+                Error (`AttributeNotFound None)
+        )
+    )
+  | Error err ->
+      Error err
 
 let is_html_element tag =
   match tag with
-  | "a" | "abbr" | "address" | "area" | "article" | "aside" | "audio" | "b"
-  | "base" | "bdi" | "bdo" | "blockquote" | "body" | "br" | "button" | "canvas"
-  | "caption" | "cite" | "code" | "col" | "colgroup" | "data" | "datalist"
-  | "dd" | "del" | "details" | "dfn" | "dialog" | "div" | "dl" | "dt" | "em"
-  | "embed" | "fieldset" | "figcaption" | "figure" | "footer" | "form" | "h1"
-  | "h2" | "h3" | "h4" | "h5" | "h6" | "head" | "header" | "hgroup" | "hr"
-  | "html" | "i" | "iframe" | "img" | "input" | "ins" | "kbd" | "label"
-  | "legend" | "li" | "link" | "main" | "map" | "mark" | "math" | "menu"
-  | "menuitem" | "meta" | "meter" | "nav" | "noscript" | "object" | "ol"
-  | "optgroup" | "option" | "output" | "p" | "param" | "picture" | "pre"
-  | "progress" | "q" | "rb" | "rp" | "rt" | "rtc" | "ruby" | "s" | "samp"
-  | "script" | "search" | "section" | "select" | "slot" | "small" | "source"
-  | "span" | "strong" | "style" | "sub" | "summary" | "sup" | "svg" | "table"
-  | "tbody" | "td" | "template" | "textarea" | "tfoot" | "th" | "thead" | "time"
-  | "title" | "tr" | "track" | "u" | "ul" | "var" | "video" | "wbr" ->
+  | "a"
+  | "abbr"
+  | "address"
+  | "area"
+  | "article"
+  | "aside"
+  | "audio"
+  | "b"
+  | "base"
+  | "bdi"
+  | "bdo"
+  | "blockquote"
+  | "body"
+  | "br"
+  | "button"
+  | "canvas"
+  | "caption"
+  | "cite"
+  | "code"
+  | "col"
+  | "colgroup"
+  | "data"
+  | "datalist"
+  | "dd"
+  | "del"
+  | "details"
+  | "dfn"
+  | "dialog"
+  | "div"
+  | "dl"
+  | "dt"
+  | "em"
+  | "embed"
+  | "fieldset"
+  | "figcaption"
+  | "figure"
+  | "footer"
+  | "form"
+  | "h1"
+  | "h2"
+  | "h3"
+  | "h4"
+  | "h5"
+  | "h6"
+  | "head"
+  | "header"
+  | "hgroup"
+  | "hr"
+  | "html"
+  | "i"
+  | "iframe"
+  | "img"
+  | "input"
+  | "ins"
+  | "kbd"
+  | "label"
+  | "legend"
+  | "li"
+  | "link"
+  | "main"
+  | "map"
+  | "mark"
+  | "math"
+  | "menu"
+  | "menuitem"
+  | "meta"
+  | "meter"
+  | "nav"
+  | "noscript"
+  | "object"
+  | "ol"
+  | "optgroup"
+  | "option"
+  | "output"
+  | "p"
+  | "param"
+  | "picture"
+  | "pre"
+  | "progress"
+  | "q"
+  | "rb"
+  | "rp"
+  | "rt"
+  | "rtc"
+  | "ruby"
+  | "s"
+  | "samp"
+  | "script"
+  | "search"
+  | "section"
+  | "select"
+  | "slot"
+  | "small"
+  | "source"
+  | "span"
+  | "strong"
+  | "style"
+  | "sub"
+  | "summary"
+  | "sup"
+  | "svg"
+  | "table"
+  | "tbody"
+  | "td"
+  | "template"
+  | "textarea"
+  | "tfoot"
+  | "th"
+  | "thead"
+  | "time"
+  | "title"
+  | "tr"
+  | "track"
+  | "u"
+  | "ul"
+  | "var"
+  | "video"
+  | "wbr" ->
       true
-  | _ -> false
+  | _ ->
+      false
 
 let is_svg_element tag =
   match tag with
-  | "animate" | "animateMotion" | "animateTransform" | "circle" | "clipPath"
-  | "defs" | "desc" | "ellipse" | "feBlend" | "feColorMatrix"
-  | "feComponentTransfer" | "feComposite" | "feConvolveMatrix"
-  | "feDiffuseLighting" | "feDisplacementMap" | "feDistantLight"
-  | "feDropShadow" | "feFlood" | "feFuncA" | "feFuncB" | "feFuncG" | "feFuncR"
-  | "feGaussianBlur" | "feImage" | "feMerge" | "feMergeNode" | "feMorphology"
-  | "feOffset" | "fePointLight" | "feSpecularLighting" | "feSpotLight"
-  | "feTile" | "feTurbulence" | "filter" | "foreignObject" | "g" | "image"
-  | "line" | "linearGradient" | "marker" | "mask" | "metadata" | "mpath"
-  | "path" | "pattern" | "polygon" | "polyline" | "radialGradient" | "rect"
-  | "stop" | "switch" | "symbol" | "text" | "textPath" | "tspan" | "use"
+  | "animate"
+  | "animateMotion"
+  | "animateTransform"
+  | "circle"
+  | "clipPath"
+  | "defs"
+  | "desc"
+  | "ellipse"
+  | "feBlend"
+  | "feColorMatrix"
+  | "feComponentTransfer"
+  | "feComposite"
+  | "feConvolveMatrix"
+  | "feDiffuseLighting"
+  | "feDisplacementMap"
+  | "feDistantLight"
+  | "feDropShadow"
+  | "feFlood"
+  | "feFuncA"
+  | "feFuncB"
+  | "feFuncG"
+  | "feFuncR"
+  | "feGaussianBlur"
+  | "feImage"
+  | "feMerge"
+  | "feMergeNode"
+  | "feMorphology"
+  | "feOffset"
+  | "fePointLight"
+  | "feSpecularLighting"
+  | "feSpotLight"
+  | "feTile"
+  | "feTurbulence"
+  | "filter"
+  | "foreignObject"
+  | "g"
+  | "image"
+  | "line"
+  | "linearGradient"
+  | "marker"
+  | "mask"
+  | "metadata"
+  | "mpath"
+  | "path"
+  | "pattern"
+  | "polygon"
+  | "polyline"
+  | "radialGradient"
+  | "rect"
+  | "stop"
+  | "switch"
+  | "symbol"
+  | "text"
+  | "textPath"
+  | "tspan"
+  | "use"
   | "view" ->
       true
-  | _ -> false
+  | _ ->
+      false

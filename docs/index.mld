@@ -1,4 +1,4 @@
-{1 html_of_jsx {b Render HTML with JSX}}
+{0 html_of_jsx {b Render HTML with JSX}}
 
 {b html_of_jsx} is a library and a ppx to write HTML declaratively in {{:https://ocaml.org}OCaml}, {{:https://reasonml.github.io}Reason} and {{:https://github.com/ocaml-mlx/mlx}mlx}.
 
@@ -19,7 +19,7 @@ add it to your {b dune} file
 
 {1 Overview}
 
-- {b Minimal design}. It should just get out of the way. The ppx is seamless and the interface only exposes 5 functions and 2 types.
+- {b Minimal design}. It should just get out of the way. The ppx is seamless and the interface is focused on the essentials.
 - {b Type-safe} validates correct attributes and its types
 - Works with {{:https://ocaml.org} OCaml}, {{:https://reasonml.github.io} Reason} and {{:https://github.com/ocaml-mlx/mlx}mlx}
 - Brings the "component model" to HTML
@@ -33,7 +33,7 @@ add it to your {b dune} file
 
 The library exposes a single module {!JSX} with a minimal API:
 - A way to create DOM elements and nodes ([JSX.string], [JSX.int], [JSX.null], [JSX.list], [JSX.unsafe]) into a [JSX.t] tree
-- and [JSX.render] wich transforms a [JSX.t] tree into an HTML string
+- and [JSX.render] which transforms a [JSX.t] tree into an HTML string
 - the rest are your functions that return [JSX.t] trees, which are known as "components"
 
 {b Visit the {!JSX} page for the complete interface documentation}
@@ -58,11 +58,11 @@ let component = (~name, ()) => {
 JSX.render(<component name="lola" />);
 ]}
 
-> {b Note} that the [component] function needs to have a last argument of type [unit] in order to work properly with labelled arguments. Explained on the {{: https://v2.ocaml.org/manual/lablexamples.html#s:optional-arguments} OCaml manual}: Functions with only labelled arguments, need a last non labelled argument to be able to be called as a non curried function.
+{b Note:} The [component] function needs to have a last argument of type [unit] in order to work properly with labelled arguments. Explained on the {{: https://v2.ocaml.org/manual/lablexamples.html#s:optional-arguments} OCaml manual}: Functions with only labelled arguments, need a last non labelled argument to be able to be called as a non curried function.
 
 {2 children: elements can be nested in other components}
 
-This makes possible to compose any HTML and abstract those components away. [~children] is a prop that recieves the nested elements from the component invocation.
+This makes possible to compose any HTML and abstract those components away. [~children] is a prop that receives the nested elements from the component invocation.
 
 {@reasonml[
 let hero = (~children, ()) => {
@@ -99,11 +99,11 @@ let component = (~name, ~children, ()) => {
 };
 
 JSX.render(
-  <component name="World"> {JSX.string("This is a children!")} </component>,
+  <component name="World"> {JSX.string("This is a child!")} </component>,
 );
 ]}
 
-{2 List of childrens are available with [JSX.list]}
+{2 List of children are available with [JSX.list]}
 
 A component can receive more than one children, which is the case for the [ul] element, but many other elements too. To make sure a list of elements is an element, use the [JSX.list] function.
 

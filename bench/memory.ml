@@ -86,7 +86,8 @@ let () =
 
   let minor_1attr, major_1attr =
     measure_alloc_n n (fun () ->
-        JSX.node "div" [ ("class", `String "container") ] [])
+        JSX.node "div" [ ("class", `String "container") ] []
+    )
   in
   Printf.printf "JSX.node with 1 attribute:\n";
   Printf.printf "  %.1f minor words, %.1f major words\n\n" minor_1attr
@@ -100,7 +101,8 @@ let () =
             ("id", `String "main");
             ("style", `String "color: red");
           ]
-          [])
+          []
+    )
   in
   Printf.printf "JSX.node with 3 attributes:\n";
   Printf.printf "  %.1f minor words, %.1f major words\n\n" minor_3attr
@@ -113,7 +115,8 @@ let () =
           [
             JSX.node "span" [] [ JSX.string "Hello" ];
             JSX.node "span" [] [ JSX.string "World" ];
-          ])
+          ]
+    )
   in
   Printf.printf
     "Nested: <div class=\"wrapper\"><span>Hello</span><span>World</span></div>:\n";
@@ -131,7 +134,8 @@ let () =
           (opaque "a", `String (opaque "1"));
           (opaque "b", `String (opaque "2"));
           (opaque "c", `String (opaque "3"));
-        ])
+        ]
+    )
   in
   let minor_array_3, _ =
     measure_alloc_n n (fun () ->
@@ -139,7 +143,8 @@ let () =
           (opaque "a", `String (opaque "1"));
           (opaque "b", `String (opaque "2"));
           (opaque "c", `String (opaque "3"));
-        |])
+        |]
+    )
   in
   Printf.printf "3-element construction:\n";
   Printf.printf "  List: %.1f words\n" minor_list_3;
@@ -148,7 +153,8 @@ let () =
     Printf.printf "  Savings: %.1f words (%.0f%%)\n\n"
       (minor_list_3 -. minor_array_3)
       ((minor_list_3 -. minor_array_3) /. minor_list_3 *. 100.)
-  else Printf.printf "  (compiler optimized literals - see note below)\n\n";
+  else
+    Printf.printf "  (compiler optimized literals - see note below)\n\n";
 
   let minor_list_5, _ =
     measure_alloc_n n (fun () ->
@@ -158,7 +164,8 @@ let () =
           (opaque "c", `String (opaque "3"));
           (opaque "d", `String (opaque "4"));
           (opaque "e", `String (opaque "5"));
-        ])
+        ]
+    )
   in
   let minor_array_5, _ =
     measure_alloc_n n (fun () ->
@@ -168,7 +175,8 @@ let () =
           (opaque "c", `String (opaque "3"));
           (opaque "d", `String (opaque "4"));
           (opaque "e", `String (opaque "5"));
-        |])
+        |]
+    )
   in
   Printf.printf "5-element construction:\n";
   Printf.printf "  List: %.1f words\n" minor_list_5;
@@ -177,7 +185,8 @@ let () =
     Printf.printf "  Savings: %.1f words (%.0f%%)\n\n"
       (minor_list_5 -. minor_array_5)
       ((minor_list_5 -. minor_array_5) /. minor_list_5 *. 100.)
-  else Printf.printf "  (compiler optimized literals - see note below)\n\n";
+  else
+    Printf.printf "  (compiler optimized literals - see note below)\n\n";
 
   Printf.printf "--- Part 4: Iteration Cost ---\n\n";
 
@@ -188,12 +197,14 @@ let () =
   let minor_list_iter, _ =
     measure_alloc_n n (fun () ->
         sum := 0;
-        List.iter (fun (k, _) -> sum := !sum + String.length k) test_list)
+        List.iter (fun (k, _) -> sum := !sum + String.length k) test_list
+    )
   in
   let minor_array_iter, _ =
     measure_alloc_n n (fun () ->
         sum := 0;
-        Array.iter (fun (k, _) -> sum := !sum + String.length k) test_array)
+        Array.iter (fun (k, _) -> sum := !sum + String.length k) test_array
+    )
   in
   Printf.printf "Iterating over 10 elements (no buffer ops):\n";
   Printf.printf "  List.iter: %.1f words\n" minor_list_iter;

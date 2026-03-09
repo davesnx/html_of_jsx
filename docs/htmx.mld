@@ -123,7 +123,7 @@ to a Server-Sent Events source and update content when events are received.
 }
 
 {b Example:}
-{[
+{@reasonml[
 <div hx_ext="sse" sse_connect="/events" sse_swap="message">
   {JSX.string("Loading...")}
 </div>
@@ -141,7 +141,7 @@ communication.
 }
 
 {b Example:}
-{[
+{@reasonml[
 <div hx_ext="ws" ws_connect="/chat">
   <form ws_send=true>
     <input type_="text" name="message" />
@@ -160,7 +160,7 @@ you to add, remove, or toggle CSS classes on a schedule.
 }
 
 {b Example:}
-{[
+{@reasonml[
 <div hx_ext="class-tools" classes="add highlight:1s">
   {JSX.string("This will be highlighted after 1 second")}
 </div>
@@ -177,7 +177,7 @@ resources to make page navigation feel instant.
 }
 
 {b Example:}
-{[
+{@reasonml[
 <a hx_ext="preload" preload="mouseover" href="/page">
   {JSX.string("Hover to preload")}
 </a>
@@ -194,7 +194,7 @@ elements when paths they depend on are modified.
 }
 
 {b Example:}
-{[
+{@reasonml[
 <div hx_ext="path-deps" path_deps="/api/todos" hx_get="/todos" hx_trigger="path-deps">
   {JSX.string("Todo list")}
 </div>
@@ -219,7 +219,7 @@ provides fine-grained control over loading indicators.
 }
 
 {b Example:}
-{[
+{@reasonml[
 <button hx_post="/submit" data_loading_disable=true>
   {JSX.string("Submit")}
 </button>

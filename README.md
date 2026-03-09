@@ -14,9 +14,10 @@
 - Integrates well with [htmx](https://htmx.org)
 - Type-safe, validates attributes and their types ([it can be better thought](https://github.com/davesnx/html_of_jsx/issues/2))
 - Works with [OCaml](https://ocaml.org), [Reason](https://reasonml.github.io) and [mlx](https://github.com/ocaml-mlx/mlx)
-- Minimal
+- Minimal API
   - `JSX.render` to render a JSX element to a HTML string
-  - `JSX.*` to construct DOM Elements and DOM nodes (`JSX.string`, `JSX.int`, `JSX.null`, `JSX.list` and `JSX.unsafe`)
+  - Helper functions to construct DOM nodes: `JSX.string`, `JSX.int`, `JSX.float`, `JSX.null`, `JSX.list`, `JSX.array`, and `JSX.unsafe`
+  - Advanced rendering: `JSX.render_to_channel`, `JSX.render_streaming`
 - Designed to work on the server, but can be used on the client-side as well (with [Melange](https://melange.re) or [jsoo](https://ocsigen.org/js_of_ocaml/))
 
 ## Installation
@@ -35,17 +36,42 @@ opam install html_of_jsx
 ```reason
 let element: JSX.element = <a href="https://x.com/davesnx">
   <span> {"Click me!"} </span>
-</a>
+</a>;
 
 let html: string = JSX.render(element);
+/* <a href="https://x.com/davesnx"><span>Click me!</span></a> */
 ```
 
 Check the [demo/server.re](./demo/server.re) file to see a full example.
 
 ## [Documentation](https://davesnx.github.io/html_of_jsx/html_of_jsx/index.html)
 
-Check the [Documentation](https://davesnx.github.io/html_of_jsx/html_of_jsx/index.html) to know more about the API and [features](https://davesnx.github.io/html_of_jsx/html_of_jsx/features.html).
+Check the [Documentation](https://davesnx.github.io/html_of_jsx/html_of_jsx/index.html) to know more about the API and features.
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.
+
+### Development
+
+```sh
+# Install dependencies
+make install
+
+# Run tests
+make test
+
+# Build the project
+make build
+
+# Run the demo server
+make demo
+```
 
 ## Credits
 
 This library was extracted from [server-reason-react](https://github.com/ml-in-barcelona/server-reason-react) and later simplified to work only with HTML5.
+
+## License
+
+[MIT](./LICENSE.md) © [David Sancho](https://github.com/davesnx)

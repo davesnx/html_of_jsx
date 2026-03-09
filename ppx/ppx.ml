@@ -10,7 +10,8 @@ let disable_static_optimization = ref false
 (* There's no pexp_list on Ppxlib since is not a constructor of the Parsetree *)
 let pexp_list ~loc xs =
   List.fold_left (List.rev xs) ~init:[%expr []] ~f:(fun xs x ->
-      [%expr [%e x] :: [%e xs]])
+      [%expr [%e x] :: [%e xs]]
+  )
 
 exception Error of expression
 
@@ -22,7 +23,8 @@ let raise_errorf ~loc fmt =
         pexp_extension ~loc
           (Location.error_extensionf ~loc "[html_of_jsx] %s" msg)
       in
-      raise (Error expr))
+      raise (Error expr)
+    )
     fmt
 
 let rec unwrap_children ~f children = function
@@ -32,15 +34,19 @@ let rec unwrap_children ~f children = function
       pexp_desc =
         Pexp_construct
           ( { txt = Lident "::"; _ },
-            Some { pexp_desc = Pexp_tuple [ child; next ]; _ } );
+            Some { pexp_desc = Pexp_tuple [ child; next ]; _ }
+          );
       _;
     } ->
       unwrap_children ~f (f child :: children) next
-  | e -> raise_errorf ~loc:e.pexp_loc "children prop should be a list"
+  | e ->
+      raise_errorf ~loc:e.pexp_loc "children prop should be a list"
 
 let is_jsx = function
-  | { attr_name = { txt = "JSX"; _ }; _ } -> true
-  | _ -> false
+  | { attr_name = { txt = "JSX"; _ }; _ } ->
+      true
+  | _ ->
+      false
 
 let has_jsx_attr attrs = List.exists ~f:is_jsx attrs
 
@@ -48,8 +54,10 @@ let rewrite_component ~loc tag args children =
   let component = pexp_ident ~loc tag in
   let props =
     match children with
-    | None -> args
-    | Some [ children ] -> (Labelled "children", children) :: args
+    | None ->
+        args
+    | Some [ children ] ->
+        (Labelled "children", children) :: args
     | Some children ->
         (Labelled "children", [%expr [%e pexp_list ~loc children]]) :: args
   in
@@ -57,7 +65,8 @@ let rewrite_component ~loc tag args children =
 
 let validate_attr ~loc id name =
   match Html.findByName id name with
-  | Ok p -> p
+  | Ok p ->
+      p
   | Error `ElementNotFound ->
       raise_errorf ~loc
         {|HTML tag '%s' doesn't exist.
@@ -69,7 +78,8 @@ If this is not correct, please open an issue at %s|}
         match suggestion with
         | Some suggestion ->
             Printf.sprintf "Hint: Maybe you mean '%s'?\n" suggestion
-        | None -> ""
+        | None ->
+            ""
       in
 
       raise_errorf ~loc
@@ -85,21 +95,30 @@ let build_polyvariant_type ~loc options =
           prf_desc = Rtag ({ loc; txt = opt.type_ }, true, []);
           prf_loc = loc;
           prf_attributes = [];
-        })
+        }
+    )
   in
   ptyp_variant ~loc row_fields Closed None
 
 let add_attribute_type_constraint ~loc ~is_optional
     (type_ : Html_attributes.kind) value =
   match (type_, is_optional) with
-  | String, true -> [%expr ([%e value] : string option)]
-  | String, false -> [%expr ([%e value] : string)]
-  | Int, false -> [%expr ([%e value] : int)]
-  | Int, true -> [%expr ([%e value] : int option)]
-  | Bool, false -> [%expr ([%e value] : bool)]
-  | Bool, true -> [%expr ([%e value] : bool option)]
-  | BooleanishString, false -> [%expr ([%e value] : bool)]
-  | BooleanishString, true -> [%expr ([%e value] : bool option)]
+  | String, true ->
+      [%expr ([%e value] : string option)]
+  | String, false ->
+      [%expr ([%e value] : string)]
+  | Int, false ->
+      [%expr ([%e value] : int)]
+  | Int, true ->
+      [%expr ([%e value] : int option)]
+  | Bool, false ->
+      [%expr ([%e value] : bool)]
+  | Bool, true ->
+      [%expr ([%e value] : bool option)]
+  | BooleanishString, false ->
+      [%expr ([%e value] : bool)]
+  | BooleanishString, true ->
+      [%expr ([%e value] : bool option)]
   | Polyvariant options, false ->
       let poly_type = build_polyvariant_type ~loc options in
       pexp_constraint ~loc value poly_type
@@ -117,7 +136,8 @@ let polyvariant_to_string_match ~loc options scrutinee =
     List.map options ~f:(fun (opt : Html_attributes.polyvariant) ->
         case
           ~lhs:(ppat_variant ~loc opt.type_ None)
-          ~guard:None ~rhs:(estring ~loc opt.jsxName))
+          ~guard:None ~rhs:(estring ~loc opt.jsxName)
+    )
   in
   let match_expr = pexp_match ~loc constrained cases in
   {
@@ -198,15 +218,19 @@ let is_optional = function Optional _ -> true | _ -> false
 let transform_labelled ~loc:_parentLoc ~tag_name props (prop_label, value) =
   let loc = props.pexp_loc in
   match prop_label with
-  | Nolabel -> props
+  | Nolabel ->
+      props
   | Optional name | Labelled name ->
       let is_optional = is_optional prop_label in
       let attribute = validate_attr ~loc tag_name name in
       let attribute_type =
         match attribute with
-        | Rich_attribute { type_; _ } -> type_
-        | Attribute { type_; _ } -> type_
-        | Event _ -> String
+        | Rich_attribute { type_; _ } ->
+            type_
+        | Attribute { type_; _ } ->
+            type_
+        | Event _ ->
+            String
       in
       let attribute_name = Html.getName attribute in
       let attribute_name_expr = estring ~loc attribute_name in
@@ -225,7 +249,8 @@ let transform_attributes ~loc ~tag_name attrs =
     |> List.fold_left ~f:(transform_labelled ~loc ~tag_name) ~init:[%expr []]
   in
   match attrs with
-  | [%expr []] -> [%expr []]
+  | [%expr []] ->
+      [%expr []]
   | attrs ->
       (* We need to filter attributes since optionals are represented as None *)
       [%expr Stdlib.List.filter_map Stdlib.Fun.id [%e attrs]]
@@ -239,7 +264,10 @@ let generate_buffer_code ~loc ~parts ~static_size ~dynamic_count =
   (* Estimate buffer size: static + 64 bytes per dynamic part *)
   let estimated_size = static_size + (dynamic_count * 64) in
   let buffer_size =
-    if estimated_size > 0 then estimated_size else default_buffer_size
+    if estimated_size > 0 then
+      estimated_size
+    else
+      default_buffer_size
   in
   let buffer_size_expr = eint ~loc buffer_size in
   let generate_part_code part =
@@ -264,7 +292,8 @@ let generate_buffer_code ~loc ~parts ~static_size ~dynamic_count =
     List.fold_right ops ~init:[%expr ()] ~f:(fun op acc ->
         [%expr
           [%e op];
-          [%e acc]])
+          [%e acc]]
+    )
   in
 
   [%expr
@@ -284,7 +313,8 @@ let generate_dynamic_attrs_static_children_code ~loc analysis =
           is_self_closing;
         } ->
         (tag_name, static_attrs, dynamic_attrs, children_html, is_self_closing)
-    | _ -> assert false
+    | _ ->
+        assert false
   in
   let buf_var = "__html_buf" in
   let buf_ident = pexp_ident ~loc { loc; txt = Lident buf_var } in
@@ -312,7 +342,8 @@ let generate_dynamic_attrs_static_children_code ~loc analysis =
         [%expr
           if [%e expr] then (
             Buffer.add_char [%e buf_ident] ' ';
-            Buffer.add_string [%e buf_ident] [%e html_name_expr])]
+            Buffer.add_string [%e buf_ident] [%e html_name_expr]
+          )]
     | false ->
         (* String/int attributes *)
         let value_escape_code =
@@ -343,13 +374,16 @@ let generate_dynamic_attrs_static_children_code ~loc analysis =
 
   (* Generate opening tag end *)
   let open_tag_end =
-    if is_self_closing then [%expr Buffer.add_string [%e buf_ident] " />"]
-    else [%expr Buffer.add_char [%e buf_ident] '>']
+    if is_self_closing then
+      [%expr Buffer.add_string [%e buf_ident] " />"]
+    else
+      [%expr Buffer.add_char [%e buf_ident] '>']
   in
 
   (* Generate closing tag *)
   let close_tag =
-    if is_self_closing then [%expr ()]
+    if is_self_closing then
+      [%expr ()]
     else
       [%expr
         Buffer.add_string [%e buf_ident] "</";
@@ -361,15 +395,19 @@ let generate_dynamic_attrs_static_children_code ~loc analysis =
   let all_ops =
     (open_tag_start :: dynamic_attr_ops)
     @ [ open_tag_end ]
-    @ (if children_html = "" then []
-       else [ [%expr Buffer.add_string [%e buf_ident] [%e children_html_expr]] ])
+    @ ( if children_html = "" then
+          []
+        else
+          [ [%expr Buffer.add_string [%e buf_ident] [%e children_html_expr]] ]
+      )
     @ [ close_tag ]
   in
   let seq =
     List.fold_right all_ops ~init:[%expr ()] ~f:(fun op acc ->
         [%expr
           [%e op];
-          [%e acc]])
+          [%e acc]]
+    )
   in
 
   [%expr
@@ -389,7 +427,8 @@ let generate_optional_attrs_code ~loc analysis =
           is_self_closing;
         } ->
         (tag_name, static_attrs, optional_attrs, children_parts, is_self_closing)
-    | _ -> assert false
+    | _ ->
+        assert false
   in
   let buf_var = "__html_buf" in
   let buf_ident = pexp_ident ~loc { loc; txt = Lident buf_var } in
@@ -408,8 +447,10 @@ let generate_optional_attrs_code ~loc analysis =
 
   (* Generate opening tag end (closing > or />) *)
   let open_tag_end =
-    if is_self_closing then [%expr Buffer.add_string [%e buf_ident] " />"]
-    else [%expr Buffer.add_char [%e buf_ident] '>']
+    if is_self_closing then
+      [%expr Buffer.add_string [%e buf_ident] " />"]
+    else
+      [%expr Buffer.add_char [%e buf_ident] '>']
   in
 
   (* Generate code for each optional attribute *)
@@ -424,12 +465,14 @@ let generate_optional_attrs_code ~loc analysis =
           | Some true ->
               Buffer.add_char [%e buf_ident] ' ';
               Buffer.add_string [%e buf_ident] [%e html_name_expr]
-          | Some false | None -> ()]
+          | Some false | None ->
+              ()]
     | false ->
         (* String/int attributes: add attribute with value if Some *)
         let value_escape_code =
           match info.kind with
-          | Html_attributes.String -> [%expr JSX.escape [%e buf_ident] v]
+          | Html_attributes.String ->
+              [%expr JSX.escape [%e buf_ident] v]
           | Html_attributes.Int ->
               [%expr Buffer.add_string [%e buf_ident] (Int.to_string v)]
           | Html_attributes.Bool ->
@@ -450,7 +493,8 @@ let generate_optional_attrs_code ~loc analysis =
               Buffer.add_string [%e buf_ident] "=\"";
               [%e value_escape_code];
               Buffer.add_char [%e buf_ident] '"'
-          | None -> ()]
+          | None ->
+              ()]
   in
 
   let optional_attr_ops =
@@ -477,7 +521,8 @@ let generate_optional_attrs_code ~loc analysis =
 
   (* Generate closing tag *)
   let close_tag =
-    if is_self_closing then [%expr Buffer.add_string [%e buf_ident] " />"]
+    if is_self_closing then
+      [%expr Buffer.add_string [%e buf_ident] " />"]
     else
       [%expr
         Buffer.add_string [%e buf_ident] "</";
@@ -499,7 +544,8 @@ let generate_optional_attrs_code ~loc analysis =
     List.fold_right all_ops ~init:[%expr ()] ~f:(fun op acc ->
         [%expr
           [%e op];
-          [%e acc]])
+          [%e acc]]
+    )
   in
 
   [%expr
@@ -514,7 +560,8 @@ let rewrite_node_unoptimized ~loc tag_name args children =
   | Some children ->
       let childrens = pexp_list ~loc children in
       [%expr JSX.node [%e dom_node_name] [%e attributes] [%e childrens]]
-  | None -> [%expr JSX.node [%e dom_node_name] [%e attributes] []]
+  | None ->
+      [%expr JSX.node [%e dom_node_name] [%e attributes] []]
 
 let rewrite_node_optimized ~loc tag_name args children =
   let analysis =
@@ -531,12 +578,16 @@ let rewrite_node_optimized ~loc tag_name args children =
       let static_size =
         List.fold_left parts_list ~init:0 ~f:(fun acc part ->
             match part with
-            | Static_analysis.Static_str s -> acc + String.length s
-            | _ -> acc)
+            | Static_analysis.Static_str s ->
+                acc + String.length s
+            | _ ->
+                acc
+        )
       in
       let dynamic_count =
         List.fold_left parts_list ~init:0 ~f:(fun acc part ->
-            match part with Static_analysis.Static_str _ -> acc | _ -> acc + 1)
+            match part with Static_analysis.Static_str _ -> acc | _ -> acc + 1
+        )
       in
       generate_buffer_code ~loc ~parts:parts_list ~static_size ~dynamic_count
   | Static_analysis.Needs_buffer { parts; static_size; dynamic_count } ->
@@ -551,7 +602,8 @@ let rewrite_node_optimized ~loc tag_name args children =
 let rewrite_node ~loc tag_name args children =
   if !disable_static_optimization then
     rewrite_node_unoptimized ~loc tag_name args children
-  else rewrite_node_optimized ~loc tag_name args children
+  else
+    rewrite_node_optimized ~loc tag_name args children
 
 let split_args ~mapper args =
   let children = ref (Location.none, []) in
@@ -566,14 +618,18 @@ let split_args ~mapper args =
                   | Pexp_constant (Pconst_string _) ->
                       let loc = e.pexp_loc in
                       [%expr JSX.string [%e e]]
-                  | _ -> e
+                  | _ ->
+                      e
                 in
-                mapper expression)
+                mapper expression
+              )
               children_expression
           in
           children := (children_expression.pexp_loc, children');
           None
-      | arg_label, expression -> Some (arg_label, mapper expression))
+      | arg_label, expression ->
+          Some (arg_label, mapper expression)
+      )
   in
   let children_prop =
     match !children with _, [] -> None | _loc, children -> Some children
@@ -582,9 +638,12 @@ let split_args ~mapper args =
 
 let reverse_pexp_list ~loc expr =
   let rec go acc = function
-    | [%expr []] -> acc
-    | [%expr [%e? hd] :: [%e? tl]] -> go [%expr [%e hd] :: [%e acc]] tl
-    | expr -> expr
+    | [%expr []] ->
+        acc
+    | [%expr [%e? hd] :: [%e? tl]] ->
+        go [%expr [%e hd] :: [%e acc]] tl
+    | expr ->
+        expr
   in
   go [%expr []] expr
 
@@ -594,17 +653,20 @@ let list_have_tail expr =
       ({ txt = Lident "::"; _ }, Some { pexp_desc = Pexp_tuple _; _ })
   | Pexp_construct ({ txt = Lident "[]"; _ }, None) ->
       false
-  | _ -> true
+  | _ ->
+      true
 
 let transform_items_of_list ~loc ~mapper children =
   let rec run_mapper children accum =
     match children with
-    | [%expr []] -> reverse_pexp_list ~loc accum
+    | [%expr []] ->
+        reverse_pexp_list ~loc accum
     | [%expr [%e? v] :: [%e? acc]] when list_have_tail acc.pexp_desc ->
         [%expr [%e mapper#expression v]]
     | [%expr [%e? v] :: [%e? acc]] ->
         run_mapper acc [%expr [%e mapper#expression v] :: [%e accum]]
-    | notAList -> mapper#expression notAList
+    | notAList ->
+        mapper#expression notAList
   in
   run_mapper children [%expr []]
 
@@ -617,18 +679,21 @@ let extract_children_from_list expr =
         pexp_desc =
           Pexp_construct
             ( { txt = Lident "::"; _ },
-              Some { pexp_desc = Pexp_tuple [ child; next ]; _ } );
+              Some { pexp_desc = Pexp_tuple [ child; next ]; _ }
+            );
         _;
       } ->
         extract (child :: acc) next
-    | _ -> []
+    | _ ->
+        []
   in
   extract [] expr
 
 (* Analyze fragment children and generate optimized code if possible *)
 let optimize_fragment ~loc ~mapper children_expr =
   let children_list = extract_children_from_list children_expr in
-  if children_list = [] then [%expr JSX.list []]
+  if children_list = [] then
+    [%expr JSX.list []]
   else
     (* Analyze each child to see if we can optimize - check if they're static JSX elements *)
     let can_optimize, static_parts =
@@ -644,12 +709,17 @@ let optimize_fragment ~loc ~mapper children_expr =
                       { txt = Ldot (Lident "JSX", ("unsafe" | "string")); _ };
                   _;
                 },
-                [ (Nolabel, arg) ] ) -> (
+                [ (Nolabel, arg) ]
+              ) -> (
               match arg.pexp_desc with
               | Pexp_constant (Pconst_string (s, _, _)) ->
                   (can_opt, Static_analysis.Static_str s :: parts)
-              | _ -> (false, parts))
-          | _ -> (false, parts))
+              | _ ->
+                  (false, parts)
+            )
+          | _ ->
+              (false, parts)
+        )
         ~init:(true, []) children_list
     in
     (* If all children are static, generate direct buffer writes *)
@@ -665,14 +735,17 @@ let optimize_fragment ~loc ~mapper children_expr =
             | Static_analysis.Static_str s ->
                 let s_expr = estring ~loc s in
                 [%expr Buffer.add_string [%e buf_ident] [%e s_expr]]
-            | _ -> assert false)
+            | _ ->
+                assert false
+            )
           static_parts_rev
       in
       let seq =
         List.fold_right ops ~init:[%expr ()] ~f:(fun op acc ->
             [%expr
               [%e op];
-              [%e acc]])
+              [%e acc]]
+        )
       in
       [%expr
         let [%p buf_pat] = Buffer.create [%e buffer_size_expr] in
@@ -713,7 +786,9 @@ let rewrite_jsx =
             (* local_function() [@JSX] *)
             | Pexp_ident id ->
                 rewrite_component ~loc:tag.pexp_loc id rest_of_args children
-            | _ -> assert false)
+            | _ ->
+                assert false
+          )
         (* div() [@JSX] *)
         | Pexp_apply (_tag, _props) when has_jsx_attr expr.pexp_attributes ->
             raise_errorf ~loc:expr.pexp_loc "tag should be an identifier"
@@ -725,9 +800,13 @@ let rewrite_jsx =
               List.partition ~f:is_jsx expr.pexp_attributes
             in
             match (jsx_attr, rest_attributes) with
-            | [], _ -> super#expression expr
-            | _, _rest_attributes -> optimize_fragment ~loc ~mapper:self expr)
-        | _ -> super#expression expr
+            | [], _ ->
+                super#expression expr
+            | _, _rest_attributes ->
+                optimize_fragment ~loc ~mapper:self expr
+          )
+        | _ ->
+            super#expression expr
       with Error err -> [%expr [%e err]]
   end
 
@@ -736,13 +815,16 @@ let () =
     [
       ( "Enable htmx attributes in HTML and SVG elements",
         "-htmx",
-        Arg.Unit (fun () -> Extra_attributes.set Htmx) );
+        Arg.Unit (fun () -> Extra_attributes.set Htmx)
+      );
       ( "Enable react attributes in HTML and SVG elements",
         "-react",
-        Arg.Unit (fun () -> Extra_attributes.set React) );
+        Arg.Unit (fun () -> Extra_attributes.set React)
+      );
       ( "Disable static HTML optimization (use JSX.node for all elements)",
         "-disable-static-opt",
-        Arg.Unit (fun () -> disable_static_optimization := true) );
+        Arg.Unit (fun () -> disable_static_optimization := true)
+      );
     ]
   in
 

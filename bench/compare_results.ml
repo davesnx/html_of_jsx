@@ -53,37 +53,50 @@ let parse_json_file filename =
       done;
       if !end_pos > !start then
         Some (float_of_string (String.sub line !start (!end_pos - !start)))
-      else None
+      else
+        None
     with Not_found | Invalid_argument _ | Failure _ -> None
   in
 
   List.iter
     (fun line ->
       (* Check for name field *)
-      (match extract_string_value line "name" with
-      | Some n -> current_name := Some n
-      | None -> ());
+      ( match extract_string_value line "name" with
+      | Some n ->
+          current_name := Some n
+      | None ->
+          ()
+      );
       (* Check for latency_us field *)
-      (match extract_float_value line "latency_us" with
-      | Some l -> current_latency := Some l
-      | None -> ());
+      ( match extract_float_value line "latency_us" with
+      | Some l ->
+          current_latency := Some l
+      | None ->
+          ()
+      );
       (* If we have all fields, create result *)
       match (!current_name, !current_latency) with
       | Some name, Some latency_us ->
           results := { name; latency_us } :: !results;
           current_name := None;
           current_latency := None
-      | _ -> ())
+      | _ ->
+          ()
+    )
     lines;
 
   List.rev !results
 
 (* Format latency for display *)
 let format_latency us =
-  if us < 1.0 then Printf.sprintf "%.2f µs" us
-  else if us < 10.0 then Printf.sprintf "%.1f µs" us
-  else if us < 1000.0 then Printf.sprintf "%.0f µs" us
-  else Printf.sprintf "%.1f ms" (us /. 1000.0)
+  if us < 1.0 then
+    Printf.sprintf "%.2f µs" us
+  else if us < 10.0 then
+    Printf.sprintf "%.1f µs" us
+  else if us < 1000.0 then
+    Printf.sprintf "%.0f µs" us
+  else
+    Printf.sprintf "%.1f ms" (us /. 1000.0)
 
 (* Calculate percentage change (positive = regression, negative = improvement) *)
 let calc_change baseline current = (current -. baseline) /. baseline *. 100.0
@@ -112,24 +125,28 @@ let compare_text baseline_results new_results =
       | Some base_r ->
           let change = calc_change base_r.latency_us new_r.latency_us in
           let change_str =
-            if change > 0.0 then Printf.sprintf "+%.1f%%" change
-            else Printf.sprintf "%.1f%%" change
+            if change > 0.0 then
+              Printf.sprintf "+%.1f%%" change
+            else
+              Printf.sprintf "%.1f%%" change
           in
           let indicator =
             if change < -5.0 then (
               incr improved;
-              " ✓")
-            else if change > 5.0 then (
+              " ✓"
+            ) else if change > 5.0 then (
               incr regressed;
-              " ✗")
-            else (
+              " ✗"
+            ) else (
               incr unchanged;
-              "")
+              ""
+            )
           in
           Printf.printf "%-28s %12s %12s %11s%s\n" new_r.name
             (format_latency base_r.latency_us)
             (format_latency new_r.latency_us)
-            change_str indicator)
+            change_str indicator
+    )
     new_results;
 
   Printf.printf "%s\n" (String.make 68 '-');
@@ -163,19 +180,23 @@ let compare_markdown baseline_results new_results =
           let change_str =
             if change < -5.0 then (
               incr improved;
-              Printf.sprintf "**%.1f%%** ✓" change)
-            else if change > 5.0 then (
+              Printf.sprintf "**%.1f%%** ✓" change
+            ) else if change > 5.0 then (
               incr regressed;
-              Printf.sprintf "**+%.1f%%** ⚠️" change)
-            else (
+              Printf.sprintf "**+%.1f%%** ⚠️" change
+            ) else (
               incr unchanged;
-              if change > 0.0 then Printf.sprintf "+%.1f%%" change
-              else Printf.sprintf "%.1f%%" change)
+              if change > 0.0 then
+                Printf.sprintf "+%.1f%%" change
+              else
+                Printf.sprintf "%.1f%%" change
+            )
           in
           Printf.printf "| %s | %s | %s | %s |\n" new_r.name
             (format_latency base_r.latency_us)
             (format_latency new_r.latency_us)
-            change_str)
+            change_str
+    )
     new_results;
 
   Printf.printf
@@ -192,7 +213,8 @@ let () =
     List.filter
       (fun s ->
         (s <> "--markdown" && not (String.contains s '/'))
-        || String.contains s '.')
+        || String.contains s '.'
+      )
       args
   in
   let files = List.tl files in
@@ -202,7 +224,8 @@ let () =
   if List.length files < 2 then (
     Printf.eprintf "Usage: %s [--markdown] <baseline.json> <new.json>\n"
       Sys.argv.(0);
-    exit 1);
+    exit 1
+  );
 
   let baseline_file = List.nth files 0 in
   let new_file = List.nth files 1 in
@@ -211,10 +234,17 @@ let () =
     let baseline = parse_json_file baseline_file in
     let new_results = parse_json_file new_file in
     let no_regressions =
-      if markdown_mode then compare_markdown baseline new_results
-      else compare_text baseline new_results
+      if markdown_mode then
+        compare_markdown baseline new_results
+      else
+        compare_text baseline new_results
     in
-    exit (if no_regressions then 0 else 1)
+    exit
+      ( if no_regressions then
+          0
+        else
+          1
+      )
   with e ->
     Printf.eprintf "Error: %s\n" (Printexc.to_string e);
     exit 2
