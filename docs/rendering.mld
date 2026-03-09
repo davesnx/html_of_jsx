@@ -1,0 +1,44 @@
+{0 Rendering}
+
+html_of_jsx exposes multiple rendering styles through {!JSX}.
+
+{1 [JSX.render]}
+
+Use for most cases when you need a full HTML string:
+
+{@reasonml[
+let html = JSX.render(<div> {JSX.string("Hello")} </div>);
+]}
+
+{1 [JSX.render_to_channel]}
+
+Use when writing directly to an [out_channel] (file/socket/stdout):
+
+{@ocaml[
+JSX.render_to_channel stdout <div> "Hello" </div>;
+]}
+
+This avoids an intermediate large string allocation.
+
+{1 [JSX.render_streaming]}
+
+Use when your framework expects chunk callbacks:
+
+{@ocaml[
+JSX.render_streaming
+  (fun chunk -> ignore (chunk : string))
+  <main><h1> "Streaming" </h1></main>;
+]}
+
+{1 Static optimization}
+
+By default, the PPX can pre-render static JSX trees at compile time.
+
+Disable it with:
+
+{[
+(preprocess (pps html_of_jsx.ppx -disable-static-opt))
+]}
+
+Use this flag only when debugging or benchmarking behavior against the
+non-optimized path.

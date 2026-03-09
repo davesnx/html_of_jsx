@@ -1,29 +1,40 @@
-{0 Enable {{:https://react.dev/}React} attributes}
+{0 Enable React attributes}
 
-{1 {b (Experimental)}}
+{1 Experimental migration mode}
 
-Support React properties as attributes in all HTML and SVG elements.
+The [-react] PPX flag accepts React-style DOM props in HTML and SVG elements.
+Output remains standard HTML.
 
-{2 {b React properties}}
+This mode is mainly useful while migrating into or out of React codebases.
 
-React properties are renamed to match the React DOM API. The rendered HTML won't have any reactisms. For example, [className] is renamed to [class], [htmlFor] is renamed to [for], etc.
+{1 Enable}
 
-Those react properties are additional, HTML and SVG attributes are still correct. For example, [class] is still valid, and [className] is also valid.
-
-{2 {b Why}}
-
-This mode is a way to help migrate away from (or migrate to) React
-
-{2 {b Enable}}
-
-Adding the [-react] flag into the ppx
 {[
-  (libraries html_of_jsx)
-  (preprocess (pps html_of_jsx.ppx -react))
+(libraries html_of_jsx)
+(preprocess (pps html_of_jsx.ppx -react))
 ]}
 
-{2 {b Example}}
+{1 What it changes}
+
+Examples:
+
+- [className] is accepted and rendered as [class]
+- [htmlFor] is accepted and rendered as [for]
+
+Regular HTML attribute names still work.
 
 {@reasonml[
-JSX.render(<div className="random" />);
+JSX.render(
+  <div className="card">
+    <label htmlFor="email"> {JSX.string("Email")} </label>
+    <input id="email" type_="email" />
+  </div>,
+);
+(* <div class="card"><label for="email">Email</label><input id="email" type="email"></div> *)
 ]}
+
+{1 Guidance}
+
+- Prefer native HTML attribute names in new code
+- Use [-react] as a migration bridge, not a long-term default
+- Keep one convention per project when possible to reduce churn

@@ -1,0 +1,38 @@
+{0 Safety}
+
+html_of_jsx defaults to safe HTML rendering.
+
+{1 Escaping by default}
+
+Text rendered via [JSX.string], [JSX.int], [JSX.float], and normal JSX children
+is escaped.
+
+{@reasonml[
+JSX.render(<div> {JSX.string("<script>alert(1)</script>")} </div>);
+/* <div>&lt;script&gt;alert(1)&lt;/script&gt;</div> */
+]}
+
+{1 Type-safe attributes}
+
+Attributes are validated by tag and by value type.
+
+{@reasonml[
+<h1 noop=1> {JSX.string("Hello")} </h1>;
+/* Error: prop 'noop' is not valid on a 'h1' element. */
+]}
+
+{@reasonml[
+<h1 class_=1> {JSX.string("Hello")} </h1>;
+/* Error: int provided where string is expected. */
+]}
+
+{1 [JSX.unsafe]}
+
+[JSX.unsafe] bypasses escaping and should only be used with trusted content.
+
+{@reasonml[
+let trusted_markup = "<strong>safe only if trusted</strong>";
+let node = JSX.unsafe(trusted_markup);
+]}
+
+Avoid passing user-generated input to [JSX.unsafe].

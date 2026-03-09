@@ -1,229 +1,162 @@
-{0 {{:https://htmx.org/}Htmx} support}
+{0 htmx support}
 
-html_of_jsx provides two packages for working with htmx:
+html_of_jsx provides two pieces for htmx:
 
 {ul
-{- {b html_of_jsx.ppx [-htmx]}: Enables htmx attributes ([hx_get], [hx_post], [hx_swap], etc.) on all HTML elements}
-{- {b html_of_jsx.htmx}: A runtime library with JSX components for loading the htmx script and its extensions}
+{- {b [html_of_jsx.ppx -htmx]} to enable [hx_*] and extension attributes in JSX}
+{- {b [html_of_jsx.htmx]} runtime helpers to load htmx and extension scripts}
 }
 
 {1 Setup}
 
 {[
-  (libraries html_of_jsx html_of_jsx.htmx)
-  (preprocess (pps html_of_jsx.ppx -htmx))
+(libraries html_of_jsx html_of_jsx.htmx)
+(preprocess (pps html_of_jsx.ppx -htmx))
 ]}
 
-{1 Attributes}
+{1 Core attributes}
 
-The [-htmx] ppx flag enables htmx attributes on all HTML elements, scoped with the prefix {b hx_}.
+With [-htmx], htmx attributes are available with [hx_] names:
 
 {@reasonml[
-JSX.render(<div hx_boost=true />)
-(* <div hx-boost="true"></div> *)
+JSX.render(<a hx_get="/profile" hx_swap=`outerHTML> {JSX.string("Load profile")} </a>);
+(* <a hx-get="/profile" hx-swap="outerHTML">Load profile</a> *)
 ]}
 
-{1 Script and extensions}
+{1 Loading htmx scripts}
 
-The {b html_of_jsx.htmx} library provides JSX components to load the htmx
-script and its extensions from a CDN.
-
-{2 Loading htmx}
-
-Use [<Htmx />] to render a script tag that loads htmx:
+Use [<Htmx />] in your [<head>]:
 
 {@reasonml[
 <head>
   <Htmx version="2.0.4" />
-</head>
-(* <head><script src="https://unpkg.com/htmx.org@2.0.4"></script></head> *)
+</head>;
 ]}
 
-For subresource integrity, pass the [integrity] prop:
+For SRI:
 
 {@reasonml[
 <Htmx
   version="2.0.4"
   integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+"
-/>
+/>;
 ]}
 
-{2 Loading extension scripts}
+{1 Loading extension scripts}
 
-Each htmx extension has its own JSX component under [Htmx.Extensions] that
-renders a [<script>] tag loading the extension from a CDN:
+Each extension has a JSX component under [Htmx.Extensions]:
 
 {@reasonml[
 <head>
   <Htmx version="2.0.4" />
   <Htmx.Extensions.SSE version="2.2.2" />
   <Htmx.Extensions.WS version="2.2.0" />
-</head>
+</head>;
 ]}
 
-Available extensions:
+Available extension loaders:
+
 {ul
-{- [<Htmx.Extensions.SSE />] — {{:https://htmx.org/extensions/sse/}Server-Sent Events}}
-{- [<Htmx.Extensions.WS />] — {{:https://htmx.org/extensions/ws/}WebSocket}}
-{- [<Htmx.Extensions.Class_tools />] — {{:https://htmx.org/extensions/class-tools/}Class-tools}}
-{- [<Htmx.Extensions.Preload />] — {{:https://htmx.org/extensions/preload/}Preload}}
-{- [<Htmx.Extensions.Path_deps />] — {{:https://htmx.org/extensions/path-deps/}Path-deps}}
-{- [<Htmx.Extensions.Loading_states />] — {{:https://htmx.org/extensions/loading-states/}Loading-states}}
-{- [<Htmx.Extensions.Response_targets />] — {{:https://htmx.org/extensions/response-targets/}Response-targets}}
-{- [<Htmx.Extensions.Head_support />] — {{:https://htmx.org/extensions/head-support/}Head-support}}
+{- [<Htmx.Extensions.SSE />]}
+{- [<Htmx.Extensions.WS />]}
+{- [<Htmx.Extensions.Class_tools />]}
+{- [<Htmx.Extensions.Preload />]}
+{- [<Htmx.Extensions.Path_deps />]}
+{- [<Htmx.Extensions.Loading_states />]}
+{- [<Htmx.Extensions.Response_targets />]}
+{- [<Htmx.Extensions.Head_support />]}
 }
 
-All extension components accept an optional [?version] prop. Without it, the
-latest version is loaded from unpkg.
+All extension components accept optional [?version]. If omitted, unpkg latest
+is used.
 
-{1 Full example}
+{1 Task-based examples}
+
+{2 Form submit with partial swap}
 
 {@reasonml[
-let make = (~name, ()) => {
-  <html lang="en">
-    <head>
-      <title> "My App" </title>
-      <Htmx version="2.0.4" />
-      <Htmx.Extensions.SSE version="2.2.2" />
-    </head>
-    <body>
-      <h1> {JSX.string("Hello, " ++ name)} </h1>
-      <button hx_get="/clicked" hx_swap=`outerHTML>
-        "Click me"
-      </button>
-      <div hx_ext="sse" sse_connect="/events" sse_swap="message">
-        "Waiting for events..."
-      </div>
-    </body>
-  </html>;
-};
+<form hx_post="/todos" hx_target="#todo-list" hx_swap=`beforeend>
+  <input name="title" type_="text" />
+  <button type_="submit"> {JSX.string("Add")} </button>
+</form>
+]}
+
+{2 SSE live updates}
+
+{@reasonml[
+<div hx_ext="sse" sse_connect="/events" sse_swap="message">
+  {JSX.string("Waiting for updates...")}
+</div>
+]}
+
+{2 WebSocket chat send}
+
+{@reasonml[
+<section hx_ext="ws" ws_connect="/chat">
+  <form ws_send=true>
+    <input type_="text" name="message" />
+    <button type_="submit"> {JSX.string("Send")} </button>
+  </form>
+</section>
 ]}
 
 {1 Extension attributes reference}
 
-htmx extensions add custom behaviors and require additional attributes. To use
-an extension, you need to:
+To use an extension:
 
 {ol
-{- Load the extension script}
-{- Add the {b hx_ext} attribute to enable it}
+{- Load its script component under [Htmx.Extensions.*]}
+{- Set [hx_ext] on the element where it applies}
 {- Use extension-specific attributes}
 }
 
-{2 SSE (Server-Sent Events)}
+{2 SSE}
 
-The {{:https://htmx.org/extensions/sse/}SSE extension} allows you to connect
-to a Server-Sent Events source and update content when events are received.
+- [sse_connect]: SSE endpoint URL
+- [sse_swap]: event name to swap on
+- [sse_close]: event name that closes the stream
 
-{b Attributes:}
-{ul
-{- {b sse_connect}: URL to connect to for SSE}
-{- {b sse_swap}: event name to swap content on}
-{- {b sse_close}: event name to close the connection on}
-}
+{2 WS}
 
-{b Example:}
-{@reasonml[
-<div hx_ext="sse" sse_connect="/events" sse_swap="message">
-  {JSX.string("Loading...")}
-</div>
-]}
-
-{2 WebSocket}
-
-The {{:https://htmx.org/extensions/ws/}WebSocket extension} enables WebSocket
-communication.
-
-{b Attributes:}
-{ul
-{- {b ws_connect}: URL to connect to for WebSocket}
-{- {b ws_send}: when true, sends a message to the WebSocket server on trigger}
-}
-
-{b Example:}
-{@reasonml[
-<div hx_ext="ws" ws_connect="/chat">
-  <form ws_send=true>
-    <input type_="text" name="message" />
-  </form>
-</div>
-]}
+- [ws_connect]: WebSocket endpoint URL
+- [ws_send]: send form/event payload over socket
 
 {2 Class-tools}
 
-The {{:https://htmx.org/extensions/class-tools/}Class-tools extension} allows
-you to add, remove, or toggle CSS classes on a schedule.
-
-{b Attributes:}
-{ul
-{- {b classes}: a run list of class operations (e.g., "add highlight:1s")}
-}
-
-{b Example:}
-{@reasonml[
-<div hx_ext="class-tools" classes="add highlight:1s">
-  {JSX.string("This will be highlighted after 1 second")}
-</div>
-]}
+- [classes]: run list for class operations
 
 {2 Preload}
 
-The {{:https://htmx.org/extensions/preload/}Preload extension} preloads linked
-resources to make page navigation feel instant.
-
-{b Attributes:}
-{ul
-{- {b preload}: when to preload ("mousedown" or "mouseover")}
-}
-
-{b Example:}
-{@reasonml[
-<a hx_ext="preload" preload="mouseover" href="/page">
-  {JSX.string("Hover to preload")}
-</a>
-]}
+- [preload]: preload trigger, for example ["mousedown"] or ["mouseover"]
 
 {2 Path-deps}
 
-The {{:https://htmx.org/extensions/path-deps/}Path-deps extension} refreshes
-elements when paths they depend on are modified.
-
-{b Attributes:}
-{ul
-{- {b path_deps}: path(s) this element depends on}
-}
-
-{b Example:}
-{@reasonml[
-<div hx_ext="path-deps" path_deps="/api/todos" hx_get="/todos" hx_trigger="path-deps">
-  {JSX.string("Todo list")}
-</div>
-]}
+- [path_deps]: paths that trigger refresh updates
 
 {2 Loading-states}
 
-The {{:https://htmx.org/extensions/loading-states/}Loading-states extension}
-provides fine-grained control over loading indicators.
+- [data_loading], [data_loading_class], [data_loading_disable]
+- [data_loading_delay], [data_loading_target], [data_loading_path]
+- [data_loading_states] marker
 
-{b Attributes:}
-{ul
-{- {b data_loading}: show element during request}
-{- {b data_loading_class}: add CSS class during request}
-{- {b data_loading_class_remove}: remove CSS class during request}
-{- {b data_loading_disable}: disable element during request}
-{- {b data_loading_aria_busy}: set aria-busy during request}
-{- {b data_loading_delay}: delay before applying loading state (e.g., "200ms")}
-{- {b data_loading_target}: CSS selector for target element}
-{- {b data_loading_path}: only trigger for requests to this path}
-{- {b data_loading_states}: marker to enable the extension}
-}
+{1 End-to-end skeleton}
 
-{b Example:}
 {@reasonml[
-<button hx_post="/submit" data_loading_disable=true>
-  {JSX.string("Submit")}
-</button>
-<div data_loading=true data_loading_delay="200ms">
-  {JSX.string("Loading...")}
-</div>
+let page = () => {
+  <html lang="en">
+    <head>
+      <title> {JSX.string("htmx + html_of_jsx")} </title>
+      <Htmx version="2.0.4" />
+      <Htmx.Extensions.SSE version="2.2.2" />
+    </head>
+    <body>
+      <button hx_get="/clicked" hx_swap=`outerHTML>
+        {JSX.string("Click me")}
+      </button>
+      <div hx_ext="sse" sse_connect="/events" sse_swap="message">
+        {JSX.string("Waiting for events...")}
+      </div>
+    </body>
+  </html>;
+};
 ]}

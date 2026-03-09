@@ -1,0 +1,49 @@
+{0 Getting started}
+
+This page walks through the minimum setup and first render.
+
+{1 Installation}
+
+{@bash[
+opam install html_of_jsx
+]}
+
+{1 Dune setup}
+
+Add the runtime library and PPX:
+
+{[
+(libraries html_of_jsx)
+(preprocess (pps html_of_jsx.ppx))
+]}
+
+{1 Your first component}
+
+{@reasonml[
+let greeting = (~name, ()) => {
+  <div class_="greeting">
+    <h1> {JSX.string("Hello, " ++ name ++ "!")} </h1>
+  </div>;
+};
+
+let html = JSX.render(<greeting name="World" />);
+/* <div class="greeting"><h1>Hello, World!</h1></div> */
+]}
+
+{1 JSX conventions}
+
+- Components are functions that return [JSX.element]
+- Lowercase names are regular HTML/SVG tags
+- Uppercase names resolve to module [make] by default ([<Button />] => [<Button.make />])
+- Reserved OCaml keywords in attributes use an underscore suffix ([class_], [type_], [for_])
+
+{1 Optional flags}
+
+You can extend behavior with PPX flags:
+
+{[
+(preprocess (pps html_of_jsx.ppx -htmx -react))
+]}
+
+- [-htmx] enables [hx_*] and extension-specific attributes
+- [-react] enables React DOM prop aliases for migration scenarios

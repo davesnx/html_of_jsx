@@ -1,229 +1,51 @@
-{0 html_of_jsx {b Render HTML with JSX}}
+{0 html_of_jsx}
 
-{b html_of_jsx} is a library and a ppx to write HTML declaratively in {{:https://ocaml.org}OCaml}, {{:https://reasonml.github.io}Reason} and {{:https://github.com/ocaml-mlx/mlx}mlx}.
+{b Render HTML with JSX in OCaml, Reason, and mlx.}
 
-This library was extracted from {{: https://github.com/ml-in-barcelona/server-reason-react} server-reason-react} and simplified to only work with HTML and SVG.
+html_of_jsx is a JSX transformation and runtime library for rendering HTML and
+SVG with type-safe attributes.
 
-{1 Installation}
+{1 Quick Start}
+
+Install the package:
 
 {@bash[
 opam install html_of_jsx
 ]}
 
-add it to your {b dune} file
+Enable the library and PPX in your dune stanza:
 
 {[
 (libraries html_of_jsx)
 (preprocess (pps html_of_jsx.ppx))
 ]}
 
-{1 Overview}
-
-- {b Minimal design}. It should just get out of the way. The ppx is seamless and the interface is focused on the essentials.
-- {b Type-safe} validates correct attributes and its types
-- Works with {{:https://ocaml.org} OCaml}, {{:https://reasonml.github.io} Reason} and {{:https://github.com/ocaml-mlx/mlx}mlx}
-- Brings the "component model" to HTML
-- Supports all of {{:https://reasonml.github.io/docs/syntax/jsx} Reason's JSX} features (uppercase components, fragments, optional attributes, punning)
-- but with a few improvements (lowercase components, no need for a ppx annotation)
-- No React idioms (no [className], no [htmlFor], no [onChange], etc...), just plain HTML5
-- Integrates well with {{:https://htmx.org/}Htmx} and others (see the {!page-"htmx"} page)
-- Designed to work on the server, but can be used on the client-side (with {{:https://melange.re} Melange} or {{:https://ocsigen.org/js_of_ocaml/} jsoo})
-
-{1 API}
-
-The library exposes a single module {!JSX} with a minimal API:
-- A way to create DOM elements and nodes ([JSX.string], [JSX.int], [JSX.null], [JSX.list], [JSX.unsafe]) into a [JSX.t] tree
-- and [JSX.render] which transforms a [JSX.t] tree into an HTML string
-- the rest are your functions that return [JSX.t] trees, which are known as "components"
-
-{b Visit the {!JSX} page for the complete interface documentation}
-
-{2 It's just HTML}
-
-We stick to the HTML standard, so no react idioms like [className], no [htmlFor], etc.
+Render HTML from JSX:
 
 {@reasonml[
-let element = <span> {JSX.string("Hello world!")} </span>;
+let page = <main><h1> {JSX.string("Hello from html_of_jsx")} </h1></main>;
+
+let html = JSX.render(page);
+/* <main><h1>Hello from html_of_jsx</h1></main> */
 ]}
 
-{b Note}: {{: https://v2.ocaml.org/manual/lex.html#sss:keywords} reserved keywords} aren't possible as props. For example: [class] => [class_] or [type] => [type_].
+{1 Documentation Map}
 
-{2 Components are functions with labeled arguments}
+- {{!page-"getting-started"}Getting started}: setup, first component, and JSX basics
+- {{!page-"components"}Components}: props, children, fragments, and composition
+- {{!page-"rendering"}Rendering}: render APIs and performance flags
+- {{!page-"safety"}Safety}: escaping, [unsafe], and attribute validation
+- {{!page-"htmx"}htmx support}: ppx flag, script loaders, and extension attributes
+- {{!page-"react"}React attributes}: migration mode with the [-react] flag
 
-{@reasonml[
-let component = (~name, ()) => {
-  <div> <h1> {JSX.string("Hello, " ++ name ++ "!")} </h1> </div>;
-};
+{1 Public API}
 
-JSX.render(<component name="lola" />);
-]}
+- {!JSX}: core runtime module used by generated JSX code and user components
+- {!Htmx}: optional helpers to load htmx and htmx extension scripts
 
-{b Note:} The [component] function needs to have a last argument of type [unit] in order to work properly with labelled arguments. Explained on the {{: https://v2.ocaml.org/manual/lablexamples.html#s:optional-arguments} OCaml manual}: Functions with only labelled arguments, need a last non labelled argument to be able to be called as a non curried function.
+{1 Notes}
 
-{2 children: elements can be nested in other components}
-
-This makes possible to compose any HTML and abstract those components away. [~children] is a prop that receives the nested elements from the component invocation.
-
-{@reasonml[
-let hero = (~children, ()) => {
-  <main class_="fancy-hero"> {children} </main>;
-};
-
-JSX.render(<hero> {JSX.string("Hello, world!")} </hero>);
-]}
-
-In this example, the [hero] component is a function that takes a [children] prop and returns a [main] element with the class [fancy-hero]. The [children] prop is the nested elements from the component invocation.
-
-{2 Uppercase components default to the [make] function}
-
-{@reasonml[
-module Button = {
-  let make = () => {
-    <button onclick="onClickHandler"> {JSX.string("Click me")} </button>;
-  };
-};
-
-JSX.render(<Button />);
-// is equivalent to
-JSX.render(<Button.make />);
-]}
-
-{2 Brings the power of interleaving expressions within your JSX}
-
-{@reasonml[
-let component = (~name, ~children, ()) => {
-  <div>
-    <h1> {("Hello, " ++ name ++ "!") |> JSX.string} </h1>
-    <h2> children </h2>
-  </div>;
-};
-
-JSX.render(
-  <component name="World"> {JSX.string("This is a child!")} </component>,
-);
-]}
-
-{2 List of children are available with [JSX.list]}
-
-A component can receive more than one children, which is the case for the [ul] element, but many other elements too. To make sure a list of elements is an element, use the [JSX.list] function.
-
-{@reasonml[
-JSX.render(
-  <ul>
-    {["This", "is", "an", "unordered", "list"]
-     |> List.map(item => <li> {JSX.string(item)} </li>)
-     |> JSX.list}
-  </ul>,
-);
-]}
-
-{3 Supports list of elements as children}
-
-There are other cases where you want to construct many [JSX.element] without wrapping them in a HTML element, that's what [Fragment] is for: [<> ... </>].
-
-{@reasonml[
-let component: JSX.element =
-  <>
-    <div class_="md:w-1/3" />
-    <div class_="md:w-2/3" />
-  </>;
-
-let output = JSX.render(<component/>);
-/* <div class="md:w-1/3"></div><div class="md:w-2/3"></div> */
-]}
-
-{2 Type-safe}
-
-HTML attributes are type-checked and only valid attributes are allowed. It also ensures that the value is correct.
-
-{@reasonml[
-    <h1 noop=1> {JSX.string("Hello, world!")} </h1>
-    ^^^
-// Error: prop 'noop' is not valid on a 'h1' element.
-]}
-
-{@reasonml[
-    <h1 class_=1> {JSX.string("Hello, world!")} </h1>
-               ^
-// Error: This expression has type int but an expression was expected of type string
-]}
-
-And also in case of a misspell, it recommends the closest attribute
-
-{@reasonml[
-
-          <div ?onClick />
-          ^^^^
-// Error: prop 'onClick' is not valid on a 'div' element.
-//        Hint: Maybe you mean 'onclick'?
-]}
-
-{2 Works with {{:https://reasonml.github.io} Reason}}
-
-{@reasonml[
-let component = (~name, ()) => {
-  <div>
-    <h1> {JSX.string("Hello, " ++ name ++ "!")} </h1>
-  </div>;
-};
-
-JSX.render(<component name="World" />);
-]}
-
-{2 Works with {{:https://github.com/ocaml-mlx/mlx} mlx}}
-
-{{:https://github.com/ocaml-mlx/mlx}mlx} is an OCaml syntax dialect which adds JSX syntax expressions
-
-{@ocaml[
-let component ~name () =
-  <div>
-    <h1> ("Hello, " ^ name ^ "!") </h1>
-  </div>
-
-JSX.render <component name="World" />
-]}
-
-{2 ppx flags}
-
-The ppx supports several flags to customize its behavior:
-
-{3 [-htmx]}
-
-Enables htmx attributes in HTML and SVG elements. See {{!page-htmx}the htmx page} for more information.
-
-{[
-(preprocess (pps html_of_jsx.ppx -htmx))
-]}
-
-{3 [-react]}
-
-Enables React-specific attributes (like [className], [htmlFor], etc.) in HTML and SVG elements. See {{!page-react}the react page} for more information.
-
-{[
-(preprocess (pps html_of_jsx.ppx -react))
-]}
-
-{3 [-disable-static-opt]}
-
-Disables static HTML optimization. By default, the ppx pre-renders elements with static content at compile time for {{:https://sancho.dev/blog/making-html-of-jsx-10x-faster}better performance}. This flag forces all elements to use [JSX.node] at runtime instead of pre-rendered HTML.
-
-{[
-(preprocess (pps html_of_jsx.ppx -disable-static-opt))
-]}
-
-This flag may be useful for:
-- Debugging: inspect the actual [JSX.node] calls being generated
-- Compatibility: if you need the old behavior for some reason
-- Benchmarking: compare optimized vs unoptimized rendering performance
-
-{b Example:}
-
-{@reasonml[
-(* With static optimization (default): *)
-let element = <div class_="container"></div>;
-(* Compiles to: JSX.unsafe {|<div class="container"></div>|} *)
-
-(* With -disable-static-opt: *)
-let element = <div class_="container"></div>;
-(* Compiles to: JSX.node("div", [("class", `String "container")], []) *)
-]}
+- The library is designed for server-side rendering, and also works in client
+  environments such as Melange and js_of_ocaml.
+- The [html_of_jsx.ppx] package is an implementation package. Most users only
+  need to know the [html_of_jsx.ppx] flag options documented in the guides.

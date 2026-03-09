@@ -14,9 +14,9 @@
 - Integrates well with [htmx](https://htmx.org)
 - Type-safe, validates attributes and their types ([it can be better thought](https://github.com/davesnx/html_of_jsx/issues/2))
 - Works with [OCaml](https://ocaml.org), [Reason](https://reasonml.github.io) and [mlx](https://github.com/ocaml-mlx/mlx)
-- Minimal API
-  - `JSX.render` to render a JSX element to a HTML string
-  - Helper functions to construct DOM nodes: `JSX.string`, `JSX.int`, `JSX.float`, `JSX.null`, `JSX.list`, `JSX.array`, and `JSX.unsafe`
+- Minimal core API
+  - `JSX.render` to render a JSX element to an HTML string
+  - Helpers to construct nodes: `JSX.string`, `JSX.int`, `JSX.float`, `JSX.null`, `JSX.list`, `JSX.array`, `JSX.unsafe`
   - Advanced rendering: `JSX.render_to_channel`, `JSX.render_streaming`
 - Designed to work on the server, but can be used on the client-side as well (with [Melange](https://melange.re) or [jsoo](https://ocsigen.org/js_of_ocaml/))
 
@@ -44,9 +44,14 @@ let html: string = JSX.render(element);
 
 Check the [demo/server.re](./demo/server.re) file to see a full example.
 
-## [Documentation](https://davesnx.github.io/html_of_jsx/html_of_jsx/index.html)
+## Documentation
 
-Check the [Documentation](https://davesnx.github.io/html_of_jsx/html_of_jsx/index.html) to know more about the API and features.
+- Main docs: [html_of_jsx odoc](https://davesnx.github.io/html_of_jsx/html_of_jsx/index.html)
+- Getting started: setup and first render
+- Components: props, children, fragments
+- Rendering: string/channel/streaming APIs
+- htmx: `-htmx` attributes and extension loaders
+- React migration mode: `-react` attribute aliases
 
 ## Contributing
 
