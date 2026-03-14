@@ -21,7 +21,8 @@ let rec render_depth current max =
       <strong>(JSX.string "Leaf Node")</strong>
       <p class_="text-sm">(JSX.string label)</p>
     </div>
-  else wrapper ~depth:current ~max_depth:max (render_depth (current + 1) max)
+  else
+    wrapper ~depth:current ~max_depth:max (render_depth (current + 1) max)
 
 let depth_10 () = render_depth 0 10
 let depth_25 () = render_depth 0 25

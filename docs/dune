@@ -1,3 +1,12 @@
 (documentation
  (package html_of_jsx)
- (mld_files index getting-started core ppx how-ppx-works dream melange HTMX-mode React-compatibility))
+ (mld_files
+  index
+  getting-started
+  core
+  ppx
+  how-ppx-works
+  dream
+  melange
+  HTMX-mode
+  React-compatibility))

@@ -15,14 +15,16 @@ let compare_file = ref None
 let parse_args () =
   let args = Array.to_list Sys.argv in
   let rec parse = function
-    | [] -> ()
+    | [] ->
+        ()
     | "--json" :: rest ->
         json_mode := true;
         parse rest
     | "--compare" :: file :: rest ->
         compare_file := Some file;
         parse rest
-    | _ :: rest -> parse rest
+    | _ :: rest ->
+        parse rest
   in
   parse (List.tl args)
 
@@ -41,7 +43,8 @@ let extract_rate samples =
         let rate =
           Int64.to_float sample.Benchmark.iters /. sample.Benchmark.wall
         in
-        acc +. rate)
+        acc +. rate
+      )
       0.0 samples
   in
   total_rate /. float_of_int (List.length samples)
@@ -53,7 +56,12 @@ let run_bench ~name ~render =
       [ (name, render, ()) ]
   in
   let ops_sec = match samples with [ (_, s) ] -> extract_rate s | _ -> 0.0 in
-  let latency_us = if ops_sec > 0.0 then 1_000_000.0 /. ops_sec else 0.0 in
+  let latency_us =
+    if ops_sec > 0.0 then
+      1_000_000.0 /. ops_sec
+    else
+      0.0
+  in
   { name; latency_us; ops_sec }
 
 (* All scenarios to benchmark *)
@@ -80,12 +88,14 @@ let escape_benchmarks =
       fun () ->
         let buf = Buffer.create 128 in
         JSX.escape buf "Hello, World!";
-        ignore (Buffer.contents buf) );
+        ignore (Buffer.contents buf)
+    );
     ( "escape (dirty)",
       fun () ->
         let buf = Buffer.create 128 in
         JSX.escape buf "<script>alert('XSS')</script>";
-        ignore (Buffer.contents buf) );
+        ignore (Buffer.contents buf)
+    );
   ]
 
 (* JSON output *)
@@ -95,7 +105,8 @@ let results_to_json results =
       (fun r ->
         Printf.sprintf
           {|  {"name": "%s", "latency_us": %.2f, "ops_sec": %.2f, "unit": "ops/sec", "value": %.2f}|}
-          r.name r.latency_us r.ops_sec r.ops_sec)
+          r.name r.latency_us r.ops_sec r.ops_sec
+      )
       results
   in
   "[\n" ^ String.concat ",\n" items ^ "\n]"
@@ -127,30 +138,46 @@ let parse_baseline filename =
               if
                 String.length raw_name > 9
                 && String.sub raw_name 0 9 = "scenario/"
-              then String.sub raw_name 9 (String.length raw_name - 9)
+              then
+                String.sub raw_name 9 (String.length raw_name - 9)
               else if
                 String.length raw_name > 7
                 && String.sub raw_name 0 7 = "escape/"
-              then String.sub raw_name 7 (String.length raw_name - 7)
-              else raw_name
+              then
+                String.sub raw_name 7 (String.length raw_name - 7)
+              else
+                raw_name
             in
 
             (* Map old names to new names *)
             let name =
               match name with
-              | "trivial" -> "Trivial"
-              | "dashboard" -> "Dashboard"
-              | "blog" -> "Blog (50 comments)"
-              | "table" -> "Table (100 rows)"
-              | "ecommerce" -> "E-commerce"
-              | "form" -> "Form"
-              | "deep_tree" -> "Deep tree (50)"
-              | "wide_tree" -> "Wide tree (100)"
-              | "shallow_tree" -> "Shallow tree"
-              | "props_heavy" -> "Props heavy"
-              | "escape_clean" -> "escape (clean)"
-              | "escape_dirty" -> "escape (dirty)"
-              | other -> other
+              | "trivial" ->
+                  "Trivial"
+              | "dashboard" ->
+                  "Dashboard"
+              | "blog" ->
+                  "Blog (50 comments)"
+              | "table" ->
+                  "Table (100 rows)"
+              | "ecommerce" ->
+                  "E-commerce"
+              | "form" ->
+                  "Form"
+              | "deep_tree" ->
+                  "Deep tree (50)"
+              | "wide_tree" ->
+                  "Wide tree (100)"
+              | "shallow_tree" ->
+                  "Shallow tree"
+              | "props_heavy" ->
+                  "Props heavy"
+              | "escape_clean" ->
+                  "escape (clean)"
+              | "escape_dirty" ->
+                  "escape (dirty)"
+              | other ->
+                  other
             in
 
             (* Try to find latency_us first (new format) *)
@@ -179,7 +206,8 @@ let parse_baseline filename =
             (* If no latency_us, try to find "value" (old format with ops/sec) *)
             let latency =
               match latency with
-              | Some l -> Some l
+              | Some l ->
+                  Some l
               | None -> (
                   try
                     let idx =
@@ -205,29 +233,40 @@ let parse_baseline filename =
                     in
                     (* Convert ops/sec to latency_us *)
                     Some (1_000_000.0 /. ops_sec)
-                  with Not_found | Invalid_argument _ | Failure _ -> None)
+                  with Not_found | Invalid_argument _ | Failure _ -> None
+                )
             in
 
             match latency with
-            | Some l -> Hashtbl.add results name l
-            | None -> ()
-        with _ -> ())
+            | Some l ->
+                Hashtbl.add results name l
+            | None ->
+                ()
+        with _ -> ()
+    )
     lines;
   results
 
 (* Format latency for display *)
 let format_latency us =
-  if us < 1.0 then Printf.sprintf "%.2f" us
-  else if us < 10.0 then Printf.sprintf "%.1f" us
-  else Printf.sprintf "%.0f" us
+  if us < 1.0 then
+    Printf.sprintf "%.2f" us
+  else if us < 10.0 then
+    Printf.sprintf "%.1f" us
+  else
+    Printf.sprintf "%.0f" us
 
 (* Format change percentage *)
 let format_change baseline current =
   let pct = (current -. baseline) /. baseline *. 100.0 in
-  if pct > 5.0 then Printf.sprintf "    +%.1f%%" pct
-  else if pct < -5.0 then Printf.sprintf "✓   %.1f%%" pct
-  else if pct > 0.0 then Printf.sprintf "    +%.1f%%" pct
-  else Printf.sprintf "    %.1f%%" pct
+  if pct > 5.0 then
+    Printf.sprintf "    +%.1f%%" pct
+  else if pct < -5.0 then
+    Printf.sprintf "✓   %.1f%%" pct
+  else if pct > 0.0 then
+    Printf.sprintf "    +%.1f%%" pct
+  else
+    Printf.sprintf "    %.1f%%" pct
 
 (* Human-readable output *)
 let print_results results baseline =
@@ -235,10 +274,11 @@ let print_results results baseline =
   let has_baseline = Hashtbl.length baseline > 0 in
   if has_baseline then (
     Printf.printf "%-28s %12s    %s\n" "Scenario" "Time (µs)" "vs baseline";
-    print_endline (String.make 56 '-'))
-  else (
+    print_endline (String.make 56 '-')
+  ) else (
     Printf.printf "%-28s %12s\n" "Scenario" "Time (µs)";
-    print_endline (String.make 44 '-'));
+    print_endline (String.make 44 '-')
+  );
   List.iter
     (fun r ->
       let time_str = format_latency r.latency_us in
@@ -247,15 +287,21 @@ let print_results results baseline =
         | Some base_latency ->
             let change = format_change base_latency r.latency_us in
             Printf.printf "%-28s %12s %s\n" r.name time_str change
-        | None -> Printf.printf "%-28s %12s     NEW\n" r.name time_str
-      else Printf.printf "%-28s %12s\n" r.name time_str)
+        | None ->
+            Printf.printf "%-28s %12s     NEW\n" r.name time_str
+      else
+        Printf.printf "%-28s %12s\n" r.name time_str
+    )
     results;
-  if has_baseline then print_endline (String.make 56 '-')
-  else print_endline (String.make 44 '-')
+  if has_baseline then
+    print_endline (String.make 56 '-')
+  else
+    print_endline (String.make 44 '-')
 
 (* Count improvements/regressions *)
 let summarize results baseline =
-  if Hashtbl.length baseline = 0 then ()
+  if Hashtbl.length baseline = 0 then
+    ()
   else
     let improved = ref 0 in
     let regressed = ref 0 in
@@ -265,10 +311,15 @@ let summarize results baseline =
         match Hashtbl.find_opt baseline r.name with
         | Some base_latency ->
             let pct = (r.latency_us -. base_latency) /. base_latency *. 100.0 in
-            if pct < -5.0 then incr improved
-            else if pct > 5.0 then incr regressed
-            else incr unchanged
-        | None -> ())
+            if pct < -5.0 then
+              incr improved
+            else if pct > 5.0 then
+              incr regressed
+            else
+              incr unchanged
+        | None ->
+            ()
+      )
       results;
     Printf.printf "\nSummary: %d improved (>5%%), %d regressed, %d unchanged\n"
       !improved !regressed !unchanged
@@ -279,8 +330,10 @@ let () =
   (* Load baseline if specified *)
   let baseline =
     match !compare_file with
-    | Some file -> parse_baseline file
-    | None -> Hashtbl.create 0
+    | Some file ->
+        parse_baseline file
+    | None ->
+        Hashtbl.create 0
   in
 
   (* Run scenario benchmarks *)
@@ -295,9 +348,11 @@ let () =
 
   let all_results = scenario_results @ escape_results in
 
-  if !json_mode then print_endline (results_to_json all_results)
+  if !json_mode then
+    print_endline (results_to_json all_results)
   else (
     print_results scenario_results baseline;
     print_newline ();
     print_results escape_results baseline;
-    summarize all_results baseline)
+    summarize all_results baseline
+  )

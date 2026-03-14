@@ -54,10 +54,14 @@ let heavy_input ~id ~label =
 let heavy_button ~id ~text ~variant =
   let bg_color, text_color =
     match variant with
-    | `primary -> ("bg-blue-600", "text-white")
-    | `secondary -> ("bg-gray-200", "text-gray-800")
-    | `danger -> ("bg-red-600", "text-white")
-    | `success -> ("bg-green-600", "text-white")
+    | `primary ->
+        ("bg-blue-600", "text-white")
+    | `secondary ->
+        ("bg-gray-200", "text-gray-800")
+    | `danger ->
+        ("bg-red-600", "text-white")
+    | `success ->
+        ("bg-green-600", "text-white")
   in
   let btn_id = Printf.sprintf "btn-%d" id in
   let cls =
@@ -110,14 +114,20 @@ let heavy_table ~rows ~cols =
                     class_="px-6 py-3 text-left text-xs font-medium \
                             text-gray-500 uppercase">
                     (JSX.string col_label)
-                  </th>)))
+                  </th>
+              )
+             )
+          )
         </tr>
       </thead>
       <tbody class_="bg-white divide-y divide-gray-200">
         (JSX.list
            (List.init rows (fun row ->
                 let row_cls =
-                  if row mod 2 = 0 then "bg-white" else "bg-gray-50"
+                  if row mod 2 = 0 then
+                    "bg-white"
+                  else
+                    "bg-gray-50"
                 in
                 <tr role=`row aria_rowindex=(row + 1) class_=row_cls>
                   (JSX.list
@@ -135,8 +145,14 @@ let heavy_table ~rows ~cols =
                                     text-gray-900"
                             data_testid=cell_testid>
                             (JSX.string cell_content)
-                          </td>)))
-                </tr>)))
+                          </td>
+                      )
+                     )
+                  )
+                </tr>
+            )
+           )
+        )
       </tbody>
     </table>
   </div>
@@ -154,12 +170,18 @@ let small () =
                      (heavy_button ~id:(i * 3) ~text:"Primary" ~variant:`primary)
                      (heavy_button
                         ~id:((i * 3) + 1)
-                        ~text:"Secondary" ~variant:`secondary)
+                        ~text:"Secondary" ~variant:`secondary
+                     )
                      (heavy_button
                         ~id:((i * 3) + 2)
-                        ~text:"Delete" ~variant:`danger)
+                        ~text:"Delete" ~variant:`danger
+                     )
                    </div>;
-                 ]))))
+                 ]
+              )
+        )
+       )
+    )
   </div>
 
 let medium () =
@@ -172,7 +194,11 @@ let medium () =
                  [
                    heavy_input ~id:i ~label;
                    heavy_button ~id:i ~text:"Submit" ~variant:`primary;
-                 ]))))
+                 ]
+              )
+        )
+       )
+    )
   </div>
 
 let large () = <div class_="p-4">(heavy_table ~rows:100 ~cols:10)</div>
