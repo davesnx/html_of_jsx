@@ -67,7 +67,7 @@ val float : float -> element
       let element : JSX.element = JSX.float 3.14
     ]} *)
 
-val fragment : element list -> element [@@deprecated "Use JSX.list instead"]
+val fragment : children:element list -> unit -> element
 
 val int : int -> element
 (** Helper to render an integer.

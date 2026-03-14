@@ -1,6 +1,5 @@
 (executable
  (name server)
- (modules server styles htmx_demo)
  (libraries tiny_httpd tiny_httpd.core html_of_jsx html_of_jsx.htmx)
  (preprocess
   (pps html_of_jsx.ppx -htmx)))

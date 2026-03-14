@@ -46,7 +46,7 @@ Check the [demo/server.re](./demo/server.re) file to see a full example.
 
 ## Documentation
 
-- Main docs: [html_of_jsx odoc](https://davesnx.github.io/html_of_jsx/html_of_jsx/index.html)
+- Main docs: [html_of_jsx documentation](https://davesnx.github.io/html_of_jsx/)
 - Getting started: setup and first render
 - Components: props, children, fragments
 - Rendering: string/channel/streaming APIs

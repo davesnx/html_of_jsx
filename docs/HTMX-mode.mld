@@ -1,0 +1,208 @@
+{0 HTMX mode}
+
+Enable htmx attributes and extension script loaders.
+
+{1 How it works}
+
+The [-htmx] flag extends the set of valid attributes on every HTML element. There is no separate API — you keep writing normal JSX, and attributes like [hx_get], [hx_post], [hx_swap], etc. become available alongside the standard HTML ones. The PPX validates them at compile time just like any other attribute.
+
+{1 Enable mode}
+
+Turn on htmx attributes in the PPX and include the runtime helper package.
+
+{@dune[
+(libraries html_of_jsx html_of_jsx.htmx)
+(preprocess (pps html_of_jsx.ppx -htmx))
+]}
+
+---
+
+{1 Core attributes}
+
+Use [hx_*] names in JSX. They render as standard [hx-*] HTML attributes.
+
+{@reasonml[
+JSX.render(<a hx_get="/profile" hx_swap=`outerHTML> {JSX.string("Load profile")} </a>)
+(* <a hx-get="/profile" hx-swap="outerHTML">Load profile</a> *)
+]}
+
+{2 Request methods}
+
+{@reasonml[
+<button hx_get="/items"> "Load" </button>
+<form hx_post="/submit"> {children} </form>
+<button hx_delete={"/items/" ++ id}> "Remove" </button>
+<button hx_put={"/items/" ++ id}> "Replace" </button>
+<button hx_patch={"/items/" ++ id}> "Update" </button>
+]}
+
+{2 Targeting and swapping}
+
+Control where the response is placed and how it replaces existing content:
+
+{@reasonml[
+<button hx_get="/content" hx_target="#result" hx_swap=`innerHTML>
+  "Load into #result"
+</button>
+
+<button hx_get="/row" hx_target="closest tr" hx_swap=`outerHTML>
+  "Replace this row"
+</button>
+]}
+
+{2 Triggers}
+
+Customize what event fires the request. Supports modifiers like [delay], [changed], and [throttle]:
+
+{@reasonml[
+<input
+  type_=`search
+  name="query"
+  hx_post="/search"
+  hx_trigger="keyup changed delay:300ms, search"
+  hx_target="#results"
+  hx_swap=`outerHTML
+/>
+]}
+
+{2 Confirmation dialogs}
+
+Ask the user to confirm before sending:
+
+{@reasonml[
+<button
+  hx_delete={Printf.sprintf("/todos/%d", id)}
+  hx_target={Printf.sprintf("#todo-%d", id)}
+  hx_swap=`outerHTML
+  hx_confirm="Are you sure?">
+  "Delete"
+</button>
+]}
+
+{2 Loading indicators}
+
+Show a spinner or indicator while the request is in flight:
+
+{@reasonml[
+<button hx_get="/slow-content" hx_indicator="#spinner">
+  "Load"
+</button>
+<span id="spinner" class_="htmx-indicator"> "Loading..." </span>
+]}
+
+{2 Counter example}
+
+A server-side counter using [hx_post] with [hx_target] and [hx_swap]:
+
+{@reasonml[
+let counter = (~count, ()) => {
+  <div style="display: flex; align-items: center; gap: 12px">
+    <button
+      hx_post="/counter/decrement"
+      hx_target="#counter"
+      hx_swap=`outerHTML>
+      "-"
+    </button>
+    <span id="counter"> {JSX.int(count)} </span>
+    <button
+      hx_post="/counter/increment"
+      hx_target="#counter"
+      hx_swap=`outerHTML>
+      "+"
+    </button>
+  </div>;
+};
+]}
+
+---
+
+{1 Load script}
+
+Add [<Htmx />] in [<head>] to load htmx from unpkg.
+
+{@reasonml[
+<head>
+  <Htmx version="2.0.4" />
+</head>
+]}
+
+Pass [integrity] to enable SRI.
+
+{@reasonml[
+<Htmx
+  version="2.0.4"
+  integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+"
+/>
+]}
+
+---
+
+{1 Extensions}
+
+Use components under [Htmx.Extensions] for extension scripts. Each extension adds its own attributes to the JSX vocabulary.
+
+{@reasonml[
+<head>
+  <Htmx version="2.0.4" />
+  <Htmx.Extensions.SSE version="2.2.2" />
+  <Htmx.Extensions.WS version="2.2.0" />
+</head>
+]}
+
+{2 SSE (Server-Sent Events)}
+
+{@reasonml[
+<div hx_ext="sse" sse_connect="/events" sse_swap="message">
+  {JSX.string("Waiting for events...")}
+</div>
+]}
+
+{2 WebSocket}
+
+{@reasonml[
+<div hx_ext="ws" ws_connect="/chat">
+  <form ws_send="">
+    <input name="message" />
+    <button type_=`submit> "Send" </button>
+  </form>
+</div>
+]}
+
+{2 Available extension loaders}
+
+{ul
+{- [<Htmx.Extensions.SSE />]}
+{- [<Htmx.Extensions.WS />]}
+{- [<Htmx.Extensions.Class_tools />]}
+{- [<Htmx.Extensions.Preload />]}
+{- [<Htmx.Extensions.Path_deps />]}
+{- [<Htmx.Extensions.Loading_states />]}
+{- [<Htmx.Extensions.Response_targets />]}
+{- [<Htmx.Extensions.Head_support />]}
+}
+
+---
+
+{1 Full page example}
+
+A minimal page combining core htmx attributes with an SSE extension:
+
+{@reasonml[
+let page = () => {
+  <html lang="en">
+    <head>
+      <title> {JSX.string("htmx + html_of_jsx")} </title>
+      <Htmx version="2.0.4" />
+      <Htmx.Extensions.SSE version="2.2.2" />
+    </head>
+    <body>
+      <button hx_get="/clicked" hx_swap=`outerHTML>
+        {JSX.string("Click me")}
+      </button>
+      <div hx_ext="sse" sse_connect="/events" sse_swap="message">
+        {JSX.string("Waiting for events...")}
+      </div>
+    </body>
+  </html>
+};
+]}

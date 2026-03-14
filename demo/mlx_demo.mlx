@@ -1,0 +1,13 @@
+module Page = struct
+  let fragment () =
+    <JSX.fragment><div>"Hello"</div> <div>"World"</div></JSX.fragment>
+
+  let make () =
+    <html lang="en">
+      <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>"MLX Demo - html_of_jsx"</title>
+      </head>
+    </html>
+end

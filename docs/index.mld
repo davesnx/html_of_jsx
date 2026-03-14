@@ -1,51 +1,68 @@
 {0 html_of_jsx}
 
-{b Render HTML with JSX in OCaml, Reason, and mlx.}
+A JSX transformation and a library to write HTML in {{:https://reasonml.github.io}Reason} and {{:https://github.com/ocaml-mlx/mlx}mlx}.
 
-html_of_jsx is a JSX transformation and runtime library for rendering HTML and
-SVG with type-safe attributes.
+{1 Features}
 
-{1 Quick Start}
+{ul
+{- Brings the "component model" to HTML}
+{- Supports all of Reason's {{:https://reasonml.github.io/docs/en/jsx}JSX} features (uppercase components, fragments, optional attributes, punning) with a few improvements (lowercase components, no ppx annotation needed)}
+{- No React idioms (no [className], no [htmlFor], no [onChange], etc.)}
+{- Integrates well with {{:https://htmx.org}htmx}}
+{- Type-safe: validates attributes and their types at compile time}
+{- Works with {{:https://reasonml.github.io}Reason} and {{:https://github.com/ocaml-mlx/mlx}mlx}}
+{- Minimal core API
+  {ul
+  {- [JSX.render] to render a JSX element to an HTML string}
+  {- Helpers: [JSX.string], [JSX.int], [JSX.float], [JSX.null], [JSX.list], [JSX.array], [JSX.unsafe]}
+  {- Advanced rendering: [JSX.render_to_channel], [JSX.render_streaming]}
+  }}
+{- Designed to work on the server, but can be used on the client side as well (with {{:https://melange.re}Melange} or {{:https://ocsigen.org/js_of_ocaml/}js_of_ocaml})}
+}
 
-Install the package:
+{1 Installation}
 
 {@bash[
 opam install html_of_jsx
 ]}
 
-Enable the library and PPX in your dune stanza:
-
-{[
+{@dune[
 (libraries html_of_jsx)
 (preprocess (pps html_of_jsx.ppx))
 ]}
 
-Render HTML from JSX:
+See {!page-"getting-started"} for dune package manager, opam pin, and syntax setup.
+
+{1 Usage}
 
 {@reasonml[
-let page = <main><h1> {JSX.string("Hello from html_of_jsx")} </h1></main>;
+let element: JSX.element = <a href="https://x.com/davesnx">
+  <span> {"Click me!"} </span>
+</a>;
 
-let html = JSX.render(page);
-/* <main><h1>Hello from html_of_jsx</h1></main> */
+let html: string = JSX.render(element);
+/* <a href="https://x.com/davesnx"><span>Click me!</span></a> */
 ]}
 
-{1 Documentation Map}
+See {!page-core} for elements, children, components, and rendering.
 
-- {{!page-"getting-started"}Getting started}: setup, first component, and JSX basics
-- {{!page-"components"}Components}: props, children, fragments, and composition
-- {{!page-"rendering"}Rendering}: render APIs and performance flags
-- {{!page-"safety"}Safety}: escaping, [unsafe], and attribute validation
-- {{!page-"htmx"}htmx support}: ppx flag, script loaders, and extension attributes
-- {{!page-"react"}React attributes}: migration mode with the [-react] flag
+{1 Credits}
 
-{1 Public API}
+This library was extracted from {{:https://github.com/ml-in-barcelona/server-reason-react}server-reason-react} and later simplified to work only with HTML5.
 
-- {!JSX}: core runtime module used by generated JSX code and user components
-- {!Htmx}: optional helpers to load htmx and htmx extension scripts
+{1 Links}
 
-{1 Notes}
+- GitHub: {{:https://github.com/davesnx/html_of_jsx}davesnx/html_of_jsx}
+- OPAM: {{:https://opam.ocaml.org/packages/html_of_jsx/}html_of_jsx}
+- Performance: {{:https://sancho.dev/blog/making-html-of-jsx-10x-faster}Making html_of_jsx 10x faster}
 
-- The library is designed for server-side rendering, and also works in client
-  environments such as Melange and js_of_ocaml.
-- The [html_of_jsx.ppx] package is an implementation package. Most users only
-  need to know the [html_of_jsx.ppx] flag options documented in the guides.
+{1 Documentation}
+
+- {!page-"getting-started"} — installation, dune setup, and first component
+- {!page-core} — elements, children, and composition
+- {!page-ppx} — PPX flags and settings
+- {!page-"how-ppx-works"} — JSX transformation, static analysis, and performance
+- {!page-dream} — integrate with Dream
+- {!page-melange} — integrate with Melange
+- {!page-"HTMX-mode"} — htmx attributes and extensions
+- {!page-"React-compatibility"} — React DOM prop aliases

@@ -155,6 +155,15 @@ let () = {
 
   get(
     server,
+    Httpd.Route.(exact("mlx") @/ return),
+    _req => {
+      let html = JSX.render(Mlx_demo.Page.make());
+      Httpd.Response.make_string(Ok(html));
+    },
+  );
+
+  get(
+    server,
     Httpd.Route.(exact("htmx") @/ return),
     _req => {
       let html = JSX.render(Htmx_demo.page());
