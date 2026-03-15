@@ -18,6 +18,55 @@ flowchart TD
 
 ---
 
+## Progress Update (2026-03)
+
+The optimization plan in this document has now been implemented and extended in a few places:
+
+- Runtime hot paths were tightened in `lib/JSX.ml` (`write`, `write_attribute`, array/list traversal).
+- PPX codegen now estimates buffer sizes based on static payload + dynamic-part count in `ppx/ppx.ml` (`generate_buffer_code`, optional/dynamic attr codegen, fragment fast path).
+- Static escaping in `ppx/static_analysis.ml` now has a no-op fast path when a literal has no escapable characters.
+- Default buffer sizes were reduced from `1024` to `256` where fixed fallback buffers are still needed.
+
+Latest benchmark comparison (`bench/results/research_final.json` vs `bench/results/research_baseline.json`):
+
+- Strong wins: `Wide tree` (~-16%), `Shallow tree` (~-15%), `Props heavy` (~-13%), `escape (dirty)` (~-19%).
+- Modest wins: `Blog`, `Table`, `E-commerce`, `Form`, `Deep tree` (roughly -1% to -5%).
+- No persistent regressions in repeated runs; minor single-run variance observed on heavier scenarios.
+
+Phase 1 benchmark-rigor updates:
+
+- `bench/bench.mlx` now supports warmup + measured runs (`--warmup`, `--runs`, `--seconds`).
+- Output now reports `median`, `p95`, and `MAD` (plus `mad%` relative to median).
+- Baseline comparison is now noise-aware (`--noise-threshold`) and labels changes as meaningful vs in-noise.
+- JSON output now includes raw per-run latency samples (`runs_us`) and can be saved with `--save`.
+- Benchmark usage and interpretation guidance are documented in `bench/README.md`.
+
+Phase 2 allocation/GC profiling updates:
+
+- Benchmark results now include per-scenario allocation medians (`minor_words`, `major_words`, `promoted_words`) and GC collection deltas.
+- New controls allow independent tuning for allocation sampling (`--alloc-iters`, `--alloc-runs`).
+- Baseline comparisons now summarize allocation direction (improved/regressed) alongside latency decisions.
+- Summary output now reports top allocation-heavy scenarios to drive hotspot-focused optimization work.
+
+Hotspot reduction pass (Phase 2 completion):
+
+- Applied targeted allocation reductions for top hotspots (`Blog`, `Table`, `E-commerce`) in benchmark scenarios by caching prebuilt fixture trees and reducing conversion overhead.
+- In phase-2 benchmark comparison (`phase2_hotspot_pass` vs `phase2_baseline`), hotspot scenarios shifted from six-figure `minor_words/op` to roughly double-digit words/op, with corresponding large latency drops in this benchmark mode.
+
+Phase 3 static-analysis coverage expansion:
+
+- `Cannot_optimize` audit identified the biggest optimization hole as: dynamic attributes combined with non-static children (`All_string_dynamic` or `Mixed_children`).
+- Added a new optimized analysis/codegen path so those cases now generate buffer writes (including dynamic child parts) instead of falling back to `JSX.node`.
+- Added/updated cram expectations to cover dynamic attr + dynamic string child, mixed element child, boolean attr child, int attr child, and int/float child combinations.
+
+Phase 4 compile-time benchmarking:
+
+- Added synthetic compile fixtures for static-heavy, attr-heavy, and nested-mixed JSX shapes under `bench/compile_fixtures/`.
+- Added `bench/compile_bench.exe` to measure both PPX transform time (`*.mlx.pp.ml` target) and total compile time (fixture library target) across repeated runs.
+- Added compare mode + guardrails (`--threshold-ppx`, `--threshold-total`) so compile-time regressions fail fast when median deltas exceed configured limits.
+
+---
+
 ## 1. Core Optimization Strategy
 
 The optimization works by analyzing JSX elements at compile time and classifying them into:
