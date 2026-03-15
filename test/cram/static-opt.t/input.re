@@ -37,8 +37,18 @@ let dynamic_five_strings = (a, b, c, d, e) =>
     {JSX.string(e)}
   </span>;
 
-/* Test: Dynamic attributes (falls back to JSX.node) */
+/* Test: Dynamic attributes */
 let dynamic_attr = className => <div class_=className />;
+let dynamic_attr_with_string_child = (className, name) =>
+  <div class_=className> {JSX.string(name)} </div>;
+let dynamic_attr_with_mixed_child = (className, child) =>
+  <div class_=className> child </div>;
+let dynamic_bool_attr_with_child = (disabled, name) =>
+  <button disabled=disabled> {JSX.string(name)} </button>;
+let dynamic_int_attr_with_child = (tabindex, name) =>
+  <div tabindex=tabindex> {JSX.string(name)} </div>;
+let dynamic_attr_with_int_float_children = (className, count, price) =>
+  <div class_=className> {JSX.int(count)} {JSX.float(price)} </div>;
 
 /* Test: Element-typed dynamic children (uses Buffer) */
 let dynamic_element = child => <div> child </div>;

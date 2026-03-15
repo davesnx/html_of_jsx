@@ -1,0 +1,39 @@
+let rec branch ~depth ~label child =
+  if depth <= 0 then
+    <span class_="leaf">(JSX.string label)</span>
+  else
+    <div class_="branch" data_depth=(string_of_int depth)>
+      <header class_="branch-head">
+        <h3 class_="branch-title">(JSX.string label)</h3>
+      </header>
+      <div class_="branch-body">
+        (branch ~depth:(depth - 1) ~label:(label ^ "-L") child)
+        <section class_="dynamic-area">child</section>
+        (branch ~depth:(depth - 1) ~label:(label ^ "-R") child)
+      </div>
+      <footer class_="branch-foot">(JSX.string "end")</footer>
+    </div>
+
+let card ~title ~count ~price child =
+  <article class_="card mixed">
+    <h2 class_="card-title">(JSX.string title)</h2>
+    <p class_="meta">
+      <span class_="count">(JSX.int count)</span>
+      <span class_="price">(JSX.float price)</span>
+    </p>
+    <div class_="tree">(branch ~depth:3 ~label:title child)</div>
+  </article>
+
+let make () =
+  <main class_="nested-mixed">
+    (JSX.list
+       (List.init 10 (fun i ->
+            let title = Printf.sprintf "Node-%d" i in
+            let child = <em class_="inline">(JSX.string "child")</em> in
+            card ~title ~count:(i * 10) ~price:(9.99 +. float_of_int i) child
+        )
+       )
+    )
+  </main>
+
+let render () = JSX.render (make ())

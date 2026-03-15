@@ -2,7 +2,7 @@
   let lower = JSX.unsafe("<div></div>");
   let lower_empty_attr = JSX.unsafe("<div class=\"\"></div>");
   let lower_inline_styles = {
-    let __html_buf = Buffer.create(1024);
+    let __html_buf = Buffer.create(75);
     {
       {
         Buffer.add_char(__html_buf, '<');
@@ -27,7 +27,7 @@
     JSX.unsafe(Buffer.contents(__html_buf));
   };
   let lower_opt_attr = {
-    let __html_buf = Buffer.create(1024);
+    let __html_buf = Buffer.create(75);
     {
       {
         Buffer.add_char(__html_buf, '<');
@@ -133,23 +133,35 @@
                                  Buffer.add_string(__html_buf, "<li>");
                                  JSX.write(
                                    __html_buf,
-                                   JSX.node(
-                                     "a",
-                                     Stdlib.List.filter_map(
-                                       Stdlib.Fun.id,
-                                       [
-                                         Some((
-                                           "href",
-                                           `String(e.path: string),
-                                         )),
-                                         Some((
-                                           "onclick",
-                                           `String("console.log": string),
-                                         )),
-                                       ],
-                                     ),
-                                     [e.title |> s],
-                                   ),
+                                   {
+                                     let __html_buf = Buffer.create(157);
+                                     {
+                                       {
+                                         Buffer.add_char(__html_buf, '<');
+                                         Buffer.add_string(__html_buf, "a");
+                                         Buffer.add_string(
+                                           __html_buf,
+                                           " onclick=\"console.log\"",
+                                         );
+                                       };
+                                       {
+                                         Buffer.add_char(__html_buf, ' ');
+                                         Buffer.add_string(__html_buf, "href");
+                                         Buffer.add_string(__html_buf, "=\"");
+                                         JSX.escape(__html_buf, e.path);
+                                         Buffer.add_char(__html_buf, '"');
+                                       };
+                                       Buffer.add_char(__html_buf, '>');
+                                       JSX.write(__html_buf, e.title |> s);
+                                       {
+                                         Buffer.add_string(__html_buf, "</");
+                                         Buffer.add_string(__html_buf, "a");
+                                         Buffer.add_char(__html_buf, '>');
+                                       };
+                                       ();
+                                     };
+                                     JSX.unsafe(Buffer.contents(__html_buf));
+                                   },
                                  );
                                  Buffer.add_string(__html_buf, "</li>");
                                  ();

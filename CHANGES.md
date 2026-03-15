@@ -1,5 +1,12 @@
 # Changes
 
+## Unreleased
+
+- Improve runtime render speed in `JSX.write` by replacing iterator-heavy paths with direct recursion and indexed array traversal.
+- Reduce default render buffer sizes (`1024 -> 256`) and improve PPX-generated buffer capacity estimation for dynamic/optional attribute code paths.
+- Add a compile-time fast path for static HTML escaping in `ppx/static_analysis.ml` to avoid buffer work when no escaping is required.
+- Extend static optimization coverage for dynamic attributes: elements with dynamic attrs and dynamic string/mixed children now generate buffer-based optimized code instead of falling back to `JSX.node`.
+
 ## 0.0.8
 
 - Create `html_of_jsx.htmx` library with script and extension support

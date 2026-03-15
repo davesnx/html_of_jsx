@@ -1,0 +1,6 @@
+(library
+ (name attr_heavy_fixture)
+ (modules attr_heavy)
+ (libraries html_of_jsx)
+ (preprocess
+  (pps html_of_jsx.ppx)))

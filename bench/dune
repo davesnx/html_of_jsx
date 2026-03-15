@@ -14,3 +14,8 @@
  (name compare_results)
  (modules compare_results)
  (libraries str))
+
+(executable
+ (name compile_bench)
+ (modules compile_bench)
+ (libraries unix str))

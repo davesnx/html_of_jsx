@@ -255,7 +255,7 @@ let transform_attributes ~loc ~tag_name attrs =
       (* We need to filter attributes since optionals are represented as None *)
       [%expr Stdlib.List.filter_map Stdlib.Fun.id [%e attrs]]
 
-let default_buffer_size = 1024
+let default_buffer_size = 256
 
 let generate_buffer_code ~loc ~parts ~static_size ~dynamic_count =
   let buf_var = "__html_buf" in
@@ -301,28 +301,58 @@ let generate_buffer_code ~loc ~parts ~static_size ~dynamic_count =
     [%e seq];
     JSX.unsafe (Buffer.contents [%e buf_ident])]
 
-let generate_dynamic_attrs_static_children_code ~loc analysis =
-  let tag_name, static_attrs, dynamic_attrs, children_html, is_self_closing =
+let generate_dynamic_attrs_code ~loc analysis =
+  let tag_name, static_attrs, dynamic_attrs, children_parts, is_self_closing =
     match analysis with
-    | Static_analysis.Dynamic_attrs_static_children
+    | Static_analysis.Dynamic_attrs_children
         {
           tag_name;
           static_attrs;
           dynamic_attrs;
-          children_html;
+          children_parts;
           is_self_closing;
         } ->
-        (tag_name, static_attrs, dynamic_attrs, children_html, is_self_closing)
+        (tag_name, static_attrs, dynamic_attrs, children_parts, is_self_closing)
     | _ ->
         assert false
   in
   let buf_var = "__html_buf" in
   let buf_ident = pexp_ident ~loc { loc; txt = Lident buf_var } in
   let buf_pat = ppat_var ~loc { loc; txt = buf_var } in
-  let buffer_size_expr = eint ~loc default_buffer_size in
+  let static_children_size =
+    List.fold_left children_parts ~init:0 ~f:(fun acc part ->
+        match part with
+        | Static_analysis.Static_str s ->
+            acc + String.length s
+        | _ ->
+            acc
+    )
+  in
+  let dynamic_children_count =
+    List.fold_left children_parts ~init:0 ~f:(fun acc part ->
+        match part with Static_analysis.Static_str _ -> acc | _ -> acc + 1
+    )
+  in
+  let static_size =
+    String.length tag_name + String.length static_attrs + static_children_size
+    +
+    if is_self_closing then
+      4
+    else
+      5 + String.length tag_name
+  in
+  let estimated_size =
+    static_size + ((List.length dynamic_attrs + dynamic_children_count) * 64)
+  in
+  let buffer_size =
+    if estimated_size > 0 then
+      estimated_size
+    else
+      default_buffer_size
+  in
+  let buffer_size_expr = eint ~loc buffer_size in
   let tag_name_expr = estring ~loc tag_name in
   let static_attrs_expr = estring ~loc static_attrs in
-  let children_html_expr = estring ~loc children_html in
 
   (* Generate opening tag start *)
   let open_tag_start =
@@ -372,6 +402,22 @@ let generate_dynamic_attrs_static_children_code ~loc analysis =
 
   let dynamic_attr_ops = List.map ~f:generate_dynamic_attr_code dynamic_attrs in
 
+  let generate_child_part_code part =
+    match part with
+    | Static_analysis.Static_str s ->
+        let s_expr = estring ~loc s in
+        [%expr Buffer.add_string [%e buf_ident] [%e s_expr]]
+    | Static_analysis.Dynamic_string expr ->
+        [%expr JSX.escape [%e buf_ident] [%e expr]]
+    | Static_analysis.Dynamic_int expr ->
+        [%expr Buffer.add_string [%e buf_ident] (Int.to_string [%e expr])]
+    | Static_analysis.Dynamic_float expr ->
+        [%expr Buffer.add_string [%e buf_ident] (Float.to_string [%e expr])]
+    | Static_analysis.Dynamic_element expr ->
+        [%expr JSX.write [%e buf_ident] [%e expr]]
+  in
+  let children_ops = List.map ~f:generate_child_part_code children_parts in
+
   (* Generate opening tag end *)
   let open_tag_end =
     if is_self_closing then
@@ -395,12 +441,11 @@ let generate_dynamic_attrs_static_children_code ~loc analysis =
   let all_ops =
     (open_tag_start :: dynamic_attr_ops)
     @ [ open_tag_end ]
-    @ ( if children_html = "" then
-          []
-        else
-          [ [%expr Buffer.add_string [%e buf_ident] [%e children_html_expr]] ]
-      )
-    @ [ close_tag ]
+    @
+    if is_self_closing then
+      [ close_tag ]
+    else
+      children_ops @ [ close_tag ]
   in
   let seq =
     List.fold_right all_ops ~init:[%expr ()] ~f:(fun op acc ->
@@ -433,7 +478,31 @@ let generate_optional_attrs_code ~loc analysis =
   let buf_var = "__html_buf" in
   let buf_ident = pexp_ident ~loc { loc; txt = Lident buf_var } in
   let buf_pat = ppat_var ~loc { loc; txt = buf_var } in
-  let buffer_size_expr = eint ~loc default_buffer_size in
+  let static_children_size =
+    List.fold_left children_parts ~init:0 ~f:(fun acc part ->
+        match part with
+        | Static_analysis.Static_str s ->
+            acc + String.length s
+        | _ ->
+            acc
+    )
+  in
+  let static_size =
+    String.length tag_name + String.length static_attrs + static_children_size
+    +
+    if is_self_closing then
+      4
+    else
+      5 + String.length tag_name
+  in
+  let estimated_size = static_size + (List.length optional_attrs * 64) in
+  let buffer_size =
+    if estimated_size > 0 then
+      estimated_size
+    else
+      default_buffer_size
+  in
+  let buffer_size_expr = eint ~loc buffer_size in
   let tag_name_expr = estring ~loc tag_name in
   let static_attrs_expr = estring ~loc static_attrs in
 
@@ -594,8 +663,8 @@ let rewrite_node_optimized ~loc tag_name args children =
       generate_buffer_code ~loc ~parts ~static_size ~dynamic_count
   | Static_analysis.Has_optional_attrs _ as optional_data ->
       generate_optional_attrs_code ~loc optional_data
-  | Static_analysis.Dynamic_attrs_static_children _ as dynamic_data ->
-      generate_dynamic_attrs_static_children_code ~loc dynamic_data
+  | Static_analysis.Dynamic_attrs_children _ as dynamic_data ->
+      generate_dynamic_attrs_code ~loc dynamic_data
   | Static_analysis.Cannot_optimize ->
       rewrite_node_unoptimized ~loc tag_name args children
 
@@ -727,8 +796,23 @@ let optimize_fragment ~loc ~mapper children_expr =
       let buf_var = "__html_buf" in
       let buf_ident = pexp_ident ~loc { loc; txt = Lident buf_var } in
       let buf_pat = ppat_var ~loc { loc; txt = buf_var } in
-      let buffer_size_expr = eint ~loc default_buffer_size in
       let static_parts_rev = List.rev static_parts in
+      let static_size =
+        List.fold_left static_parts_rev ~init:0 ~f:(fun acc part ->
+            match part with
+            | Static_analysis.Static_str s ->
+                acc + String.length s
+            | _ ->
+                acc
+        )
+      in
+      let buffer_size =
+        if static_size > 0 then
+          static_size
+        else
+          default_buffer_size
+      in
+      let buffer_size_expr = eint ~loc buffer_size in
       let ops =
         List.map
           ~f:(function

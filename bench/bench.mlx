@@ -1,16 +1,67 @@
 (* html_of_jsx benchmarks
-   
-   Measures render latency (µs per render) for various scenarios.
-   
-   Usage:
-     dune exec bench/bench.exe                    # Human-readable output
-     dune exec bench/bench.exe -- --json          # JSON output for CI
-     dune exec bench/bench.exe -- --compare FILE  # Compare with baseline
-*)
 
-(* Command line arguments *)
+   Measures render latency (us per render) for various scenarios.
+ *)
+
+type bench_config = {
+  runs : int;
+  warmup : int;
+  seconds_per_run : int;
+  alloc_iters : int;
+  alloc_runs : int;
+  noise_threshold_pct : float;
+}
+
+type result = {
+  name : string;
+  median_us : float;
+  p95_us : float;
+  mad_us : float;
+  mad_pct : float;
+  ops_sec : float;
+  minor_words : float;
+  major_words : float;
+  promoted_words : float;
+  minor_collections : float;
+  major_collections : float;
+  forced_major_collections : float;
+  runs_us : float list;
+}
+
+type baseline_result = {
+  median_us : float;
+  mad_us : float;
+  minor_words : float;
+}
+
+let default_config =
+  {
+    runs = 9;
+    warmup = 3;
+    seconds_per_run = 2;
+    alloc_iters = 1000;
+    alloc_runs = 5;
+    noise_threshold_pct = 3.0;
+  }
+
 let json_mode = ref false
 let compare_file = ref None
+let save_file = ref None
+let config_ref = ref default_config
+
+let parse_int_arg ~name value =
+  match int_of_string_opt value with
+  | Some v when v >= 0 ->
+      v
+  | _ ->
+      invalid_arg (Printf.sprintf "Expected non-negative integer for %s" name)
+
+let parse_float_arg ~name value =
+  match float_of_string_opt value with
+  | Some v when v >= 0.0 ->
+      v
+  | _ ->
+      invalid_arg (Printf.sprintf "Expected non-negative float for %s" name)
 
 let parse_args () =
   let args = Array.to_list Sys.argv in
@@ -23,19 +74,46 @@ let parse_args () =
     | "--compare" :: file :: rest ->
         compare_file := Some file;
         parse rest
+    | "--save" :: file :: rest ->
+        save_file := Some file;
+        parse rest
+    | "--runs" :: value :: rest ->
+        let cfg = !config_ref in
+        config_ref := { cfg with runs = parse_int_arg ~name:"--runs" value };
+        parse rest
+    | "--warmup" :: value :: rest ->
+        let cfg = !config_ref in
+        config_ref := { cfg with warmup = parse_int_arg ~name:"--warmup" value };
+        parse rest
+    | "--seconds" :: value :: rest ->
+        let cfg = !config_ref in
+        config_ref :=
+          { cfg with seconds_per_run = parse_int_arg ~name:"--seconds" value };
+        parse rest
+    | "--alloc-iters" :: value :: rest ->
+        let cfg = !config_ref in
+        config_ref :=
+          { cfg with alloc_iters = parse_int_arg ~name:"--alloc-iters" value };
+        parse rest
+    | "--alloc-runs" :: value :: rest ->
+        let cfg = !config_ref in
+        config_ref :=
+          { cfg with alloc_runs = parse_int_arg ~name:"--alloc-runs" value };
+        parse rest
+    | "--noise-threshold" :: value :: rest ->
+        let cfg = !config_ref in
+        config_ref :=
+          {
+            cfg with
+            noise_threshold_pct =
+              parse_float_arg ~name:"--noise-threshold" value;
+          };
+        parse rest
     | _ :: rest ->
         parse rest
   in
   parse (List.tl args)
 
-(* Benchmark result type *)
-type result = {
-  name : string;
-  latency_us : float; (* microseconds per render *)
-  ops_sec : float; (* operations per second *)
-}
-
-(* Extract average rate from benchmark samples *)
 let extract_rate samples =
   let total_rate =
     List.fold_left
@@ -47,41 +125,152 @@ let extract_rate samples =
       )
       0.0 samples
   in
-  total_rate /. float_of_int (List.length samples)
+  if samples = [] then
+    0.0
+  else
+    total_rate /. float_of_int (List.length samples)
 
-(* Run a single benchmark and return result *)
-let run_bench ~name ~render =
+let run_sample ~seconds ~name ~render =
   let samples =
-    Benchmark.throughputN ~style:Benchmark.Nil ~repeat:3 2
+    Benchmark.throughputN ~style:Benchmark.Nil ~repeat:1 seconds
       [ (name, render, ()) ]
   in
-  let ops_sec = match samples with [ (_, s) ] -> extract_rate s | _ -> 0.0 in
-  let latency_us =
-    if ops_sec > 0.0 then
-      1_000_000.0 /. ops_sec
+  match samples with [ (_, s) ] -> extract_rate s | _ -> 0.0
+
+let percentile_sorted sorted p =
+  match sorted with
+  | [] ->
+      0.0
+  | [ x ] ->
+      x
+  | _ ->
+      let n = List.length sorted in
+      let rank = p /. 100.0 *. float_of_int (n - 1) in
+      let lo = int_of_float (Float.floor rank) in
+      let hi = int_of_float (Float.ceil rank) in
+      let lo_v = List.nth sorted lo in
+      let hi_v = List.nth sorted hi in
+      if lo = hi then
+        lo_v
+      else
+        let w = rank -. float_of_int lo in
+        lo_v +. ((hi_v -. lo_v) *. w)
+
+let median_sorted sorted = percentile_sorted sorted 50.0
+
+let mad_us sorted median =
+  let deviations =
+    List.map (fun x -> Float.abs (x -. median)) sorted |> List.sort compare
+  in
+  median_sorted deviations
+
+type alloc_sample = {
+  minor_words : float;
+  major_words : float;
+  promoted_words : float;
+  minor_collections : float;
+  major_collections : float;
+  forced_major_collections : float;
+}
+
+let measure_alloc_sample ~iters render =
+  Gc.full_major ();
+  let before = Gc.quick_stat () in
+  for _ = 1 to iters do
+    ignore (render ())
+  done;
+  let after = Gc.quick_stat () in
+  let f_iters = float_of_int iters in
+  {
+    minor_words = (after.minor_words -. before.minor_words) /. f_iters;
+    major_words = (after.major_words -. before.major_words) /. f_iters;
+    promoted_words = (after.promoted_words -. before.promoted_words) /. f_iters;
+    minor_collections =
+      float_of_int (after.minor_collections - before.minor_collections)
+      /. f_iters;
+    major_collections =
+      float_of_int (after.major_collections - before.major_collections)
+      /. f_iters;
+    forced_major_collections =
+      float_of_int
+        (after.forced_major_collections - before.forced_major_collections)
+      /. f_iters;
+  }
+
+let median_of samples f =
+  List.map f samples |> List.sort compare |> median_sorted
+
+let run_bench ~cfg ~name ~render =
+  for _ = 1 to cfg.warmup do
+    ignore (run_sample ~seconds:cfg.seconds_per_run ~name ~render)
+  done;
+  let measured_rates =
+    List.init cfg.runs (fun _ ->
+        run_sample ~seconds:cfg.seconds_per_run ~name ~render
+    )
+  in
+  let latencies =
+    List.map
+      (fun ops_sec ->
+        if ops_sec > 0.0 then
+          1_000_000.0 /. ops_sec
+        else
+          0.0
+      )
+      measured_rates
+  in
+  let sorted = List.sort compare latencies in
+  let median_us = median_sorted sorted in
+  let p95_us = percentile_sorted sorted 95.0 in
+  let mad_us = mad_us sorted median_us in
+  let mad_pct =
+    if median_us > 0.0 then
+      mad_us /. median_us *. 100.0
     else
       0.0
   in
-  { name; latency_us; ops_sec }
+  let ops_sec =
+    if median_us > 0.0 then
+      1_000_000.0 /. median_us
+    else
+      0.0
+  in
+  let alloc_samples =
+    List.init cfg.alloc_runs (fun _ ->
+        measure_alloc_sample ~iters:cfg.alloc_iters render
+    )
+  in
+  {
+    name;
+    median_us;
+    p95_us;
+    mad_us;
+    mad_pct;
+    ops_sec;
+    minor_words = median_of alloc_samples (fun s -> s.minor_words);
+    major_words = median_of alloc_samples (fun s -> s.major_words);
+    promoted_words = median_of alloc_samples (fun s -> s.promoted_words);
+    minor_collections = median_of alloc_samples (fun s -> s.minor_collections);
+    major_collections = median_of alloc_samples (fun s -> s.major_collections);
+    forced_major_collections =
+      median_of alloc_samples (fun s -> s.forced_major_collections);
+    runs_us = latencies;
+  }
 
-(* All scenarios to benchmark *)
 let scenarios =
   [
-    (* Realistic pages *)
     ("Trivial", Scenarios.Trivial.render);
     ("Dashboard", Scenarios.Dashboard.render);
     ("Blog (50 comments)", Scenarios.Blog.render);
     ("Table (100 rows)", Scenarios.Table.render);
     ("E-commerce", Scenarios.Ecommerce.render);
     ("Form", Scenarios.Form.render);
-    (* Synthetic stress tests *)
     ("Deep tree (50)", Scenarios.DeepTree.render);
     ("Wide tree (100)", Scenarios.WideTree.render);
     ("Shallow tree", Scenarios.ShallowTree.render);
     ("Props heavy", Scenarios.PropsHeavy.render);
   ]
 
-(* Micro-benchmarks for escape function *)
 let escape_benchmarks =
   [
     ( "escape (clean)",
@@ -98,156 +287,147 @@ let escape_benchmarks =
     );
   ]
 
-(* JSON output *)
-let results_to_json results =
-  let items =
-    List.map
-      (fun r ->
-        Printf.sprintf
-          {|  {"name": "%s", "latency_us": %.2f, "ops_sec": %.2f, "unit": "ops/sec", "value": %.2f}|}
-          r.name r.latency_us r.ops_sec r.ops_sec
-      )
-      results
-  in
-  "[\n" ^ String.concat ",\n" items ^ "\n]"
+let runs_to_json runs =
+  let items = List.map (Printf.sprintf "%.4f") runs in
+  "[" ^ String.concat ", " items ^ "]"
 
-(* Parse baseline JSON file - handles both old and new format *)
+let result_to_json r =
+  Printf.sprintf
+    "    {\"name\": \"%s\", \"latency_us\": %.4f, \"median_us\": %.4f, \
+     \"p95_us\": %.4f, \"mad_us\": %.4f, \"mad_pct\": %.4f, \"ops_sec\": %.2f, \
+     \"minor_words\": %.4f, \"major_words\": %.4f, \"promoted_words\": %.4f, \
+     \"minor_collections\": %.6f, \"major_collections\": %.6f, \
+     \"forced_major_collections\": %.6f, \"runs_us\": %s}"
+    r.name r.median_us r.median_us r.p95_us r.mad_us r.mad_pct r.ops_sec
+    r.minor_words r.major_words r.promoted_words r.minor_collections
+    r.major_collections r.forced_major_collections (runs_to_json r.runs_us)
+
+let results_to_json ~cfg results =
+  let header =
+    Printf.sprintf
+      "{\n\
+      \  \"config\": {\"runs\": %d, \"warmup\": %d, \"seconds\": %d, \
+       \"alloc_iters\": %d, \"alloc_runs\": %d, \"noise_threshold_pct\": %.2f},\n\
+      \  \"results\": [\n"
+      cfg.runs cfg.warmup cfg.seconds_per_run cfg.alloc_iters cfg.alloc_runs
+      cfg.noise_threshold_pct
+  in
+  let body = String.concat ",\n" (List.map result_to_json results) in
+  header ^ body ^ "\n  ]\n}"
+
+let extract_string_value line key =
+  try
+    let pattern = "\"" ^ key ^ "\":" in
+    let idx = Str.search_forward (Str.regexp_string pattern) line 0 in
+    let start = idx + String.length pattern in
+    let quote_start = String.index_from line start '"' in
+    let quote_end = String.index_from line (quote_start + 1) '"' in
+    Some (String.sub line (quote_start + 1) (quote_end - quote_start - 1))
+  with Not_found | Invalid_argument _ -> None
+
+let extract_float_value line key =
+  try
+    let pattern = "\"" ^ key ^ "\":" in
+    let idx = Str.search_forward (Str.regexp_string pattern) line 0 in
+    let start = ref (idx + String.length pattern) in
+    while !start < String.length line && line.[!start] = ' ' do
+      incr start
+    done;
+    let end_pos = ref !start in
+    while
+      !end_pos < String.length line
+      &&
+      let c = line.[!end_pos] in
+      (c >= '0' && c <= '9') || c = '.' || c = '-'
+    do
+      incr end_pos
+    done;
+    if !end_pos > !start then
+      Some (float_of_string (String.sub line !start (!end_pos - !start)))
+    else
+      None
+  with Not_found | Invalid_argument _ | Failure _ -> None
+
 let parse_baseline filename =
   let ic = open_in filename in
   let content = really_input_string ic (in_channel_length ic) in
   close_in ic;
-  let results = Hashtbl.create 20 in
+  let tbl = Hashtbl.create 20 in
   let lines = String.split_on_char '\n' content in
+  let cur_name = ref None in
+  let cur_latency = ref None in
+  let cur_mad = ref None in
+  let cur_minor_words = ref None in
+  let cur_major_words = ref None in
+  let cur_promoted_words = ref None in
   List.iter
     (fun line ->
-      if String.contains line '"' && String.contains line ':' then
-        try
-          (* Find "name": "..." *)
-          let name_start = String.index line '"' + 1 in
-          let name_end = String.index_from line name_start '"' in
-          let key = String.sub line name_start (name_end - name_start) in
-          if key = "name" then
-            (* Get the actual name value *)
-            let colon = String.index_from line name_end ':' in
-            let val_start = String.index_from line colon '"' + 1 in
-            let val_end = String.index_from line val_start '"' in
-            let raw_name = String.sub line val_start (val_end - val_start) in
-
-            (* Normalize name: strip prefix like "scenario/" or "escape/" *)
-            let name =
-              if
-                String.length raw_name > 9
-                && String.sub raw_name 0 9 = "scenario/"
-              then
-                String.sub raw_name 9 (String.length raw_name - 9)
-              else if
-                String.length raw_name > 7
-                && String.sub raw_name 0 7 = "escape/"
-              then
-                String.sub raw_name 7 (String.length raw_name - 7)
-              else
-                raw_name
-            in
-
-            (* Map old names to new names *)
-            let name =
-              match name with
-              | "trivial" ->
-                  "Trivial"
-              | "dashboard" ->
-                  "Dashboard"
-              | "blog" ->
-                  "Blog (50 comments)"
-              | "table" ->
-                  "Table (100 rows)"
-              | "ecommerce" ->
-                  "E-commerce"
-              | "form" ->
-                  "Form"
-              | "deep_tree" ->
-                  "Deep tree (50)"
-              | "wide_tree" ->
-                  "Wide tree (100)"
-              | "shallow_tree" ->
-                  "Shallow tree"
-              | "props_heavy" ->
-                  "Props heavy"
-              | "escape_clean" ->
-                  "escape (clean)"
-              | "escape_dirty" ->
-                  "escape (dirty)"
-              | other ->
-                  other
-            in
-
-            (* Try to find latency_us first (new format) *)
-            let latency =
-              try
-                let idx = Str.search_forward (Str.regexp "latency_us") line 0 in
-                let colon = String.index_from line idx ':' in
-                let start = ref (colon + 1) in
-                while !start < String.length line && line.[!start] = ' ' do
-                  incr start
-                done;
-                let end_pos = ref !start in
-                while
-                  !end_pos < String.length line
-                  &&
-                  let c = line.[!end_pos] in
-                  (c >= '0' && c <= '9') || c = '.'
-                do
-                  incr end_pos
-                done;
-                Some
-                  (float_of_string (String.sub line !start (!end_pos - !start)))
-              with Not_found | Invalid_argument _ | Failure _ -> None
-            in
-
-            (* If no latency_us, try to find "value" (old format with ops/sec) *)
-            let latency =
-              match latency with
-              | Some l ->
-                  Some l
-              | None -> (
-                  try
-                    let idx =
-                      Str.search_forward (Str.regexp "\"value\"") line 0
-                    in
-                    let colon = String.index_from line idx ':' in
-                    let start = ref (colon + 1) in
-                    while !start < String.length line && line.[!start] = ' ' do
-                      incr start
-                    done;
-                    let end_pos = ref !start in
-                    while
-                      !end_pos < String.length line
-                      &&
-                      let c = line.[!end_pos] in
-                      (c >= '0' && c <= '9') || c = '.'
-                    do
-                      incr end_pos
-                    done;
-                    let ops_sec =
-                      float_of_string
-                        (String.sub line !start (!end_pos - !start))
-                    in
-                    (* Convert ops/sec to latency_us *)
-                    Some (1_000_000.0 /. ops_sec)
-                  with Not_found | Invalid_argument _ | Failure _ -> None
-                )
-            in
-
-            match latency with
-            | Some l ->
-                Hashtbl.add results name l
-            | None ->
-                ()
-        with _ -> ()
+      ( match extract_string_value line "name" with
+      | Some n ->
+          cur_name := Some n
+      | None ->
+          ()
+      );
+      ( match extract_float_value line "latency_us" with
+      | Some l ->
+          cur_latency := Some l
+      | None -> (
+          match extract_float_value line "value" with
+          | Some ops when ops > 0.0 ->
+              cur_latency := Some (1_000_000.0 /. ops)
+          | _ ->
+              ()
+        )
+      );
+      ( match extract_float_value line "mad_us" with
+      | Some m ->
+          cur_mad := Some m
+      | None ->
+          ()
+      );
+      ( match extract_float_value line "minor_words" with
+      | Some v ->
+          cur_minor_words := Some v
+      | None ->
+          ()
+      );
+      ( match extract_float_value line "major_words" with
+      | Some v ->
+          cur_major_words := Some v
+      | None ->
+          ()
+      );
+      ( match extract_float_value line "promoted_words" with
+      | Some v ->
+          cur_promoted_words := Some v
+      | None ->
+          ()
+      );
+      match (!cur_name, !cur_latency) with
+      | Some name, Some median_us ->
+          let mad_us = match !cur_mad with Some m -> m | None -> 0.0 in
+          let minor_words =
+            match !cur_minor_words with Some v -> v | None -> 0.0
+          in
+          let _major_words =
+            match !cur_major_words with Some v -> v | None -> 0.0
+          in
+          let _promoted_words =
+            match !cur_promoted_words with Some v -> v | None -> 0.0
+          in
+          Hashtbl.replace tbl name { median_us; mad_us; minor_words };
+          cur_name := None;
+          cur_latency := None;
+          cur_mad := None;
+          cur_minor_words := None;
+          cur_major_words := None;
+          cur_promoted_words := None
+      | _ ->
+          ()
     )
     lines;
-  results
+  tbl
 
-(* Format latency for display *)
 let format_latency us =
   if us < 1.0 then
     Printf.sprintf "%.2f" us
@@ -256,78 +436,194 @@ let format_latency us =
   else
     Printf.sprintf "%.0f" us
 
-(* Format change percentage *)
-let format_change baseline current =
-  let pct = (current -. baseline) /. baseline *. 100.0 in
-  if pct > 5.0 then
-    Printf.sprintf "    +%.1f%%" pct
-  else if pct < -5.0 then
-    Printf.sprintf "✓   %.1f%%" pct
-  else if pct > 0.0 then
-    Printf.sprintf "    +%.1f%%" pct
+let percent_change ~baseline ~current =
+  if baseline = 0.0 then
+    0.0
   else
-    Printf.sprintf "    %.1f%%" pct
+    (current -. baseline) /. baseline *. 100.0
 
-(* Human-readable output *)
-let print_results results baseline =
+let compare_with_noise ~(cfg : bench_config) ~(baseline : baseline_result)
+    ~(current : result) =
+  let pct =
+    (current.median_us -. baseline.median_us) /. baseline.median_us *. 100.0
+  in
+  let baseline_mad_pct =
+    if baseline.median_us > 0.0 then
+      baseline.mad_us /. baseline.median_us *. 100.0
+    else
+      0.0
+  in
+  let current_mad_pct = current.mad_pct in
+  let noise_band =
+    max cfg.noise_threshold_pct (2.0 *. max baseline_mad_pct current_mad_pct)
+  in
+  let is_noise = Float.abs pct <= noise_band in
+  (pct, noise_band, is_noise)
+
+let print_results ~cfg results baseline =
   print_endline "=== html_of_jsx benchmark ===\n";
   let has_baseline = Hashtbl.length baseline > 0 in
   if has_baseline then (
-    Printf.printf "%-28s %12s    %s\n" "Scenario" "Time (µs)" "vs baseline";
-    print_endline (String.make 56 '-')
+    Printf.printf "%-28s %8s %8s %7s %9s %s\n" "Scenario" "med" "p95" "mad%"
+      "minor w/op" "vs baseline";
+    print_endline (String.make 92 '-')
   ) else (
-    Printf.printf "%-28s %12s\n" "Scenario" "Time (µs)";
-    print_endline (String.make 44 '-')
+    Printf.printf "%-28s %8s %8s %7s %9s\n" "Scenario" "med" "p95" "mad%"
+      "minor w/op";
+    print_endline (String.make 72 '-')
   );
   List.iter
-    (fun r ->
-      let time_str = format_latency r.latency_us in
+    (fun (r : result) ->
+      let med = format_latency r.median_us in
+      let p95 = format_latency r.p95_us in
       if has_baseline then
         match Hashtbl.find_opt baseline r.name with
-        | Some base_latency ->
-            let change = format_change base_latency r.latency_us in
-            Printf.printf "%-28s %12s %s\n" r.name time_str change
+        | Some b ->
+            let pct, noise_band, is_noise =
+              compare_with_noise ~cfg ~baseline:b ~current:r
+            in
+            let alloc_change =
+              if b.minor_words > 0.0 then
+                Some
+                  (percent_change ~baseline:b.minor_words ~current:r.minor_words)
+              else
+                None
+            in
+            let alloc_label =
+              match alloc_change with
+              | Some d ->
+                  Printf.sprintf "alloc %+.1f%%" d
+              | None ->
+                  "alloc n/a"
+            in
+            let marker, change =
+              if is_noise then
+                ( "~",
+                  Printf.sprintf "time %+.1f%% (noise <= %.1f%%), %s" pct
+                    noise_band alloc_label
+                )
+              else if pct < 0.0 then
+                ("✓", Printf.sprintf "time %+.1f%%, %s" pct alloc_label)
+              else
+                ("!", Printf.sprintf "time %+.1f%%, %s" pct alloc_label)
+            in
+            Printf.printf "%-28s %8s %8s %6.2f %9.1f %s %s\n" r.name med p95
+              r.mad_pct r.minor_words marker change
         | None ->
-            Printf.printf "%-28s %12s     NEW\n" r.name time_str
+            Printf.printf "%-28s %8s %8s %6.2f %9.1f NEW\n" r.name med p95
+              r.mad_pct r.minor_words
       else
-        Printf.printf "%-28s %12s\n" r.name time_str
+        Printf.printf "%-28s %8s %8s %6.2f %9.1f\n" r.name med p95 r.mad_pct
+          r.minor_words
     )
     results;
   if has_baseline then
-    print_endline (String.make 56 '-')
+    print_endline (String.make 92 '-')
   else
-    print_endline (String.make 44 '-')
+    print_endline (String.make 72 '-')
 
-(* Count improvements/regressions *)
-let summarize results baseline =
-  if Hashtbl.length baseline = 0 then
-    ()
-  else
+let summarize ~cfg results baseline =
+  if Hashtbl.length baseline = 0 then (
+    let top_alloc =
+      List.sort
+        (fun (a : result) (b : result) ->
+          Float.compare b.minor_words a.minor_words
+        )
+        results
+      |> fun xs ->
+      let rec take n acc = function
+        | _ when n <= 0 ->
+            List.rev acc
+        | [] ->
+            List.rev acc
+        | x :: rest ->
+            take (n - 1) (x :: acc) rest
+      in
+      take 3 [] xs
+    in
+    print_endline "\nTop allocation-heavy scenarios (minor words/op):";
+    List.iteri
+      (fun i r ->
+        Printf.printf "  %d) %s: %.1f (major %.1f, promoted %.1f)\n" (i + 1)
+          r.name r.minor_words r.major_words r.promoted_words
+      )
+      top_alloc
+  ) else
     let improved = ref 0 in
     let regressed = ref 0 in
-    let unchanged = ref 0 in
+    let noise = ref 0 in
+    let alloc_improved = ref 0 in
+    let alloc_regressed = ref 0 in
     List.iter
-      (fun r ->
+      (fun (r : result) ->
         match Hashtbl.find_opt baseline r.name with
-        | Some base_latency ->
-            let pct = (r.latency_us -. base_latency) /. base_latency *. 100.0 in
-            if pct < -5.0 then
+        | Some b ->
+            let pct, _, is_noise =
+              compare_with_noise ~cfg ~baseline:b ~current:r
+            in
+            if is_noise then
+              incr noise
+            else if pct < 0.0 then
               incr improved
-            else if pct > 5.0 then
-              incr regressed
             else
-              incr unchanged
+              incr regressed;
+            if b.minor_words > 0.0 then
+              let alloc_pct =
+                percent_change ~baseline:b.minor_words ~current:r.minor_words
+              in
+              if alloc_pct < -3.0 then
+                incr alloc_improved
+              else if alloc_pct > 3.0 then
+                incr alloc_regressed
         | None ->
             ()
       )
       results;
-    Printf.printf "\nSummary: %d improved (>5%%), %d regressed, %d unchanged\n"
-      !improved !regressed !unchanged
+    Printf.printf "\nSummary: %d improved, %d regressed, %d within noise band\n"
+      !improved !regressed !noise;
+    Printf.printf
+      "Allocation summary (minor words/op): %d improved, %d regressed\n"
+      !alloc_improved !alloc_regressed;
+    let top_alloc =
+      List.sort
+        (fun (a : result) (b : result) ->
+          Float.compare b.minor_words a.minor_words
+        )
+        results
+      |> fun xs ->
+      let rec take n acc = function
+        | _ when n <= 0 ->
+            List.rev acc
+        | [] ->
+            List.rev acc
+        | x :: rest ->
+            take (n - 1) (x :: acc) rest
+      in
+      take 3 [] xs
+    in
+    print_endline "Top allocation-heavy scenarios (minor words/op):";
+    List.iteri
+      (fun i r ->
+        Printf.printf "  %d) %s: %.1f (major %.1f, promoted %.1f)\n" (i + 1)
+          r.name r.minor_words r.major_words r.promoted_words
+      )
+      top_alloc
+
+let save_json_if_needed json =
+  match !save_file with
+  | Some file ->
+      let oc = open_out file in
+      output_string oc json;
+      close_out oc
+  | None ->
+      ()
+
+let run_group ~cfg benches =
+  List.map (fun (name, render) -> run_bench ~cfg ~name ~render) benches
 
 let () =
   parse_args ();
-
-  (* Load baseline if specified *)
+  let cfg = !config_ref in
   let baseline =
     match !compare_file with
     | Some file ->
@@ -335,24 +631,16 @@ let () =
     | None ->
         Hashtbl.create 0
   in
-
-  (* Run scenario benchmarks *)
-  let scenario_results =
-    List.map (fun (name, render) -> run_bench ~name ~render) scenarios
-  in
-
-  (* Run escape micro-benchmarks *)
-  let escape_results =
-    List.map (fun (name, render) -> run_bench ~name ~render) escape_benchmarks
-  in
-
+  let scenario_results = run_group ~cfg scenarios in
+  let escape_results = run_group ~cfg escape_benchmarks in
   let all_results = scenario_results @ escape_results in
-
+  let json = results_to_json ~cfg all_results in
+  save_json_if_needed json;
   if !json_mode then
-    print_endline (results_to_json all_results)
+    print_endline json
   else (
-    print_results scenario_results baseline;
+    print_results ~cfg scenario_results baseline;
     print_newline ();
-    print_results escape_results baseline;
-    summarize all_results baseline
+    print_results ~cfg escape_results baseline;
+    summarize ~cfg all_results baseline
   )

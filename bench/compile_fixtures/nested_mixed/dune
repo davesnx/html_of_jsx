@@ -1,0 +1,6 @@
+(library
+ (name nested_mixed_fixture)
+ (modules nested_mixed)
+ (libraries html_of_jsx)
+ (preprocess
+  (pps html_of_jsx.ppx)))
