@@ -21,6 +21,7 @@
 
   ;; Documentation
   (odoc :with-doc)
+  (odoc-parser :with-doc)
 
   ;; Test dependencies
   (alcotest :with-test)

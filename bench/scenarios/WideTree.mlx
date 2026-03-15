@@ -6,8 +6,7 @@ let card ~id ~title ~description ~price ~rating ~in_stock =
   let cls =
     Cx.make
       [
-        "border rounded-lg p-4 shadow-sm";
-        Cx.if_true "opacity-50" (not in_stock);
+        "border rounded-lg p-4 shadow-sm"; Cx.if_true "opacity-50" (not in_stock);
       ]
   in
   let id_label = Printf.sprintf "#%d" id in
@@ -31,10 +30,11 @@ let card ~id ~title ~description ~price ~rating ~in_stock =
       </div>
     </div>
     <div class_="mt-2">
-      (if in_stock then
-         <span class_="text-green-500 text-sm">(JSX.string "In Stock")</span>
-       else
-         <span class_="text-red-500 text-sm">(JSX.string "Out of Stock")</span>)
+      ( if in_stock then
+          <span class_="text-green-500 text-sm">(JSX.string "In Stock")</span>
+        else
+          <span class_="text-red-500 text-sm">(JSX.string "Out of Stock")</span>
+      )
     </div>
   </article>
 
@@ -46,7 +46,8 @@ let generate_items count =
       let price = 9.99 +. float_of_int (i mod 100) in
       let rating = 3.0 +. (float_of_int (i mod 20) /. 10.0) in
       let in_stock = i mod 7 <> 0 in
-      (id, title, description, price, rating, in_stock))
+      (id, title, description, price, rating, in_stock)
+  )
 
 let items_10 = generate_items 10
 let items_100 = generate_items 100
@@ -58,8 +59,12 @@ let wide_10 () =
        (Array.to_list
           (Array.map
              (fun (id, title, description, price, rating, in_stock) ->
-               card ~id ~title ~description ~price ~rating ~in_stock)
-             items_10)))
+               card ~id ~title ~description ~price ~rating ~in_stock
+             )
+             items_10
+          )
+       )
+    )
   </div>
 
 let wide_100 () =
@@ -68,8 +73,12 @@ let wide_100 () =
        (Array.to_list
           (Array.map
              (fun (id, title, description, price, rating, in_stock) ->
-               card ~id ~title ~description ~price ~rating ~in_stock)
-             items_100)))
+               card ~id ~title ~description ~price ~rating ~in_stock
+             )
+             items_100
+          )
+       )
+    )
   </div>
 
 let wide_500 () =
@@ -78,8 +87,12 @@ let wide_500 () =
        (Array.to_list
           (Array.map
              (fun (id, title, description, price, rating, in_stock) ->
-               card ~id ~title ~description ~price ~rating ~in_stock)
-             items_500)))
+               card ~id ~title ~description ~price ~rating ~in_stock
+             )
+             items_500
+          )
+       )
+    )
   </div>
 
 let make () = wide_100 ()

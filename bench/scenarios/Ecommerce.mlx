@@ -38,8 +38,18 @@ let generate_products count =
         id;
         name = Printf.sprintf "Product %d - Premium Edition" id;
         brand = brands.(i mod Array.length brands);
-        price = (if has_discount then base_price *. 0.8 else base_price);
-        original_price = (if has_discount then Some base_price else None);
+        price =
+          ( if has_discount then
+              base_price *. 0.8
+            else
+              base_price
+          );
+        original_price =
+          ( if has_discount then
+              Some base_price
+            else
+              None
+          );
         rating = 3.0 +. (float_of_int (i mod 21) /. 10.0);
         review_count = 10 + (i mod 5000);
         image = Printf.sprintf "https://picsum.photos/seed/%d/300/300" id;
@@ -51,7 +61,8 @@ let generate_products count =
         in_stock = i mod 10 <> 0;
         free_shipping = i mod 4 = 0;
         prime = i mod 2 = 0;
-      })
+      }
+  )
 
 let star_rating ~rating ~count =
   let full_stars = int_of_float rating in
@@ -62,11 +73,17 @@ let star_rating ~rating ~count =
       (JSX.list
          (List.init 5 (fun i ->
               let star =
-                if i < full_stars then "★"
-                else if i = full_stars && has_half_star then "⯨"
-                else "☆"
+                if i < full_stars then
+                  "★"
+                else if i = full_stars && has_half_star then
+                  "⯨"
+                else
+                  "☆"
               in
-              <span>(JSX.string star)</span>)))
+              <span>(JSX.string star)</span>
+          )
+         )
+      )
     </div>
     <span class_="text-sm text-gray-500">(JSX.string rating_label)</span>
   </div>
@@ -77,7 +94,7 @@ let price_badge ~price ~original_price =
     <span class_="text-2xl font-bold text-gray-900">
       (JSX.string price_str)
     </span>
-    (match original_price with
+    ( match original_price with
     | Some orig ->
         let orig_str = Printf.sprintf "$%.2f" orig in
         let discount_str =
@@ -92,7 +109,9 @@ let price_badge ~price ~original_price =
               (JSX.string discount_str)
             </span>;
           ]
-    | None -> JSX.null)
+    | None ->
+        JSX.null
+    )
   </div>
 
 let product_card ~product =
@@ -101,9 +120,11 @@ let product_card ~product =
     Cx.make
       [
         "mt-3 w-full py-2 px-4 rounded-lg font-medium transition-colors";
-        (if product.in_stock then
-           "bg-yellow-400 hover:bg-yellow-500 text-gray-900"
-         else "bg-gray-200 text-gray-500 cursor-not-allowed");
+        ( if product.in_stock then
+            "bg-yellow-400 hover:bg-yellow-500 text-gray-900"
+          else
+            "bg-gray-200 text-gray-500 cursor-not-allowed"
+        );
       ]
   in
   <article
@@ -125,8 +146,11 @@ let product_card ~product =
                   class_="px-2 py-1 text-xs font-medium bg-black/70 text-white \
                           rounded">
                   (JSX.string tag)
-                </span>)
-              product.tags))
+                </span>
+              )
+              product.tags
+           )
+        )
       </div>
       <button
         class_="absolute top-2 right-2 p-2 bg-white/90 rounded-full \
@@ -152,25 +176,36 @@ let product_card ~product =
         (price_badge ~price:product.price ~original_price:product.original_price)
       </div>
       <div class_="mt-2 flex items-center gap-2 text-xs">
-        (if product.prime then
-           <span class_="text-blue-600 font-medium">
-             (JSX.string "✓ Prime")
-           </span>
-         else JSX.null)
-        (if product.free_shipping then
-           <span class_="text-green-600">(JSX.string "Free Shipping")</span>
-         else JSX.null)
+        ( if product.prime then
+            <span class_="text-blue-600 font-medium">
+              (JSX.string "✓ Prime")
+            </span>
+          else
+            JSX.null
+        )
+        ( if product.free_shipping then
+            <span class_="text-green-600">(JSX.string "Free Shipping")</span>
+          else
+            JSX.null
+        )
       </div>
       <div class_="mt-3">
-        (if product.in_stock then
-           <span class_="text-sm text-green-600">(JSX.string "In Stock")</span>
-         else
-           <span class_="text-sm text-red-600">
-             (JSX.string "Out of Stock")
-           </span>)
+        ( if product.in_stock then
+            <span class_="text-sm text-green-600">(JSX.string "In Stock")</span>
+          else
+            <span class_="text-sm text-red-600">
+              (JSX.string "Out of Stock")
+            </span>
+        )
       </div>
       <button class_=btn_cls disabled=(not product.in_stock)>
-        (JSX.string (if product.in_stock then "Add to Cart" else "Unavailable"))
+        (JSX.string
+           ( if product.in_stock then
+               "Add to Cart"
+             else
+               "Unavailable"
+           )
+        )
       </button>
     </div>
   </article>
@@ -187,8 +222,11 @@ let filter_sidebar () =
                   <label class_="flex items-center gap-2 cursor-pointer">
                     <input type_=`checkbox class_="rounded text-blue-600" />
                     <span class_="text-sm text-gray-700">(JSX.string cat)</span>
-                  </label>)
-                [ "Electronics"; "Clothing"; "Home"; "Sports"; "Books"; "Toys" ]))
+                  </label>
+                )
+                [ "Electronics"; "Clothing"; "Home"; "Sports"; "Books"; "Toys" ]
+             )
+          )
         </div>
       </div>
       <div class_="bg-white rounded-lg p-4 shadow-sm">
@@ -202,14 +240,17 @@ let filter_sidebar () =
                     <span class_="text-sm text-gray-700">
                       (JSX.string label)
                     </span>
-                  </label>)
+                  </label>
+                )
                 [
                   "Under $25";
                   "$25 - $50";
                   "$50 - $100";
                   "$100 - $200";
                   "Over $200";
-                ]))
+                ]
+             )
+          )
         </div>
       </div>
       <div class_="bg-white rounded-lg p-4 shadow-sm">
@@ -223,8 +264,11 @@ let filter_sidebar () =
                     <span class_="text-sm text-gray-700">
                       (JSX.string brand)
                     </span>
-                  </label>)
-                [ "Apple"; "Samsung"; "Sony"; "LG"; "Nike"; "Adidas" ]))
+                  </label>
+                )
+                [ "Apple"; "Samsung"; "Sony"; "LG"; "Nike"; "Adidas" ]
+             )
+          )
         </div>
       </div>
     </div>
@@ -259,11 +303,17 @@ let product_grid ~products =
                 Cx.make
                   [
                     "px-4 py-2 rounded-lg text-sm";
-                    (if i = 0 then "bg-blue-600 text-white"
-                     else "border hover:bg-gray-50");
+                    ( if i = 0 then
+                        "bg-blue-600 text-white"
+                      else
+                        "border hover:bg-gray-50"
+                    );
                   ]
               in
-              <button class_=cls>(JSX.int (i + 1))</button>)))
+              <button class_=cls>(JSX.int (i + 1))</button>
+          )
+         )
+      )
       <span class_="px-2">(JSX.string "...")</span>
       <button class_="px-4 py-2 border rounded-lg text-sm hover:bg-gray-50">
         (JSX.int 20)
@@ -318,8 +368,7 @@ let header () =
           <a
             href="/account"
             class_="flex flex-col items-center text-xs hover:text-gray-300">
-            <span class_="text-lg">(JSX.string "👤")</span>
-            (JSX.string "Account")
+            <span class_="text-lg">(JSX.string "👤")</span> (JSX.string "Account")
           </a>
           <a
             href="/orders"
@@ -345,14 +394,17 @@ let header () =
         (JSX.list
            (List.map
               (fun item ->
-                <a href="#" class_="hover:text-gray-300">(JSX.string item)</a>)
+                <a href="#" class_="hover:text-gray-300">(JSX.string item)</a>
+              )
               [
                 "Today's Deals";
                 "Customer Service";
                 "Registry";
                 "Gift Cards";
                 "Sell";
-              ]))
+              ]
+           )
+        )
       </nav>
     </div>
   </header>
@@ -398,16 +450,22 @@ let page ~products =
                                   <a href="#" class_="hover:text-white">
                                     (JSX.string link)
                                   </a>
-                                </li>)
-                              links))
+                                </li>
+                              )
+                              links
+                           )
+                        )
                       </ul>
-                    </div>)
+                    </div>
+                  )
                   [
                     ("Get to Know Us", [ "Careers"; "Blog"; "About" ]);
                     ("Make Money with Us", [ "Sell"; "Affiliate"; "Advertise" ]);
                     ("Payment Products", [ "Business Card"; "Shop with Points" ]);
                     ("Let Us Help You", [ "Your Account"; "Returns"; "Help" ]);
-                  ]))
+                  ]
+               )
+            )
           </div>
         </div>
       </footer>

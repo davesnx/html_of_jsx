@@ -87,7 +87,8 @@ install: # Install dependencies
 
 .PHONY: pin
 pin: # pin dependencies
-	echo "No need to pin dependencies"
+	opam pin add dune "https://github.com/ocaml/dune.git#f000f24921f80c1c0ff86c4747c7a45f4ac43163" -y -n
+	opam pin add ochre "https://github.com/davesnx/ochre.git#c1df2bd14af7291383e5b674e08ba6e32ed38617" -y -n
 
 .PHONY: init
 init: setup-githooks create-switch pin install ## Create a local dev enviroment
@@ -112,13 +113,20 @@ subst: ## Run dune substitute
 docs: ## Generate odoc docs
 	$(DUNE) build --root . @doc
 
+.PHONY: docs-api
+docs-api: ## Generate markdown docs and promote to website/
+	$(DUNE) build --root . @doc-markdown
+	@rm -rf website
+	@mkdir -p website
+	@cp _build/default/_doc/_markdown/html_of_jsx/*.md website/
+
 .PHONY: docs-watch
-docs-watch: ## Generate odoc docs
+docs-watch: ## Generate odoc docs in watch mode
 	$(DUNE) build --root . -w @doc
 
 .PHONY: docs-serve
-docs-serve: ## Open odoc docs with default web browser
-	open _build/default/_doc/_html/index.html
+docs-serve: docs ## Serve odoc docs locally on :8080
+	python3 -m http.server 8080 --directory _build/default/_doc/_html
 
 .PHONY: release
 release: ## Create and push a release tag (usage: make release VERSION=1.0.0)

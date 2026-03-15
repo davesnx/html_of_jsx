@@ -1,0 +1,89 @@
+{0 Integrate with Melange}
+
+Use html_of_jsx to render HTML strings on the client side with {{:https://melange.re}Melange}.
+
+Melange compiles OCaml/Reason to JavaScript. Combined with html_of_jsx you can generate HTML in the browser — useful for static site generators, email templating, or injecting fragments into the DOM.
+
+{1 Dune setup}
+
+Use a [melange.emit] stanza in your dune file:
+
+{@dune[
+(melange.emit
+ (target output)
+ (libraries html_of_jsx)
+ (preprocess (pps html_of_jsx.ppx)))
+]}
+
+Make sure your [dune-project] enables Melange:
+
+{[
+(lang dune 3.20)
+(using melange 0.1)
+]}
+
+{1 Rendering in the browser}
+
+{%html:
+<div id="mel-render">
+<div class="syntax-toggle">
+  <button class="active" data-syntax="reason" onclick="toggleSyntax('mel-render','reason')">Reason</button>
+  <button data-syntax="mlx" onclick="toggleSyntax('mel-render','mlx')">mlx</button>
+</div>
+<div data-lang="reason">
+%}
+
+{@reasonml[
+let card = (~title, ~children, ()) => {
+  <div class_="card">
+    <h2> {JSX.string(title)} </h2>
+    children
+  </div>;
+};
+
+let html = JSX.render(<card title="Hello"> <p> {JSX.string("From the browser")} </p> </card>);
+
+/* Inject into the DOM */
+switch (Js.Nullable.toOption(Webapi.Dom.Document.getElementById("root", Webapi.Dom.document))) {
+| Some(el) => Webapi.Dom.Element.setInnerHTML(el, html)
+| None => ()
+};
+]}
+
+{%html: </div><div data-lang="mlx" style="display:none"> %}
+
+{@mlx[
+let card ~title ~children () =
+  <div class_="card">
+    <h2>(JSX.string title)</h2>
+    children
+  </div>
+
+let html =
+  JSX.render
+    (<card title="Hello"><p>(JSX.string "From the browser")</p></card>)
+
+let () =
+  match
+    Js.Nullable.toOption
+      (Webapi.Dom.Document.getElementById "root" Webapi.Dom.document)
+  with
+  | Some el -> Webapi.Dom.Element.setInnerHTML el html
+  | None -> ()
+]}
+
+{%html: </div></div> %}
+
+{1 js_of_ocaml}
+
+html_of_jsx also works with {{:https://ocsigen.org/js_of_ocaml/}js_of_ocaml}. The dune setup is similar but uses [(js_of_ocaml ...)] instead of [melange.emit]:
+
+{@dune[
+(executable
+ (name main)
+ (modes js)
+ (libraries html_of_jsx)
+ (preprocess (pps html_of_jsx.ppx)))
+]}
+
+The rendering API is identical — only the compilation target changes.

@@ -1,7 +1,7 @@
 (** JSX module
 
-    The JSX module provides a set of functions to render HTML elements in a
-    declarative manner
+    The JSX module provides functions to render HTML elements in a declarative
+    style.
 
     {[
       let html: string = JSX.render(
@@ -67,7 +67,7 @@ val float : float -> element
       let element : JSX.element = JSX.float 3.14
     ]} *)
 
-val fragment : element list -> element [@@deprecated "Use JSX.list instead"]
+val fragment : children:element list -> unit -> element
 
 val int : int -> element
 (** Helper to render an integer.
@@ -94,9 +94,9 @@ val list : element list -> element
 val array : element array -> element
 (** Helper to render an array of elements.
 
-    This function takes a array of JSX elements and returns a single JSX element
-    that contains all of them. This is useful for rendering dynamic array of
-    elements.
+    This function takes an array of JSX elements and returns a single JSX
+    element that contains all of them. This is useful for rendering dynamic
+    arrays of elements.
 
     {[
       let element : JSX.element =
@@ -168,10 +168,13 @@ val unsafe : string -> element
     ]} *)
 
 val escape : Buffer.t -> string -> unit
-(** Escape a string and write it directly to a buffer. This escapes ampersand,
-    less-than, greater-than, apostrophe, and double-quote characters.
+(** Escape a string and write it directly to a buffer.
 
-    This is used internally by the PPX for optimized rendering.
+    This escapes ampersand, less-than, greater-than, apostrophe, and
+    double-quote characters.
+
+    This is an advanced function used mostly by the PPX for optimized rendering.
+    Most users should prefer [JSX.string].
 
     {[
       let buf = Buffer.create 256 in
@@ -180,8 +183,10 @@ val escape : Buffer.t -> string -> unit
     ]} *)
 
 val write : Buffer.t -> element -> unit
-(** Write an element directly to a buffer. This is used internally by the ppx
-    for optimized rendering when building HTML strings incrementally.
+(** Write an element directly to a buffer.
+
+    This is an advanced function used mostly by the PPX for optimized rendering
+    when building HTML strings incrementally.
 
     {[
       let buf = Buffer.create 256 in

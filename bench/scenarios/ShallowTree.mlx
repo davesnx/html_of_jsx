@@ -16,9 +16,11 @@ let level4 ~title ~description ~is_highlighted ~item_count =
   in
   <section class_=cls>
     (level5 ~title ~subtitle:description ~active:is_highlighted
-       ~count:item_count)
+       ~count:item_count
+    )
     (level5 ~title:(title ^ " Alt") ~subtitle:"Secondary" ~active:false
-       ~count:(item_count * 2))
+       ~count:(item_count * 2)
+    )
   </section>
 
 let level3 ~group_name ~expanded ~total_items =
@@ -26,9 +28,11 @@ let level3 ~group_name ~expanded ~total_items =
   <article class_=cls>
     <h3 class_="text-xl font-semibold mb-4">(JSX.string group_name)</h3>
     (level4 ~title:"First Item" ~description:"Description A"
-       ~is_highlighted:true ~item_count:total_items)
+       ~is_highlighted:true ~item_count:total_items
+    )
     (level4 ~title:"Second Item" ~description:"Description B"
-       ~is_highlighted:false ~item_count:(total_items / 2))
+       ~is_highlighted:false ~item_count:(total_items / 2)
+    )
   </article>
 
 let level2 ~section_title ~is_visible =

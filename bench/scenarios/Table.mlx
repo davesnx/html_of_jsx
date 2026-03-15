@@ -52,17 +52,24 @@ let generate_users count =
             (1 + (i mod 28));
         salary = 50000.0 +. float_of_int (i * 1000);
         manager =
-          (if i mod 5 = 0 then None
-           else Some (Printf.sprintf "Manager %d" (i / 5)));
+          ( if i mod 5 = 0 then
+              None
+            else
+              Some (Printf.sprintf "Manager %d" (i / 5))
+          );
         projects = (i mod 10) + 1;
-      })
+      }
+  )
 
 let status_badge status =
   let bg_color, text_color, label =
     match status with
-    | Active -> ("bg-green-100", "text-green-800", "Active")
-    | Inactive -> ("bg-red-100", "text-red-800", "Inactive")
-    | Pending -> ("bg-yellow-100", "text-yellow-800", "Pending")
+    | Active ->
+        ("bg-green-100", "text-green-800", "Active")
+    | Inactive ->
+        ("bg-red-100", "text-red-800", "Inactive")
+    | Pending ->
+        ("bg-yellow-100", "text-yellow-800", "Pending")
   in
   let cls =
     Cx.make
@@ -76,7 +83,12 @@ let status_badge status =
   <span class_=cls>(JSX.string label)</span>
 
 let table_row ~user ~is_even =
-  let row_cls = if is_even then "bg-white" else "bg-gray-50" in
+  let row_cls =
+    if is_even then
+      "bg-white"
+    else
+      "bg-gray-50"
+  in
   let initials = String.sub user.name 0 2 in
   let salary_str = Printf.sprintf "$%.0f" user.salary in
   <tr class_=row_cls>
@@ -116,9 +128,12 @@ let table_row ~user ~is_even =
       (JSX.string salary_str)
     </td>
     <td class_="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-      (match user.manager with
-      | Some m -> JSX.string m
-      | None -> <span class_="text-gray-400 italic">(JSX.string "None")</span>)
+      ( match user.manager with
+      | Some m ->
+          JSX.string m
+      | None ->
+          <span class_="text-gray-400 italic">(JSX.string "None")</span>
+      )
     </td>
     <td class_="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
       (JSX.int user.projects)
@@ -209,7 +224,10 @@ let data_table users =
                  (Array.to_list
                     (Array.mapi
                        (fun i user -> table_row ~user ~is_even:(i mod 2 = 0))
-                       users)))
+                       users
+                    )
+                 )
+              )
             </tbody>
           </table>
         </div>
