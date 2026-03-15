@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>React-compatibility (html_of_jsx.React-compatibility)</title><meta charset="utf-8"/><link rel="stylesheet" href="../odoc.support/odoc.css"/><meta name="generator" content="odoc 3.1.0"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><script src="../odoc.support/highlight.pack.js"></script><script>hljs.initHighlightingOnLoad();</script></head><body class="odoc"><nav class="odoc-nav"><a href="index.html">Up</a> – <a href="../index.html">Index</a> &#x00BB; <a href="index.html">html_of_jsx</a> &#x00BB; React-compatibility</nav><header class="odoc-preamble"><h1 id="react-compatibility-mode"><a href="#react-compatibility-mode" class="anchor"></a>React compatibility mode</h1><p>The React compatibility mode eases migration from reason-react to html_of_jsx. It adds camelCase aliases for HTML attributes that React uses instead of the standard HTML names.</p></header><div class="odoc-tocs"><nav class="odoc-toc odoc-local-toc"><ul><li><a href="#enable">Enable</a></li><li><a href="#aliases">Aliases</a></li></ul></nav></div><div class="odoc-content"><h2 id="enable"><a href="#enable" class="anchor"></a>Enable</h2><p>Turn on <code>-react</code> in your PPX configuration.</p><pre class="language-dune"><code>(libraries html_of_jsx)
+(preprocess (pps html_of_jsx.ppx -react))</code></pre><h2 id="aliases"><a href="#aliases" class="anchor"></a>Aliases</h2><p>The <code>-react</code> flag adds the following aliases. The standard HTML attribute names still work.</p><table class="odoc-table"><tr><th><p>React name</p></th><th><p>HTML output</p></th><th><p>Type</p></th></tr><tr><td><p><code>className</code></p></td><td><p><code>class</code></p></td><td><p>string</p></td></tr><tr><td><p><code>htmlFor</code></p></td><td><p><code>for</code></p></td><td><p>string</p></td></tr><tr><td><p><code>tabIndex</code></p></td><td><p><code>tabindex</code></p></td><td><p>int</p></td></tr><tr><td><p><code>maxLength</code></p></td><td><p><code>maxlength</code></p></td><td><p>int</p></td></tr><tr><td><p><code>readOnly</code></p></td><td><p><code>readonly</code></p></td><td><p>bool</p></td></tr><tr><td><p><code>colSpan</code></p></td><td><p><code>colspan</code></p></td><td><p>int</p></td></tr><tr><td><p><code>rowSpan</code></p></td><td><p><code>rowspan</code></p></td><td><p>int</p></td></tr><tr><td><p><code>autoComplete</code></p></td><td><p><code>autocomplete</code></p></td><td><p>string</p></td></tr><tr><td><p><code>defaultValue</code></p></td><td><p><code>value</code></p></td><td><p>string</p></td></tr><tr><td><p><code>defaultChecked</code></p></td><td><p><code>checked</code></p></td><td><p>bool</p></td></tr></table><pre class="language-reasonml"><code>JSX.render(
+  &lt;div className=&quot;card&quot;&gt;
+    &lt;label htmlFor=&quot;email&quot;&gt; {JSX.string(&quot;Email&quot;)} &lt;/label&gt;
+    &lt;input
+      id=&quot;email&quot;
+      type_=&quot;email&quot;
+      tabIndex=1
+      maxLength=100
+      autoComplete=&quot;email&quot;
+      readOnly=true
+    /&gt;
+    &lt;table&gt;
+      &lt;tr&gt; &lt;td colSpan=2&gt; {JSX.string(&quot;Full width&quot;)} &lt;/td&gt; &lt;/tr&gt;
+    &lt;/table&gt;
+  &lt;/div&gt;
+)</code></pre></div></body></html>

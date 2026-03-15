@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>melange (html_of_jsx.melange)</title><meta charset="utf-8"/><link rel="stylesheet" href="../odoc.support/odoc.css"/><meta name="generator" content="odoc 3.1.0"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><script src="../odoc.support/highlight.pack.js"></script><script>hljs.initHighlightingOnLoad();</script></head><body class="odoc"><nav class="odoc-nav"><a href="index.html">Up</a> – <a href="../index.html">Index</a> &#x00BB; <a href="index.html">html_of_jsx</a> &#x00BB; melange</nav><header class="odoc-preamble"><h1 id="integrate-with-melange"><a href="#integrate-with-melange" class="anchor"></a>Integrate with Melange</h1><p>Use html_of_jsx to render HTML strings on the client side with <a href="https://melange.re">Melange</a>.</p><p>Melange compiles OCaml/Reason to JavaScript. Combined with html_of_jsx you can generate HTML in the browser — useful for static site generators, email templating, or injecting fragments into the DOM.</p></header><div class="odoc-tocs"><nav class="odoc-toc odoc-local-toc"><ul><li><a href="#dune-setup">Dune setup</a></li><li><a href="#rendering-in-the-browser">Rendering in the browser</a></li><li><a href="#js_of_ocaml">js_of_ocaml</a></li></ul></nav></div><div class="odoc-content"><h2 id="dune-setup"><a href="#dune-setup" class="anchor"></a>Dune setup</h2><p>Use a <code>melange.emit</code> stanza in your dune file:</p><pre class="language-dune"><code>(melange.emit
+ (target output)
+ (libraries html_of_jsx)
+ (preprocess (pps html_of_jsx.ppx)))</code></pre><p>Make sure your <code>dune-project</code> enables Melange:</p><pre class="language-ocaml"><code>(lang dune 3.20)
+(using melange 0.1)</code></pre><h2 id="rendering-in-the-browser"><a href="#rendering-in-the-browser" class="anchor"></a>Rendering in the browser</h2>
+<div id="mel-render">
+<div class="syntax-toggle">
+  <button class="active" data-syntax="reason" onclick="toggleSyntax('mel-render','reason')">Reason</button>
+  <button data-syntax="mlx" onclick="toggleSyntax('mel-render','mlx')">mlx</button>
+</div>
+<div data-lang="reason">
+<pre class="language-reasonml"><code>let card = (~title, ~children, ()) =&gt; {
+  &lt;div class_=&quot;card&quot;&gt;
+    &lt;h2&gt; {JSX.string(title)} &lt;/h2&gt;
+    children
+  &lt;/div&gt;;
+};
+
+let html = JSX.render(&lt;card title=&quot;Hello&quot;&gt; &lt;p&gt; {JSX.string(&quot;From the browser&quot;)} &lt;/p&gt; &lt;/card&gt;);
+
+/* Inject into the DOM */
+switch (Js.Nullable.toOption(Webapi.Dom.Document.getElementById(&quot;root&quot;, Webapi.Dom.document))) {
+| Some(el) =&gt; Webapi.Dom.Element.setInnerHTML(el, html)
+| None =&gt; ()
+};</code></pre> </div><div data-lang="mlx" style="display:none"> <pre class="language-mlx"><code>let card ~title ~children () =
+  &lt;div class_=&quot;card&quot;&gt;
+    &lt;h2&gt;(JSX.string title)&lt;/h2&gt;
+    children
+  &lt;/div&gt;
+
+let html =
+  JSX.render
+    (&lt;card title=&quot;Hello&quot;&gt;&lt;p&gt;(JSX.string &quot;From the browser&quot;)&lt;/p&gt;&lt;/card&gt;)
+
+let () =
+  match
+    Js.Nullable.toOption
+      (Webapi.Dom.Document.getElementById &quot;root&quot; Webapi.Dom.document)
+  with
+  | Some el -&gt; Webapi.Dom.Element.setInnerHTML el html
+  | None -&gt; ()</code></pre> </div></div> <h2 id="js_of_ocaml"><a href="#js_of_ocaml" class="anchor"></a>js_of_ocaml</h2><p>html_of_jsx also works with <a href="https://ocsigen.org/js_of_ocaml/">js_of_ocaml</a>. The dune setup is similar but uses <code>(js_of_ocaml ...)</code> instead of <code>melange.emit</code>:</p><pre class="language-dune"><code>(executable
+ (name main)
+ (modes js)
+ (libraries html_of_jsx)
+ (preprocess (pps html_of_jsx.ppx)))</code></pre><p>The rendering API is identical — only the compilation target changes.</p></div></body></html>

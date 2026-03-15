@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>HTMX-mode (html_of_jsx.HTMX-mode)</title><meta charset="utf-8"/><link rel="stylesheet" href="../odoc.support/odoc.css"/><meta name="generator" content="odoc 3.1.0"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><script src="../odoc.support/highlight.pack.js"></script><script>hljs.initHighlightingOnLoad();</script></head><body class="odoc"><nav class="odoc-nav"><a href="index.html">Up</a> – <a href="../index.html">Index</a> &#x00BB; <a href="index.html">html_of_jsx</a> &#x00BB; HTMX-mode</nav><header class="odoc-preamble"><h1 id="htmx-mode"><a href="#htmx-mode" class="anchor"></a>HTMX mode</h1><p>Enable htmx attributes and extension script loaders.</p></header><div class="odoc-tocs"><nav class="odoc-toc odoc-local-toc"><ul><li><a href="#how-it-works">How it works</a></li><li><a href="#enable-mode">Enable mode</a></li><li><a href="#core-attributes">Core attributes</a><ul><li><a href="#request-methods">Request methods</a></li><li><a href="#targeting-and-swapping">Targeting and swapping</a></li><li><a href="#triggers">Triggers</a></li><li><a href="#confirmation-dialogs">Confirmation dialogs</a></li><li><a href="#loading-indicators">Loading indicators</a></li><li><a href="#counter-example">Counter example</a></li></ul></li><li><a href="#load-script">Load script</a></li><li><a href="#extensions">Extensions</a><ul><li><a href="#sse-(server-sent-events)">SSE (Server-Sent Events)</a></li><li><a href="#websocket">WebSocket</a></li><li><a href="#available-extension-loaders">Available extension loaders</a></li></ul></li><li><a href="#full-page-example">Full page example</a></li></ul></nav></div><div class="odoc-content"><h2 id="how-it-works"><a href="#how-it-works" class="anchor"></a>How it works</h2><p>The <code>-htmx</code> flag extends the set of valid attributes on every HTML element. There is no separate API — you keep writing normal JSX, and attributes like <code>hx_get</code>, <code>hx_post</code>, <code>hx_swap</code>, etc. become available alongside the standard HTML ones. The PPX validates them at compile time just like any other attribute.</p><h2 id="enable-mode"><a href="#enable-mode" class="anchor"></a>Enable mode</h2><p>Turn on htmx attributes in the PPX and include the runtime helper package.</p><pre class="language-dune"><code>(libraries html_of_jsx html_of_jsx.htmx)
+(preprocess (pps html_of_jsx.ppx -htmx))</code></pre><p>---</p><h2 id="core-attributes"><a href="#core-attributes" class="anchor"></a>Core attributes</h2><p>Use <code>hx_*</code> names in JSX. They render as standard <code>hx-*</code> HTML attributes.</p><pre class="language-reasonml"><code>JSX.render(&lt;a hx_get=&quot;/profile&quot; hx_swap=`outerHTML&gt; {JSX.string(&quot;Load profile&quot;)} &lt;/a&gt;)
+(* &lt;a hx-get=&quot;/profile&quot; hx-swap=&quot;outerHTML&quot;&gt;Load profile&lt;/a&gt; *)</code></pre><h3 id="request-methods"><a href="#request-methods" class="anchor"></a>Request methods</h3><pre class="language-reasonml"><code>&lt;button hx_get=&quot;/items&quot;&gt; &quot;Load&quot; &lt;/button&gt;
+&lt;form hx_post=&quot;/submit&quot;&gt; {children} &lt;/form&gt;
+&lt;button hx_delete={&quot;/items/&quot; ++ id}&gt; &quot;Remove&quot; &lt;/button&gt;
+&lt;button hx_put={&quot;/items/&quot; ++ id}&gt; &quot;Replace&quot; &lt;/button&gt;
+&lt;button hx_patch={&quot;/items/&quot; ++ id}&gt; &quot;Update&quot; &lt;/button&gt;</code></pre><h3 id="targeting-and-swapping"><a href="#targeting-and-swapping" class="anchor"></a>Targeting and swapping</h3><p>Control where the response is placed and how it replaces existing content:</p><pre class="language-reasonml"><code>&lt;button hx_get=&quot;/content&quot; hx_target=&quot;#result&quot; hx_swap=`innerHTML&gt;
+  &quot;Load into #result&quot;
+&lt;/button&gt;
+
+&lt;button hx_get=&quot;/row&quot; hx_target=&quot;closest tr&quot; hx_swap=`outerHTML&gt;
+  &quot;Replace this row&quot;
+&lt;/button&gt;</code></pre><h3 id="triggers"><a href="#triggers" class="anchor"></a>Triggers</h3><p>Customize what event fires the request. Supports modifiers like <code>delay</code>, <code>changed</code>, and <code>throttle</code>:</p><pre class="language-reasonml"><code>&lt;input
+  type_=`search
+  name=&quot;query&quot;
+  hx_post=&quot;/search&quot;
+  hx_trigger=&quot;keyup changed delay:300ms, search&quot;
+  hx_target=&quot;#results&quot;
+  hx_swap=`outerHTML
+/&gt;</code></pre><h3 id="confirmation-dialogs"><a href="#confirmation-dialogs" class="anchor"></a>Confirmation dialogs</h3><p>Ask the user to confirm before sending:</p><pre class="language-reasonml"><code>&lt;button
+  hx_delete={Printf.sprintf(&quot;/todos/%d&quot;, id)}
+  hx_target={Printf.sprintf(&quot;#todo-%d&quot;, id)}
+  hx_swap=`outerHTML
+  hx_confirm=&quot;Are you sure?&quot;&gt;
+  &quot;Delete&quot;
+&lt;/button&gt;</code></pre><h3 id="loading-indicators"><a href="#loading-indicators" class="anchor"></a>Loading indicators</h3><p>Show a spinner or indicator while the request is in flight:</p><pre class="language-reasonml"><code>&lt;button hx_get=&quot;/slow-content&quot; hx_indicator=&quot;#spinner&quot;&gt;
+  &quot;Load&quot;
+&lt;/button&gt;
+&lt;span id=&quot;spinner&quot; class_=&quot;htmx-indicator&quot;&gt; &quot;Loading...&quot; &lt;/span&gt;</code></pre><h3 id="counter-example"><a href="#counter-example" class="anchor"></a>Counter example</h3><p>A server-side counter using <code>hx_post</code> with <code>hx_target</code> and <code>hx_swap</code>:</p><pre class="language-reasonml"><code>let counter = (~count, ()) =&gt; {
+  &lt;div style=&quot;display: flex; align-items: center; gap: 12px&quot;&gt;
+    &lt;button
+      hx_post=&quot;/counter/decrement&quot;
+      hx_target=&quot;#counter&quot;
+      hx_swap=`outerHTML&gt;
+      &quot;-&quot;
+    &lt;/button&gt;
+    &lt;span id=&quot;counter&quot;&gt; {JSX.int(count)} &lt;/span&gt;
+    &lt;button
+      hx_post=&quot;/counter/increment&quot;
+      hx_target=&quot;#counter&quot;
+      hx_swap=`outerHTML&gt;
+      &quot;+&quot;
+    &lt;/button&gt;
+  &lt;/div&gt;;
+};</code></pre><p>---</p><h2 id="load-script"><a href="#load-script" class="anchor"></a>Load script</h2><p>Add <code>&lt;Htmx /&gt;</code> in <code>&lt;head&gt;</code> to load htmx from unpkg.</p><pre class="language-reasonml"><code>&lt;head&gt;
+  &lt;Htmx version=&quot;2.0.4&quot; /&gt;
+&lt;/head&gt;</code></pre><p>Pass <code>integrity</code> to enable SRI.</p><pre class="language-reasonml"><code>&lt;Htmx
+  version=&quot;2.0.4&quot;
+  integrity=&quot;sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+&quot;
+/&gt;</code></pre><p>---</p><h2 id="extensions"><a href="#extensions" class="anchor"></a>Extensions</h2><p>Use components under <code>Htmx.Extensions</code> for extension scripts. Each extension adds its own attributes to the JSX vocabulary.</p><pre class="language-reasonml"><code>&lt;head&gt;
+  &lt;Htmx version=&quot;2.0.4&quot; /&gt;
+  &lt;Htmx.Extensions.SSE version=&quot;2.2.2&quot; /&gt;
+  &lt;Htmx.Extensions.WS version=&quot;2.2.0&quot; /&gt;
+&lt;/head&gt;</code></pre><h3 id="sse-(server-sent-events)"><a href="#sse-(server-sent-events)" class="anchor"></a>SSE (Server-Sent Events)</h3><pre class="language-reasonml"><code>&lt;div hx_ext=&quot;sse&quot; sse_connect=&quot;/events&quot; sse_swap=&quot;message&quot;&gt;
+  {JSX.string(&quot;Waiting for events...&quot;)}
+&lt;/div&gt;</code></pre><h3 id="websocket"><a href="#websocket" class="anchor"></a>WebSocket</h3><pre class="language-reasonml"><code>&lt;div hx_ext=&quot;ws&quot; ws_connect=&quot;/chat&quot;&gt;
+  &lt;form ws_send=&quot;&quot;&gt;
+    &lt;input name=&quot;message&quot; /&gt;
+    &lt;button type_=`submit&gt; &quot;Send&quot; &lt;/button&gt;
+  &lt;/form&gt;
+&lt;/div&gt;</code></pre><h3 id="available-extension-loaders"><a href="#available-extension-loaders" class="anchor"></a>Available extension loaders</h3><ul><li><code>&lt;Htmx.Extensions.SSE /&gt;</code></li><li><code>&lt;Htmx.Extensions.WS /&gt;</code></li><li><code>&lt;Htmx.Extensions.Class_tools /&gt;</code></li><li><code>&lt;Htmx.Extensions.Preload /&gt;</code></li><li><code>&lt;Htmx.Extensions.Path_deps /&gt;</code></li><li><code>&lt;Htmx.Extensions.Loading_states /&gt;</code></li><li><code>&lt;Htmx.Extensions.Response_targets /&gt;</code></li><li><code>&lt;Htmx.Extensions.Head_support /&gt;</code></li></ul><p>---</p><h2 id="full-page-example"><a href="#full-page-example" class="anchor"></a>Full page example</h2><p>A minimal page combining core htmx attributes with an SSE extension:</p><pre class="language-reasonml"><code>let page = () =&gt; {
+  &lt;html lang=&quot;en&quot;&gt;
+    &lt;head&gt;
+      &lt;title&gt; {JSX.string(&quot;htmx + html_of_jsx&quot;)} &lt;/title&gt;
+      &lt;Htmx version=&quot;2.0.4&quot; /&gt;
+      &lt;Htmx.Extensions.SSE version=&quot;2.2.2&quot; /&gt;
+    &lt;/head&gt;
+    &lt;body&gt;
+      &lt;button hx_get=&quot;/clicked&quot; hx_swap=`outerHTML&gt;
+        {JSX.string(&quot;Click me&quot;)}
+      &lt;/button&gt;
+      &lt;div hx_ext=&quot;sse&quot; sse_connect=&quot;/events&quot; sse_swap=&quot;message&quot;&gt;
+        {JSX.string(&quot;Waiting for events...&quot;)}
+      &lt;/div&gt;
+    &lt;/body&gt;
+  &lt;/html&gt;
+};</code></pre></div></body></html>
