@@ -28,7 +28,7 @@ Use [JSX.render] to produce an HTML string and return it with [Dream.html]:
 let page = (~title, ~children, ()) => {
   <html lang="en">
     <head> <title> {JSX.string(title)} </title> </head>
-    <body> children </body>
+    <body> {children} </body>
   </html>;
 };
 
@@ -51,7 +51,7 @@ let () =
 let page ~title ~children () =
   <html lang="en">
     <head><title>(JSX.string title)</title></head>
-    <body>children</body>
+    <body>(children)</body>
   </html>
 
 let () =

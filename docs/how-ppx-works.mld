@@ -61,8 +61,8 @@ let greeting = (~name, ()) => {
    let buf = Buffer.create(<estimated_size>);
    Buffer.add_string(buf, "<div class=\"greeting\"><h1>");
    JSX.escape(buf, "Hello, " ^ name ^ "!");
-   JSX.unsafe(Buffer.contents(buf));
    Buffer.add_string(buf, "</h1></div>");
+   JSX.unsafe(Buffer.contents(buf));
 */
 ]}
 
@@ -71,7 +71,6 @@ let greeting ~name () =
   <div class_="greeting">
     <h1>(JSX.string ("Hello, " ^ name ^ "!"))</h1>
   </div>
-]}
 
 (* compiles roughly to:
    let buf = Buffer.create <estimated_size> in
@@ -80,6 +79,7 @@ let greeting ~name () =
    Buffer.add_string buf "</h1></div>";
    JSX.unsafe (Buffer.contents buf)
 *)
+]}
 
 {2 Coalesced static parts}
 

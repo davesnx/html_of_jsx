@@ -76,7 +76,7 @@ Reason files use the [.re] extension and work out of the box with dune.
 mlx lets you write JSX directly inside OCaml files.
 
 {@bash[
-opam install mlx ocamlformat-mlx -y
+opam install mlx ocamlformat-mlx ocamlmerlin-mlx -y
 ]}
 
 Add the dialect to your [dune-project]:

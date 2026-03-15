@@ -2,7 +2,7 @@
 
 {1 Primitives}
 
-JSX trees are built from values of type [JSX.element]. Each value need to be wrapped with helpers to become elements:
+JSX trees are built from values of type [JSX.element]. Each value needs to be wrapped with helpers to become elements:
 
 {@reasonml[
 JSX.string("Hello")    /* string -> JSX.element */
@@ -69,27 +69,28 @@ Any expression can appear inside JSX. In Reason, expressions are wrapped with [{
 
 {@reasonml[
 let status_badge = (~count, ()) => {
-  let label =
-    if (count == 0) {
-      "No items";
-    } else {
-      Int.to_string(count) ++ " items";
-    };
-
   <div>
-    <span class_="badge"> {JSX.string(label)} </span>
+    <span class_="badge">
+      {
+        JSX.string(
+          if (count == 0) {
+            "No items";
+          } else {
+            Int.to_string(count) ++ " items";
+          },
+        )
+      }
+    </span>
     <span class_="count"> {JSX.int(count)} </span>
   </div>;
 };
 ]}
 {@mlx[
 let status_badge ~count () =
-  let label =
-    if count = 0 then "No items"
-    else Int.to_string count ^ " items"
-  in
   <div>
-    <span class_="badge">(JSX.string label)</span>
+    <span class_="badge">
+      (JSX.string (if count = 0 then "No items" else Int.to_string count ^ " items"))
+    </span>
     <span class_="count">(JSX.int count)</span>
   </div>
 ]}
@@ -128,8 +129,8 @@ let badge = (~label, ~kind="info", ()) => {
 let badge ~label ?(kind = "info") () =
   <span class_={"badge badge-" ^ kind}>(JSX.string label)</span>
 
-let _ = <badge label="Ready" />              (* kind defaults to "info" *)
-let _ = <badge label="Error" kind="danger" />
+<badge label="Ready" />              (* kind defaults to "info" *)
+<badge label="Error" kind="danger" />
 ]}
 
 {1 The [children] property}
@@ -147,6 +148,7 @@ let html = JSX.render(
     <p> {JSX.string("Composable content")}</p>
   </hero>,
 );
+/* <main class="fancy-hero"><h1>Welcome</h1><p>Composable content</p></main> */
 ]}
 {@mlx[
 let hero ~children () =
@@ -158,6 +160,7 @@ let html = JSX.render (
     <p>(JSX.string "Composable content")</p>
   </hero>
 )
+(* <main class="fancy-hero"><h1>Welcome</h1><p>Composable content</p></main> *)
 ]}
 
 {1 Lists and fragments}

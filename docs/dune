@@ -7,6 +7,5 @@
   ppx
   how-ppx-works
   dream
-  melange
   HTMX-mode
   React-compatibility))

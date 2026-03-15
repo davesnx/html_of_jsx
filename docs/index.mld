@@ -63,6 +63,5 @@ This library was extracted from {{:https://github.com/ml-in-barcelona/server-rea
 - {!page-ppx} — PPX flags and settings
 - {!page-"how-ppx-works"} — JSX transformation, static analysis, and performance
 - {!page-dream} — integrate with Dream
-- {!page-melange} — integrate with Melange
 - {!page-"HTMX-mode"} — htmx attributes and extensions
 - {!page-"React-compatibility"} — React DOM prop aliases
