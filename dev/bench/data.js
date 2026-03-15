@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1771893561201,
+  "lastUpdate": 1773599090373,
   "repoUrl": "https://github.com/davesnx/html_of_jsx",
   "entries": {
     "html_of_jsx Benchmarks": [
@@ -929,6 +929,90 @@ window.BENCHMARK_DATA = {
           {
             "name": "escape (dirty)",
             "value": 7080117.39,
+            "unit": "ops/sec"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "dsnxmoreno@gmail.com",
+            "name": "David Sancho",
+            "username": "davesnx"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "92d19df93289eda22d90e5a77fe0cc7770122252",
+          "message": "Merge pull request #43 from davesnx/docs/odoc-audit-improvements\n\nImprove documentation",
+          "timestamp": "2026-03-15T19:17:26+01:00",
+          "tree_id": "864550b24f90c2ad0ac2b1b7ade38cacdb1ca0e3",
+          "url": "https://github.com/davesnx/html_of_jsx/commit/92d19df93289eda22d90e5a77fe0cc7770122252"
+        },
+        "date": 1773599089413,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Trivial",
+            "value": 30801010.14,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Dashboard",
+            "value": 14101.71,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Blog (50 comments)",
+            "value": 2008.4,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Table (100 rows)",
+            "value": 1600.07,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "E-commerce",
+            "value": 2113.2,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Form",
+            "value": 18710.02,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Deep tree (50)",
+            "value": 15474.05,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Wide tree (100)",
+            "value": 3904.77,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Shallow tree",
+            "value": 73047.37,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Props heavy",
+            "value": 3290.35,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "escape (clean)",
+            "value": 21694624.36,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "escape (dirty)",
+            "value": 7143956.36,
             "unit": "ops/sec"
           }
         ]
