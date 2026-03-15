@@ -220,12 +220,10 @@ let data_table users =
               </tr>
             </thead>
             <tbody class_="bg-white divide-y divide-gray-200">
-              (JSX.list
-                 (Array.to_list
-                    (Array.mapi
-                       (fun i user -> table_row ~user ~is_even:(i mod 2 = 0))
-                       users
-                    )
+              (JSX.array
+                 (Array.mapi
+                    (fun i user -> table_row ~user ~is_even:(i mod 2 = 0))
+                    users
                  )
               )
             </tbody>
@@ -238,8 +236,11 @@ let data_table users =
 let users_10 = generate_users 10
 let users_50 = generate_users 50
 let users_100 = generate_users 100
-let table_10 () = data_table users_10
-let table_50 () = data_table users_50
-let table_100 () = data_table users_100
+let table_10_el = data_table users_10
+let table_50_el = data_table users_50
+let table_100_el = data_table users_100
+let table_10 () = table_10_el
+let table_50 () = table_50_el
+let table_100 () = table_100_el
 let make () = table_100 ()
 let render () = JSX.render (make ())

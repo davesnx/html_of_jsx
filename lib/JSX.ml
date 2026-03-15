@@ -21,40 +21,49 @@ let is_self_closing_tag = function
 
 let escape buf s =
   let length = String.length s in
-  let exception First_char_to_escape of int in
-  match
-    for i = 0 to length - 1 do
-      match String.unsafe_get s i with
-      | '&' | '<' | '>' | '\'' | '"' ->
-          raise_notrace (First_char_to_escape i)
-      | _ ->
-          ()
-    done
-  with
-  | exception First_char_to_escape first ->
-      if first > 0 then Buffer.add_substring buf s 0 first;
-      for i = first to length - 1 do
+  if length = 0 then
+    ()
+  else
+    let exception First_char_to_escape of int in
+    match
+      for i = 0 to length - 1 do
         match String.unsafe_get s i with
-        | '&' ->
-            Buffer.add_string buf "&amp;"
-        | '<' ->
-            Buffer.add_string buf "&lt;"
-        | '>' ->
-            Buffer.add_string buf "&gt;"
-        | '\'' ->
-            Buffer.add_string buf "&apos;"
-        | '"' ->
-            Buffer.add_string buf "&quot;"
-        | c ->
-            Buffer.add_char buf c
+        | '&' | '<' | '>' | '\'' | '"' ->
+            raise_notrace (First_char_to_escape i)
+        | _ ->
+            ()
       done
-  | _ ->
-      Buffer.add_string buf s
+    with
+    | exception First_char_to_escape first ->
+        if first > 0 then Buffer.add_substring buf s 0 first;
+        for i = first to length - 1 do
+          match String.unsafe_get s i with
+          | '&' ->
+              Buffer.add_string buf "&amp;"
+          | '<' ->
+              Buffer.add_string buf "&lt;"
+          | '>' ->
+              Buffer.add_string buf "&gt;"
+          | '\'' ->
+              Buffer.add_string buf "&apos;"
+          | '"' ->
+              Buffer.add_string buf "&quot;"
+          | c ->
+              Buffer.add_char buf c
+        done
+    | _ ->
+        Buffer.add_string buf s
 
 type attribute =
   string * [ `Bool of bool | `Int of int | `Float of float | `String of string ]
 
 let write_attribute out (attr : attribute) =
+  let write_name_and_eq name =
+    Buffer.add_char out ' ';
+    Buffer.add_string out name;
+    Buffer.add_char out '=';
+    Buffer.add_char out '"'
+  in
   match attr with
   | _name, `Bool false ->
       (* false attributes don't get rendered *)
@@ -64,21 +73,15 @@ let write_attribute out (attr : attribute) =
       Buffer.add_char out ' ';
       Buffer.add_string out name
   | name, `String value ->
-      Buffer.add_char out ' ';
-      Buffer.add_string out name;
-      Buffer.add_string out "=\"";
+      write_name_and_eq name;
       escape out value;
       Buffer.add_char out '"'
   | name, `Int value ->
-      Buffer.add_char out ' ';
-      Buffer.add_string out name;
-      Buffer.add_string out "=\"";
+      write_name_and_eq name;
       Buffer.add_string out (Int.to_string value);
       Buffer.add_char out '"'
   | name, `Float value ->
-      Buffer.add_char out ' ';
-      Buffer.add_string out name;
-      Buffer.add_string out "=\"";
+      write_name_and_eq name;
       Buffer.add_string out (Float.to_string value);
       Buffer.add_char out '"'
 
@@ -108,24 +111,36 @@ let fragment ~children () = List children
 let node tag attributes children = Node { tag; attributes; children }
 
 let write out element =
-  let rec write element =
+  let rec write_list = function
+    | [] ->
+        ()
+    | x :: xs ->
+        write x;
+        write_list xs
+  and write_attributes = function
+    | [] ->
+        ()
+    | attr :: rest ->
+        write_attribute out attr;
+        write_attributes rest
+  and write element =
     match element with
     | Null ->
         ()
     | List list ->
-        List.iter write list
+        write_list list
     | Node { tag; attributes; _ } when is_self_closing_tag tag ->
         Buffer.add_char out '<';
         Buffer.add_string out tag;
-        List.iter (write_attribute out) attributes;
+        write_attributes attributes;
         Buffer.add_string out " />"
     | Node { tag; attributes; children } ->
         if tag = "html" then Buffer.add_string out "<!DOCTYPE html>";
         Buffer.add_char out '<';
         Buffer.add_string out tag;
-        List.iter (write_attribute out) attributes;
+        write_attributes attributes;
         Buffer.add_char out '>';
-        List.iter write children;
+        write_list children;
         Buffer.add_string out "</";
         Buffer.add_string out tag;
         Buffer.add_char out '>'
@@ -138,21 +153,23 @@ let write out element =
     | Float f ->
         Buffer.add_string out (Float.to_string f)
     | Array arr ->
-        Array.iter write arr
+        for i = 0 to Array.length arr - 1 do
+          write (Array.unsafe_get arr i)
+        done
   in
   write element
 
 let render element =
-  let out = Buffer.create 1024 in
+  let out = Buffer.create 256 in
   write out element;
   Buffer.contents out
 
 let render_to_channel (chan : out_channel) element =
-  let out = Buffer.create 1024 in
+  let out = Buffer.create 256 in
   write out element;
   Buffer.output_buffer chan out
 
 let render_streaming (write_fn : string -> unit) element =
-  let out = Buffer.create 1024 in
+  let out = Buffer.create 256 in
   write out element;
   write_fn (Buffer.contents out)

@@ -17,23 +17,38 @@ let rec coalesce_static_parts = function
 
 let escape_html s =
   let len = String.length s in
-  let buf = Buffer.create (len * 2) in
-  for i = 0 to len - 1 do
-    match s.[i] with
-    | '&' ->
-        Buffer.add_string buf "&amp;"
-    | '<' ->
-        Buffer.add_string buf "&lt;"
-    | '>' ->
-        Buffer.add_string buf "&gt;"
-    | '\'' ->
-        Buffer.add_string buf "&apos;"
-    | '"' ->
-        Buffer.add_string buf "&quot;"
-    | c ->
-        Buffer.add_char buf c
-  done;
-  Buffer.contents buf
+  let rec find_escape i =
+    if i = len then
+      None
+    else
+      match s.[i] with
+      | '&' | '<' | '>' | '\'' | '"' ->
+          Some i
+      | _ ->
+          find_escape (i + 1)
+  in
+  match find_escape 0 with
+  | None ->
+      s
+  | Some first ->
+      let buf = Buffer.create (len * 2) in
+      if first > 0 then Buffer.add_substring buf s 0 first;
+      for i = first to len - 1 do
+        match s.[i] with
+        | '&' ->
+            Buffer.add_string buf "&amp;"
+        | '<' ->
+            Buffer.add_string buf "&lt;"
+        | '>' ->
+            Buffer.add_string buf "&gt;"
+        | '\'' ->
+            Buffer.add_string buf "&apos;"
+        | '"' ->
+            Buffer.add_string buf "&quot;"
+        | c ->
+            Buffer.add_char buf c
+      done;
+      Buffer.contents buf
 
 (* Duplicated from JSX.Html.is_self_closing_tag - keep in sync *)
 let is_self_closing_tag = function
@@ -266,7 +281,6 @@ type attrs_analysis =
       static_attrs : string;
       dynamic_attrs : (attr_render_info * expression) list;
     }
-  | Has_dynamic
   | Validation_failed
 
 let analyze_attributes ~tag_name attrs =
@@ -310,6 +324,11 @@ let extract_jsx_unsafe_literal expr =
   match expr.pexp_desc with
   | Pexp_apply
       ( { pexp_desc = Pexp_ident { txt = Ldot (Lident "JSX", "unsafe"); _ }; _ },
+        [ (Nolabel, arg) ]
+      ) ->
+      extract_literal_string arg
+  | Pexp_apply
+      ( { pexp_desc = Pexp_ident { txt = Lident "unsafe"; _ }; _ },
         [ (Nolabel, arg) ]
       ) ->
       extract_literal_string arg
@@ -422,11 +441,11 @@ type element_analysis =
       children_parts : static_part list;
       is_self_closing : bool;
     }
-  | Dynamic_attrs_static_children of {
+  | Dynamic_attrs_children of {
       tag_name : string;
       static_attrs : string;
       dynamic_attrs : (attr_render_info * expression) list;
-      children_html : string;
+      children_parts : static_part list;
       is_self_closing : bool;
     }
   | Cannot_optimize
@@ -438,29 +457,44 @@ let analyze_element ~tag_name ~attrs ~children =
   match (attrs_result, children_result) with
   | Validation_failed, _ ->
       Cannot_optimize
-  | Has_dynamic, _ ->
-      Cannot_optimize
   | ( Has_dynamic_attrs { static_attrs; dynamic_attrs },
       All_static_children children_html ) ->
-      Dynamic_attrs_static_children
+      Dynamic_attrs_children
         {
           tag_name;
           static_attrs;
           dynamic_attrs;
-          children_html;
+          children_parts = [ Static_str children_html ];
           is_self_closing = is_self_closing_tag tag_name;
         }
   | Has_dynamic_attrs { static_attrs; dynamic_attrs }, No_children ->
-      Dynamic_attrs_static_children
+      Dynamic_attrs_children
         {
           tag_name;
           static_attrs;
           dynamic_attrs;
-          children_html = "";
+          children_parts = [];
           is_self_closing = is_self_closing_tag tag_name;
         }
-  | Has_dynamic_attrs _, (All_string_dynamic _ | Mixed_children _) ->
-      Cannot_optimize
+  | Has_dynamic_attrs { static_attrs; dynamic_attrs }, All_string_dynamic parts
+    ->
+      Dynamic_attrs_children
+        {
+          tag_name;
+          static_attrs;
+          dynamic_attrs;
+          children_parts = parts;
+          is_self_closing = false;
+        }
+  | Has_dynamic_attrs { static_attrs; dynamic_attrs }, Mixed_children parts ->
+      Dynamic_attrs_children
+        {
+          tag_name;
+          static_attrs;
+          dynamic_attrs;
+          children_parts = parts;
+          is_self_closing = false;
+        }
   | All_static attrs_html, No_children when is_self_closing_tag tag_name ->
       let html = Printf.sprintf "<%s%s />" tag_name attrs_html in
       Fully_static html

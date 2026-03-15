@@ -12,7 +12,7 @@ type product = {
   review_count : int;
   image : string;
   category : string;
-  tags : string list;
+  tags : string array;
   in_stock : bool;
   free_shipping : bool;
   prime : bool;
@@ -30,7 +30,7 @@ let generate_products count =
   let tag_options =
     [| "Best Seller"; "New"; "Sale"; "Limited"; "Trending"; "Eco-Friendly" |]
   in
-  List.init count (fun i ->
+  Array.init count (fun i ->
       let id = i + 1 in
       let has_discount = i mod 3 = 0 in
       let base_price = 19.99 +. float_of_int (i mod 500) in
@@ -55,7 +55,7 @@ let generate_products count =
         image = Printf.sprintf "https://picsum.photos/seed/%d/300/300" id;
         category = categories.(i mod Array.length categories);
         tags =
-          List.init
+          Array.init
             (1 + (i mod 3))
             (fun j -> tag_options.((i + j) mod Array.length tag_options));
         in_stock = i mod 10 <> 0;
@@ -139,8 +139,8 @@ let product_card ~product =
         loading=`lazy_
       />
       <div class_="absolute top-2 left-2 flex flex-col gap-1">
-        (JSX.list
-           (List.map
+        (JSX.array
+           (Array.map
               (fun tag ->
                 <span
                   class_="px-2 py-1 text-xs font-medium bg-black/70 text-white \
@@ -276,7 +276,7 @@ let filter_sidebar () =
 
 let product_grid ~products =
   let results_label =
-    Printf.sprintf "Showing %d results" (List.length products)
+    Printf.sprintf "Showing %d results" (Array.length products)
   in
   <div class_="flex-1">
     <div class_="mb-4 flex items-center justify-between">
@@ -291,7 +291,7 @@ let product_grid ~products =
     <div
       class_="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 \
               gap-6">
-      (JSX.list (List.map (fun product -> product_card ~product) products))
+      (JSX.array (Array.map (fun product -> product_card ~product) products))
     </div>
     <nav class_="mt-8 flex items-center justify-center gap-2">
       <button class_="px-4 py-2 border rounded-lg text-sm hover:bg-gray-50">
@@ -475,8 +475,11 @@ let page ~products =
 let products_24 = generate_products 24
 let products_48 = generate_products 48
 let products_100 = generate_products 100
-let ecommerce_24 () = page ~products:products_24
-let ecommerce_48 () = page ~products:products_48
-let ecommerce_100 () = page ~products:products_100
+let ecommerce_24_el = page ~products:products_24
+let ecommerce_48_el = page ~products:products_48
+let ecommerce_100_el = page ~products:products_100
+let ecommerce_24 () = ecommerce_24_el
+let ecommerce_48 () = ecommerce_48_el
+let ecommerce_100 () = ecommerce_100_el
 let make () = ecommerce_48 ()
 let render () = JSX.render (make ())

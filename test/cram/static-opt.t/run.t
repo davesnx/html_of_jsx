@@ -63,7 +63,7 @@ Test static JSX optimization
     JSX.unsafe(Buffer.contents(__html_buf));
   };
   let dynamic_attr = className => {
-    let __html_buf = Buffer.create(1024);
+    let __html_buf = Buffer.create(75);
     {
       {
         Buffer.add_char(__html_buf, '<');
@@ -78,6 +78,134 @@ Test static JSX optimization
         Buffer.add_char(__html_buf, '"');
       };
       Buffer.add_char(__html_buf, '>');
+      {
+        Buffer.add_string(__html_buf, "</");
+        Buffer.add_string(__html_buf, "div");
+        Buffer.add_char(__html_buf, '>');
+      };
+      ();
+    };
+    JSX.unsafe(Buffer.contents(__html_buf));
+  };
+  let dynamic_attr_with_string_child = (className, name) => {
+    let __html_buf = Buffer.create(139);
+    {
+      {
+        Buffer.add_char(__html_buf, '<');
+        Buffer.add_string(__html_buf, "div");
+        Buffer.add_string(__html_buf, "");
+      };
+      {
+        Buffer.add_char(__html_buf, ' ');
+        Buffer.add_string(__html_buf, "class");
+        Buffer.add_string(__html_buf, "=\"");
+        JSX.escape(__html_buf, className);
+        Buffer.add_char(__html_buf, '"');
+      };
+      Buffer.add_char(__html_buf, '>');
+      JSX.escape(__html_buf, name);
+      {
+        Buffer.add_string(__html_buf, "</");
+        Buffer.add_string(__html_buf, "div");
+        Buffer.add_char(__html_buf, '>');
+      };
+      ();
+    };
+    JSX.unsafe(Buffer.contents(__html_buf));
+  };
+  let dynamic_attr_with_mixed_child = (className, child) => {
+    let __html_buf = Buffer.create(139);
+    {
+      {
+        Buffer.add_char(__html_buf, '<');
+        Buffer.add_string(__html_buf, "div");
+        Buffer.add_string(__html_buf, "");
+      };
+      {
+        Buffer.add_char(__html_buf, ' ');
+        Buffer.add_string(__html_buf, "class");
+        Buffer.add_string(__html_buf, "=\"");
+        JSX.escape(__html_buf, className);
+        Buffer.add_char(__html_buf, '"');
+      };
+      Buffer.add_char(__html_buf, '>');
+      JSX.write(__html_buf, child);
+      {
+        Buffer.add_string(__html_buf, "</");
+        Buffer.add_string(__html_buf, "div");
+        Buffer.add_char(__html_buf, '>');
+      };
+      ();
+    };
+    JSX.unsafe(Buffer.contents(__html_buf));
+  };
+  let dynamic_bool_attr_with_child = (disabled, name) => {
+    let __html_buf = Buffer.create(145);
+    {
+      {
+        Buffer.add_char(__html_buf, '<');
+        Buffer.add_string(__html_buf, "button");
+        Buffer.add_string(__html_buf, "");
+      };
+      if (disabled) {
+        Buffer.add_char(__html_buf, ' ');
+        Buffer.add_string(__html_buf, "disabled");
+      };
+      Buffer.add_char(__html_buf, '>');
+      JSX.escape(__html_buf, name);
+      {
+        Buffer.add_string(__html_buf, "</");
+        Buffer.add_string(__html_buf, "button");
+        Buffer.add_char(__html_buf, '>');
+      };
+      ();
+    };
+    JSX.unsafe(Buffer.contents(__html_buf));
+  };
+  let dynamic_int_attr_with_child = (tabindex, name) => {
+    let __html_buf = Buffer.create(139);
+    {
+      {
+        Buffer.add_char(__html_buf, '<');
+        Buffer.add_string(__html_buf, "div");
+        Buffer.add_string(__html_buf, "");
+      };
+      {
+        Buffer.add_char(__html_buf, ' ');
+        Buffer.add_string(__html_buf, "tabindex");
+        Buffer.add_string(__html_buf, "=\"");
+        Buffer.add_string(__html_buf, Int.to_string(tabindex));
+        Buffer.add_char(__html_buf, '"');
+      };
+      Buffer.add_char(__html_buf, '>');
+      JSX.escape(__html_buf, name);
+      {
+        Buffer.add_string(__html_buf, "</");
+        Buffer.add_string(__html_buf, "div");
+        Buffer.add_char(__html_buf, '>');
+      };
+      ();
+    };
+    JSX.unsafe(Buffer.contents(__html_buf));
+  };
+  let dynamic_attr_with_int_float_children = (className, count, price) => {
+    let __html_buf = Buffer.create(203);
+    {
+      {
+        Buffer.add_char(__html_buf, '<');
+        Buffer.add_string(__html_buf, "div");
+        Buffer.add_string(__html_buf, "");
+      };
+      {
+        Buffer.add_char(__html_buf, ' ');
+        Buffer.add_string(__html_buf, "class");
+        Buffer.add_string(__html_buf, "=\"");
+        JSX.escape(__html_buf, className);
+        Buffer.add_char(__html_buf, '"');
+      };
+      Buffer.add_char(__html_buf, '>');
+      Buffer.add_string(__html_buf, Int.to_string(count));
+      Buffer.add_string(__html_buf, Float.to_string(price));
       {
         Buffer.add_string(__html_buf, "</");
         Buffer.add_string(__html_buf, "div");
@@ -117,7 +245,7 @@ Test static JSX optimization
       "<div>&lt;script&gt;alert(&apos;xss&apos;)&lt;/script&gt;</div>",
     );
   let static_fragment = {
-    let __html_buf = Buffer.create(1024);
+    let __html_buf = Buffer.create(24);
     {
       Buffer.add_string(__html_buf, "<div></div>");
       Buffer.add_string(__html_buf, "<span></span>");

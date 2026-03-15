@@ -31,7 +31,7 @@ We need to output ML syntax here, otherwise refmt could not parse it.
   let react_component_with_optional_prop = hello ?lola:"flores" ()
   
   let div =
-    let __html_buf = Buffer.create 1024 in
+    let __html_buf = Buffer.create 56 in
     Buffer.add_string __html_buf "<div class=\"md:w-1/3\"></div>";
     Buffer.add_string __html_buf "<div class=\"md:w-2/3\"></div>";
     ();

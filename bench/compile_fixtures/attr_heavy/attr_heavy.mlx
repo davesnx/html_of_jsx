@@ -1,0 +1,61 @@
+let row ~id ~name ~tab ~active ~hint =
+  <div
+    id
+    class_="row attr-heavy"
+    data_role="entry"
+    data_kind="synthetic"
+    data_source="compile-bench"
+    data_state=( if active then
+                   "active"
+                 else
+                   "inactive"
+               )
+    tabindex=tab
+    draggable=true
+    hidden=false
+    translate=`yes
+    aria_label=name
+    title=hint
+    role=`button
+    accesskey="k"
+    dir=`ltr
+    spellcheck=false>
+    <span class_="name">(JSX.string name)</span>
+    <span class_="hint">(JSX.string hint)</span>
+  </div>
+
+let names =
+  [
+    "Alice";
+    "Bob";
+    "Charlie";
+    "Diana";
+    "Eve";
+    "Frank";
+    "Grace";
+    "Henry";
+    "Ivy";
+    "John";
+    "Kate";
+    "Liam";
+  ]
+
+let make () =
+  <section id="fixture-panel" class_="attr-heavy-container">
+    <h1 class_="title">(JSX.string "Compile Fixture: Attr Heavy")</h1>
+    <div id="fixture-help" class_="sr-only">
+      (JSX.string "benchmark fixture")
+    </div>
+    (JSX.list
+       (List.mapi
+          (fun i name ->
+            let id = Printf.sprintf "row-%d" i in
+            let hint = Printf.sprintf "hint-%d" (i * 7) in
+            row ~id ~name ~tab:(i mod 10) ~active:(i mod 2 = 0) ~hint
+          )
+          names
+       )
+    )
+  </section>
+
+let render () = JSX.render (make ())

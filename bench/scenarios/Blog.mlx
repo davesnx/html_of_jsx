@@ -86,19 +86,20 @@ let rec comment_component ~comment ~depth =
             (JSX.string "Share")
           </button>
         </div>
-        ( if List.length comment.replies > 0 then
+        ( match comment.replies with
+        | [] ->
+            JSX.null
+        | replies ->
             <div class_="mt-4">
               (JSX.list
                  (List.map
                     (fun reply ->
                       comment_component ~comment:reply ~depth:(depth + 1)
                     )
-                    comment.replies
+                    replies
                  )
               )
             </div>
-          else
-            JSX.null
         )
       </div>
     </div>
@@ -322,8 +323,7 @@ let comments_section ~comments =
     </div>
   </section>
 
-let page ~comment_count =
-  let comments = generate_comments comment_count 1 in
+let page ~comments =
   <html lang="en">
     <head>
       <meta charset="utf-8" />
@@ -438,8 +438,14 @@ let page ~comment_count =
     </body>
   </html>
 
-let blog_10 () = page ~comment_count:10
-let blog_50 () = page ~comment_count:50
-let blog_100 () = page ~comment_count:100
+let comments_10 = generate_comments 10 1
+let comments_50 = generate_comments 50 1
+let comments_100 = generate_comments 100 1
+let blog_10_el = page ~comments:comments_10
+let blog_50_el = page ~comments:comments_50
+let blog_100_el = page ~comments:comments_100
+let blog_10 () = blog_10_el
+let blog_50 () = blog_50_el
+let blog_100 () = blog_100_el
 let make () = blog_50 ()
 let render () = JSX.render (make ())
