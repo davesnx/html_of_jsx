@@ -1,0 +1,605 @@
+open Yocaml
+
+module Path = Yocaml.Path
+
+type syntax = Reason | Mlx
+
+type page = {
+  source_name : string;
+  output_name : string;
+  title : string;
+  markdown : string;
+}
+
+let source_dir = Path.rel [ "docs"; "content" ]
+let assets_dir = Path.rel [ "site"; "assets" ]
+let target_dir = Path.rel [ "docs"; "_site" ]
+let target_assets_dir = Path.(target_dir / "assets")
+
+let font_face_css =
+  {|@font-face {
+  font-family: "IBM Plex Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("assets/ibm-plex-mono-400.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "IBM Plex Mono";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("assets/ibm-plex-mono-600.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Spline Sans";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("assets/spline-sans-700.woff2") format("woff2");
+}
+|}
+
+let render_font_preloads () =
+  JSX.list
+    [
+      <link
+        rel="preload"
+        as_="font"
+        type_="font/woff2"
+        href="assets/ibm-plex-mono-400.woff2"
+      />;
+      <link
+        rel="preload"
+        as_="font"
+        type_="font/woff2"
+        href="assets/ibm-plex-mono-600.woff2"
+      />;
+      <link
+        rel="preload"
+        as_="font"
+        type_="font/woff2"
+        href="assets/spline-sans-700.woff2"
+      />;
+    ]
+
+let guide_order =
+  [
+    "index.md";
+    "getting-started.md";
+    "core.md";
+    "ppx.md";
+    "how-ppx-works.md";
+    "dream.md";
+    "HTMX-mode.md";
+    "React-compatibility.md";
+  ]
+
+let ochre_options =
+  Ochre.Html_options.make ~pre_class:"doc-code__pre"
+    ~code_class:"doc-code__code" ()
+
+let highlighter =
+  Ochre.create_from_json
+    ~grammars:
+      [
+        ("reason", Tm_grammars.reason);
+        ("mlx", Tm_grammars.mlx);
+        ("dune", Tm_grammars.dune);
+        ("bash", Tm_grammars.shellscript);
+        ("ocaml", Tm_grammars.ocaml);
+      ]
+    ()
+
+let basename_exn path =
+  match Path.basename path with
+  | Some name ->
+      name
+  | None ->
+      invalid_arg ("Expected a basename for path: " ^ Path.to_string path)
+
+let output_name_of_source_name source_name =
+  let stem = Filename.remove_extension source_name in
+  if stem = "index" then
+    "index.html"
+  else
+    stem ^ ".html"
+
+let replace_all ~pattern ~with_ text =
+  if pattern = "" then
+    text
+  else
+    let pattern_length = String.length pattern in
+    let text_length = String.length text in
+    let buffer = Buffer.create text_length in
+    let rec loop index =
+      if index >= text_length then
+        ()
+      else if
+        index <= text_length - pattern_length
+        && String.sub text index pattern_length = pattern
+      then (
+        Buffer.add_string buffer with_;
+        loop (index + pattern_length)
+      ) else (
+        Buffer.add_char buffer text.[index];
+        loop (index + 1)
+      )
+    in
+    loop 0;
+    Buffer.contents buffer
+
+let first_word text =
+  let trimmed = String.trim text in
+  let length = String.length trimmed in
+  let rec find index =
+    if index >= length then
+      length
+    else
+      match trimmed.[index] with
+      | ' ' | '\t' | '\n' | '\r' ->
+          index
+      | _ ->
+          find (index + 1)
+  in
+  if length = 0 then
+    ""
+  else
+    String.sub trimmed 0 (find 0)
+
+let normalize_code_label label = first_word label |> String.lowercase_ascii
+
+let syntax_of_label label =
+  match normalize_code_label label with
+  | "reason" | "reasonml" ->
+      Some Reason
+  | "mlx" ->
+      Some Mlx
+  | _ ->
+      None
+
+let highlight_lang_of_label label =
+  match normalize_code_label label with
+  | "reason" | "reasonml" ->
+      Some "reason"
+  | "mlx" ->
+      Some "mlx"
+  | "dune" ->
+      Some "dune"
+  | "bash" | "sh" | "shell" | "shellscript" ->
+      Some "bash"
+  | "ocaml" ->
+      Some "ocaml"
+  | "" ->
+      None
+  | _ ->
+      None
+
+let code_badge label =
+  match normalize_code_label label with
+  | "reason" | "reasonml" ->
+      Some ("Reason", ".re")
+  | "mlx" ->
+      Some ("mlx", ".mlx")
+  | "dune" ->
+      Some ("dune", "")
+  | "bash" | "sh" | "shell" | "shellscript" ->
+      Some ("bash", "")
+  | "ocaml" ->
+      Some ("ocaml", "")
+  | "" ->
+      None
+  | other ->
+      Some (other, "")
+
+let trim_trailing_newlines text =
+  let rec find_last_non_newline index =
+    if index < 0 then
+      -1
+    else
+      match text.[index] with
+      | '\n' | '\r' ->
+          find_last_non_newline (index - 1)
+      | _ ->
+          index
+  in
+  let last_index = find_last_non_newline (String.length text - 1) in
+  if last_index < 0 then
+    ""
+  else
+    String.sub text 0 (last_index + 1)
+
+let render_plain_code code =
+  JSX.render
+    <pre class_="doc-code__pre">
+      <code class_="doc-code__code">(JSX.string code)</code>
+    </pre>
+
+let theme =
+  Ochre.Theme.make ~name:"coffee" ~fg:"#e9ecf5" ~bg:"#503F2B" ~comment:"#B2A59A"
+    ~string:"#a6e3a1" ~number:"#fab387" ~keyword:"#cba6f7" ~fn:"#fac089"
+    ~typ:"#94e2d5"
+
+let render_highlighted_code label code =
+  match highlight_lang_of_label label with
+  | None ->
+      render_plain_code code
+  | Some language -> (
+      try
+        Ochre.to_html highlighter ~options:ochre_options ~theme ~lang:language
+          code
+      with _ -> render_plain_code code
+    )
+
+let string_of_syntax = function Reason -> "reason" | Mlx -> "mlx"
+
+let render_code_caption label =
+  let language =
+    match code_badge label with None -> "code" | Some (value, _) -> value
+  in
+  JSX.render
+    <figcaption class_="doc-code__meta">
+      <span class_="doc-code__lang">(JSX.string language)</span>
+      <button class_="doc-code__copy" type_=`button dataDocCopy="">
+        <svg class_="doc-code__copy-icon" viewBox="0 0 24 24" aria_hidden=true>
+          <rect x="9" y="9" width="10" height="10" rx="2" />
+          <rect x="5" y="5" width="10" height="10" rx="2" />
+        </svg>
+        <span class_="doc-code__copy-label">(JSX.string "Copy")</span>
+      </button>
+    </figcaption>
+
+let code_figure_element ?syntax label code =
+  let normalized_code = trim_trailing_newlines code in
+  let caption = render_code_caption label in
+  let highlighted = render_highlighted_code label normalized_code in
+  match syntax with
+  | None ->
+      <figure class_="doc-code">
+        (JSX.unsafe caption) (JSX.unsafe highlighted)
+      </figure>
+  | Some value ->
+      <figure class_="doc-code" dataSyntax=(string_of_syntax value)>
+        (JSX.unsafe caption) (JSX.unsafe highlighted)
+      </figure>
+
+let render_code_figure ?syntax label code =
+  JSX.render (code_figure_element ?syntax label code)
+
+let render_syntax_pair reason_label reason_code mlx_label mlx_code =
+  JSX.render
+    <div class_="doc-code-pair">
+      (code_figure_element ~syntax:Reason reason_label reason_code)
+      (code_figure_element ~syntax:Mlx mlx_label mlx_code)
+    </div>
+
+let rec inline_to_text = function
+  | Omd.Concat (_, items) ->
+      items |> List.map inline_to_text |> String.concat ""
+  | Omd.Text (_, text) ->
+      text
+  | Omd.Emph (_, value) | Omd.Strong (_, value) ->
+      inline_to_text value
+  | Omd.Code (_, code) ->
+      code
+  | Omd.Hard_break _ | Omd.Soft_break _ ->
+      " "
+  | Omd.Link (_, link) | Omd.Image (_, link) ->
+      inline_to_text link.label
+  | Omd.Html (_, text) ->
+      text
+
+let humanize_source_name source_name =
+  source_name |> Filename.remove_extension
+  |> String.map (fun character ->
+      if character = '-' then
+        ' '
+      else
+        character
+  )
+
+let extract_title source_name markdown =
+  let rec find_heading = function
+    | Omd.Heading (_, _, label) :: _ ->
+        inline_to_text label |> String.trim
+    | _ :: rest ->
+        find_heading rest
+    | [] ->
+        humanize_source_name source_name
+  in
+  find_heading (Omd.of_string markdown)
+
+let rec index_of value index = function
+  | [] ->
+      None
+  | candidate :: rest ->
+      if candidate = value then
+        Some index
+      else
+        index_of value (index + 1) rest
+
+let page_rank source_name =
+  match index_of source_name 0 guide_order with
+  | Some rank ->
+      rank
+  | None ->
+      1000
+
+let compare_pages left right =
+  let rank_comparison =
+    Int.compare (page_rank left.source_name) (page_rank right.source_name)
+  in
+  if rank_comparison <> 0 then
+    rank_comparison
+  else
+    String.compare
+      (String.lowercase_ascii left.source_name)
+      (String.lowercase_ascii right.source_name)
+
+let page_of_markdown source markdown =
+  let source_name = basename_exn source in
+  {
+    source_name;
+    output_name = output_name_of_source_name source_name;
+    title = extract_title source_name markdown;
+    markdown;
+  }
+
+let links_map pages =
+  pages
+  |> List.fold_left
+       (fun acc page ->
+         ("./" ^ page.source_name, page.output_name)
+         :: (page.source_name, page.output_name)
+         :: acc
+       )
+       []
+
+let rewrite_html_links pages html =
+  links_map pages
+  |> List.fold_left
+       (fun acc (source_name, output_name) ->
+         acc
+         |> replace_all
+              ~pattern:("href=\"" ^ source_name ^ "\"")
+              ~with_:("href=\"" ^ output_name ^ "\"")
+         |> replace_all
+              ~pattern:("href=\"" ^ source_name ^ "#")
+              ~with_:("href=\"" ^ output_name ^ "#")
+       )
+       html
+
+let render_markdown_body ~hide_h1 pages markdown =
+  let rec render_blocks acc blocks =
+    match blocks with
+    | Omd.Code_block (_, label, code) :: rest -> (
+        match rest with
+        | Omd.Code_block (_, label_next, code_next) :: remaining -> (
+            match (syntax_of_label label, syntax_of_label label_next) with
+            | Some Reason, Some Mlx ->
+                render_blocks
+                  (render_syntax_pair label code label_next code_next :: acc)
+                  remaining
+            | Some Mlx, Some Reason ->
+                render_blocks
+                  (render_syntax_pair label_next code_next label code :: acc)
+                  remaining
+            | _ ->
+                render_blocks (render_code_figure label code :: acc) rest
+          )
+        | _ ->
+            render_blocks (render_code_figure label code :: acc) rest
+      )
+    | Omd.Heading (_, 1, _) :: rest when hide_h1 ->
+        render_blocks acc rest
+    | block :: rest ->
+        render_blocks (Omd.to_html [ block ] :: acc) rest
+    | [] ->
+        List.rev acc |> String.concat ""
+  in
+  markdown |> Omd.of_string |> render_blocks [] |> rewrite_html_links pages
+
+let menu_guide_links =
+  [
+    ("getting-started.md", "Getting started");
+    ("core.md", "Core");
+    ("ppx.md", "ppx");
+    ("how-ppx-works.md", "How the ppx works");
+    ("dream.md", "Integrate with Dream");
+    ("HTMX-mode.md", "HTMX mode");
+    ("React-compatibility.md", "React mode");
+  ]
+
+let find_page_by_source_name pages source_name =
+  List.find_opt (fun page -> page.source_name = source_name) pages
+
+let render_menu_link ~href ~label ~is_active =
+  if is_active then
+    JSX.render
+      <li>
+        <a
+          class_="site-menu__link site-menu__link--active"
+          aria_current=`page
+          href>
+          (JSX.string label)
+        </a>
+      </li>
+  else
+    JSX.render <li><a class_="site-menu__link" href>(JSX.string label)</a></li>
+
+let render_menu pages active_output =
+  let guide_links =
+    menu_guide_links
+    |> List.filter_map (fun (source_name, label) ->
+        match find_page_by_source_name pages source_name with
+        | Some page ->
+            Some
+              (render_menu_link ~href:page.output_name ~label
+                 ~is_active:(page.output_name = active_output)
+              )
+        | None ->
+            None
+    )
+    |> String.concat ""
+  in
+  let api_target =
+    match find_page_by_source_name pages "JSX.md" with
+    | Some page ->
+        Some page
+    | None ->
+        List.find_opt (fun page -> page_rank page.source_name >= 1000) pages
+  in
+  let current_is_api =
+    match
+      List.find_opt (fun page -> page.output_name = active_output) pages
+    with
+    | Some page ->
+        page_rank page.source_name >= 1000
+    | None ->
+        false
+  in
+  let api_link =
+    match api_target with
+    | Some page ->
+        render_menu_link ~href:page.output_name ~label:"API"
+          ~is_active:current_is_api
+    | None ->
+        ""
+  in
+  "<nav class=\"site-menu\" aria-label=\"Documentation pages\"><ul \
+   class=\"site-menu__list\">" ^ guide_links ^ api_link ^ "</ul></nav>"
+
+let render_page pages page =
+  let menu_html = render_menu pages page.output_name in
+  let is_api_page = page_rank page.source_name >= 1000 in
+  let article_html =
+    render_markdown_body ~hide_h1:(not is_api_page) pages page.markdown
+  in
+  let article_class =
+    if is_api_page then
+      "doc-prose"
+    else
+      "doc-prose doc-prose--guide"
+  in
+  let font_preloads = render_font_preloads () in
+  let site_title = "html_of_jsx documentation" in
+  let page_title = page.title ^ " - " ^ site_title in
+  JSX.render
+    <html lang="en" dataDocSyntax="reason">
+      <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>(JSX.string page_title)</title>
+        <meta name="description" content=site_title />
+        font_preloads
+        <style>
+          (JSX.string font_face_css)
+        </style>
+        <link rel="stylesheet" href="assets/site.css" />
+        <script src="assets/site.js" defer=true />
+      </head>
+      <body>
+        <header class_="site-header">
+          <div class_="site-header__inner">
+            <div class_="site-header__top">
+              <div class_="site-branding">
+                <a class_="site-brand" href="index.html">
+                  (JSX.string "html_of_jsx")
+                </a>
+              </div>
+              <div class_="syntax-toggle" role=`group aria_label="Code syntax">
+                <button
+                  type_=`button
+                  dataDocSyntax="reason"
+                  aria_label="Reason syntax">
+                  <img
+                    class_="syntax-toggle__icon" src="assets/reason.svg" alt=""
+                  />
+                  <span class_="syntax-toggle__label">
+                    (JSX.string "Reason")
+                  </span>
+                </button>
+                <button
+                  type_=`button dataDocSyntax="mlx" aria_label="mlx syntax">
+                  <img
+                    class_="syntax-toggle__icon" src="assets/ocaml.svg" alt=""
+                  />
+                  <span class_="syntax-toggle__label">(JSX.string "mlx")</span>
+                </button>
+              </div>
+            </div>
+            (JSX.unsafe menu_html)
+          </div>
+        </header>
+        <main class_="doc-main">
+          <article class_=article_class>(JSX.unsafe article_html)</article>
+        </main>
+      </body>
+    </html>
+  ^ "\n"
+
+let load_pages source_files =
+  let open Eff in
+  let rec collect acc = function
+    | [] ->
+        return (Stdlib.List.rev acc)
+    | source :: rest ->
+        let* markdown = read_file ~snapshot:true ~on:`Source source in
+        collect (page_of_markdown source markdown :: acc) rest
+  in
+  let+ pages = collect [] source_files in
+  Stdlib.List.sort compare_pages pages
+
+let copy_assets () =
+  let open Eff in
+  let* files =
+    read_directory ~on:`Source ~only:`Files
+      ~where:(Path.one_of_extensions [ "css"; "js"; "svg"; "woff2" ])
+      assets_dir
+  in
+  let rec copy_files = function
+    | [] ->
+        return ()
+    | source :: rest ->
+        let target = Path.move ~into:target_assets_dir source in
+        let* content = read_file ~snapshot:true ~on:`Source source in
+        let* () = write_file ~on:`Source target content in
+        copy_files rest
+  in
+  copy_files files
+
+let write_pages pages =
+  let open Eff in
+  let rec write_all = function
+    | [] ->
+        return ()
+    | page :: rest ->
+        let target = Path.(target_dir / page.output_name) in
+        let html = render_page pages page in
+        let* () = write_file ~on:`Source target html in
+        write_all rest
+  in
+  write_all pages
+
+let process_all () =
+  let open Eff in
+  let* source_files =
+    read_directory ~on:`Source ~only:`Files ~where:(Path.has_extension "md")
+      source_dir
+  in
+  let source_files =
+    source_files
+    |> Stdlib.List.sort (fun left right ->
+        String.compare (basename_exn left) (basename_exn right)
+    )
+  in
+  if source_files = [] then
+    invalid_arg
+      "No markdown files found in docs/content. Run `make docs-content` first.";
+  let* pages = load_pages source_files in
+  let* () = copy_assets () in
+  write_pages pages
+
+let () = Yocaml_unix.run ~level:`Info process_all

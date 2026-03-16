@@ -88,7 +88,9 @@ install: # Install dependencies
 .PHONY: pin
 pin: # pin dependencies
 	opam pin add dune "https://github.com/ocaml/dune.git#f000f24921f80c1c0ff86c4747c7a45f4ac43163" -y -n
-	opam pin add ochre "https://github.com/davesnx/ochre.git#c1df2bd14af7291383e5b674e08ba6e32ed38617" -y -n
+	opam pin add ochre "https://github.com/davesnx/ochre.git#7cfd98dfd52f5e1942cd1a7e1fbcc8e2cc6322e1" -y -n
+	opam pin add textmate-language "https://github.com/davesnx/ocaml-textmate-language.git#3fed1834182f9392bd310aee686555615ab85991" -y -n
+	opam pin add tm-grammars "https://github.com/davesnx/tm-grammars.git#7bc690111b6d6a9c6896bc35aa17bfb854c33a2d" -y -n
 
 .PHONY: init
 init: setup-githooks create-switch pin install ## Create a local dev enviroment
@@ -114,11 +116,23 @@ docs: ## Generate odoc docs
 	$(DUNE) build --root . @doc
 
 .PHONY: docs-api
-docs-api: ## Generate markdown docs and promote to website/
-	$(DUNE) build --root . @doc-markdown
-	@rm -rf website
-	@mkdir -p website
-	@cp _build/default/_doc/_markdown/html_of_jsx/*.md website/
+docs-api: docs-content ## Backward-compatible alias for docs markdown sync
+
+.PHONY: docs-content
+docs-content: ## Generate markdown docs and promote to docs/content
+	$(DUNE) build --root . @doc-markdown @docs-content --auto-promote
+
+.PHONY: docs-site-deps
+docs-site-deps: ## Install docs site dependencies in local switch
+	opam install yocaml yocaml_unix ochre tm-grammars omd -y
+
+.PHONY: docs-site
+docs-site: docs-content ## Build Yocaml docs site into docs/_site
+	DOCS_SITE=true $(DUNE) exec --root . ./site/build_site.exe
+
+.PHONY: docs-site-serve
+docs-site-serve: docs-site ## Serve generated docs site locally on :8080
+	python3 -m http.server 8080 --directory docs/_site
 
 .PHONY: docs-watch
 docs-watch: ## Generate odoc docs in watch mode

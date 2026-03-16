@@ -23,7 +23,7 @@ A JSX transformation and a library to write HTML in {{:https://reasonml.github.i
 {1 Installation}
 
 {@bash[
-opam install html_of_jsx
+opam install html_of_jsx -y
 ]}
 
 {@dune[
@@ -37,11 +37,19 @@ See {!page-"getting-started"} for dune package manager, opam pin, and syntax set
 
 {@reasonml[
 let element: JSX.element = <a href="https://x.com/davesnx">
-  <span> {"Click me!"} </span>
+  <span> {JSX.string("Click me!")} </span>
 </a>;
 
 let html: string = JSX.render(element);
 /* <a href="https://x.com/davesnx"><span>Click me!</span></a> */
+]}
+{@mlx[
+let element: JSX.element = <a href="https://x.com/davesnx">
+  <span>(JSX.string "Click me!")</span>
+</a>
+
+let html: string = JSX.render element
+(* <a href="https://x.com/davesnx"><span>Click me!</span></a> *)
 ]}
 
 See {!page-core} for elements, children, components, and rendering.

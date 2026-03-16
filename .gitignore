@@ -112,6 +112,8 @@ _esy
 dune.mel
 .melange.eobjs
 dist/
+docs/_site/
+docs/.cache/
 
 .direnv/
 

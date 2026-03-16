@@ -1,21 +1,23 @@
-{0 Integrate with Dream}
 
-Use html_of_jsx to render pages and fragments in a {{:https://aantron.github.io/dream/}Dream} web server.
+# Integrate with Dream
 
-{1 Dune setup}
+Use html\_of\_jsx to render pages and fragments in a [Dream](https://aantron.github.io/dream/) web server.
 
-{@dune[
+
+## Dune setup
+
+```dune
 (executable
  (name server)
  (libraries dream html_of_jsx)
  (preprocess (pps html_of_jsx.ppx)))
-]}
+```
 
-{1 Rendering a page}
+## Rendering a page
 
-Use [JSX.render] to produce an HTML string and return it with [Dream.html]:
+Use `JSX.render` to produce an HTML string and return it with `Dream.html`:
 
-{@reasonml[
+```reasonml
 let page = (~title, ~children, ()) => {
   <html lang="en">
     <head> <title> {JSX.string(title)} </title> </head>
@@ -34,9 +36,8 @@ let () =
       ))
     ),
   ]);
-]}
-
-{@mlx[
+```
+```mlx
 let page ~title ~children () =
   <html lang="en">
     <head><title>(JSX.string title)</title></head>
@@ -54,13 +55,13 @@ let () =
       ))
     );
   ]
-]}
+```
 
-{1 Streaming}
+## Streaming
 
-For large pages, stream HTML chunks directly into the response body with [JSX.render_streaming]:
+For large pages, stream HTML chunks directly into the response body with `JSX.render_streaming`:
 
-{@reasonml[
+```reasonml
 Dream.get("/stream", _req =>
   Dream.stream(~headers=[("Content-Type", "text/html")], stream => {
     JSX.render_streaming(
@@ -72,9 +73,8 @@ Dream.get("/stream", _req =>
     Dream.close(stream);
   })
 )
-]}
-
-{@mlx[
+```
+```mlx
 Dream.get "/stream" (fun _req ->
   Dream.stream ~headers:[("Content-Type", "text/html")] (fun stream ->
     JSX.render_streaming
@@ -83,4 +83,4 @@ Dream.get "/stream" (fun _req ->
         <p>(JSX.string "This page is streamed")</p>
       </page>);
     Dream.close stream))
-]}
+```
