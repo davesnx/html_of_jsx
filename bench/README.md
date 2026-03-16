@@ -13,6 +13,7 @@
 ```sh
 dune exec bench/bench.exe
 dune exec bench/bench.exe -- --json
+dune exec bench/bench.exe -- --json-benchmark-action
 dune exec bench/bench.exe -- --save bench/results/latest.json
 dune exec bench/bench.exe -- --compare bench/results/baseline.json
 ```
@@ -40,6 +41,7 @@ dune exec bench/bench.exe -- --alloc-iters 2000 --alloc-runs 7
 ## CLI flags
 
 - `--json`: print JSON report.
+- `--json-benchmark-action`: print benchmark-action compatible JSON array (`customBiggerIsBetter`).
 - `--save <file>`: write JSON report to a file.
 - `--compare <file>`: compare to baseline JSON.
 - `--runs <n>`: measured runs per scenario (default `9`).

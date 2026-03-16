@@ -25,7 +25,7 @@ bench: ## Run benchmarks (human-readable output)
 
 .PHONY: bench-ci
 bench-ci: ## Run benchmarks with JSON output for CI mostly
-	$(DUNE) exec bench/bench.exe -- --json > bench_results.json
+	$(DUNE) exec bench/bench.exe -- --json-benchmark-action > bench_results.json
 
 .PHONY: bench-compare
 bench-compare: ## Compare with baseline (outputs latency diff)
@@ -89,7 +89,7 @@ install: # Install dependencies
 pin: # pin dependencies
 	opam pin add dune "https://github.com/ocaml/dune.git#f000f24921f80c1c0ff86c4747c7a45f4ac43163" -y -n
 	opam pin add ochre "https://github.com/davesnx/ochre.git#7cfd98dfd52f5e1942cd1a7e1fbcc8e2cc6322e1" -y -n
-	opam pin add textmate-language "https://github.com/davesnx/ocaml-textmate-language.git#3fed1834182f9392bd310aee686555615ab85991" -y -n
+	opam pin add textmate-language "https://github.com/davesnx/ocaml-textmate-language.git#fde27cc85ae3a0d01178319352f234206adfa5a2" -y -n
 	opam pin add tm-grammars "https://github.com/davesnx/tm-grammars.git#7bc690111b6d6a9c6896bc35aa17bfb854c33a2d" -y -n
 
 .PHONY: init

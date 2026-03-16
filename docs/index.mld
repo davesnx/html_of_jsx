@@ -5,12 +5,12 @@ A JSX transformation and a library to write HTML in {{:https://reasonml.github.i
 {1 Features}
 
 {ul
-{- Brings the "component model" to HTML}
+{- Brings the {i "component model"} to HTML}
 {- Supports all of Reason's {{:https://reasonml.github.io/docs/en/jsx}JSX} features (uppercase components, fragments, optional attributes, punning) with a few improvements (lowercase components, no ppx annotation needed)}
-{- No React idioms (no [className], no [htmlFor], no [onChange], etc.)}
-{- Integrates well with {{:https://htmx.org}htmx}}
-{- Type-safe: validates attributes and their types at compile time}
 {- Works with {{:https://reasonml.github.io}Reason} and {{:https://github.com/ocaml-mlx/mlx}mlx}}
+{- {b Type-safe}: each element only accepts its valid attributes, and attribute values are checked at compile time}
+{- Sticks to HTML standard attributes: No React idioms ([className], [htmlFor], etc.)}
+{- Integrates well with {{:https://htmx.org}htmx}}
 {- Minimal core API
   {ul
   {- [JSX.render] to render a JSX element to an HTML string}

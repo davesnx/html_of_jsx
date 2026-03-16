@@ -45,6 +45,7 @@ let default_config =
   }
 
 let json_mode = ref false
+let benchmark_action_json_mode = ref false
 let compare_file = ref None
 let save_file = ref None
 let config_ref = ref default_config
@@ -70,6 +71,9 @@ let parse_args () =
         ()
     | "--json" :: rest ->
         json_mode := true;
+        parse rest
+    | "--json-benchmark-action" :: rest ->
+        benchmark_action_json_mode := true;
         parse rest
     | "--compare" :: file :: rest ->
         compare_file := Some file;
@@ -314,6 +318,16 @@ let results_to_json ~cfg results =
   in
   let body = String.concat ",\n" (List.map result_to_json results) in
   header ^ body ^ "\n  ]\n}"
+
+let benchmark_action_result_to_json r =
+  Printf.sprintf "  {\"name\": \"%s\", \"unit\": \"ops/sec\", \"value\": %.2f}"
+    r.name r.ops_sec
+
+let results_to_benchmark_action_json results =
+  let body =
+    String.concat ",\n" (List.map benchmark_action_result_to_json results)
+  in
+  "[\n" ^ body ^ "\n]"
 
 let extract_string_value line key =
   try
@@ -635,8 +649,11 @@ let () =
   let escape_results = run_group ~cfg escape_benchmarks in
   let all_results = scenario_results @ escape_results in
   let json = results_to_json ~cfg all_results in
+  let benchmark_action_json = results_to_benchmark_action_json all_results in
   save_json_if_needed json;
-  if !json_mode then
+  if !benchmark_action_json_mode then
+    print_endline benchmark_action_json
+  else if !json_mode then
     print_endline json
   else (
     print_results ~cfg scenario_results baseline;

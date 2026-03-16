@@ -16,32 +16,6 @@ let assets_dir = Path.rel [ "site"; "assets" ]
 let target_dir = Path.rel [ "docs"; "_site" ]
 let target_assets_dir = Path.(target_dir / "assets")
 
-let font_face_css =
-  {|@font-face {
-  font-family: "IBM Plex Mono";
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url("assets/ibm-plex-mono-400.woff2") format("woff2");
-}
-
-@font-face {
-  font-family: "IBM Plex Mono";
-  font-style: normal;
-  font-weight: 600;
-  font-display: swap;
-  src: url("assets/ibm-plex-mono-600.woff2") format("woff2");
-}
-
-@font-face {
-  font-family: "Spline Sans";
-  font-style: normal;
-  font-weight: 700;
-  font-display: swap;
-  src: url("assets/spline-sans-700.woff2") format("woff2");
-}
-|}
-
 let guide_order =
   [
     "index.md";
@@ -487,7 +461,7 @@ let render_page pages page =
           type_="font/woff2"
           href="assets/spline-sans-700.woff2"
         />
-        <style>(JSX.string font_face_css)</style>
+        <link rel="stylesheet" href="assets/fonts.css" />
         <link rel="stylesheet" href="assets/site.css" />
         <script src="assets/site.js" defer=true />
       </head>
