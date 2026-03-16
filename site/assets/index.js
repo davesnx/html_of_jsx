@@ -1,8 +1,8 @@
 (() => {
-  const STORAGE_KEY = "html_of_jsx.docs.syntax";
+  const SYNTAX_STORAGE_KEY = "html_of_jsx.docs.syntax";
   const DEFAULT_SYNTAX = "reason";
   const root = document.documentElement;
-  const syntaxButtons = Array.from(document.querySelectorAll("[data-doc-syntax]"));
+  const syntaxButtons = Array.from(document.querySelectorAll(".syntax-toggle [data-doc-syntax]"));
   const copyButtons = Array.from(document.querySelectorAll("[data-doc-copy]"));
 
   const normalizeSyntax = (value) => (value === "mlx" ? "mlx" : "reason");
@@ -18,13 +18,13 @@
     });
   };
 
-  const rememberedSyntax = normalizeSyntax(localStorage.getItem(STORAGE_KEY));
+  const rememberedSyntax = normalizeSyntax(localStorage.getItem(SYNTAX_STORAGE_KEY));
   setActiveSyntax(rememberedSyntax || DEFAULT_SYNTAX);
 
   syntaxButtons.forEach((button) => {
     button.addEventListener("click", () => {
       const nextSyntax = normalizeSyntax(button.getAttribute("data-doc-syntax"));
-      localStorage.setItem(STORAGE_KEY, nextSyntax);
+      localStorage.setItem(SYNTAX_STORAGE_KEY, nextSyntax);
       setActiveSyntax(nextSyntax);
     });
   });

@@ -168,10 +168,17 @@ let render_plain_code code =
       <code class_="doc-code__code">(JSX.string code)</code>
     </pre>
 
-let theme =
+let code_theme =
   Ochre.Theme.make ~name:"coffee" ~fg:"#e9ecf5" ~bg:"#503F2B" ~comment:"#B2A59A"
     ~string:"#a6e3a1" ~number:"#fab387" ~keyword:"#cba6f7" ~fn:"#fac089"
     ~typ:"#94e2d5"
+
+let code_theme_dark =
+  Ochre.Theme.make ~name:"coffee-dark" ~fg:"#dfd8cf" ~bg:"#261F19"
+    ~comment:"#a59282" ~string:"#d9c8a4" ~number:"#d8a775" ~keyword:"#d3b2dd"
+    ~fn:"#e5b49f" ~typ:"#a7c8c3"
+
+let code_theme_dark_css = Ochre.html_theme_prefers_dark_css
 
 let render_highlighted_code label code =
   match highlight_lang_of_label label with
@@ -179,8 +186,9 @@ let render_highlighted_code label code =
       render_plain_code code
   | Some language -> (
       try
-        Ochre.to_html highlighter ~options:ochre_options ~theme ~lang:language
-          code
+        Ochre.to_html highlighter ~options:ochre_options ~theme:code_theme
+          ~extra_themes:[ ("dark", code_theme_dark) ]
+          ~lang:language code
       with _ -> render_plain_code code
     )
 
@@ -448,22 +456,26 @@ let render_page pages page =
           as_="font"
           type_="font/woff2"
           href="assets/ibm-plex-mono-400.woff2"
+          crossorigin="anonymous"
         />
         <link
           rel="preload"
           as_="font"
           type_="font/woff2"
           href="assets/ibm-plex-mono-600.woff2"
+          crossorigin="anonymous"
         />
         <link
           rel="preload"
           as_="font"
           type_="font/woff2"
           href="assets/spline-sans-700.woff2"
+          crossorigin="anonymous"
         />
         <link rel="stylesheet" href="assets/fonts.css" />
-        <link rel="stylesheet" href="assets/site.css" />
-        <script src="assets/site.js" defer=true />
+        <link rel="stylesheet" href="assets/index.css" />
+        <style>(JSX.string code_theme_dark_css)</style>
+        <script src="assets/index.js" defer=true />
       </head>
       <body>
         <header class_="site-header">
@@ -474,25 +486,32 @@ let render_page pages page =
                   (JSX.string "html_of_jsx")
                 </a>
               </div>
-              <div class_="syntax-toggle" role=`group aria_label="Code syntax">
-                <button
-                  type_=`button
-                  dataDocSyntax="reason"
-                  aria_label="Reason syntax">
-                  <img
-                    class_="syntax-toggle__icon" src="assets/reason.svg" alt=""
-                  />
-                  <span class_="syntax-toggle__label">
-                    (JSX.string "Reason")
-                  </span>
-                </button>
-                <button
-                  type_=`button dataDocSyntax="mlx" aria_label="mlx syntax">
-                  <img
-                    class_="syntax-toggle__icon" src="assets/ocaml.svg" alt=""
-                  />
-                  <span class_="syntax-toggle__label">(JSX.string "mlx")</span>
-                </button>
+              <div class_="site-controls">
+                <div
+                  class_="syntax-toggle" role=`group aria_label="Code syntax">
+                  <button
+                    type_=`button
+                    dataDocSyntax="reason"
+                    aria_label="Reason syntax">
+                    <img
+                      class_="syntax-toggle__icon"
+                      src="assets/reason.svg"
+                      alt=""
+                    />
+                    <span class_="syntax-toggle__label">
+                      (JSX.string "Reason")
+                    </span>
+                  </button>
+                  <button
+                    type_=`button dataDocSyntax="mlx" aria_label="mlx syntax">
+                    <img
+                      class_="syntax-toggle__icon" src="assets/ocaml.svg" alt=""
+                    />
+                    <span class_="syntax-toggle__label">
+                      (JSX.string "mlx")
+                    </span>
+                  </button>
+                </div>
               </div>
             </div>
             (JSX.unsafe menu_html)
