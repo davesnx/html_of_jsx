@@ -112,8 +112,14 @@ subst: ## Run dune substitute
 	$(DUNE) subst
 
 .PHONY: docs
-docs: ## Generate markdown docs and promote to docs/content
-	$(DUNE) build --root . @doc @doc-markdown @docs-content --auto-promote
+docs: docs-content ## Generate documentation artifacts
+	$(DUNE) build --root . @doc
+
+.PHONY: docs-content
+docs-content: ## Generate markdown docs and sync to docs/content
+	$(DUNE) build --root . @doc-markdown
+	rm -f docs/content/*.md
+	cp _build/default/_doc/_markdown/html_of_jsx/*.md docs/content/
 
 .PHONY: docs-site-deps
 docs-site-deps: ## Install docs site dependencies in local switch

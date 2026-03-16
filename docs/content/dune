@@ -1,5 +1,0 @@
-(copy_files
- (alias docs-content)
- (files ../../_doc/_markdown/html_of_jsx/*.md)
- (mode
-  (promote (until-clean))))
