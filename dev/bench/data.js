@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1773599090373,
+  "lastUpdate": 1773689219399,
   "repoUrl": "https://github.com/davesnx/html_of_jsx",
   "entries": {
     "html_of_jsx Benchmarks": [
@@ -1013,6 +1013,90 @@ window.BENCHMARK_DATA = {
           {
             "name": "escape (dirty)",
             "value": 7143956.36,
+            "unit": "ops/sec"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "david.sancho@ahrefs.com",
+            "name": "David Sancho Moreno",
+            "username": "davesnx"
+          },
+          "committer": {
+            "email": "david.sancho@ahrefs.com",
+            "name": "David Sancho Moreno",
+            "username": "davesnx"
+          },
+          "distinct": true,
+          "id": "8ee97cb076cdd5a4d9356d2fbf4856f5d1aa8cbc",
+          "message": "Fix CI and fonts",
+          "timestamp": "2026-03-16T19:09:33Z",
+          "tree_id": "34f90f36140c55c5fdb54cae9685ec621cb99ca4",
+          "url": "https://github.com/davesnx/html_of_jsx/commit/8ee97cb076cdd5a4d9356d2fbf4856f5d1aa8cbc"
+        },
+        "date": 1773689219082,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Trivial",
+            "value": 29615623.45,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Dashboard",
+            "value": 19586.52,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Blog (50 comments)",
+            "value": 48940.8,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Table (100 rows)",
+            "value": 28360.69,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "E-commerce",
+            "value": 40935.2,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Form",
+            "value": 25428.88,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Deep tree (50)",
+            "value": 9085.25,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Wide tree (100)",
+            "value": 4551.76,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Shallow tree",
+            "value": 67779.43,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Props heavy",
+            "value": 4798.51,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "escape (clean)",
+            "value": 21366062.87,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "escape (dirty)",
+            "value": 6284313.11,
             "unit": "ops/sec"
           }
         ]
