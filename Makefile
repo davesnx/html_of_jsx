@@ -112,22 +112,15 @@ subst: ## Run dune substitute
 	$(DUNE) subst
 
 .PHONY: docs
-docs: ## Generate odoc docs
-	$(DUNE) build --root . @doc
-
-.PHONY: docs-api
-docs-api: docs-content ## Backward-compatible alias for docs markdown sync
-
-.PHONY: docs-content
-docs-content: ## Generate markdown docs and promote to docs/content
-	$(DUNE) build --root . @doc-markdown @docs-content --auto-promote
+docs: ## Generate markdown docs and promote to docs/content
+	$(DUNE) build --root . @doc @doc-markdown @docs-content --auto-promote
 
 .PHONY: docs-site-deps
 docs-site-deps: ## Install docs site dependencies in local switch
 	opam install yocaml yocaml_unix ochre tm-grammars omd -y
 
 .PHONY: docs-site
-docs-site: docs-content ## Build Yocaml docs site into docs/_site
+docs-site: docs ## Build Yocaml docs site into docs/_site
 	DOCS_SITE=true $(DUNE) exec --root . ./site/build_site.exe
 
 .PHONY: docs-site-serve
@@ -141,12 +134,3 @@ docs-watch: ## Generate odoc docs in watch mode
 .PHONY: docs-serve
 docs-serve: docs ## Serve odoc docs locally on :8080
 	python3 -m http.server 8080 --directory _build/default/_doc/_html
-
-.PHONY: release
-release: ## Create and push a release tag (usage: make release VERSION=1.0.0)
-	@if [ -z "$(VERSION)" ]; then \
-		echo "Error: VERSION is required"; \
-		echo "Usage: make release VERSION=1.0.0"; \
-		exit 1; \
-	fi
-	@.github/scripts/create-release.sh $(VERSION)

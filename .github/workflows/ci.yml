@@ -86,16 +86,20 @@ jobs:
           fail-on-alert: true
           summary-always: true
 
-      - name: Generate docs
-        if: github.ref == 'refs/heads/main'
-        run: make docs
+      - name: Install docs site dependencies
+        if: github.ref == 'refs/heads/main' && matrix.os == 'ubuntu-latest' && matrix.ocaml-compiler == '5.4.0'
+        run: make docs-site-deps
 
-      - name: Publish docs
+      - name: Build docs site
+        if: github.ref == 'refs/heads/main' && matrix.os == 'ubuntu-latest' && matrix.ocaml-compiler == '5.4.0'
+        run: make docs-site
+
+      - name: Publish docs site
+        if: github.ref == 'refs/heads/main' && matrix.os == 'ubuntu-latest' && matrix.ocaml-compiler == '5.4.0'
         uses: crazy-max/ghaction-github-pages@v1
-        if: github.ref == 'refs/heads/main'
         with:
           target_branch: gh-pages
-          build_dir: _build/default/_doc/_html/
+          build_dir: docs/_site/
           keep_history: true
         env:
           GITHUB_TOKEN: ${{ github.token }}

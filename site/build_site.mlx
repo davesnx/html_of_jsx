@@ -42,29 +42,6 @@ let font_face_css =
 }
 |}
 
-let render_font_preloads () =
-  JSX.list
-    [
-      <link
-        rel="preload"
-        as_="font"
-        type_="font/woff2"
-        href="assets/ibm-plex-mono-400.woff2"
-      />;
-      <link
-        rel="preload"
-        as_="font"
-        type_="font/woff2"
-        href="assets/ibm-plex-mono-600.woff2"
-      />;
-      <link
-        rel="preload"
-        as_="font"
-        type_="font/woff2"
-        href="assets/spline-sans-700.woff2"
-      />;
-    ]
-
 let guide_order =
   [
     "index.md";
@@ -483,7 +460,6 @@ let render_page pages page =
     else
       "doc-prose doc-prose--guide"
   in
-  let font_preloads = render_font_preloads () in
   let site_title = "html_of_jsx documentation" in
   let page_title = page.title ^ " - " ^ site_title in
   JSX.render
@@ -493,10 +469,25 @@ let render_page pages page =
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>(JSX.string page_title)</title>
         <meta name="description" content=site_title />
-        font_preloads
-        <style>
-          (JSX.string font_face_css)
-        </style>
+        <link
+          rel="preload"
+          as_="font"
+          type_="font/woff2"
+          href="assets/ibm-plex-mono-400.woff2"
+        />
+        <link
+          rel="preload"
+          as_="font"
+          type_="font/woff2"
+          href="assets/ibm-plex-mono-600.woff2"
+        />
+        <link
+          rel="preload"
+          as_="font"
+          type_="font/woff2"
+          href="assets/spline-sans-700.woff2"
+        />
+        <style>(JSX.string font_face_css)</style>
         <link rel="stylesheet" href="assets/site.css" />
         <script src="assets/site.js" defer=true />
       </head>
