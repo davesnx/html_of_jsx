@@ -1,5 +1,5 @@
-![Html_of_jsx logo](./docs/logo-white.png#gh-dark-mode-only)
-![Html_of_jsx logo](./docs/logo-black.png#gh-light-mode-only)
+![Html_of_jsx logo](./docs/white-on-black.png.png#gh-dark-mode-only)
+![Html_of_jsx logo](./docs/black-on-white.png.png#gh-light-mode-only)
 
 ### Render HTML with JSX
 
