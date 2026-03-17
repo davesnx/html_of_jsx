@@ -38,6 +38,11 @@
   ;; Dev dependencies
   (ocaml-lsp-server :with-dev-setup)
   (tiny_httpd :with-dev-setup)
+  (yocaml :with-dev-setup)
+  (yocaml_unix :with-dev-setup)
+  (ochre :with-dev-setup)
+  (tm-grammars :with-dev-setup)
+  (omd :with-dev-setup)
 ))
 
 (dialect

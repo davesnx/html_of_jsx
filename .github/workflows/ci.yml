@@ -86,10 +86,6 @@ jobs:
           fail-on-alert: true
           summary-always: true
 
-      - name: Install docs site dependencies
-        if: github.ref == 'refs/heads/main' && matrix.os == 'ubuntu-latest' && matrix.ocaml-compiler == '5.4.0'
-        run: make docs-site-deps
-
       - name: Build docs site
         if: github.ref == 'refs/heads/main' && matrix.os == 'ubuntu-latest' && matrix.ocaml-compiler == '5.4.0'
         run: make docs-site
