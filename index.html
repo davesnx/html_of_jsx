@@ -7,17 +7,17 @@
     font-weight: var(--ochre-dark-font-weight) !important;
     text-decoration: var(--ochre-dark-text-decoration) !important;
   }
-}</style><script src="assets/index.js" defer></script></head><body><header class="site-header"><div class="site-header__inner"><div class="site-header__top"><div class="site-branding"><a class="site-brand" href="index.html">html_of_jsx</a></div><div class="site-controls"><div class="syntax-toggle" role="group" aria-label="Code syntax"><button type="button" data-doc-syntax="reason" aria-label="Reason syntax"><img class="syntax-toggle__icon" src="assets/reason.svg" alt="" /><span class="syntax-toggle__label">Reason</span></button><button type="button" data-doc-syntax="mlx" aria-label="mlx syntax"><img class="syntax-toggle__icon" src="assets/ocaml.svg" alt="" /><span class="syntax-toggle__label">mlx</span></button></div></div></div><nav class="site-menu" aria-label="Documentation pages"><ul class="site-menu__list"><li><a class="site-menu__link" href="getting-started.html">Getting started</a></li><li><a class="site-menu__link" href="core.html">Core</a></li><li><a class="site-menu__link" href="ppx.html">ppx</a></li><li><a class="site-menu__link" href="how-ppx-works.html">How the ppx works</a></li><li><a class="site-menu__link" href="dream.html">Integrate with Dream</a></li><li><a class="site-menu__link" href="HTMX-mode.html">HTMX mode</a></li><li><a class="site-menu__link" href="React-compatibility.html">React mode</a></li><li><a class="site-menu__link" href="JSX.html">API</a></li></ul></nav></div></header><main class="doc-main"><article class="doc-prose doc-prose--guide"><p>A JSX transformation and a library to write HTML in <a href="https://reasonml.github.io">Reason</a> and <a href="https://github.com/ocaml-mlx/mlx">mlx</a>.</p>
+}</style><script src="assets/index.js" defer></script></head><body><header class="site-header"><div class="site-header__inner"><div class="site-header__top"><div class="site-branding"><a class="site-brand" href="index.html">html_of_jsx</a></div><div class="site-controls"><div class="syntax-toggle" role="group" aria-label="Code syntax"><button type="button" data-doc-syntax="reason" aria-label="Reason syntax"><img class="syntax-toggle__icon" src="assets/reason.svg" alt="" /><span class="syntax-toggle__label">Reason</span></button><button type="button" data-doc-syntax="mlx" aria-label="mlx syntax"><img class="syntax-toggle__icon" src="assets/ocaml.svg" alt="" /><span class="syntax-toggle__label">mlx</span></button></div></div></div><nav class="site-menu" aria-label="Documentation pages"><ul class="site-menu__list"><li><a class="site-menu__link" href="getting-started.html">Getting started</a></li><li><a class="site-menu__link" href="core.html">Core</a></li><li><a class="site-menu__link" href="ppx.html">ppx</a></li><li><a class="site-menu__link" href="how-ppx-works.html">How the ppx works</a></li><li><a class="site-menu__link" href="dream.html">Integrate with Dream</a></li><li><a class="site-menu__link" href="HTMX-mode.html">HTMX mode</a></li><li><a class="site-menu__link" href="React-compatibility.html">React mode</a></li><li><a class="site-menu__link" href="JSX.html">API</a></li></ul></nav></div></header><main class="doc-main"><article class="doc-prose doc-prose--guide"><p>A JSX transformation and a library to write HTML in &lt;a href=&quot;https://reasonml.github.io&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;&gt;Reason&lt;/a&gt; and &lt;a href=&quot;https://github.com/ocaml-mlx/mlx&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;&gt;mlx&lt;/a&gt;.</p>
 <h2 id="features">Features</h2>
 <ul>
 <li>
 <p>Brings the <em>&quot;component model&quot;</em> to HTML</p>
 </li>
 <li>
-<p>Supports all of Reason's <a href="https://reasonml.github.io/docs/en/jsx">JSX</a> features (uppercase components, fragments, optional attributes, punning) with a few improvements (lowercase components, no ppx annotation needed)</p>
+<p>Supports all of Reason's &lt;a href=&quot;https://reasonml.github.io/docs/en/jsx&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;&gt;JSX&lt;/a&gt; features (uppercase components, fragments, optional attributes, punning) with a few improvements (lowercase components, no ppx annotation needed)</p>
 </li>
 <li>
-<p>Works with <a href="https://reasonml.github.io">Reason</a> and <a href="https://github.com/ocaml-mlx/mlx">mlx</a></p>
+<p>Works with &lt;a href=&quot;https://reasonml.github.io&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;&gt;Reason&lt;/a&gt; and &lt;a href=&quot;https://github.com/ocaml-mlx/mlx&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;&gt;mlx&lt;/a&gt;</p>
 </li>
 <li>
 <p><strong>Type-safe</strong>: each element only accepts its valid attributes, and attribute values are checked at compile time</p>
@@ -26,7 +26,7 @@
 <p>Sticks to HTML standard attributes: No React idioms (<code>className</code>, <code>htmlFor</code>, etc.)</p>
 </li>
 <li>
-<p>Integrates well with <a href="https://htmx.org">htmx</a></p>
+<p>Integrates well with &lt;a href=&quot;https://htmx.org&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;&gt;htmx&lt;/a&gt;</p>
 </li>
 <li>
 <p>Minimal core API</p>
@@ -40,7 +40,7 @@
 </ul>
 </li>
 <li>
-<p>Designed to work on the server, but can be used on the client side as well (with <a href="https://melange.re">Melange</a> or <a href="https://ocsigen.org/js_of_ocaml/">js_of_ocaml</a>)</p>
+<p>Designed to work on the server, but can be used on the client side as well (with &lt;a href=&quot;https://melange.re&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;&gt;Melange&lt;/a&gt; or &lt;a href=&quot;https://ocsigen.org/js_of_ocaml/&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;&gt;js_of_ocaml&lt;/a&gt;)</p>
 </li>
 </ul>
 <h2 id="installation">Installation</h2>
@@ -48,7 +48,7 @@
 </span></span></code></pre></figure><figure class="doc-code"><figcaption class="doc-code__meta"><span class="doc-code__lang">dune</span><button class="doc-code__copy" type="button" data-doc-copy=""><svg class="doc-code__copy-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="10" height="10" rx="2"></rect><rect x="5" y="5" width="10" height="10" rx="2"></rect></svg><span class="doc-code__copy-label">Copy</span></button></figcaption><pre class="ochre ochre-themes coffee coffee-dark doc-code__pre" style="background-color:#503F2B;color:#e9ecf5;--ochre-dark-bg:#261F19;--ochre-dark:#dfd8cf" tabindex="0"><code class="doc-code__code"><span class="line"><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">(</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">libraries html_of_jsx</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">)</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">
 </span></span>
 <span class="line"><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">(</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">preprocess </span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">(</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">pps html_of_jsx.ppx</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">)</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">)</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">
-</span></span></code></pre></figure><p>See <a href="getting-started.html"><code>getting-started</code></a> for dune package manager, opam pin, and syntax setup.</p>
+</span></span></code></pre></figure><p>See <a href="getting-started.html">Getting started</a> for dune package manager, opam pin, and syntax setup.</p>
 <h2 id="usage">Usage</h2>
 <div class="doc-code-pair"><figure class="doc-code" data-syntax="reason"><figcaption class="doc-code__meta"><span class="doc-code__lang">Reason</span><button class="doc-code__copy" type="button" data-doc-copy=""><svg class="doc-code__copy-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="10" height="10" rx="2"></rect><rect x="5" y="5" width="10" height="10" rx="2"></rect></svg><span class="doc-code__copy-label">Copy</span></button></figcaption><pre class="ochre ochre-themes coffee coffee-dark doc-code__pre" style="background-color:#503F2B;color:#e9ecf5;--ochre-dark-bg:#261F19;--ochre-dark:#dfd8cf" tabindex="0"><code class="doc-code__code"><span class="line"><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">let</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf"> </span><span style="color:#fac089;--ochre-dark:#e5b49f">element</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">:</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf"> </span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">JSX</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">.</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">element</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf"> </span><span style="color:#cba6f7;--ochre-dark:#d3b2dd">=</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf"> </span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">&lt;</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">a</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf"> </span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">href</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">=&quot;</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">https</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">:</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">/</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">/</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">x</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">.</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">com</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">/</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">davesnx</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">&quot;</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">&gt;</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">
 </span></span>
@@ -72,33 +72,35 @@
 <span class="line"><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">let</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf"> </span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">html</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">:</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf"> </span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">string</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf"> </span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">=</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf"> </span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">JSX</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">.</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">render</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf"> </span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">element</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">
 </span></span>
 <span class="line"><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">(*</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf"> </span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">&lt;</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">a</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf"> </span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">href</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">=&quot;</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">https</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">:</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">/</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">/</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">x</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">.</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">com</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">/</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">davesnx</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">&quot;</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">&gt;</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">&lt;</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">span</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">&gt;</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">Click</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf"> </span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">me</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">!&lt;</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">/</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">span</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">&gt;</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">&lt;/</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">a</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">&gt;</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf"> </span><span style="color:#cba6f7;--ochre-dark:#d3b2dd">*</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">)
-</span></span></code></pre></figure></div><p>See <a href="core.html"><code>core</code></a> for elements, children, components, and rendering.</p>
+</span></span></code></pre></figure></div><p>See <a href="core.html">Core API</a> for elements, children, components, and rendering.</p>
 <h2 id="credits">Credits</h2>
-<p>This library was extracted from <a href="https://github.com/ml-in-barcelona/server-reason-react">server-reason-react</a> and later simplified to work only with HTML5.</p>
+<p>This library was extracted from &lt;a href=&quot;https://github.com/ml-in-barcelona/server-reason-react&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;&gt;server-reason-react&lt;/a&gt; and later simplified to work only with HTML5.</p>
 <h2 id="links">Links</h2>
 <ul>
-<li>GitHub: <a href="https://github.com/davesnx/html_of_jsx">davesnx/html_of_jsx</a>
+<li>GitHub: &lt;a href=&quot;https://github.com/davesnx/html_of_jsx&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;&gt;davesnx/html_of_jsx&lt;/a&gt;
 </li>
-<li>OPAM: <a href="https://opam.ocaml.org/packages/html_of_jsx/">html_of_jsx</a>
+<li>X: &lt;a href=&quot;https://x.com/davesnx&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;&gt;x.com/davesnx&lt;/a&gt;
 </li>
-<li>Performance: <a href="https://sancho.dev/blog/making-html-of-jsx-10x-faster">Making html_of_jsx 10x faster</a>
+<li>OPAM: &lt;a href=&quot;https://opam.ocaml.org/packages/html_of_jsx/&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;&gt;html_of_jsx&lt;/a&gt;
+</li>
+<li>Performance: &lt;a href=&quot;https://sancho.dev/blog/making-html-of-jsx-10x-faster&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;&gt;Making html_of_jsx 10x faster&lt;/a&gt;
 </li>
 </ul>
 <h2 id="documentation">Documentation</h2>
 <ul>
-<li><a href="getting-started.html"><code>getting-started</code></a> — installation, dune setup, and first component
+<li><a href="getting-started.html">Getting started</a> — installation, dune setup, and first component
 </li>
-<li><a href="core.html"><code>core</code></a> — elements, children, and composition
+<li><a href="core.html">Core API</a> — elements, children, and composition
 </li>
-<li><a href="ppx.html"><code>ppx</code></a> — PPX flags and settings
+<li><a href="ppx.html">ppx settings</a> — ppx flags and settings
 </li>
-<li><a href="how-ppx-works.html"><code>how-ppx-works</code></a> — JSX transformation, static analysis, and performance
+<li><a href="how-ppx-works.html">How the ppx works</a> — JSX transformation, static analysis, and performance
 </li>
-<li><a href="dream.html"><code>dream</code></a> — integrate with Dream
+<li><a href="dream.html">Dream integration</a> — integrate with Dream
 </li>
-<li><a href="HTMX-mode.html"><code>HTMX-mode</code></a> — htmx attributes and extensions
+<li><a href="HTMX-mode.html">HTMX mode</a> — htmx attributes and extensions
 </li>
-<li><a href="React-compatibility.html"><code>React-compatibility</code></a> — React DOM prop aliases
+<li><a href="React-compatibility.html">React compatibility</a> — React DOM prop aliases
 </li>
 </ul>
 </article></main></body></html>
