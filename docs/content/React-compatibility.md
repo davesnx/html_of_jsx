@@ -6,7 +6,7 @@ The React compatibility mode eases migration from reason-react to html\_of\_jsx.
 
 ## Enable
 
-Turn on `-react` in your PPX configuration.
+Turn on `-react` in your ppx configuration.
 
 ```dune
 (libraries html_of_jsx)

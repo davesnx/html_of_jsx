@@ -39,7 +39,7 @@ dune build
 
 ## Dune setup
 
-Every executable or library that uses JSX needs two things: the runtime library and the PPX preprocessor.
+Every executable or library that uses JSX needs two things: the runtime library and the ppx preprocessor.
 
 An executable:
 
@@ -57,7 +57,7 @@ A library:
  (libraries html_of_jsx)
  (preprocess (pps html_of_jsx.ppx)))
 ```
-See [`ppx`](./ppx.md) for all available flags.
+See [ppx settings](./ppx.md) for all available flags.
 
 
 ## Syntax setup
@@ -103,7 +103,7 @@ The `vscode-ocaml-platform` extension supports both Reason and mlx out of the bo
 
 ## Next
 
-- [`core`](./core.md) for basic usage
-- [`ppx`](./ppx.md) for ppx flags
-- [`dream`](./dream.md) to integrate with Dream
-- [`how-ppx-works`](./how-ppx-works.md) for a closer look at the JSX transformation.
+- [Core API](./core.md) for basic usage
+- [ppx settings](./ppx.md) for ppx flags
+- [Dream integration](./dream.md) to integrate with Dream
+- [How the ppx works](./how-ppx-works.md) for a closer look at the JSX transformation.

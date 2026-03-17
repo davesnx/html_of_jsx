@@ -4,11 +4,11 @@ Enable htmx attributes and extension script loaders.
 
 {1 How it works}
 
-The [-htmx] flag extends the set of valid attributes on every HTML element. There is no separate API — you keep writing normal JSX, and attributes like [hx_get], [hx_post], [hx_swap], etc. become available alongside the standard HTML ones. The PPX validates them at compile time just like any other attribute.
+The [-htmx] flag extends the set of valid attributes on every HTML element. There is no separate API — you keep writing normal JSX, and attributes like [hx_get], [hx_post], [hx_swap], etc. become available alongside the standard HTML ones. The ppx validates them at compile time just like any other attribute.
 
 {1 Enable mode}
 
-Turn on htmx attributes in the PPX and include the runtime helper package.
+Turn on htmx attributes in the ppx and include the runtime helper package.
 
 {@dune[
 (libraries html_of_jsx html_of_jsx.htmx)

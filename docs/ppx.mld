@@ -14,7 +14,7 @@ Enables htmx attributes ([hx_get], [hx_post], [hx_swap], ...) and extension-spec
 (preprocess (pps html_of_jsx.ppx -htmx))
 ]}
 
-Requires the [html_of_jsx.htmx] library for the [<Htmx />] script loader. See {!page-"HTMX-mode"}.
+Requires the [html_of_jsx.htmx] library for the [<Htmx />] script loader. See {{!page-"HTMX-mode"}HTMX mode}.
 
 {2 [-react]}
 
@@ -24,7 +24,7 @@ Enables React DOM aliases: [className] maps to [class] and [htmlFor] maps to [fo
 (preprocess (pps html_of_jsx.ppx -react))
 ]}
 
-See {!page-"React-compatibility"}.
+See {{!page-"React-compatibility"}React compatibility}.
 
 {2 [-disable-static-opt]}
 
@@ -34,4 +34,4 @@ Disables compile-time static analysis and optimization. Every element falls back
 (preprocess (pps html_of_jsx.ppx -disable-static-opt))
 ]}
 
-For details on what the static optimization does, see {!page-"how-ppx-works"}.
+For details on what the static optimization does, see {{!page-"how-ppx-works"}How the ppx works}.

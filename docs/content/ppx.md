@@ -16,7 +16,7 @@ Enables htmx attributes (`hx_get`, `hx_post`, `hx_swap`, ...) and extension-spec
 ```dune
 (preprocess (pps html_of_jsx.ppx -htmx))
 ```
-Requires the `html_of_jsx.htmx` library for the `<Htmx />` script loader. See [`HTMX-mode`](./HTMX-mode.md).
+Requires the `html_of_jsx.htmx` library for the `<Htmx />` script loader. See [HTMX mode](./HTMX-mode.md).
 
 
 ### `-react`
@@ -26,7 +26,7 @@ Enables React DOM aliases: `className` maps to `class` and `htmlFor` maps to `fo
 ```dune
 (preprocess (pps html_of_jsx.ppx -react))
 ```
-See [`React-compatibility`](./React-compatibility.md).
+See [React compatibility](./React-compatibility.md).
 
 
 ### `-disable-static-opt`
@@ -36,4 +36,4 @@ Disables compile-time static analysis and optimization. Every element falls back
 ```dune
 (preprocess (pps html_of_jsx.ppx -disable-static-opt))
 ```
-For details on what the static optimization does, see [`how-ppx-works`](./how-ppx-works.md).
+For details on what the static optimization does, see [How the ppx works](./how-ppx-works.md).
