@@ -1,23 +1,23 @@
 {0 html_of_jsx}
 
-A JSX transformation and a library to write HTML in <a href="https://reasonml.github.io" target="_blank" rel="noopener noreferrer">Reason</a> and <a href="https://github.com/ocaml-mlx/mlx" target="_blank" rel="noopener noreferrer">mlx</a>.
+A JSX transformation and a library to write HTML in {{:https://reasonml.github.io}Reason} and {{:https://github.com/ocaml-mlx/mlx}mlx}.
 
 {1 Features}
 
 {ul
 {- Brings the {i "component model"} to HTML}
-{- Supports all of Reason's <a href="https://reasonml.github.io/docs/en/jsx" target="_blank" rel="noopener noreferrer">JSX</a> features (uppercase components, fragments, optional attributes, punning) with a few improvements (lowercase components, no ppx annotation needed)}
-{- Works with <a href="https://reasonml.github.io" target="_blank" rel="noopener noreferrer">Reason</a> and <a href="https://github.com/ocaml-mlx/mlx" target="_blank" rel="noopener noreferrer">mlx</a>}
+{- Supports all of Reason's {{:https://reasonml.github.io/docs/en/jsx}JSX} features (uppercase components, fragments, optional attributes, punning) with a few improvements (lowercase components, no ppx annotation needed)}
+{- Works with {{:https://reasonml.github.io}Reason} and {{:https://github.com/ocaml-mlx/mlx}mlx}}
 {- {b Type-safe}: each element only accepts its valid attributes, and attribute values are checked at compile time}
 {- Sticks to HTML standard attributes: No React idioms ([className], [htmlFor], etc.)}
-{- Integrates well with <a href="https://htmx.org" target="_blank" rel="noopener noreferrer">htmx</a>}
+{- Integrates well with {{:https://htmx.org}htmx}}
 {- Minimal core API
   {ul
   {- [JSX.render] to render a JSX element to an HTML string}
   {- Helpers: [JSX.string], [JSX.int], [JSX.float], [JSX.null], [JSX.list], [JSX.array], [JSX.unsafe]}
   {- Advanced rendering: [JSX.render_to_channel], [JSX.render_streaming]}
   }}
-{- Designed to work on the server, but can be used on the client side as well (with <a href="https://melange.re" target="_blank" rel="noopener noreferrer">Melange</a> or <a href="https://ocsigen.org/js_of_ocaml/" target="_blank" rel="noopener noreferrer">js_of_ocaml</a>)}
+{- Designed to work on the server, but can be used on the client side as well (with {{:https://melange.re}Melange} or {{:https://ocsigen.org/js_of_ocaml/}js_of_ocaml})}
 }
 
 {1 Installation}
@@ -56,14 +56,14 @@ See {{!page-core}Core API} for elements, children, components, and rendering.
 
 {1 Credits}
 
-This library was extracted from <a href="https://github.com/ml-in-barcelona/server-reason-react" target="_blank" rel="noopener noreferrer">server-reason-react</a> and later simplified to work only with HTML5.
+This library was extracted from {{:https://github.com/ml-in-barcelona/server-reason-react}server-reason-react} and later simplified to work only with HTML5.
 
 {1 Links}
 
-- GitHub: <a href="https://github.com/davesnx/html_of_jsx" target="_blank" rel="noopener noreferrer">davesnx/html_of_jsx</a>
-- X: <a href="https://x.com/davesnx" target="_blank" rel="noopener noreferrer">x.com/davesnx</a>
-- OPAM: <a href="https://opam.ocaml.org/packages/html_of_jsx/" target="_blank" rel="noopener noreferrer">html_of_jsx</a>
-- Performance: <a href="https://sancho.dev/blog/making-html-of-jsx-10x-faster" target="_blank" rel="noopener noreferrer">Making html_of_jsx 10x faster</a>
+- GitHub: {{:https://github.com/davesnx/html_of_jsx}davesnx/html_of_jsx}
+- X: {{:https://x.com/davesnx}x.com/davesnx}
+- OPAM: {{:https://opam.ocaml.org/packages/html_of_jsx/}html_of_jsx}
+- Performance: {{:https://sancho.dev/blog/making-html-of-jsx-10x-faster}Making html_of_jsx 10x faster}
 
 {1 Documentation}
 
