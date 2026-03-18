@@ -3,10 +3,18 @@
     The JSX module provides functions to render HTML elements in a declarative
     style.
 
-    {[
+    {@reasonml[
       let html: string = JSX.render(
         <div>
           <h1> {JSX.string("Hello, World!")} </h1>
+        </div>
+      );
+    ]}
+
+    {@mlx[
+      let html: string = JSX.render (
+        <div>
+          <h1>(JSX.string "Hello, World!")</h1>
         </div>
       );
     ]} *)
@@ -20,14 +28,22 @@ val render : element -> string
     This function takes a JSX.element and converts it into its corresponding
     HTML string representation.
 
-    {[
+    {@reasonml[
       let html: string = JSX.render(
         <div>
           <h1> {JSX.string("Hello, World!")} </h1>
         </div>
       );
 
-      Printf.printf "%s" html; /* <div><h1>Hello, World!</h1></div> */
+      Printf.printf("%s", html); /* <div><h1>Hello, World!</h1></div> */
+    ]}
+    {@mlx[
+      let html: string = JSX.render (
+        <div>
+          <h1>(JSX.string "Hello, World!")</h1>
+        </div>
+
+      Printf.printf "%s" html (* <div><h1>Hello, World!</h1></div> *)
     ]} *)
 
 val render_to_channel : out_channel -> element -> unit
@@ -36,10 +52,17 @@ val render_to_channel : out_channel -> element -> unit
     This function writes the HTML representation directly to the channel,
     avoiding the intermediate string allocation that [render] requires.
 
-    {[
-      JSX.render_to_channel stdout (
+    {@reasonml[
+      JSX.render_to_channel(stdout,
         <div>
           <h1> {JSX.string("Hello, World!")} </h1>
+        </div>
+      );
+    ]}
+    {@mlx[
+      JSX.render_to_channel stdout (
+        <div>
+          <h1>(JSX.string "Hello, World!")</h1>
         </div>
       );
     ]} *)
@@ -50,12 +73,17 @@ val render_streaming : (string -> unit) -> element -> unit
     This function renders the element and passes the result to the callback
     function, useful for frameworks that support streaming responses.
 
-    {[
-      JSX.render_streaming (fun html -> Dream.write stream html) (
+    {@reasonml[
+      JSX.render_streaming(html => Dream.write(stream, html),
         <div>
           <h1> {JSX.string("Hello, World!")} </h1>
         </div>
       );
+    ]}
+    {@mlx[
+      JSX.render_streaming (fun html -> Dream.write stream html) (<div>
+        <h1>(JSX.string "Hello, World!")</h1>
+      </div>)
     ]} *)
 
 val float : float -> element
@@ -63,7 +91,10 @@ val float : float -> element
 
     This function helps in rendering a float value as a JSX element.
 
-    {[
+    {@reasonml[
+      let element : JSX.element = JSX.float(3.14);
+    ]}
+    {@mlx[
       let element : JSX.element = JSX.float 3.14
     ]} *)
 
@@ -74,7 +105,10 @@ val int : int -> element
 
     This function helps in rendering an integer value as a JSX element.
 
-    {[
+    {@reasonml[
+      let element : JSX.element = JSX.int(42);
+    ]}
+    {@mlx[
       let element : JSX.element = JSX.int 42
     ]} *)
 
@@ -85,7 +119,11 @@ val list : element list -> element
     that contains all of them. This is useful for rendering dynamic lists of
     elements.
 
-    {[
+    {@reasonml[
+      let element : JSX.element =
+        JSX.list([ JSX.string("Item 1"), JSX.string("Item 2"), JSX.string("Item 3") ]);
+    ]}
+    {@mlx[
       let element : JSX.element =
         JSX.list
           [ JSX.string "Item 1"; JSX.string "Item 2"; JSX.string "Item 3" ]
@@ -98,7 +136,12 @@ val array : element array -> element
     element that contains all of them. This is useful for rendering dynamic
     arrays of elements.
 
-    {[
+    {@reasonml[
+      let element : JSX.element =
+        JSX.array
+          [| JSX.string("Item 1"), JSX.string("Item 2"), JSX.string("Item 3") |]
+    ]}
+    {@mlx[
       let element : JSX.element =
         JSX.array
           [| JSX.string "Item 1"; JSX.string "Item 2"; JSX.string "Item 3" |]
@@ -118,7 +161,13 @@ val node : string -> attribute list -> element list -> element
     It takes a tag name, a list of attributes, and a list of child elements to
     create an HTML node.
 
-    {[
+    {@reasonml[
+      let link : JSX.element =
+         JSX.node("a",
+           [ ("href", `String("https://ocaml.org") ],
+           [ JSX.string("OCaml") ]);
+    ]}
+    {@mlx[
       let link : JSX.element =
         JSX.node "a"
           [ ("href", `String "https://ocaml.org") ]
@@ -131,7 +180,10 @@ val null : element
     This is useful to represent and pattern match against null or empty
     elements.
 
-    {[
+    {@reasonml[
+      let element : JSX.element = JSX.null;
+    ]}
+    {@mlx[
       let element : JSX.element = JSX.null
     ]} *)
 
@@ -140,7 +192,10 @@ val string : string -> element
 
     This function allows you to directly render a string as a JSX element.
 
-    {[
+    {@reasonml[
+      let element : JSX.element = JSX.string("Hello, World!");
+    ]}
+    {@mlx[
       let element : JSX.element = JSX.string "Hello, World!"
     ]} *)
 
@@ -150,7 +205,10 @@ val text : string -> element
 
     This function is deprecated in favor of [JSX.string].
 
-    {[
+    {@reasonml[
+      let element : JSX.element = JSX.text("Hello, World!");
+    ]}
+    {@mlx[
       let element : JSX.element = JSX.text "Hello, World!"
     ]} *)
 
@@ -162,7 +220,11 @@ val unsafe : string -> element
     A common use case for bypassing the HTML encoding is to render a script or
     style tag.
 
-    {[
+    {@reasonml[
+      let content: string = "Raw HTML";
+      let script: JSX.element = <script>{content}</script>
+    ]}
+    {@mlx[
       let content: string = "Raw HTML" in
       let script: JSX.element = <script> content </script>
     ]} *)
@@ -176,7 +238,12 @@ val escape : Buffer.t -> string -> unit
     This is an advanced function used mostly by the PPX for optimized rendering.
     Most users should prefer [JSX.string].
 
-    {[
+    {@reasonml[
+      let buf = Buffer.create(256);
+      JSX.escape(buf, "<script>");
+      Buffer.contents(buf); /* "&lt;script&gt;" */
+    ]}
+    {@mlx[
       let buf = Buffer.create 256 in
       JSX.escape buf "<script>";
       Buffer.contents buf (* "&lt;script&gt;" *)
@@ -188,7 +255,12 @@ val write : Buffer.t -> element -> unit
     This is an advanced function used mostly by the PPX for optimized rendering
     when building HTML strings incrementally.
 
-    {[
+    {@reasonml[
+      let buf = Buffer.create(256);
+      JSX.write(buf, (JSX.string "Hello"));
+      Buffer.contents(buf); /* "Hello" */
+    ]}
+    {@mlx[
       let buf = Buffer.create 256 in
       JSX.write buf (JSX.string "Hello");
       Buffer.contents buf (* "Hello" *)

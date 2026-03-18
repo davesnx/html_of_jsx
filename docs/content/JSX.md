@@ -5,10 +5,17 @@ JSX module
 
 The JSX module provides functions to render HTML elements in a declarative style.
 
-```ocaml
+```reasonml
   let html: string = JSX.render(
     <div>
       <h1> {JSX.string("Hello, World!")} </h1>
+    </div>
+  );
+```
+```mlx
+  let html: string = JSX.render (
+    <div>
+      <h1>(JSX.string "Hello, World!")</h1>
     </div>
   );
 ```
@@ -24,14 +31,22 @@ Render a JSX.element as a string.
 
 This function takes a JSX.element and converts it into its corresponding HTML string representation.
 
-```ocaml
+```reasonml
   let html: string = JSX.render(
     <div>
       <h1> {JSX.string("Hello, World!")} </h1>
     </div>
   );
 
-  Printf.printf "%s" html; /* <div><h1>Hello, World!</h1></div> */
+  Printf.printf("%s", html); /* <div><h1>Hello, World!</h1></div> */
+```
+```mlx
+  let html: string = JSX.render (
+    <div>
+      <h1>(JSX.string "Hello, World!")</h1>
+    </div>
+
+  Printf.printf "%s" html (* <div><h1>Hello, World!</h1></div> *)
 ```
 ```
 val render_to_channel : Stdlib.out_channel -> element -> unit
@@ -40,10 +55,17 @@ Render a JSX.element directly to an output channel.
 
 This function writes the HTML representation directly to the channel, avoiding the intermediate string allocation that `render` requires.
 
-```ocaml
-  JSX.render_to_channel stdout (
+```reasonml
+  JSX.render_to_channel(stdout,
     <div>
       <h1> {JSX.string("Hello, World!")} </h1>
+    </div>
+  );
+```
+```mlx
+  JSX.render_to_channel stdout (
+    <div>
+      <h1>(JSX.string "Hello, World!")</h1>
     </div>
   );
 ```
@@ -54,12 +76,17 @@ Render a JSX.element using a streaming callback function.
 
 This function renders the element and passes the result to the callback function, useful for frameworks that support streaming responses.
 
-```ocaml
-  JSX.render_streaming (fun html -> Dream.write stream html) (
+```reasonml
+  JSX.render_streaming(html => Dream.write(stream, html),
     <div>
       <h1> {JSX.string("Hello, World!")} </h1>
     </div>
   );
+```
+```mlx
+  JSX.render_streaming (fun html -> Dream.write stream html) (<div>
+    <h1>(JSX.string "Hello, World!")</h1>
+  </div>)
 ```
 ```
 val float : float -> element
@@ -68,7 +95,10 @@ Helper to render a float.
 
 This function helps in rendering a float value as a JSX element.
 
-```ocaml
+```reasonml
+  let element : JSX.element = JSX.float(3.14);
+```
+```mlx
   let element : JSX.element = JSX.float 3.14
 ```
 ```
@@ -81,7 +111,10 @@ Helper to render an integer.
 
 This function helps in rendering an integer value as a JSX element.
 
-```ocaml
+```reasonml
+  let element : JSX.element = JSX.int(42);
+```
+```mlx
   let element : JSX.element = JSX.int 42
 ```
 ```
@@ -91,7 +124,11 @@ Helper to render a list of elements.
 
 This function takes a list of JSX elements and returns a single JSX element that contains all of them. This is useful for rendering dynamic lists of elements.
 
-```ocaml
+```reasonml
+  let element : JSX.element =
+    JSX.list([ JSX.string("Item 1"), JSX.string("Item 2"), JSX.string("Item 3") ]);
+```
+```mlx
   let element : JSX.element =
     JSX.list
       [ JSX.string "Item 1"; JSX.string "Item 2"; JSX.string "Item 3" ]
@@ -103,7 +140,12 @@ Helper to render an array of elements.
 
 This function takes an array of JSX elements and returns a single JSX element that contains all of them. This is useful for rendering dynamic arrays of elements.
 
-```ocaml
+```reasonml
+  let element : JSX.element =
+    JSX.array
+      [| JSX.string("Item 1"), JSX.string("Item 2"), JSX.string("Item 3") |]
+```
+```mlx
   let element : JSX.element =
     JSX.array
       [| JSX.string "Item 1"; JSX.string "Item 2"; JSX.string "Item 3" |]
@@ -124,7 +166,13 @@ The function to create an HTML DOM Node.
 
 It takes a tag name, a list of attributes, and a list of child elements to create an HTML node.
 
-```ocaml
+```reasonml
+  let link : JSX.element =
+     JSX.node("a",
+       [ ("href", `String("https://ocaml.org") ],
+       [ JSX.string("OCaml") ]);
+```
+```mlx
   let link : JSX.element =
     JSX.node "a"
       [ ("href", `String "https://ocaml.org") ]
@@ -137,7 +185,10 @@ Helper to represent nullability in JSX.
 
 This is useful to represent and pattern match against null or empty elements.
 
-```ocaml
+```reasonml
+  let element : JSX.element = JSX.null;
+```
+```mlx
   let element : JSX.element = JSX.null
 ```
 ```
@@ -147,7 +198,10 @@ Helper to represent an element as a string.
 
 This function allows you to directly render a string as a JSX element.
 
-```ocaml
+```reasonml
+  let element : JSX.element = JSX.string("Hello, World!");
+```
+```mlx
   let element : JSX.element = JSX.string "Hello, World!"
 ```
 ```
@@ -157,7 +211,10 @@ A deprecated function to render a text string.
 
 This function is deprecated in favor of `JSX.string`.
 
-```ocaml
+```reasonml
+  let element : JSX.element = JSX.text("Hello, World!");
+```
+```mlx
   let element : JSX.element = JSX.text "Hello, World!"
 ```
 deprecated Use JSX.string instead
@@ -168,7 +225,11 @@ Helper to bypass HTML encoding and treat output as unsafe. This can lead to HTML
 
 A common use case for bypassing the HTML encoding is to render a script or style tag.
 
-```ocaml
+```reasonml
+  let content: string = "Raw HTML";
+  let script: JSX.element = <script>{content}</script>
+```
+```mlx
   let content: string = "Raw HTML" in
   let script: JSX.element = <script> content </script>
 ```
@@ -181,7 +242,12 @@ This escapes ampersand, less-than, greater-than, apostrophe, and double-quote ch
 
 This is an advanced function used mostly by the PPX for optimized rendering. Most users should prefer `JSX.string`.
 
-```ocaml
+```reasonml
+  let buf = Buffer.create(256);
+  JSX.escape(buf, "<script>");
+  Buffer.contents(buf); /* "&lt;script&gt;" */
+```
+```mlx
   let buf = Buffer.create 256 in
   JSX.escape buf "<script>";
   Buffer.contents buf (* "&lt;script&gt;" *)
@@ -193,7 +259,12 @@ Write an element directly to a buffer.
 
 This is an advanced function used mostly by the PPX for optimized rendering when building HTML strings incrementally.
 
-```ocaml
+```reasonml
+  let buf = Buffer.create(256);
+  JSX.write(buf, (JSX.string "Hello"));
+  Buffer.contents(buf); /* "Hello" */
+```
+```mlx
   let buf = Buffer.create 256 in
   JSX.write buf (JSX.string "Hello");
   Buffer.contents buf (* "Hello" *)

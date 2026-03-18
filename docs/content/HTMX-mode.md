@@ -17,8 +17,6 @@ Turn on htmx attributes in the ppx and include the runtime helper package.
 (libraries html_of_jsx html_of_jsx.htmx)
 (preprocess (pps html_of_jsx.ppx -htmx))
 ```
-\---
-
 
 ## Core attributes
 
@@ -26,17 +24,28 @@ Use `hx_*` names in JSX. They render as standard `hx-*` HTML attributes.
 
 ```reasonml
 JSX.render(<a hx_get="/profile" hx_swap=`outerHTML> {JSX.string("Load profile")} </a>)
+/* <a hx-get="/profile" hx-swap="outerHTML">Load profile</a> */
+```
+```mlx
+JSX.render <a hx_get="/profile" hx_swap=`outerHTML> (JSX.string "Load profile") </a>
 (* <a hx-get="/profile" hx-swap="outerHTML">Load profile</a> *)
 ```
 
 ### Request methods
 
 ```reasonml
-<button hx_get="/items"> "Load" </button>
+<button hx_get="/items"> {JSX.string("Load")} </button>
 <form hx_post="/submit"> {children} </form>
-<button hx_delete={"/items/" ++ id}> "Remove" </button>
-<button hx_put={"/items/" ++ id}> "Replace" </button>
-<button hx_patch={"/items/" ++ id}> "Update" </button>
+<button hx_delete={"/items/" ++ id}> {JSX.string("Remove")} </button>
+<button hx_put={"/items/" ++ id}> {JSX.string("Replace")} </button>
+<button hx_patch={"/items/" ++ id}> {JSX.string("Update")} </button>
+```
+```mlx
+<button hx_get="/items"> (JSX.string "Load") </button>
+<form hx_post="/submit"> children </form>
+<button hx_delete={"/items/" ++ id}> (JSX.string "Remove") </button>
+<button hx_put={"/items/" ++ id}> (JSX.string "Replace") </button>
+<button hx_patch={"/items/" ++ id}> (JSX.string "Update") </button>
 ```
 
 ### Targeting and swapping
@@ -45,11 +54,20 @@ Control where the response is placed and how it replaces existing content:
 
 ```reasonml
 <button hx_get="/content" hx_target="#result" hx_swap=`innerHTML>
-  "Load into #result"
+  {JSX.string("Load into #result")}
 </button>
 
 <button hx_get="/row" hx_target="closest tr" hx_swap=`outerHTML>
-  "Replace this row"
+  {JSX.string("Replace this row")}
+</button>
+```
+```mlx
+<button hx_get="/content" hx_target="#result" hx_swap=`innerHTML>
+  (JSX.string "Load into #result")
+</button>
+
+<button hx_get="/row" hx_target="closest tr" hx_swap=`outerHTML>
+  (JSX.string "Replace this row")
 </button>
 ```
 
@@ -58,6 +76,16 @@ Control where the response is placed and how it replaces existing content:
 Customize what event fires the request. Supports modifiers like `delay`, `changed`, and `throttle`:
 
 ```reasonml
+<input
+  type_=`search
+  name="query"
+  hx_post="/search"
+  hx_trigger="keyup changed delay:300ms, search"
+  hx_target="#results"
+  hx_swap=`outerHTML
+/>
+```
+```mlx
 <input
   type_=`search
   name="query"
@@ -78,7 +106,16 @@ Ask the user to confirm before sending:
   hx_target={Printf.sprintf("#todo-%d", id)}
   hx_swap=`outerHTML
   hx_confirm="Are you sure?">
-  "Delete"
+  {JSX.string("Delete")}
+</button>
+```
+```mlx
+<button
+  hx_delete=(Printf.sprintf "/todos/%d" id)
+  hx_target=(Printf.sprintf "#todo-%d" id)
+  hx_swap=`outerHTML
+  hx_confirm="Are you sure?">
+  (JSX.string "Delete")
 </button>
 ```
 
@@ -88,9 +125,15 @@ Show a spinner or indicator while the request is in flight:
 
 ```reasonml
 <button hx_get="/slow-content" hx_indicator="#spinner">
-  "Load"
+  {JSX.string("Load")}
 </button>
-<span id="spinner" class_="htmx-indicator"> "Loading..." </span>
+<span id="spinner" class_="htmx-indicator"> {JSX.string("Loading...")} </span>
+```
+```mlx
+<button hx_get="/slow-content" hx_indicator="#spinner">
+  (JSX.string "Load")
+</button>
+<span id="spinner" class_="htmx-indicator">(JSX.string "Loading...")</span>
 ```
 
 ### Counter example
@@ -104,20 +147,36 @@ let counter = (~count, ()) => {
       hx_post="/counter/decrement"
       hx_target="#counter"
       hx_swap=`outerHTML>
-      "-"
+      {JSX.string("-")}
     </button>
     <span id="counter"> {JSX.int(count)} </span>
     <button
       hx_post="/counter/increment"
       hx_target="#counter"
       hx_swap=`outerHTML>
-      "+"
+      {JSX.string("+")}
     </button>
   </div>;
 };
 ```
-\---
-
+```mlx
+let counter ~count () =
+  <div style="display: flex; align-items: center; gap: 12px">
+    <button
+      hx_post="/counter/decrement"
+      hx_target="#counter"
+      hx_swap=`outerHTML>
+      (JSX.string "-")
+    </button>
+    <span id="counter">(JSX.int count)</span>
+    <button
+      hx_post="/counter/increment"
+      hx_target="#counter"
+      hx_swap=`outerHTML>
+      (JSX.string "+")
+    </button>
+  </div>
+```
 
 ## Load script
 
@@ -136,8 +195,6 @@ Pass `integrity` to enable SRI.
   integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+"
 />
 ```
-\---
-
 
 ## Extensions
 
@@ -158,6 +215,11 @@ Use components under `Htmx.Extensions` for extension scripts. Each extension add
   {JSX.string("Waiting for events...")}
 </div>
 ```
+```mlx
+<div hx_ext="sse" sse_connect="/events" sse_swap="message">
+  (JSX.string "Waiting for events...")
+</div>
+```
 
 ### WebSocket
 
@@ -166,6 +228,14 @@ Use components under `Htmx.Extensions` for extension scripts. Each extension add
   <form ws_send="">
     <input name="message" />
     <button type_=`submit> "Send" </button>
+  </form>
+</div>
+```
+```mlx
+<div hx_ext="ws" ws_connect="/chat">
+  <form ws_send="">
+    <input name="message" />
+    <button type_=`submit> (JSX.string "Send") </button>
   </form>
 </div>
 ```
@@ -180,10 +250,8 @@ Use components under `Htmx.Extensions` for extension scripts. Each extension add
 - `<Htmx.Extensions.Loading_states />`
 - `<Htmx.Extensions.Response_targets />`
 - `<Htmx.Extensions.Head_support />`
-\---
 
-
-## Full page example
+## The entire page
 
 A minimal page combining core htmx attributes with an SSE extension:
 
@@ -205,4 +273,22 @@ let page = () => {
     </body>
   </html>
 };
+```
+```mlx
+let page () =
+  <html lang="en">
+    <head>
+      <title>(JSX.string "htmx + html_of_jsx")</title>
+      <Htmx version="2.0.4" />
+      <Htmx.Extensions.SSE version="2.2.2" />
+    </head>
+    <body>
+      <button hx_get="/clicked" hx_swap=`outerHTML>
+        (JSX.string "Click me")
+      </button>
+      <div hx_ext="sse" sse_connect="/events" sse_swap="message">
+        (JSX.string "Waiting for events...")
+      </div>
+    </body>
+  </html>
 ```
