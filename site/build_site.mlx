@@ -28,10 +28,6 @@ let guide_order =
     "React-compatibility.md";
   ]
 
-let ochre_options =
-  Ochre.Html_options.make ~pre_class:"doc-code__pre"
-    ~code_class:"doc-code__code" ()
-
 let highlighter =
   Ochre.create_from_json
     ~grammars:
@@ -131,19 +127,19 @@ let highlight_lang_of_label label =
 let code_badge label =
   match normalize_code_label label with
   | "reason" | "reasonml" ->
-      Some ("Reason", ".re")
+      Some "Reason"
   | "mlx" ->
-      Some ("mlx", ".mlx")
+      Some "mlx"
   | "dune" ->
-      Some ("dune", "")
+      Some "dune"
   | "bash" | "sh" | "shell" | "shellscript" ->
-      Some ("bash", "")
+      Some "bash"
   | "ocaml" ->
-      Some ("ocaml", "")
+      Some "ocaml"
   | "" ->
       None
   | other ->
-      Some (other, "")
+      Some other
 
 let trim_trailing_newlines text =
   let rec find_last_non_newline index =
@@ -162,77 +158,119 @@ let trim_trailing_newlines text =
   else
     String.sub text 0 (last_index + 1)
 
-let render_plain_code code =
-  JSX.render
+let make_code_theme ~name ~fg ~bg ~comment ~string ~number ~keyword ~fn ~typ =
+  Ochre.Theme.make ~name
+    ~colors:[ ("editor.foreground", fg); ("editor.background", bg) ]
+    ~token_colors:
+      [
+        Ochre.Theme.rule ~scope:[ "comment" ] ~foreground:comment ();
+        Ochre.Theme.rule ~scope:[ "string" ] ~foreground:string ();
+        Ochre.Theme.rule ~scope:[ "constant.numeric" ] ~foreground:number ();
+        Ochre.Theme.rule ~scope:[ "keyword" ] ~foreground:keyword ();
+        Ochre.Theme.rule
+          ~scope:[ "entity.name.function"; "support.function" ]
+          ~foreground:fn ();
+        Ochre.Theme.rule
+          ~scope:[ "entity.name.type"; "support.type"; "storage.type" ]
+          ~foreground:typ ();
+      ]
+    ()
+
+let code_theme_gruvbox_light =
+  make_code_theme ~name:"gruvbox-light" ~fg:"#3C3836" ~bg:"#FEF6ED"
+    ~comment:"#928374" ~string:"#79740E" ~number:"#8F3F71" ~keyword:"#9D0006"
+    ~fn:"#B57614" ~typ:"#076678"
+
+let code_theme_gruvbox =
+  make_code_theme ~name:"gruvbox" ~fg:"#EBDBB2" ~bg:"#2C241E" ~comment:"#928374"
+    ~string:"#B8BB26" ~number:"#D3869B" ~keyword:"#FB4934" ~fn:"#FABD2F"
+    ~typ:"#8EC07C"
+
+let code_theme_dark_css =
+  {|
+.ochre,
+.ochre span {
+  color: var(--ochre);
+  background-color: var(--ochre-bg);
+}
+
+:root[data-doc-theme="dark"] .ochre,
+:root[data-doc-theme="dark"] .ochre span {
+  --ochre: var(--ochre-dark);
+  --ochre-bg: var(--ochre-dark-bg);
+  --ochre-font-style: var(--ochre-dark-font-style);
+  --ochre-font-weight: var(--ochre-dark-font-weight);
+  --ochre-text-decoration: var(--ochre-dark-text-decoration);
+}
+
+:root[data-doc-theme="light"] .ochre,
+:root[data-doc-theme="light"] .ochre span {
+  --ochre: var(--ochre);
+  --ochre-bg: var(--ochre-bg);
+  --ochre-font-style: var(--ochre-font-style);
+  --ochre-font-weight: var(--ochre-font-weight);
+  --ochre-text-decoration: var(--ochre-text-decoration);
+}
+|}
+
+let highlighted_code ~label ~code () =
+  let plain_code () =
     <pre class_="doc-code__pre">
-      <code class_="doc-code__code">(JSX.string code)</code>
+      <code class_="doc-code__code">(JSX.unsafe code)</code>
     </pre>
-
-let code_theme =
-  Ochre.Theme.make ~name:"coffee" ~fg:"#e9ecf5" ~bg:"#503F2B" ~comment:"#B2A59A"
-    ~string:"#a6e3a1" ~number:"#fab387" ~keyword:"#cba6f7" ~fn:"#fac089"
-    ~typ:"#94e2d5"
-
-let code_theme_dark =
-  Ochre.Theme.make ~name:"coffee-dark" ~fg:"#dfd8cf" ~bg:"#261F19"
-    ~comment:"#a59282" ~string:"#d9c8a4" ~number:"#d8a775" ~keyword:"#d3b2dd"
-    ~fn:"#e5b49f" ~typ:"#a7c8c3"
-
-let code_theme_dark_css = Ochre.html_theme_prefers_dark_css
-
-let render_highlighted_code label code =
+  in
   match highlight_lang_of_label label with
   | None ->
-      render_plain_code code
+      <plain_code />
   | Some language -> (
+      let ochre_options =
+        Ochre.Html_options.make ~pre_class:"doc-code__pre"
+          ~code_class:"doc-code__code" ()
+      in
       try
-        Ochre.to_html highlighter ~options:ochre_options ~theme:code_theme
-          ~extra_themes:[ ("dark", code_theme_dark) ]
+        Ochre.to_html highlighter ~options:ochre_options
+          ~theme:code_theme_gruvbox_light
+          ~extra_themes:[ ("dark", code_theme_gruvbox) ]
           ~lang:language code
-      with _ -> render_plain_code code
+        |> JSX.unsafe
+      with _ -> <plain_code />
     )
 
 let string_of_syntax = function Reason -> "reason" | Mlx -> "mlx"
 
-let render_code_caption label =
-  let language =
-    match code_badge label with None -> "code" | Some (value, _) -> value
-  in
-  JSX.render
-    <figcaption class_="doc-code__meta">
-      <span class_="doc-code__lang">(JSX.string language)</span>
-      <button class_="doc-code__copy" type_=`button dataDocCopy="">
-        <svg class_="doc-code__copy-icon" viewBox="0 0 24 24" aria_hidden=true>
-          <rect x="9" y="9" width="10" height="10" rx="2" />
-          <rect x="5" y="5" width="10" height="10" rx="2" />
-        </svg>
-        <span class_="doc-code__copy-label">(JSX.string "Copy")</span>
-      </button>
-    </figcaption>
+let code_caption ~label () =
+  <figcaption class_="doc-code__meta">
+    ( match code_badge label with
+    | Some language ->
+        <span class_="doc-code__lang">(JSX.string language)</span>
+    | None ->
+        JSX.null
+    )
+    <button class_="doc-code__copy" type_=`button dataDocCopy="">
+      <svg class_="doc-code__copy-icon" viewBox="0 0 24 24" aria_hidden=true>
+        <rect x="9" y="9" width="10" height="10" rx="2" />
+        <rect x="5" y="5" width="10" height="10" rx="2" />
+      </svg>
+      <span class_="doc-code__copy-label">(JSX.string "Copy")</span>
+    </button>
+  </figcaption>
 
-let code_figure_element ?syntax label code =
+let code_figure ?syntax ~label ~code () =
   let normalized_code = trim_trailing_newlines code in
-  let caption = render_code_caption label in
-  let highlighted = render_highlighted_code label normalized_code in
+  let highlighted = <highlighted_code label code=normalized_code /> in
   match syntax with
   | None ->
-      <figure class_="doc-code">
-        (JSX.unsafe caption) (JSX.unsafe highlighted)
-      </figure>
+      <figure class_="doc-code"><code_caption label /> highlighted</figure>
   | Some value ->
       <figure class_="doc-code" dataSyntax=(string_of_syntax value)>
-        (JSX.unsafe caption) (JSX.unsafe highlighted)
+        <code_caption label /> highlighted
       </figure>
 
-let render_code_figure ?syntax label code =
-  JSX.render (code_figure_element ?syntax label code)
-
-let render_syntax_pair reason_label reason_code mlx_label mlx_code =
-  JSX.render
-    <div class_="doc-code-pair">
-      (code_figure_element ~syntax:Reason reason_label reason_code)
-      (code_figure_element ~syntax:Mlx mlx_label mlx_code)
-    </div>
+let syntax_pair ~reason_label ~reason_code ~mlx_label ~mlx_code () =
+  <div class_="doc-code-pair">
+    <code_figure syntax=Reason label=reason_label code=reason_code />
+    <code_figure syntax=Mlx label=mlx_label code=mlx_code />
+  </div>
 
 let rec inline_to_text = function
   | Omd.Concat (_, items) ->
@@ -339,26 +377,33 @@ let render_markdown_body ~hide_h1 pages markdown =
             match (syntax_of_label label, syntax_of_label label_next) with
             | Some Reason, Some Mlx ->
                 render_blocks
-                  (render_syntax_pair label code label_next code_next :: acc)
+                  (syntax_pair ~reason_label:label ~reason_code:code
+                     ~mlx_label:label_next ~mlx_code:code_next ()
+                  :: acc
+                  )
                   remaining
             | Some Mlx, Some Reason ->
                 render_blocks
-                  (render_syntax_pair label_next code_next label code :: acc)
+                  (syntax_pair ~reason_label:label_next ~reason_code:code_next
+                     ~mlx_label:label ~mlx_code:code ()
+                  :: acc
+                  )
                   remaining
             | _ ->
-                render_blocks (render_code_figure label code :: acc) rest
+                render_blocks (code_figure ~label ~code () :: acc) rest
           )
         | _ ->
-            render_blocks (render_code_figure label code :: acc) rest
+            render_blocks (code_figure ~label ~code () :: acc) rest
       )
     | Omd.Heading (_, 1, _) :: rest when hide_h1 ->
         render_blocks acc rest
     | block :: rest ->
-        render_blocks (Omd.to_html [ block ] :: acc) rest
+        render_blocks (JSX.unsafe (Omd.to_html [ block ]) :: acc) rest
     | [] ->
-        List.rev acc |> String.concat ""
+        List.rev acc
   in
-  markdown |> Omd.of_string |> render_blocks [] |> rewrite_html_links pages
+  markdown |> Omd.of_string |> render_blocks [] |> JSX.list |> JSX.render
+  |> rewrite_html_links pages
 
 let menu_guide_links =
   [
@@ -374,34 +419,31 @@ let menu_guide_links =
 let find_page_by_source_name pages source_name =
   List.find_opt (fun page -> page.source_name = source_name) pages
 
-let render_menu_link ~href ~label ~is_active =
+let menu_link ~href ~label ~is_active () =
   if is_active then
-    JSX.render
-      <li>
-        <a
-          class_="site-menu__link site-menu__link--active"
-          aria_current=`page
-          href>
-          (JSX.string label)
-        </a>
-      </li>
+    <li>
+      <a
+        class_="site-menu__link site-menu__link--active" aria_current=`page href>
+        (JSX.string label)
+      </a>
+    </li>
   else
-    JSX.render <li><a class_="site-menu__link" href>(JSX.string label)</a></li>
+    <li><a class_="site-menu__link" href>(JSX.string label)</a></li>
 
-let render_menu pages active_output =
+let render_menu pages active_output () =
   let guide_links =
     menu_guide_links
     |> List.filter_map (fun (source_name, label) ->
         match find_page_by_source_name pages source_name with
         | Some page ->
             Some
-              (render_menu_link ~href:page.output_name ~label
+              (menu_link ~href:page.output_name ~label
                  ~is_active:(page.output_name = active_output)
+                 ()
               )
         | None ->
             None
     )
-    |> String.concat ""
   in
   let api_target =
     match find_page_by_source_name pages "JSX.md" with
@@ -422,16 +464,17 @@ let render_menu pages active_output =
   let api_link =
     match api_target with
     | Some page ->
-        render_menu_link ~href:page.output_name ~label:"API"
-          ~is_active:current_is_api
+        menu_link ~href:page.output_name ~label:"API" ~is_active:current_is_api
+          ()
     | None ->
-        ""
+        JSX.null
   in
-  "<nav class=\"site-menu\" aria-label=\"Documentation pages\"><ul \
-   class=\"site-menu__list\">" ^ guide_links ^ api_link ^ "</ul></nav>"
+  <nav class_="site-menu" aria_label="Documentation pages">
+    <ul class_="site-menu__list">(JSX.list guide_links) api_link</ul>
+  </nav>
 
 let render_page pages page =
-  let menu_html = render_menu pages page.output_name in
+  let menu_element = render_menu pages page.output_name () in
   let is_api_page = page_rank page.source_name >= 1000 in
   let article_html =
     render_markdown_body ~hide_h1:(not is_api_page) pages page.markdown
@@ -472,9 +515,28 @@ let render_page pages page =
           href="assets/spline-sans-700.woff2"
           crossorigin="anonymous"
         />
+        <script>
+          (JSX.unsafe
+             {|
+(function () {
+  try {
+    var themeKey = "html_of_jsx.docs.theme";
+    var theme = localStorage.getItem(themeKey);
+    var resolvedTheme =
+      theme === "light" || theme === "dark"
+        ? theme
+        : window.matchMedia("(prefers-color-scheme: dark)").matches
+          ? "dark"
+          : "light";
+    document.documentElement.setAttribute("data-doc-theme", resolvedTheme);
+  } catch (_error) {}
+})();
+|}
+          )
+        </script>
         <link rel="stylesheet" href="assets/fonts.css" />
+        <style>(JSX.unsafe code_theme_dark_css)</style>
         <link rel="stylesheet" href="assets/index.css" />
-        <style>(JSX.string code_theme_dark_css)</style>
         <script src="assets/index.js" defer=true />
       </head>
       <body>
@@ -487,6 +549,15 @@ let render_page pages page =
                 </a>
               </div>
               <div class_="site-controls">
+                <button
+                  class_="theme-toggle"
+                  type_=`button
+                  dataDocThemeToggle=""
+                  aria_label="Toggle color theme"
+                  title="Toggle color theme">
+                  <span class_="theme-toggle__sun" aria_hidden=true>"✹"</span>
+                  <span class_="theme-toggle__moon" aria_hidden=true>"⏾"</span>
+                </button>
                 <div
                   class_="syntax-toggle" role=`group aria_label="Code syntax">
                   <button
@@ -514,7 +585,7 @@ let render_page pages page =
                 </div>
               </div>
             </div>
-            (JSX.unsafe menu_html)
+            menu_element
           </div>
         </header>
         <main class_="doc-main">

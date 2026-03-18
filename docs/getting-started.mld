@@ -2,13 +2,13 @@
 
 {1 Installation}
 
-{2 From opam}
+{2 From the opam repository}
 
 {@bash[
 opam install html_of_jsx -y
 ]}
 
-{2 From source (opam pin)}
+{2 or from github via opam pin}
 
 Pin a specific development commit from GitHub:
 
@@ -16,7 +16,7 @@ Pin a specific development commit from GitHub:
 opam pin add html_of_jsx.dev "https://github.com/davesnx/html_of_jsx.git#01c813023e432cd4088b86ee21d5c3af2fc63bdc" -y
 ]}
 
-{2 With the dune package manager}
+{2 or with the dune package manager}
 
 Add [html_of_jsx] to the [depends] field in your [dune-project]:
 
@@ -81,7 +81,7 @@ opam install mlx ocamlformat-mlx ocamlmerlin-mlx -y
 
 Add the dialect to your [dune-project]:
 
-{[
+{@dune[
 (dialect
  (name mlx)
  (implementation

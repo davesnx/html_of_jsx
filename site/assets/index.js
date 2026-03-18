@@ -1,8 +1,10 @@
 (() => {
   const SYNTAX_STORAGE_KEY = "html_of_jsx.docs.syntax";
+  const THEME_STORAGE_KEY = "html_of_jsx.docs.theme";
   const DEFAULT_SYNTAX = "reason";
   const root = document.documentElement;
   const syntaxButtons = Array.from(document.querySelectorAll(".syntax-toggle [data-doc-syntax]"));
+  const themeToggleButton = document.querySelector("[data-doc-theme-toggle]");
   const copyButtons = Array.from(document.querySelectorAll("[data-doc-copy]"));
 
   const normalizeSyntax = (value) => (value === "mlx" ? "mlx" : "reason");
@@ -28,6 +30,65 @@
       setActiveSyntax(nextSyntax);
     });
   });
+
+  const prefersDarkScheme = window.matchMedia("(prefers-color-scheme: dark)");
+
+  const normalizeTheme = (value) => (value === "light" || value === "dark" ? value : null);
+
+  const systemTheme = () => (prefersDarkScheme.matches ? "dark" : "light");
+
+  const effectiveTheme = () => {
+    const activeTheme = normalizeTheme(root.getAttribute("data-doc-theme"));
+    if (activeTheme) {
+      return activeTheme;
+    }
+
+    return systemTheme();
+  };
+
+  const updateThemeToggle = () => {
+    if (!themeToggleButton) {
+      return;
+    }
+
+    const theme = effectiveTheme();
+    const nextTheme = theme === "dark" ? "light" : "dark";
+    themeToggleButton.setAttribute("data-theme", theme);
+    themeToggleButton.setAttribute("aria-pressed", theme === "dark" ? "true" : "false");
+    themeToggleButton.setAttribute("aria-label", `Switch to ${nextTheme} theme`);
+    themeToggleButton.setAttribute("title", `Switch to ${nextTheme} theme`);
+  };
+
+  const applyTheme = (theme) => {
+    if (theme === "light" || theme === "dark") {
+      root.setAttribute("data-doc-theme", theme);
+    }
+
+    updateThemeToggle();
+  };
+
+  const rememberedTheme = normalizeTheme(localStorage.getItem(THEME_STORAGE_KEY));
+  applyTheme(rememberedTheme ?? systemTheme());
+
+  const onSystemThemeChange = () => {
+    if (!normalizeTheme(localStorage.getItem(THEME_STORAGE_KEY))) {
+      applyTheme(systemTheme());
+    }
+  };
+
+  if (typeof prefersDarkScheme.addEventListener === "function") {
+    prefersDarkScheme.addEventListener("change", onSystemThemeChange);
+  } else {
+    prefersDarkScheme.addListener(onSystemThemeChange);
+  }
+
+  if (themeToggleButton) {
+    themeToggleButton.addEventListener("click", () => {
+      const nextTheme = effectiveTheme() === "dark" ? "light" : "dark";
+      localStorage.setItem(THEME_STORAGE_KEY, nextTheme);
+      applyTheme(nextTheme);
+    });
+  }
 
   const copyText = async (text) => {
     if (navigator.clipboard && window.isSecureContext) {
