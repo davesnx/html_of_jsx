@@ -1,18 +1,47 @@
-<html lang="en" data-doc-syntax="reason"><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>React compatibility mode - html_of_jsx documentation</title><meta name="description" content="html_of_jsx documentation" /><link rel="preload" as="font" type="font/woff2" href="assets/ibm-plex-mono-400.woff2" crossorigin="anonymous" /><link rel="preload" as="font" type="font/woff2" href="assets/ibm-plex-mono-600.woff2" crossorigin="anonymous" /><link rel="preload" as="font" type="font/woff2" href="assets/spline-sans-700.woff2" crossorigin="anonymous" /><link rel="stylesheet" href="assets/fonts.css" /><link rel="stylesheet" href="assets/index.css" /><style>@media (prefers-color-scheme: dark) {
-  .ochre,
-  .ochre span {
-    color: var(--ochre-dark) !important;
-    background-color: var(--ochre-dark-bg) !important;
-    font-style: var(--ochre-dark-font-style) !important;
-    font-weight: var(--ochre-dark-font-weight) !important;
-    text-decoration: var(--ochre-dark-text-decoration) !important;
-  }
-}</style><script src="assets/index.js" defer></script></head><body><header class="site-header"><div class="site-header__inner"><div class="site-header__top"><div class="site-branding"><a class="site-brand" href="index.html">html_of_jsx</a></div><div class="site-controls"><div class="syntax-toggle" role="group" aria-label="Code syntax"><button type="button" data-doc-syntax="reason" aria-label="Reason syntax"><img class="syntax-toggle__icon" src="assets/reason.svg" alt="" /><span class="syntax-toggle__label">Reason</span></button><button type="button" data-doc-syntax="mlx" aria-label="mlx syntax"><img class="syntax-toggle__icon" src="assets/ocaml.svg" alt="" /><span class="syntax-toggle__label">mlx</span></button></div></div></div><nav class="site-menu" aria-label="Documentation pages"><ul class="site-menu__list"><li><a class="site-menu__link" href="getting-started.html">Getting started</a></li><li><a class="site-menu__link" href="core.html">Core</a></li><li><a class="site-menu__link" href="ppx.html">ppx</a></li><li><a class="site-menu__link" href="how-ppx-works.html">How the ppx works</a></li><li><a class="site-menu__link" href="dream.html">Integrate with Dream</a></li><li><a class="site-menu__link" href="HTMX-mode.html">HTMX mode</a></li><li><a class="site-menu__link site-menu__link--active" aria-current="page" href="React-compatibility.html">React mode</a></li><li><a class="site-menu__link" href="JSX.html">API</a></li></ul></nav></div></header><main class="doc-main"><article class="doc-prose doc-prose--guide"><p>The React compatibility mode eases migration from reason-react to html_of_jsx. It adds camelCase aliases for HTML attributes that React uses instead of the standard HTML names.</p>
+<html lang="en" data-doc-syntax="reason"><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>React compatibility mode - html_of_jsx documentation</title><meta name="description" content="html_of_jsx documentation" /><link rel="preload" as="font" type="font/woff2" href="assets/ibm-plex-mono-400.woff2" crossorigin="anonymous" /><link rel="preload" as="font" type="font/woff2" href="assets/ibm-plex-mono-600.woff2" crossorigin="anonymous" /><link rel="preload" as="font" type="font/woff2" href="assets/spline-sans-700.woff2" crossorigin="anonymous" /><script>
+(function () {
+  try {
+    var themeKey = "html_of_jsx.docs.theme";
+    var theme = localStorage.getItem(themeKey);
+    var resolvedTheme =
+      theme === "light" || theme === "dark"
+        ? theme
+        : window.matchMedia("(prefers-color-scheme: dark)").matches
+          ? "dark"
+          : "light";
+    document.documentElement.setAttribute("data-doc-theme", resolvedTheme);
+  } catch (_error) {}
+})();
+</script><link rel="stylesheet" href="assets/fonts.css" /><style>
+.ochre,
+.ochre span {
+  color: var(--ochre);
+  background-color: var(--ochre-bg);
+}
+
+:root[data-doc-theme="dark"] .ochre,
+:root[data-doc-theme="dark"] .ochre span {
+  --ochre: var(--ochre-dark);
+  --ochre-bg: var(--ochre-dark-bg);
+  --ochre-font-style: var(--ochre-dark-font-style);
+  --ochre-font-weight: var(--ochre-dark-font-weight);
+  --ochre-text-decoration: var(--ochre-dark-text-decoration);
+}
+
+:root[data-doc-theme="light"] .ochre,
+:root[data-doc-theme="light"] .ochre span {
+  --ochre: var(--ochre);
+  --ochre-bg: var(--ochre-bg);
+  --ochre-font-style: var(--ochre-font-style);
+  --ochre-font-weight: var(--ochre-font-weight);
+  --ochre-text-decoration: var(--ochre-text-decoration);
+}
+</style><link rel="stylesheet" href="assets/index.css" /><script src="assets/index.js" defer></script></head><body><header class="site-header"><div class="site-header__inner"><div class="site-header__top"><div class="site-branding"><a class="site-brand" href="index.html">html_of_jsx</a><a target="_blank" class="site-brand__github" href="https://github.com/davesnx/html_of_jsx" aria-label="Open html_of_jsx GitHub repository" title="GitHub repository"><svg class="site-brand__github-icon" viewBox="0 0 128 128" aria-hidden="true"><path d="M56.7937 84.9688C44.4187 83.4688 35.7 74.5625 35.7 63.0313C35.7 58.3438 37.3875 53.2813 40.2 49.9063C38.9812 46.8125 39.1687 40.25 40.575 37.5313C44.325 37.0625 49.3875 39.0313 52.3875 41.75C55.95 40.625 59.7 40.0625 64.2937 40.0625C68.8875 40.0625 72.6375 40.625 76.0125 41.6563C78.9187 39.0313 84.075 37.0625 87.825 37.5313C89.1375 40.0625 89.325 46.625 88.1062 49.8125C91.1062 53.375 92.7 58.1563 92.7 63.0313C92.7 74.5625 83.9812 83.2813 71.4187 84.875C74.6062 86.9375 76.7625 91.4375 76.7625 96.5938L76.7625 106.344C76.7625 109.156 79.1062 110.75 81.9187 109.625C98.8875 103.156 112.2 86.1875 112.2 65.1875C112.2 38.6563 90.6375 17 64.1062 17C37.575 17 16.2 38.6562 16.2 65.1875C16.2 86 29.4187 103.25 47.2312 109.719C49.7625 110.656 52.2 108.969 52.2 106.438L52.2 98.9375C50.8875 99.5 49.2 99.875 47.7 99.875C41.5125 99.875 37.8562 96.5 35.2312 90.2188C34.2 87.6875 33.075 86.1875 30.9187 85.9063C29.7937 85.8125 29.4187 85.3438 29.4187 84.7813C29.4187 83.6563 31.2937 82.8125 33.1687 82.8125C35.8875 82.8125 38.2312 84.5 40.6687 87.9688C42.5437 90.6875 44.5125 91.9063 46.8562 91.9063C49.2 91.9063 50.7 91.0625 52.8562 88.9063C54.45 87.3125 55.6687 85.9063 56.7937 84.9688Z"></path></svg></a></div><div class="site-controls"><button class="theme-toggle" type="button" data-doc-theme-toggle="" aria-label="Toggle color theme" title="Toggle color theme"><span class="theme-toggle__sun" aria-hidden="true">✹</span><span class="theme-toggle__moon" aria-hidden="true">⏾</span></button><div class="syntax-toggle" role="group" aria-label="Code syntax"><button type="button" data-doc-syntax="reason" aria-label="Reason syntax"><img class="syntax-toggle__icon" src="assets/reason.svg" alt="" /><span class="syntax-toggle__label">Reason</span></button><button type="button" data-doc-syntax="mlx" aria-label="mlx syntax"><img class="syntax-toggle__icon" src="assets/ocaml.svg" alt="" /><span class="syntax-toggle__label">mlx</span></button></div></div></div><nav class="site-menu" aria-label="Documentation pages"><ul class="site-menu__list"><li><a class="site-menu__link" href="getting-started.html">Getting started</a></li><li><a class="site-menu__link" href="core.html">Core</a></li><li><a class="site-menu__link" href="ppx.html">ppx</a></li><li><a class="site-menu__link" href="how-ppx-works.html">How the ppx works</a></li><li><a class="site-menu__link" href="dream.html">Integrate with Dream</a></li><li><a class="site-menu__link" href="HTMX-mode.html">HTMX mode</a></li><li><a class="site-menu__link site-menu__link--active" aria-current="page" href="React-compatibility.html">React mode</a></li><li><a class="site-menu__link" href="JSX.html">API</a></li></ul></nav></div></header><main class="doc-main"><article class="doc-prose doc-prose--guide"><p>The React compatibility mode eases migration from reason-react to html_of_jsx. It adds camelCase aliases for HTML attributes that React uses instead of the standard HTML names.</p>
 <h2 id="enable">Enable</h2>
 <p>Turn on <code>-react</code> in your ppx configuration.</p>
-<figure class="doc-code"><figcaption class="doc-code__meta"><span class="doc-code__lang">dune</span><button class="doc-code__copy" type="button" data-doc-copy=""><svg class="doc-code__copy-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="10" height="10" rx="2"></rect><rect x="5" y="5" width="10" height="10" rx="2"></rect></svg><span class="doc-code__copy-label">Copy</span></button></figcaption><pre class="ochre ochre-themes coffee coffee-dark doc-code__pre" style="background-color:#503F2B;color:#e9ecf5;--ochre-dark-bg:#261F19;--ochre-dark:#dfd8cf" tabindex="0"><code class="doc-code__code"><span class="line"><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">(</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">libraries html_of_jsx</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">)</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">
+<figure class="doc-code"><figcaption class="doc-code__meta"><span class="doc-code__lang">dune</span><button class="doc-code__copy" type="button" data-doc-copy=""><svg class="doc-code__copy-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="10" height="10" rx="2"></rect><rect x="5" y="5" width="10" height="10" rx="2"></rect></svg><span class="doc-code__copy-label">Copy</span></button></figcaption><pre class="ochre ochre-themes gruvbox-light gruvbox doc-code__pre" style="background-color:var(--ochre-bg,#FEF6ED);color:var(--ochre,#3C3836);--ochre-dark-bg:#2C241E;--ochre-dark:#EBDBB2" tabindex="0"><code class="doc-code__code"><span class="line"><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">(</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">libraries html_of_jsx</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">)</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">
 </span></span>
-<span class="line"><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">(</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">preprocess </span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">(</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">pps html_of_jsx.ppx -react</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">)</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">)</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">
+<span class="line"><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">(</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">preprocess </span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">(</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">pps html_of_jsx.ppx -react</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">)</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">)</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">
 </span></span></code></pre></figure><h2 id="aliases">Aliases</h2>
 <p>The <code>-react</code> flag adds the following aliases. The standard HTML attribute names still work.</p>
 <table>
@@ -76,35 +105,66 @@
 </tr>
 </tbody>
 </table>
-<figure class="doc-code"><figcaption class="doc-code__meta"><span class="doc-code__lang">Reason</span><button class="doc-code__copy" type="button" data-doc-copy=""><svg class="doc-code__copy-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="10" height="10" rx="2"></rect><rect x="5" y="5" width="10" height="10" rx="2"></rect></svg><span class="doc-code__copy-label">Copy</span></button></figcaption><pre class="ochre ochre-themes coffee coffee-dark doc-code__pre" style="background-color:#503F2B;color:#e9ecf5;--ochre-dark-bg:#261F19;--ochre-dark:#dfd8cf" tabindex="0"><code class="doc-code__code"><span class="line"><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">JSX</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">.</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">render</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">(
+<div class="doc-code-pair"><figure class="doc-code" data-syntax="reason"><figcaption class="doc-code__meta"><span class="doc-code__lang">Reason</span><button class="doc-code__copy" type="button" data-doc-copy=""><svg class="doc-code__copy-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="10" height="10" rx="2"></rect><rect x="5" y="5" width="10" height="10" rx="2"></rect></svg><span class="doc-code__copy-label">Copy</span></button></figcaption><pre class="ochre ochre-themes gruvbox-light gruvbox doc-code__pre" style="background-color:var(--ochre-bg,#FEF6ED);color:var(--ochre,#3C3836);--ochre-dark-bg:#2C241E;--ochre-dark:#EBDBB2" tabindex="0"><code class="doc-code__code"><span class="line"><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">JSX</span><span style="color:var(--ochre,#9D0006);--ochre-dark:#FB4934">.</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">render</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">(
 </span></span>
-<span class="line"><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">  &lt;</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">div</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf"> className=&quot;card&quot;&gt;
+<span class="line"><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">  &lt;</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">div</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2"> className=&quot;card&quot;&gt;
 </span></span>
-<span class="line"><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">    &lt;label htmlFor=&quot;email&quot;&gt; {JSX</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">.</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">string</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">(&quot;Email&quot;)} &lt;/label&gt;
+<span class="line"><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">    &lt;label htmlFor=&quot;email&quot;&gt; {JSX</span><span style="color:var(--ochre,#9D0006);--ochre-dark:#FB4934">.</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">string</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">(&quot;Email&quot;)} &lt;/label&gt;
 </span></span>
-<span class="line"><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">    &lt;input
+<span class="line"><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">    &lt;input
 </span></span>
-<span class="line"><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">      id=&quot;email&quot;
+<span class="line"><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">      id=&quot;email&quot;
 </span></span>
-<span class="line"><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">      type_=&quot;email&quot;
+<span class="line"><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">      type_=&quot;email&quot;
 </span></span>
-<span class="line"><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">      tabIndex=1
+<span class="line"><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">      tabIndex=1
 </span></span>
-<span class="line"><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">      maxLength=100
+<span class="line"><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">      maxLength=100
 </span></span>
-<span class="line"><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">      autoComplete=&quot;email&quot;
+<span class="line"><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">      autoComplete=&quot;email&quot;
 </span></span>
-<span class="line"><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">      readOnly=true
+<span class="line"><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">      readOnly=true
 </span></span>
-<span class="line"><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">    /&gt;
+<span class="line"><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">    /&gt;
 </span></span>
-<span class="line"><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">    &lt;table&gt;
+<span class="line"><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">    &lt;table&gt;
 </span></span>
-<span class="line"><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">      &lt;tr&gt; &lt;td colSpan=2&gt; {JSX</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">.</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">string</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">(&quot;Full width&quot;)} &lt;/td&gt; &lt;/tr&gt;
+<span class="line"><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">      &lt;tr&gt; &lt;td colSpan=2&gt; {JSX</span><span style="color:var(--ochre,#9D0006);--ochre-dark:#FB4934">.</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">string</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">(&quot;Full width&quot;)} &lt;/td&gt; &lt;/tr&gt;
 </span></span>
-<span class="line"><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">    &lt;/table&gt;
+<span class="line"><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">    &lt;/table&gt;
 </span></span>
-<span class="line"><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">  &lt;</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">/</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">div</span><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">&gt;
+<span class="line"><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">  &lt;</span><span style="color:var(--ochre,#9D0006);--ochre-dark:#FB4934">/</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">div</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">&gt;
 </span></span>
-<span class="line"><span style="color:#e9ecf5;--ochre-dark:#dfd8cf">)
-</span></span></code></pre></figure></article></main></body></html>
+<span class="line"><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">)
+</span></span></code></pre></figure><figure class="doc-code" data-syntax="mlx"><figcaption class="doc-code__meta"><span class="doc-code__lang">mlx</span><button class="doc-code__copy" type="button" data-doc-copy=""><svg class="doc-code__copy-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="10" height="10" rx="2"></rect><rect x="5" y="5" width="10" height="10" rx="2"></rect></svg><span class="doc-code__copy-label">Copy</span></button></figcaption><pre class="ochre ochre-themes gruvbox-light gruvbox doc-code__pre" style="background-color:var(--ochre-bg,#FEF6ED);color:var(--ochre,#3C3836);--ochre-dark-bg:#2C241E;--ochre-dark:#EBDBB2" tabindex="0"><code class="doc-code__code"><span class="line"><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">JSX</span><span style="color:var(--ochre,#9D0006);--ochre-dark:#FB4934">.</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">render</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2"> </span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">(</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">
+</span></span>
+<span class="line"><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">  </span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">&lt;</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">div</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2"> </span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">className</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">=&quot;</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">card</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">&quot;&gt;</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">
+</span></span>
+<span class="line"><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">    </span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">&lt;</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">label</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2"> </span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">htmlFor</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">=&quot;</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">email</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">&quot;&gt;</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2"> </span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">(</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">JSX</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">.</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">string</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2"> </span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">&quot;</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">Email</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">&quot;)</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2"> </span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">&lt;/</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">label</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">&gt;</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">
+</span></span>
+<span class="line"><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">    </span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">&lt;</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">input</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">
+</span></span>
+<span class="line"><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">      </span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">id</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">=&quot;</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">email</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">&quot;</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">
+</span></span>
+<span class="line"><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">      </span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">type_</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">=`</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">email</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">
+</span></span>
+<span class="line"><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">      </span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">tabIndex</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">=1</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">
+</span></span>
+<span class="line"><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">      </span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">maxLength</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">=100</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">
+</span></span>
+<span class="line"><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">      </span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">autoComplete</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">=&quot;</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">email</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">&quot;</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">
+</span></span>
+<span class="line"><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">      </span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">readOnly</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">=</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">true</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">
+</span></span>
+<span class="line"><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">    </span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">/&gt;</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">
+</span></span>
+<span class="line"><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">    </span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">&lt;</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">table</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">&gt;</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">
+</span></span>
+<span class="line"><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">      </span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">&lt;</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">tr</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">&gt;</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2"> </span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">&lt;</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">td</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2"> </span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">colSpan</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">=2&gt;</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2"> </span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">(</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">JSX</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">.</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">string</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2"> </span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">&quot;</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">Full</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2"> </span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">width</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">&quot;)</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2"> </span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">&lt;/</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">td</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">&gt;</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2"> </span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">&lt;/</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">tr</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">&gt;</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">
+</span></span>
+<span class="line"><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">    </span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">&lt;</span><span style="color:var(--ochre,#9D0006);--ochre-dark:#FB4934">/</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">table</span><span style="color:var(--ochre,#9D0006);--ochre-dark:#FB4934">&gt;</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">
+</span></span>
+<span class="line"><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">  </span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">&lt;/</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">div</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">&gt;</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">
+</span></span>
+<span class="line"><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">)</span><span style="color:var(--ochre,#3C3836);--ochre-dark:#EBDBB2">
+</span></span></code></pre></figure></div></article></main></body></html>

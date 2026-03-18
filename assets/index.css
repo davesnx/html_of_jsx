@@ -33,7 +33,9 @@
 
   --border-subtle: oklch(90.76% 0.0303 73.88);
   --border-strong: oklch(87.72% 0.0381 71.18);
-  --border-code-meta: oklch(0.41 0.03 53.96);
+  --border-code-meta: var(--border-strong);
+  /* --border-code-body: oklch(44.00% 0.0170 58.00); */
+  --border-code-body: var(--border-strong);
 
   --brand-link: oklch(44.58% 0.0861 48.39);
   --brand-link-hover: oklch(36.26% 0.0757 43.79);
@@ -45,46 +47,63 @@
   --shadow-card: 0 10px 24px oklch(37.97% 0.0592 68.15 / 0.08);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    color-scheme: dark;
+/* [data-doc-theme="dark"] .ochre,
+[data-doc-theme="dark"] .ochre span {
+  --ochre: var(--ochre-dark);
+  --ochre-bg: var(--ochre-dark-bg);
+  color: var(--ochre);
+  background-color: var(--ochre-bg);
+}
 
-    --bg-page: oklch(26.50% 0.0180 58.00);
-    --bg-page-alt: oklch(29.00% 0.0180 58.00);
-    --bg-surface: oklch(31.00% 0.0200 57.00);
-    --bg-surface-raised: oklch(34.00% 0.0220 56.00);
-    --bg-surface-muted: oklch(32.40% 0.0200 57.00);
-    --bg-header: oklch(27.80% 0.0200 58.00 / 0.90);
-    --bg-toggle-active: oklch(38.50% 0.0300 54.00);
-    --bg-menu-link-hover: oklch(36.50% 0.0260 56.00);
-    --bg-inline-code: oklch(35.50% 0.0280 54.00);
-    --bg-table-head: oklch(36.80% 0.0250 57.00);
-    --bg-code-meta: oklch(34.70% 0.0220 58.00);
-    --bg-code-copy-hover: oklch(41.00% 0.0330 52.00);
-    --bg-code-copy-active: oklch(43.50% 0.0360 51.00);
+[data-doc-theme="light"] .ochre,
+[data-doc-theme="light"] .ochre span {
+  --ochre: var(--ochre-light);
+  --ochre-bg: var(--ochre-light-bg);
+  color: var(--ochre);
+  background-color: var(--ochre-bg);
+}
+ */
 
-    --text-primary: oklch(83.50% 0.0130 70.00);
-    --text-secondary: oklch(69.00% 0.0120 72.00);
-    --text-strong: oklch(87.00% 0.0150 70.00);
-    --text-heading: oklch(85.50% 0.0160 68.00);
-    --text-emphasis: oklch(88.00% 0.0170 66.00);
-    --text-emphasis-alt: oklch(82.00% 0.0140 68.00);
-    --text-subtle: oklch(73.50% 0.0120 70.00);
-    --text-code-inline: oklch(79.00% 0.0200 63.00);
-    --text-code-meta: oklch(71.00% 0.0120 72.00);
-    --text-code-button: oklch(75.00% 0.0120 70.00);
+:root[data-doc-theme="dark"] {
+  color-scheme: dark;
 
-    --border-subtle: oklch(44.00% 0.0170 58.00);
-    --border-strong: oklch(49.00% 0.0210 56.00);
-    --border-code-meta: oklch(55.00% 0.0250 54.00);
+  --bg-page: oklch(26.50% 0.0180 58.00);
+  --bg-page-alt: oklch(29.00% 0.0180 58.00);
+  --bg-surface: oklch(31.00% 0.0200 57.00);
+  --bg-surface-raised: oklch(34.00% 0.0220 56.00);
+  --bg-surface-muted: oklch(32.40% 0.0200 57.00);
+  --bg-header: oklch(27.80% 0.0200 58.00 / 0.90);
+  --bg-toggle-active: oklch(38.50% 0.0300 54.00);
+  --bg-menu-link-hover: oklch(36.50% 0.0260 56.00);
+  --bg-inline-code: oklch(35.50% 0.0280 54.00);
+  --bg-table-head: oklch(36.80% 0.0250 57.00);
+  --bg-code-meta: oklch(34.70% 0.0220 58.00);
+  --bg-code-copy-hover: oklch(41.00% 0.0330 52.00);
+  --bg-code-copy-active: oklch(43.50% 0.0360 51.00);
 
-    --brand-link: oklch(72.00% 0.0820 58.00);
-    --brand-link-hover: oklch(77.00% 0.0950 57.00);
-    --focus-ring: oklch(70.00% 0.1100 235.00);
+  --text-primary: oklch(83.50% 0.0130 70.00);
+  --text-secondary: oklch(69.00% 0.0120 72.00);
+  --text-strong: oklch(87.00% 0.0150 70.00);
+  --text-heading: oklch(85.50% 0.0160 68.00);
+  --text-emphasis: oklch(88.00% 0.0170 66.00);
+  --text-emphasis-alt: oklch(82.00% 0.0140 68.00);
+  --text-subtle: oklch(73.50% 0.0120 70.00);
+  --text-code-inline: oklch(79.00% 0.0200 63.00);
+  --text-code-meta: oklch(71.00% 0.0120 72.00);
+  --text-code-button: oklch(75.00% 0.0120 70.00);
 
-    --shadow-soft: 0 12px 35px oklch(11.00% 0.0110 58.00 / 0.24);
-    --shadow-card: 0 10px 24px oklch(10.00% 0.0100 58.00 / 0.20);
-  }
+  --border-subtle: oklch(44.00% 0.0170 58.00);
+  --border-strong: oklch(49.00% 0.0210 56.00);
+
+  --border-code-meta: var(--border-subtle);
+  --border-code-body: #221C17;
+
+  --brand-link: oklch(72.00% 0.0820 58.00);
+  --brand-link-hover: oklch(77.00% 0.0950 57.00);
+  --focus-ring: oklch(70.00% 0.1100 235.00);
+
+  --shadow-soft: 0 12px 35px oklch(11.00% 0.0110 58.00 / 0.24);
+  --shadow-card: 0 10px 24px oklch(10.00% 0.0100 58.00 / 0.20);
 }
 
 * {
@@ -141,16 +160,69 @@ button:focus-visible {
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
+  padding-right: 2.45rem;
 }
 
 .site-branding {
   min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.48rem;
 }
 
 .site-controls {
   display: inline-flex;
   align-items: center;
   gap: 0.55rem;
+}
+
+.theme-toggle {
+  position: absolute;
+  top: 0.95rem;
+  right: 1rem;
+  z-index: 2;
+  width: 1.95rem;
+  height: 1.95rem;
+  margin: 0;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.14rem;
+  border-radius: 999px;
+  border: none;
+  background: color-mix(in oklch, var(--bg-surface-raised) 88%, transparent);
+  color: var(--text-secondary);
+  cursor: pointer;
+  opacity: 0.88;
+  transition:
+    color 180ms ease,
+    border-color 180ms ease,
+    background-color 180ms ease,
+    opacity 180ms ease;
+}
+
+.theme-toggle:hover {
+  opacity: 1;
+  color: var(--text-primary);
+  background: var(--bg-surface-raised);
+}
+
+.theme-toggle__sun,
+.theme-toggle__moon {
+  font-size: 0.63rem;
+  line-height: 1;
+  opacity: 0.8;
+  transition: opacity 180ms ease;
+  font-family: system-ui;
+}
+
+.theme-toggle[data-theme="light"] .theme-toggle__moon {
+  display: none;
+}
+
+.theme-toggle[data-theme="dark"] .theme-toggle__sun {
+  display: none;
 }
 
 .site-brand {
@@ -167,14 +239,42 @@ button:focus-visible {
   text-decoration: none;
 }
 
+.site-brand__github {
+  border: 0;
+  margin: 0;
+  border-radius: 999px;
+  width: 2rem;
+  height: 2rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  background: transparent;
+  text-decoration: none;
+  transition: background-color 180ms ease, color 180ms ease;
+}
+
+.site-brand__github-icon {
+  width: 1.2rem;
+  height: 1.2rem;
+  display: block;
+}
+
+.site-brand__github-icon path {
+  fill: currentColor;
+}
+
+.site-brand__github:hover {
+  color: var(--text-primary);
+  background: var(--bg-toggle-active);
+  text-decoration: none;
+}
+
 .syntax-toggle {
   display: inline-flex;
   align-items: center;
   gap: 0.34rem;
   padding: 0.28rem;
-  border: 1px solid var(--border-strong);
-  border-radius: 999px;
-  background: var(--bg-surface-raised);
 }
 
 .syntax-toggle button {
@@ -386,7 +486,6 @@ button:focus-visible {
 
 .doc-code {
   margin: 1rem 0 2rem;
-  border-radius: var(--radius-md);
   overflow: hidden;
 }
 
@@ -398,7 +497,7 @@ button:focus-visible {
   margin: 0;
   padding: 0.42rem 0.72rem;
   border: 1px solid var(--border-code-meta);
-  border-bottom-color: transparent;
+  border-bottom: none;
   border-radius: var(--radius-md) var(--radius-md) 0 0;
   background: var(--bg-code-meta);
   color: var(--text-code-meta);
@@ -453,14 +552,12 @@ button:focus-visible {
   color: var(--text-emphasis);
 }
 
-.doc-code .ochre,
-.doc-code__pre {
-  margin: 0 !important;
-  border-radius: 0 !important;
-}
-
 .doc-code .doc-code__pre {
+  margin: 0;
   padding: 0.95rem 1rem;
+  border: 1px solid var(--border-code-body);
+  border-top: 0;
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
 }
 
 .doc-code .ochre code,
@@ -491,6 +588,7 @@ html[data-doc-syntax="mlx"] .doc-code-pair .doc-code[data-syntax="mlx"] {
   .site-header__top {
     align-items: flex-start;
     flex-direction: column;
+    padding-right: 2.35rem;
   }
 
   .site-controls {
@@ -515,20 +613,23 @@ html[data-doc-syntax="mlx"] .doc-code-pair .doc-code[data-syntax="mlx"] {
     padding-top: 0.82rem;
   }
 
+  .theme-toggle {
+    top: 0.82rem;
+    right: 0.75rem;
+  }
+
   .site-brand {
     font-size: 1.32rem;
   }
 
   .site-controls {
     width: 100%;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 0.5rem;
+    justify-content: flex-end;
+    gap: 0.45rem;
   }
 
   .syntax-toggle {
-    width: 100%;
-    justify-content: center;
+    margin-left: auto;
   }
 
   .doc-main {
