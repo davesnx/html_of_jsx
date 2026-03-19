@@ -126,8 +126,8 @@ docs-site: docs ## Build Yocaml docs site into docs/_site
 	DOCS_SITE=true $(DUNE) exec --root . ./site/build_site.exe
 
 .PHONY: docs-site-serve
-docs-site-serve: docs-site ## Serve generated docs site locally on :8080
-	python3 -m http.server 8080 --directory docs/_site
+docs-site-serve: ## Build and serve docs with Yocaml native server on :8080
+	DOCS_SITE=true $(DUNE) exec --root . ./site/build_site.exe -- serve
 
 .PHONY: docs-watch
 docs-watch: ## Generate odoc docs in watch mode

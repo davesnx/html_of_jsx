@@ -697,4 +697,41 @@ let process_all () =
   let* () = copy_assets () in
   write_pages pages
 
-let () = Yocaml_unix.run ~level:`Info process_all
+type cli_mode = Build_once | Serve of int
+
+let usage = "Usage: build_site.exe [serve [--port PORT]]"
+
+let parse_port value =
+  match int_of_string_opt value with
+  | Some port when port > 0 && port < 65536 ->
+      Some port
+  | _ ->
+      None
+
+let mode_from_cli () =
+  let args =
+    match Array.to_list Sys.argv with
+    | [] ->
+        []
+    | _ :: rest ->
+        rest
+  in
+  match args with
+  | [] ->
+      Some Build_once
+  | [ "serve" ] ->
+      Some (Serve 8080)
+  | [ "serve"; "--port"; value ] ->
+      Option.map (fun port -> Serve port) (parse_port value)
+  | _ ->
+      None
+
+let () =
+  match mode_from_cli () with
+  | Some Build_once ->
+      Yocaml_unix.run ~level:`Info process_all
+  | Some (Serve port) ->
+      Yocaml_unix.serve ~level:`Info ~target:target_dir ~port process_all
+  | None ->
+      prerr_endline usage;
+      exit 2
