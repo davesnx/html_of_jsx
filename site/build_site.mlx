@@ -709,13 +709,7 @@ let parse_port value =
       None
 
 let mode_from_cli () =
-  let args =
-    match Array.to_list Sys.argv with
-    | [] ->
-        []
-    | _ :: rest ->
-        rest
-  in
+  let args = match Array.to_list Sys.argv with [] -> [] | _ :: rest -> rest in
   match args with
   | [] ->
       Some Build_once
