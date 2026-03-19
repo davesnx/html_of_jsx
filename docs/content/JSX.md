@@ -219,6 +219,19 @@ This function is deprecated in favor of `JSX.string`.
 ```
 deprecated Use JSX.string instead
 ```
+val stringf : ('a, unit, string, element) Stdlib.format4 -> 'a
+```
+Helper to render formatted text as a JSX element.
+
+This formats a string using `Printf`\-style directives and then renders the result as escaped text, just like `JSX.string`.
+
+```reasonml
+  let element : JSX.element = JSX.stringf("Hello %s #%i", name, count);
+```
+```mlx
+  let element : JSX.element = JSX.stringf "Hello %s #%i" name count
+```
+```
 val unsafe : string -> element
 ```
 Helper to bypass HTML encoding and treat output as unsafe. This can lead to HTML escaping problems, XSS injections, and other security concerns. Use with caution.

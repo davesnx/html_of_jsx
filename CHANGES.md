@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Add `JSX.stringf` for escaped `Printf`-style text formatting and teach the PPX to optimize literal-only `stringf` calls at compile time.
 - Improve runtime render speed in `JSX.write` by replacing iterator-heavy paths with direct recursion and indexed array traversal.
 - Reduce default render buffer sizes (`1024 -> 256`) and improve PPX-generated buffer capacity estimation for dynamic/optional attribute code paths.
 - Add a compile-time fast path for static HTML escaping in `ppx/static_analysis.ml` to avoid buffer work when no escaping is required.

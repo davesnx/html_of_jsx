@@ -9,6 +9,18 @@ Test static JSX optimization
   let input_tag = JSX.unsafe("<input type=\"text\" name=\"field\" />");
   let nested_static = JSX.unsafe("<div><span><b>hello</b></span></div>");
   let static_with_text = JSX.unsafe("<div>hello world</div>");
+  let static_formatted_text =
+    JSX.unsafe("<div>Hello &lt;b&gt; &lt; 7 100%</div>");
+  let unsupported_static_formatted_text = {
+    let __html_buf = Buffer.create(75);
+    {
+      Buffer.add_string(__html_buf, "<div>");
+      Printf.ksprintf(JSX.escape(__html_buf), "Price %f", 3.14);
+      Buffer.add_string(__html_buf, "</div>");
+      ();
+    };
+    JSX.unsafe(Buffer.contents(__html_buf));
+  };
   let html_page =
     JSX.unsafe(
       "<!DOCTYPE html><html lang=\"en\"><head><title>Page</title></head><body></body></html>",
@@ -62,6 +74,22 @@ Test static JSX optimization
     };
     JSX.unsafe(Buffer.contents(__html_buf));
   };
+  let dynamic_formatted_child = (name, initial, count) => {
+    let __html_buf = Buffer.create(75);
+    {
+      Buffer.add_string(__html_buf, "<div>");
+      Printf.ksprintf(
+        JSX.escape(__html_buf),
+        "Hello %s %c %i",
+        name,
+        initial,
+        count,
+      );
+      Buffer.add_string(__html_buf, "</div>");
+      ();
+    };
+    JSX.unsafe(Buffer.contents(__html_buf));
+  };
   let dynamic_attr = className => {
     let __html_buf = Buffer.create(75);
     {
@@ -104,6 +132,32 @@ Test static JSX optimization
       };
       Buffer.add_char(__html_buf, '>');
       JSX.escape(__html_buf, name);
+      {
+        Buffer.add_string(__html_buf, "</");
+        Buffer.add_string(__html_buf, "div");
+        Buffer.add_char(__html_buf, '>');
+      };
+      ();
+    };
+    JSX.unsafe(Buffer.contents(__html_buf));
+  };
+  let dynamic_attr_with_formatted_child = (className, name, count) => {
+    let __html_buf = Buffer.create(139);
+    {
+      {
+        Buffer.add_char(__html_buf, '<');
+        Buffer.add_string(__html_buf, "div");
+        Buffer.add_string(__html_buf, "");
+      };
+      {
+        Buffer.add_char(__html_buf, ' ');
+        Buffer.add_string(__html_buf, "class");
+        Buffer.add_string(__html_buf, "=\"");
+        JSX.escape(__html_buf, className);
+        Buffer.add_char(__html_buf, '"');
+      };
+      Buffer.add_char(__html_buf, '>');
+      Printf.ksprintf(JSX.escape(__html_buf), "Hello %s %i", name, count);
       {
         Buffer.add_string(__html_buf, "</");
         Buffer.add_string(__html_buf, "div");

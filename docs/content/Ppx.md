@@ -105,6 +105,14 @@ val transform_attributes :
 val default_buffer_size : int
 ```
 ```
+val generate_dynamic_stringf_code :
+  loc:Ppxlib.location ->
+  buf_ident:Ppxlib_ast.Ast.expression ->
+  Ppxlib_ast.Ast.expression ->
+  (Ppxlib__.Import.arg_label * Ppxlib__.Import.expression) list ->
+  Ppxlib__.Import.expression
+```
+```
 val generate_buffer_code : 
   loc:Ppxlib__.Location.t ->
   parts:Ppx__.Static_analysis.static_part list ->

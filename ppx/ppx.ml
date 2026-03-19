@@ -257,6 +257,11 @@ let transform_attributes ~loc ~tag_name attrs =
 
 let default_buffer_size = 256
 
+let generate_dynamic_stringf_code ~loc ~buf_ident fmt args =
+  let callback = [%expr JSX.escape [%e buf_ident]] in
+  let base = [%expr Printf.ksprintf [%e callback] [%e fmt]] in
+  pexp_apply ~loc base args
+
 let generate_buffer_code ~loc ~parts ~static_size ~dynamic_count =
   let buf_var = "__html_buf" in
   let buf_ident = pexp_ident ~loc { loc; txt = Lident buf_var } in
@@ -283,6 +288,8 @@ let generate_buffer_code ~loc ~parts ~static_size ~dynamic_count =
     | Static_analysis.Dynamic_float expr ->
         (* Float.to_string cannot produce escapable characters, skip JSX.escape *)
         [%expr Buffer.add_string [%e buf_ident] (Float.to_string [%e expr])]
+    | Static_analysis.Dynamic_stringf (fmt, args) ->
+        generate_dynamic_stringf_code ~loc ~buf_ident fmt args
     | Static_analysis.Dynamic_element expr ->
         [%expr JSX.write [%e buf_ident] [%e expr]]
   in
@@ -413,6 +420,8 @@ let generate_dynamic_attrs_code ~loc analysis =
         [%expr Buffer.add_string [%e buf_ident] (Int.to_string [%e expr])]
     | Static_analysis.Dynamic_float expr ->
         [%expr Buffer.add_string [%e buf_ident] (Float.to_string [%e expr])]
+    | Static_analysis.Dynamic_stringf (fmt, args) ->
+        generate_dynamic_stringf_code ~loc ~buf_ident fmt args
     | Static_analysis.Dynamic_element expr ->
         [%expr JSX.write [%e buf_ident] [%e expr]]
   in
@@ -582,6 +591,8 @@ let generate_optional_attrs_code ~loc analysis =
         [%expr Buffer.add_string [%e buf_ident] (Int.to_string [%e expr])]
     | Static_analysis.Dynamic_float expr ->
         [%expr Buffer.add_string [%e buf_ident] (Float.to_string [%e expr])]
+    | Static_analysis.Dynamic_stringf (fmt, args) ->
+        generate_dynamic_stringf_code ~loc ~buf_ident fmt args
     | Static_analysis.Dynamic_element expr ->
         [%expr JSX.write [%e buf_ident] [%e expr]]
   in
