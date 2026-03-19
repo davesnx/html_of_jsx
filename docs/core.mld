@@ -7,18 +7,18 @@
 JSX trees are built from values of type [JSX.element]. Each value needs to be wrapped with helpers to become elements:
 
 {@reasonml[
-JSX.string("Hello")   /* string -> JSX.element */
-JSX.stringf("Hello %s #%i", "Ada", 3)
-JSX.int(42)           /* int    -> JSX.element */
-JSX.float(3.14)       /* float  -> JSX.element */
-JSX.null              /* represents nothing    */
+JSX.string("Hello")               /* string        -> JSX.element */
+JSX.stringf("%s %i", "Ada", 3)    /* format string -> JSX.element */
+JSX.int(42)                       /* int           -> JSX.element */
+JSX.float(3.14)                   /* float         -> JSX.element */
+JSX.null                          /* value that represents nothing */
 ]}
 {@mlx[
-JSX.string "Hello"    (* string -> JSX.element *)
-JSX.stringf "Hello %s #%i" "Ada" 3
-JSX.int 42            (* int    -> JSX.element *)
-JSX.float 3.14        (* float  -> JSX.element *)
-JSX.null              (* represents nothing    *)
+JSX.string "Hello"                (* string        -> JSX.element *)
+JSX.stringf "%s %i" "Ada" 3       (* format string -> JSX.element *)
+JSX.int 42                        (* int           -> JSX.element *)
+JSX.float 3.14                    (* float         -> JSX.element *)
+JSX.null                          (* value that represents nothing *)
 ]}
 
 All text rendered through these helpers is HTML-escaped by default, so user input is safe from XSS attacks.
