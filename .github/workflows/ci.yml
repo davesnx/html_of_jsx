@@ -52,19 +52,26 @@ jobs:
       - name: Pin dependencies
         run: make pin
 
-      - name: Install
+      - name: Install (with dev-setup)
+        if: runner.os != 'Windows'
         run: make install
+
+      - name: Install (without dev-setup)
+        if: runner.os == 'Windows'
+        run: opam install . --deps-only --with-test --with-doc -y
 
       - name: Build
         run: make build
 
       - name: Check formatting
+        if: runner.os != 'Windows'
         run: make format-check
 
       - name: Run tests
         run: make test
 
       - name: Run benchmarks
+        if: runner.os != 'Windows'
         run: make bench
 
       - name: Run benchmarks (JSON output for tracking)
