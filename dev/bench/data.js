@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1774037978136,
+  "lastUpdate": 1774039524530,
   "repoUrl": "https://github.com/davesnx/html_of_jsx",
   "entries": {
     "html_of_jsx Benchmarks": [
@@ -2189,6 +2189,90 @@ window.BENCHMARK_DATA = {
           {
             "name": "escape (dirty)",
             "value": 6247157.41,
+            "unit": "ops/sec"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "david.sancho@ahrefs.com",
+            "name": "David Sancho Moreno",
+            "username": "davesnx"
+          },
+          "committer": {
+            "email": "david.sancho@ahrefs.com",
+            "name": "David Sancho Moreno",
+            "username": "davesnx"
+          },
+          "distinct": true,
+          "id": "1285d17aeb9d7b293c96a0a2c8de2bad109e5109",
+          "message": "Fix windows ci, by avoiding pinning",
+          "timestamp": "2026-03-20T20:27:19Z",
+          "tree_id": "cee52fa8831ffc69365055fda18e2a57807c3d98",
+          "url": "https://github.com/davesnx/html_of_jsx/commit/1285d17aeb9d7b293c96a0a2c8de2bad109e5109"
+        },
+        "date": 1774039524160,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Trivial",
+            "value": 30713478.59,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Dashboard",
+            "value": 19360.62,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Blog (50 comments)",
+            "value": 51996.9,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Table (100 rows)",
+            "value": 28117.57,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "E-commerce",
+            "value": 41579.31,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Form",
+            "value": 24662.05,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Deep tree (50)",
+            "value": 9140.71,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Wide tree (100)",
+            "value": 4486.2,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Shallow tree",
+            "value": 64466.31,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Props heavy",
+            "value": 4767.19,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "escape (clean)",
+            "value": 20911681.61,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "escape (dirty)",
+            "value": 6257673.16,
             "unit": "ops/sec"
           }
         ]
