@@ -2,23 +2,25 @@
 
 {1 Primitives}
 
+bpoooo
+
 [html_of_jsx] uses JSX to describe the user interface, and then renders it to HTML.
 
 JSX trees are built from values of type [JSX.element]. Each value needs to be wrapped with helpers to become elements:
 
 {@reasonml[
-JSX.string("Hello")               /* string        -> JSX.element */
-JSX.stringf("%s %i", "Ada", 3)    /* format string -> JSX.element */
+JSX.null                          /* value that represents nothing */
 JSX.int(42)                       /* int           -> JSX.element */
 JSX.float(3.14)                   /* float         -> JSX.element */
-JSX.null                          /* value that represents nothing */
+JSX.string("Hello")               /* string        -> JSX.element */
+JSX.stringf("%s %i", "Ada", 3)    /* format string -> JSX.element */
 ]}
 {@mlx[
-JSX.string "Hello"                (* string        -> JSX.element *)
-JSX.stringf "%s %i" "Ada" 3       (* format string -> JSX.element *)
+JSX.null                          (* value that represents nothing *)
 JSX.int 42                        (* int           -> JSX.element *)
 JSX.float 3.14                    (* float         -> JSX.element *)
-JSX.null                          (* value that represents nothing *)
+JSX.string "Hello"                (* string        -> JSX.element *)
+JSX.stringf "%s %i" "Ada" 3       (* format string -> JSX.element *)
 ]}
 
 All text rendered through these helpers is HTML-escaped by default, so user input is safe from XSS attacks.
@@ -319,3 +321,4 @@ JSX.render_streaming
   (fun chunk -> Dream.write stream chunk)
   (<main> <h1>(JSX.string "Streaming")</h1> </main>)
 ]}
+

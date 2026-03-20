@@ -1,5 +1,5 @@
 (executable
- (name build_site)
+ (name main)
  (enabled_if %{env:DOCS_SITE=false})
  (libraries yocaml yocaml_unix ochre tm-grammars omd html_of_jsx)
  (preprocess

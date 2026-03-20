@@ -8,7 +8,7 @@
 opam install html_of_jsx -y
 ]}
 
-{2 or from github via opam pin}
+{2 or from source (via opam pin)}
 
 Pin a specific development commit from GitHub:
 

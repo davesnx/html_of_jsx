@@ -113,6 +113,7 @@ dune.mel
 .melange.eobjs
 dist/
 docs/_site/
+docs/_cache
 docs/.cache/
 
 .direnv/

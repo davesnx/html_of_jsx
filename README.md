@@ -23,7 +23,7 @@
 ## Installation
 
 ```sh
-opam install html_of_jsx
+opam install html_of_jsx -y
 ```
 
 ```clojure

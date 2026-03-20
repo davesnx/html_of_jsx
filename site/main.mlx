@@ -11,7 +11,8 @@ type page = {
   markdown : string;
 }
 
-let source_dir = Path.rel [ "docs"; "content" ]
+let source_dir =
+  Path.rel [ "_build"; "default"; "_doc"; "_markdown"; "html_of_jsx" ]
 let assets_dir = Path.rel [ "site"; "assets" ]
 let target_dir = Path.rel [ "docs"; "_site" ]
 let target_assets_dir = Path.(target_dir / "assets")
@@ -108,7 +109,11 @@ let language_of_label label =
   match normalize_code_label label with
   | "reason" | "reasonml" ->
       Some
-        { syntax = Some Reason; highlight_lang = Some "reason"; badge = "Reason" }
+        {
+          syntax = Some Reason;
+          highlight_lang = Some "reason";
+          badge = "Reason";
+        }
   | "mlx" ->
       Some { syntax = Some Mlx; highlight_lang = Some "mlx"; badge = "mlx" }
   | "dune" ->
@@ -360,7 +365,7 @@ let rewrite_html_links pages html =
        )
        html
 
-let render_markdown_body ~hide_h1 pages markdown =
+let markdown_body ~hide_h1 pages markdown =
   let rec render_blocks acc blocks =
     match blocks with
     | Omd.Code_block (_, label, code) :: rest -> (
@@ -397,6 +402,42 @@ let render_markdown_body ~hide_h1 pages markdown =
   markdown |> Omd.of_string |> render_blocks [] |> JSX.list |> JSX.render
   |> rewrite_html_links pages
 
+let github_icon () =
+  <svg class_="site-brand__github-icon" viewBox="0 0 128 128" aria_hidden=true>
+    <path
+      d="M56.7937 84.9688C44.4187 83.4688 35.7 74.5625 35.7 63.0313C35.7 \
+         58.3438 37.3875 53.2813 40.2 49.9063C38.9812 46.8125 39.1687 40.25 \
+         40.575 37.5313C44.325 37.0625 49.3875 39.0313 52.3875 41.75C55.95 \
+         40.625 59.7 40.0625 64.2937 40.0625C68.8875 40.0625 72.6375 40.625 \
+         76.0125 41.6563C78.9187 39.0313 84.075 37.0625 87.825 37.5313C89.1375 \
+         40.0625 89.325 46.625 88.1062 49.8125C91.1062 53.375 92.7 58.1563 \
+         92.7 63.0313C92.7 74.5625 83.9812 83.2813 71.4187 84.875C74.6062 \
+         86.9375 76.7625 91.4375 76.7625 96.5938L76.7625 106.344C76.7625 \
+         109.156 79.1062 110.75 81.9187 109.625C98.8875 103.156 112.2 86.1875 \
+         112.2 65.1875C112.2 38.6563 90.6375 17 64.1062 17C37.575 17 16.2 \
+         38.6562 16.2 65.1875C16.2 86 29.4187 103.25 47.2312 109.719C49.7625 \
+         110.656 52.2 108.969 52.2 106.438L52.2 98.9375C50.8875 99.5 49.2 \
+         99.875 47.7 99.875C41.5125 99.875 37.8562 96.5 35.2312 90.2188C34.2 \
+         87.6875 33.075 86.1875 30.9187 85.9063C29.7937 85.8125 29.4187 \
+         85.3438 29.4187 84.7813C29.4187 83.6563 31.2937 82.8125 33.1687 \
+         82.8125C35.8875 82.8125 38.2312 84.5 40.6687 87.9688C42.5437 90.6875 \
+         44.5125 91.9063 46.8562 91.9063C49.2 91.9063 50.7 91.0625 52.8562 \
+         88.9063C54.45 87.3125 55.6687 85.9063 56.7937 84.9688Z"
+    />
+  </svg>
+
+let syntax_toggle () =
+  <div class_="syntax-toggle" role=`group aria_label="Code syntax">
+    <button type_=`button dataDocSyntax="reason" aria_label="Reason syntax">
+      <img class_="syntax-toggle__icon" src="assets/reason.svg" alt="" />
+      <span class_="syntax-toggle__label">(JSX.string "Reason")</span>
+    </button>
+    <button type_=`button dataDocSyntax="mlx" aria_label="mlx syntax">
+      <img class_="syntax-toggle__icon" src="assets/ocaml.svg" alt="" />
+      <span class_="syntax-toggle__label">(JSX.string "mlx")</span>
+    </button>
+  </div>
+
 let find_page_by_source_name pages source_name =
   List.find_opt (fun page -> page.source_name = source_name) pages
 
@@ -411,7 +452,7 @@ let menu_link ~href ~label ~is_active () =
   else
     <li><a class_="site-menu__link" href>(JSX.string label)</a></li>
 
-let render_menu pages active_output () =
+let navigation ~pages ~active_output () =
   let guide_links =
     guide_order
     |> List.filter_map (fun source_name ->
@@ -457,11 +498,10 @@ let render_menu pages active_output () =
     <ul class_="site-menu__list">(JSX.list guide_links) api_link</ul>
   </nav>
 
-let render_page pages page =
-  let menu_element = render_menu pages page.output_name () in
-  let is_api_page = not (is_guide_page page) in
+let page ~pages ~current () =
+  let is_api_page = not (is_guide_page current) in
   let article_html =
-    render_markdown_body ~hide_h1:(not is_api_page) pages page.markdown
+    markdown_body ~hide_h1:(not is_api_page) pages current.markdown
   in
   let article_class =
     if is_api_page then
@@ -470,38 +510,37 @@ let render_page pages page =
       "doc-prose doc-prose--guide"
   in
   let site_title = "html_of_jsx documentation" in
-  let page_title = page.title ^ " - " ^ site_title in
-  JSX.render
-    <html lang="en" dataDocSyntax="reason">
-      <head>
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>(JSX.string page_title)</title>
-        <meta name="description" content=site_title />
-        <link
-          rel="preload"
-          as_="font"
-          type_="font/woff2"
-          href="assets/ibm-plex-mono-400.woff2"
-          crossorigin="anonymous"
-        />
-        <link
-          rel="preload"
-          as_="font"
-          type_="font/woff2"
-          href="assets/ibm-plex-mono-600.woff2"
-          crossorigin="anonymous"
-        />
-        <link
-          rel="preload"
-          as_="font"
-          type_="font/woff2"
-          href="assets/spline-sans-700.woff2"
-          crossorigin="anonymous"
-        />
-        <script>
-          (JSX.unsafe
-             {|
+  let page_title = current.title ^ " - " ^ site_title in
+  <html lang="en" dataDocSyntax="reason">
+    <head>
+      <meta charset="utf-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1" />
+      <title>(JSX.string page_title)</title>
+      <meta name="description" content=site_title />
+      <link
+        rel="preload"
+        as_="font"
+        type_="font/woff2"
+        href="assets/ibm-plex-mono-400.woff2"
+        crossorigin="anonymous"
+      />
+      <link
+        rel="preload"
+        as_="font"
+        type_="font/woff2"
+        href="assets/ibm-plex-mono-600.woff2"
+        crossorigin="anonymous"
+      />
+      <link
+        rel="preload"
+        as_="font"
+        type_="font/woff2"
+        href="assets/spline-sans-700.woff2"
+        crossorigin="anonymous"
+      />
+      <script>
+        (JSX.unsafe
+           {|
 (function () {
   try {
     var themeKey = "html_of_jsx.docs.theme";
@@ -516,108 +555,51 @@ let render_page pages page =
   } catch (_error) {}
 })();
 |}
-          )
-        </script>
-        <link rel="stylesheet" href="assets/fonts.css" />
-        <style>(JSX.unsafe code_theme_dark_css)</style>
-        <link rel="stylesheet" href="assets/index.css" />
-        <script src="assets/index.js" defer=true />
-      </head>
-      <body>
-        <header class_="site-header">
-          <div class_="site-header__inner">
-            <div class_="site-header__top">
-              <div class_="site-branding">
-                <a class_="site-brand" href="index.html">
-                  (JSX.string "html_of_jsx")
-                </a>
-                <a
-                  target=`_blank
-                  class_="site-brand__github"
-                  href="https://github.com/davesnx/html_of_jsx"
-                  aria_label="Open html_of_jsx GitHub repository"
-                  title="GitHub repository">
-                  <svg
-                    class_="site-brand__github-icon"
-                    viewBox="0 0 128 128"
-                    aria_hidden=true>
-                    <path
-                      d="M56.7937 84.9688C44.4187 83.4688 35.7 74.5625 35.7 \
-                         63.0313C35.7 58.3438 37.3875 53.2813 40.2 \
-                         49.9063C38.9812 46.8125 39.1687 40.25 40.575 \
-                         37.5313C44.325 37.0625 49.3875 39.0313 52.3875 \
-                         41.75C55.95 40.625 59.7 40.0625 64.2937 \
-                         40.0625C68.8875 40.0625 72.6375 40.625 76.0125 \
-                         41.6563C78.9187 39.0313 84.075 37.0625 87.825 \
-                         37.5313C89.1375 40.0625 89.325 46.625 88.1062 \
-                         49.8125C91.1062 53.375 92.7 58.1563 92.7 63.0313C92.7 \
-                         74.5625 83.9812 83.2813 71.4187 84.875C74.6062 \
-                         86.9375 76.7625 91.4375 76.7625 96.5938L76.7625 \
-                         106.344C76.7625 109.156 79.1062 110.75 81.9187 \
-                         109.625C98.8875 103.156 112.2 86.1875 112.2 \
-                         65.1875C112.2 38.6563 90.6375 17 64.1062 17C37.575 17 \
-                         16.2 38.6562 16.2 65.1875C16.2 86 29.4187 103.25 \
-                         47.2312 109.719C49.7625 110.656 52.2 108.969 52.2 \
-                         106.438L52.2 98.9375C50.8875 99.5 49.2 99.875 47.7 \
-                         99.875C41.5125 99.875 37.8562 96.5 35.2312 \
-                         90.2188C34.2 87.6875 33.075 86.1875 30.9187 \
-                         85.9063C29.7937 85.8125 29.4187 85.3438 29.4187 \
-                         84.7813C29.4187 83.6563 31.2937 82.8125 33.1687 \
-                         82.8125C35.8875 82.8125 38.2312 84.5 40.6687 \
-                         87.9688C42.5437 90.6875 44.5125 91.9063 46.8562 \
-                         91.9063C49.2 91.9063 50.7 91.0625 52.8562 \
-                         88.9063C54.45 87.3125 55.6687 85.9063 56.7937 \
-                         84.9688Z"
-                    />
-                  </svg>
-                </a>
-              </div>
-              <div class_="site-controls">
-                <button
-                  class_="theme-toggle"
-                  type_=`button
-                  dataDocThemeToggle=""
-                  aria_label="Toggle color theme"
-                  title="Toggle color theme">
-                  <span class_="theme-toggle__sun" aria_hidden=true>"✹"</span>
-                  <span class_="theme-toggle__moon" aria_hidden=true>"⏾"</span>
-                </button>
-                <div
-                  class_="syntax-toggle" role=`group aria_label="Code syntax">
-                  <button
-                    type_=`button
-                    dataDocSyntax="reason"
-                    aria_label="Reason syntax">
-                    <img
-                      class_="syntax-toggle__icon"
-                      src="assets/reason.svg"
-                      alt=""
-                    />
-                    <span class_="syntax-toggle__label">
-                      (JSX.string "Reason")
-                    </span>
-                  </button>
-                  <button
-                    type_=`button dataDocSyntax="mlx" aria_label="mlx syntax">
-                    <img
-                      class_="syntax-toggle__icon" src="assets/ocaml.svg" alt=""
-                    />
-                    <span class_="syntax-toggle__label">
-                      (JSX.string "mlx")
-                    </span>
-                  </button>
-                </div>
-              </div>
+        )
+      </script>
+      <link rel="stylesheet" href="assets/fonts.css" />
+      <style>(JSX.unsafe code_theme_dark_css)</style>
+      <link rel="stylesheet" href="assets/index.css" />
+      <script src="assets/index.js" defer=true />
+    </head>
+    <body>
+      <header class_="site-header">
+        <div class_="site-header__inner">
+          <div class_="site-header__top">
+            <div class_="site-branding">
+              <a class_="site-brand" href="index.html">
+                (JSX.string "html_of_jsx")
+              </a>
+              <a
+                target=`_blank
+                class_="site-brand__github"
+                href="https://github.com/davesnx/html_of_jsx"
+                aria_label="Open html_of_jsx GitHub repository"
+                title="GitHub repository">
+                <github_icon />
+              </a>
             </div>
-            menu_element
+            <div class_="site-controls">
+              <button
+                class_="theme-toggle"
+                type_=`button
+                dataDocThemeToggle=""
+                aria_label="Toggle color theme"
+                title="Toggle color theme">
+                <span class_="theme-toggle__sun" aria_hidden=true>"✹"</span>
+                <span class_="theme-toggle__moon" aria_hidden=true>"⏾"</span>
+              </button>
+              <syntax_toggle />
+            </div>
           </div>
-        </header>
-        <main class_="doc-main">
-          <article class_=article_class>(JSX.unsafe article_html)</article>
-        </main>
-      </body>
-    </html>
-  ^ "\n"
+          <navigation pages active_output=current.output_name />
+        </div>
+      </header>
+      <main class_="doc-main">
+        <article class_=article_class>(JSX.unsafe article_html)</article>
+      </main>
+    </body>
+  </html>
 
 let load_pages source_files =
   let open Eff in
@@ -631,36 +613,41 @@ let load_pages source_files =
   let+ pages = collect [] source_files in
   Stdlib.List.sort compare_pages pages
 
-let copy_assets () =
+let cache_file = Path.rel [ "docs"; "_cache" ]
+
+let copy_assets cache =
   let open Eff in
   let* files =
     read_directory ~on:`Source ~only:`Files
       ~where:(Path.one_of_extensions [ "css"; "js"; "svg"; "woff2" ])
       assets_dir
   in
-  let rec copy_files = function
+  let rec copy_all cache = function
     | [] ->
-        return ()
+        return cache
     | source :: rest ->
-        let target = Path.move ~into:target_assets_dir source in
-        let* content = read_file ~snapshot:true ~on:`Source source in
-        let* () = write_file ~on:`Source target content in
-        copy_files rest
+        let* cache = Action.copy_file ~into:target_assets_dir source cache in
+        copy_all cache rest
   in
-  copy_files files
+  copy_all cache files
 
-let write_pages pages =
+let write_pages pages source_files cache =
   let open Eff in
-  let rec write_all = function
+  let deps = Deps.from_list source_files in
+  let rec write_all cache = function
     | [] ->
-        return ()
-    | page :: rest ->
-        let target = Path.(target_dir / page.output_name) in
-        let html = render_page pages page in
-        let* () = write_file ~on:`Source target html in
-        write_all rest
+        return cache
+    | current :: rest ->
+        let target = Path.(target_dir / current.output_name) in
+        let task =
+          Task.make deps (fun () ->
+              Eff.return (JSX.render <page pages current />)
+          )
+        in
+        let* cache = Action.Static.write_file target task cache in
+        write_all cache rest
   in
-  write_all pages
+  write_all cache pages
 
 let process_all () =
   let open Eff in
@@ -675,15 +662,16 @@ let process_all () =
     )
   in
   if source_files = [] then
-    invalid_arg
-      "No markdown files found in docs/content. Run `make docs-content` first.";
+    invalid_arg "No markdown files found. Run `dune build @doc-markdown` first.";
   let* pages = load_pages source_files in
-  let* () = copy_assets () in
-  write_pages pages
+  Action.with_cache ~on:`Source cache_file (fun cache ->
+      let* cache = write_pages pages source_files cache in
+      copy_assets cache
+  )
 
-type cli_mode = Build_once | Serve of int
+type cli_mode = Build | Serve of int
 
-let usage = "Usage: build_site.exe [serve [--port PORT]]"
+let usage = "Usage: main.exe [serve [--port PORT]]"
 
 let parse_port value =
   match int_of_string_opt value with
@@ -695,8 +683,8 @@ let parse_port value =
 let mode_from_cli () =
   let args = match Array.to_list Sys.argv with [] -> [] | _ :: rest -> rest in
   match args with
-  | [] ->
-      Some Build_once
+  | [ "build" ] ->
+      Some Build
   | [ "serve" ] ->
       Some (Serve 8080)
   | [ "serve"; "--port"; value ] ->
@@ -706,7 +694,7 @@ let mode_from_cli () =
 
 let () =
   match mode_from_cli () with
-  | Some Build_once ->
+  | Some Build ->
       Yocaml_unix.run ~level:`Info process_all
   | Some (Serve port) ->
       Yocaml_unix.serve ~level:`Info ~target:target_dir ~port process_all

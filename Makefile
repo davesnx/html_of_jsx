@@ -111,28 +111,17 @@ demo-client: build ## Run client's demo
 subst: ## Run dune substitute
 	$(DUNE) subst
 
-.PHONY: docs
-docs: docs-content ## Generate documentation artifacts
-	$(DUNE) build --root . @doc
-
-.PHONY: docs-content
-docs-content: ## Generate markdown docs and sync to docs/content
-	$(DUNE) build --root . @doc-markdown
-	rm -f docs/content/*.md
-	cp _build/default/_doc/_markdown/html_of_jsx/*.md docs/content/
-
 .PHONY: docs-site
-docs-site: docs ## Build Yocaml docs site into docs/_site
-	DOCS_SITE=true $(DUNE) exec --root . ./site/build_site.exe
+docs-site: ## Build docs site into docs/_site
+	$(DUNE) build --root . @doc-markdown
+	DOCS_SITE=true $(DUNE) exec --root . ./site/main.exe -- build
 
 .PHONY: docs-site-serve
-docs-site-serve: ## Build and serve docs with Yocaml native server on :8080
-	DOCS_SITE=true $(DUNE) exec --root . ./site/build_site.exe -- serve
-
-.PHONY: docs-watch
-docs-watch: ## Generate odoc docs in watch mode
-	$(DUNE) build --root . -w @doc
-
-.PHONY: docs-serve
-docs-serve: docs ## Serve odoc docs locally on :8080
-	python3 -m http.server 8080 --directory _build/default/_doc/_html
+docs-site-serve: docs-site ## Serve docs site on :8080 with file watching
+	@echo "Docs site ready at http://localhost:8080 — watching for changes"
+	@trap 'kill 0' INT TERM; \
+	( while sleep 2; do \
+		$(DUNE) build --root . @doc-markdown 2>/dev/null && \
+		DOCS_SITE=true $(DUNE) exec --root . ./site/main.exe -- build 2>/dev/null; \
+	done ) & \
+	python3 -m http.server 8080 --directory docs/_site
