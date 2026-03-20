@@ -48,7 +48,7 @@ let element = <a href="https://x.com/davesnx">
   <span>(JSX.string "Click me!")</span>
 </a>
 
-let html= JSX.render element
+let html = JSX.render element
 (* <a href="https://x.com/davesnx"><span>Click me!</span></a> *)
 ]}
 
