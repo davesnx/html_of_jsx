@@ -23,22 +23,6 @@ JSX.null                          (* value that represents nothing *)
 
 All text rendered through these helpers is HTML-escaped by default, so user input is safe from XSS attacks.
 
-{2 Formatted text}
-
-Use [JSX.stringf] when you want [Printf]-style formatting such as [%s], [%c], [%i], [%d], [%f], or [%%], while still rendering escaped text.
-
-{@reasonml[
-let profile = (~name, ~visits, ()) => {
-  <p> {JSX.stringf("Welcome %s (%i visits)", name, visits)} </p>;
-};
-]}
-{@mlx[
-let profile ~name ~visits () =
-  <p>(JSX.stringf "Welcome %s (%i visits)" name visits)</p>
-]}
-
-Just like [JSX.string], the formatted result is escaped before it is written to HTML.
-
 {1 HTML attributes}
 
 [html_of_jsx] sticks to standard HTML attributes: [tabindex], [maxlength], [value], [placeholder], [autocomplete], etc... and avoids custom React attributes like [className] or [htmlFor].

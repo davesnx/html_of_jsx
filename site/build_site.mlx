@@ -98,48 +98,32 @@ let first_word text =
 
 let normalize_code_label label = first_word label |> String.lowercase_ascii
 
-let syntax_of_label label =
-  match normalize_code_label label with
-  | "reason" | "reasonml" ->
-      Some Reason
-  | "mlx" ->
-      Some Mlx
-  | _ ->
-      None
+type language_info = {
+  syntax : syntax option;
+  highlight_lang : string option;
+  badge : string;
+}
 
-let highlight_lang_of_label label =
+let language_of_label label =
   match normalize_code_label label with
   | "reason" | "reasonml" ->
-      Some "reason"
+      Some
+        { syntax = Some Reason; highlight_lang = Some "reason"; badge = "Reason" }
   | "mlx" ->
-      Some "mlx"
+      Some { syntax = Some Mlx; highlight_lang = Some "mlx"; badge = "mlx" }
   | "dune" ->
-      Some "dune"
+      Some { syntax = None; highlight_lang = Some "dune"; badge = "dune" }
   | "bash" | "sh" | "shell" | "shellscript" ->
-      Some "bash"
+      Some { syntax = None; highlight_lang = Some "bash"; badge = "bash" }
   | "ocaml" ->
-      Some "ocaml"
-  | "" ->
-      None
-  | _ ->
-      None
-
-let code_badge label =
-  match normalize_code_label label with
-  | "reason" | "reasonml" ->
-      Some "Reason"
-  | "mlx" ->
-      Some "mlx"
-  | "dune" ->
-      Some "dune"
-  | "bash" | "sh" | "shell" | "shellscript" ->
-      Some "bash"
-  | "ocaml" ->
-      Some "ocaml"
+      Some { syntax = None; highlight_lang = Some "ocaml"; badge = "ocaml" }
   | "" ->
       None
   | other ->
-      Some other
+      Some { syntax = None; highlight_lang = None; badge = other }
+
+let syntax_of_label label =
+  Option.bind (language_of_label label) (fun info -> info.syntax)
 
 let trim_trailing_newlines text =
   let rec find_last_non_newline index =
@@ -213,13 +197,13 @@ let code_theme_dark_css =
 }
 |}
 
-let highlighted_code ~label ~code () =
+let highlighted_code ~highlight_lang ~code () =
   let plain_code () =
     <pre class_="doc-code__pre">
       <code class_="doc-code__code">(JSX.unsafe code)</code>
     </pre>
   in
-  match highlight_lang_of_label label with
+  match highlight_lang with
   | None ->
       <plain_code />
   | Some language -> (
@@ -233,14 +217,17 @@ let highlighted_code ~label ~code () =
           ~extra_themes:[ ("dark", code_theme_gruvbox) ]
           ~lang:language code
         |> JSX.unsafe
-      with _ -> <plain_code />
+      with exn ->
+        Printf.eprintf "Warning: highlighting failed for %s: %s\n" language
+          (Printexc.to_string exn);
+        <plain_code />
     )
 
 let string_of_syntax = function Reason -> "reason" | Mlx -> "mlx"
 
-let code_caption ~label () =
+let code_caption ~badge () =
   <figcaption class_="doc-code__meta">
-    ( match code_badge label with
+    ( match badge with
     | Some language ->
         <span class_="doc-code__lang">(JSX.string language)</span>
     | None ->
@@ -256,14 +243,17 @@ let code_caption ~label () =
   </figcaption>
 
 let code_figure ?syntax ~label ~code () =
+  let lang_info = language_of_label label in
+  let highlight_lang = Option.bind lang_info (fun i -> i.highlight_lang) in
+  let badge = Option.map (fun i -> i.badge) lang_info in
   let normalized_code = trim_trailing_newlines code in
-  let highlighted = <highlighted_code label code=normalized_code /> in
+  let highlighted = <highlighted_code highlight_lang code=normalized_code /> in
   match syntax with
   | None ->
-      <figure class_="doc-code"><code_caption label /> highlighted</figure>
+      <figure class_="doc-code"><code_caption badge /> highlighted</figure>
   | Some value ->
       <figure class_="doc-code" dataSyntax=(string_of_syntax value)>
-        <code_caption label /> highlighted
+        <code_caption badge /> highlighted
       </figure>
 
 let syntax_pair ~reason_label ~reason_code ~mlx_label ~mlx_code () =
@@ -323,6 +313,8 @@ let page_rank source_name =
       rank
   | None ->
       1000
+
+let is_guide_page page = page_rank page.source_name < 1000
 
 let compare_pages left right =
   let rank_comparison =
@@ -405,17 +397,6 @@ let render_markdown_body ~hide_h1 pages markdown =
   markdown |> Omd.of_string |> render_blocks [] |> JSX.list |> JSX.render
   |> rewrite_html_links pages
 
-let menu_guide_links =
-  [
-    ("getting-started.md", "Getting started");
-    ("core.md", "Core");
-    ("ppx.md", "ppx");
-    ("how-ppx-works.md", "How the ppx works");
-    ("dream.md", "Integrate with Dream");
-    ("HTMX-mode.md", "HTMX mode");
-    ("React-compatibility.md", "React mode");
-  ]
-
 let find_page_by_source_name pages source_name =
   List.find_opt (fun page -> page.source_name = source_name) pages
 
@@ -432,17 +413,20 @@ let menu_link ~href ~label ~is_active () =
 
 let render_menu pages active_output () =
   let guide_links =
-    menu_guide_links
-    |> List.filter_map (fun (source_name, label) ->
-        match find_page_by_source_name pages source_name with
-        | Some page ->
-            Some
-              (menu_link ~href:page.output_name ~label
-                 ~is_active:(page.output_name = active_output)
-                 ()
-              )
-        | None ->
-            None
+    guide_order
+    |> List.filter_map (fun source_name ->
+        if source_name = "index.md" then
+          None
+        else
+          match find_page_by_source_name pages source_name with
+          | Some page ->
+              Some
+                (menu_link ~href:page.output_name ~label:page.title
+                   ~is_active:(page.output_name = active_output)
+                   ()
+                )
+          | None ->
+              None
     )
   in
   let api_target =
@@ -450,14 +434,14 @@ let render_menu pages active_output () =
     | Some page ->
         Some page
     | None ->
-        List.find_opt (fun page -> page_rank page.source_name >= 1000) pages
+        List.find_opt (fun page -> not (is_guide_page page)) pages
   in
   let current_is_api =
     match
       List.find_opt (fun page -> page.output_name = active_output) pages
     with
     | Some page ->
-        page_rank page.source_name >= 1000
+        not (is_guide_page page)
     | None ->
         false
   in
@@ -475,7 +459,7 @@ let render_menu pages active_output () =
 
 let render_page pages page =
   let menu_element = render_menu pages page.output_name () in
-  let is_api_page = page_rank page.source_name >= 1000 in
+  let is_api_page = not (is_guide_page page) in
   let article_html =
     render_markdown_body ~hide_h1:(not is_api_page) pages page.markdown
   in
