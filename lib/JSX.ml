@@ -174,3 +174,105 @@ let render_streaming (write_fn : string -> unit) element =
   let out = Buffer.create 256 in
   write out element;
   write_fn (Buffer.contents out)
+
+let pp ?(width = 80) element =
+  let module CF =
+    (val Pretty_expressive.Printer.default_cost_factory ~page_width:width ())
+  in
+  let module P = Pretty_expressive.Printer.Make (CF) in
+  let open P in
+  let escape_to_string s =
+    let buf = Buffer.create (String.length s) in
+    escape buf s;
+    Buffer.contents buf
+  in
+  let text_with_newlines s =
+    match String.split_on_char '\n' s with
+    | [] ->
+        empty
+    | [ line ] ->
+        text line
+    | line :: rest ->
+        List.fold_left (fun acc l -> acc ^^ hard_nl ^^ text l) (text line) rest
+  in
+  let is_text_like = function
+    | String _ | Int _ | Float _ | Unsafe _ | Null ->
+        true
+    | Node _ | List _ | Array _ ->
+        false
+  in
+  let doc_of_attribute (attr : attribute) =
+    match attr with
+    | _, `Bool false ->
+        empty
+    | name, `Bool true ->
+        text (" " ^ name)
+    | name, `String value ->
+        text (" " ^ name ^ "=\"" ^ escape_to_string value ^ "\"")
+    | name, `Int value ->
+        text (" " ^ name ^ "=\"" ^ Int.to_string value ^ "\"")
+    | name, `Float value ->
+        text (" " ^ name ^ "=\"" ^ Float.to_string value ^ "\"")
+  in
+  let doc_of_attributes attrs =
+    List.fold_left (fun acc a -> acc ^^ doc_of_attribute a) empty attrs
+  in
+  let rec doc_of = function
+    | Null ->
+        empty
+    | String s ->
+        text_with_newlines (escape_to_string s)
+    | Int i ->
+        text (Int.to_string i)
+    | Float f ->
+        text (Float.to_string f)
+    | Unsafe s ->
+        text_with_newlines s
+    | List elements ->
+        doc_of_children elements
+    | Array arr ->
+        doc_of_children (Array.to_list arr)
+    | Node { tag; attributes; _ } when is_self_closing_tag tag ->
+        text ("<" ^ tag) ^^ doc_of_attributes attributes ^^ text " />"
+    | Node { tag; attributes; children } -> (
+        let prefix =
+          if tag = "html" then
+            text "<!DOCTYPE html>" ^^ hard_nl
+          else
+            empty
+        in
+        let open_tag =
+          text ("<" ^ tag) ^^ doc_of_attributes attributes ^^ text ">"
+        in
+        let close_tag = text ("</" ^ tag ^ ">") in
+        match children with
+        | [] ->
+            prefix ^^ open_tag ^^ close_tag
+        | _ when List.for_all is_text_like children ->
+            prefix ^^ open_tag ^^ doc_of_children children ^^ close_tag
+        | _ ->
+            let children_doc = doc_of_block_children children in
+            prefix
+            ^^ group
+                 (open_tag
+                 ^^ nest 2 (break ^^ children_doc)
+                 ^^ break ^^ close_tag
+                 )
+      )
+  and doc_of_children elements =
+    List.fold_left (fun acc el -> acc ^^ doc_of el) empty elements
+  and doc_of_block_children elements =
+    let docs =
+      List.filter_map
+        (fun el -> match el with Null -> None | _ -> Some (doc_of el))
+        elements
+    in
+    match docs with
+    | [] ->
+        empty
+    | [ d ] ->
+        d
+    | d :: rest ->
+        List.fold_left (fun acc d -> acc ^^ break ^^ d) d rest
+  in
+  pretty_format (doc_of element)

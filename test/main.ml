@@ -5,4 +5,5 @@ let () =
       Test_reason.tests;
       Test_htmx.tests;
       Test_mlx.tests;
+      Test_pp.tests;
     ]

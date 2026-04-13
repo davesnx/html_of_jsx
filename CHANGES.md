@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Add `JSX.pp` for pretty-printing HTML with indentation, powered by `pretty_expressive`.
 - Add `JSX.stringf` for escaped `Printf`-style text formatting and teach the PPX to optimize literal-only `stringf` calls at compile time.
 - Improve runtime render speed in `JSX.write` by replacing iterator-heavy paths with direct recursion and indexed array traversal.
 - Reduce default render buffer sizes (`1024 -> 256`) and improve PPX-generated buffer capacity estimation for dynamic/optional attribute code paths.
