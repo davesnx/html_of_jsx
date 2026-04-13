@@ -69,7 +69,7 @@ This library was extracted from {{:https://github.com/ml-in-barcelona/server-rea
 
 - {{!page-"getting-started"}Getting started} — installation, dune setup, and first component
 - {{!page-core}Core API} — elements, children, and composition
-- {{!page-ppx}ppx settings} — ppx flags and settings
+- {{!page-ppx}Settings} — ppx flags and settings
 - {{!page-"how-ppx-works"}How the ppx works} — JSX transformation, static analysis, and performance
 - {{!page-dream}Dream integration} — integrate with Dream
 - {{!page-"HTMX-mode"}HTMX mode} — htmx attributes and extensions

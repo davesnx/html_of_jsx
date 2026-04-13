@@ -102,6 +102,6 @@ The [vscode-ocaml-platform] extension supports both Reason and mlx out of the bo
 {1 Next}
 
 - {{!page-core}Core API} for basic usage
-- {{!page-ppx}ppx settings} for ppx flags
+- {{!page-ppx}Settings} for ppx flags
 - {{!page-dream}Dream integration} to integrate with Dream
 - {{!page-"how-ppx-works"}How the ppx works} for a closer look at the JSX transformation.

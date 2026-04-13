@@ -47,11 +47,11 @@ Check the [demo/server.re](./demo/server.re) file to see a full example.
 ## Documentation
 
 - Main docs: [html_of_jsx documentation](https://davesnx.github.io/html_of_jsx/)
-- Getting started: setup and first render
-- Components: props, children, fragments
-- Rendering: string/channel/streaming APIs
-- htmx: `-htmx` attributes and extension loaders
-- React migration mode: `-react` attribute aliases
+- [Getting started](https://davesnx.github.io/html_of_jsx/getting-started.html): setup and first render
+- [Core](https://davesnx.github.io/html_of_jsx/core.html): props, children, fragments
+- [Rendering](https://davesnx.github.io/html_of_jsx/core.html#rendering): string/channel/streaming APIs
+- [HTMX mode](https://davesnx.github.io/html_of_jsx/HTMX-mode.html): `-htmx` attributes and extension loaders
+- [React compatibility](https://davesnx.github.io/html_of_jsx/React-compatibility.html): `-react` attribute aliases
 
 ## Contributing
 
