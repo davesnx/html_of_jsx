@@ -1,6 +1,6 @@
 # Changes
 
-## Unreleased
+## 0.0.9
 
 - Add `JSX.pp` for pretty-printing HTML with indentation, powered by `pretty_expressive`.
 - Add `JSX.stringf` for escaped `Printf`-style text formatting and teach the PPX to optimize literal-only `stringf` calls at compile time.
