@@ -84,6 +84,9 @@ jobs:
         with:
           ocaml-compiler: ${{ matrix.ocaml-compiler }}
 
+      - name: Pin dependencies
+        run: make pin
+
       - name: Install dependencies
         if: steps.download-artifacts.outcome != 'success'
         run: make install
