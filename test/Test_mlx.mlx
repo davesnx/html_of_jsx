@@ -185,6 +185,12 @@ let target_polyvariant_opt_none () =
   let a = <a href="/" ?target /> in
   assert_string (JSX.render a) {|<a href="/"></a>|}
 
+let data_attributes () =
+  let data_foo = "bar" in
+  let data_bar = "baz" in
+  let div = <div data_foo data_bar /> in
+  assert_string (JSX.render div) {|<div data-foo="bar" data-bar="baz"></div>|}
+
 let tests =
   ( "Test with mlx",
     [
@@ -216,5 +222,6 @@ let tests =
       test "target_polyvariant_dynamic" target_polyvariant_dynamic;
       test "target_polyvariant_opt_some" target_polyvariant_opt_some;
       test "target_polyvariant_opt_none" target_polyvariant_opt_none;
+      test "data_attributes" data_attributes;
     ]
   )

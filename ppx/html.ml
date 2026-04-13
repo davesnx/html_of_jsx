@@ -1763,7 +1763,9 @@ let camelcaseToKebabcase str =
     | [ x ] ->
         x :: acc
     | x :: y :: xs ->
-        if Char.uppercase_ascii y == y then
+        if y = '_' then
+          loop (x :: acc) ('-' :: xs)
+        else if y >= 'A' && y <= 'Z' then
           loop ('-' :: x :: acc) (Char.lowercase_ascii y :: xs)
         else
           loop (x :: acc) (y :: xs)

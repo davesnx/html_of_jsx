@@ -2,12 +2,13 @@
 
 ## 0.0.9
 
-- Add `JSX.pp` for pretty-printing HTML with indentation, powered by `pretty_expressive`.
-- Add `JSX.stringf` for escaped `Printf`-style text formatting and teach the PPX to optimize literal-only `stringf` calls at compile time.
-- Improve runtime render speed in `JSX.write` by replacing iterator-heavy paths with direct recursion and indexed array traversal.
-- Reduce default render buffer sizes (`1024 -> 256`) and improve PPX-generated buffer capacity estimation for dynamic/optional attribute code paths.
-- Add a compile-time fast path for static HTML escaping in `ppx/static_analysis.ml` to avoid buffer work when no escaping is required.
-- Extend static optimization coverage for dynamic attributes: elements with dynamic attrs and dynamic string/mixed children now generate buffer-based optimized code instead of falling back to `JSX.node`.
+- Fix `data-attributes` being rendered as `data_-attributes` (@davesnx)
+- Add `JSX.pp` for pretty-printing HTML with indentation, powered by `pretty_expressive` (@davesnx)
+- Add `JSX.stringf` for escaped `Printf`-style text formatting and teach the PPX to optimize literal-only `stringf` calls at compile time (@davesnx)
+- Improve runtime render speed in `JSX.write` by replacing iterator-heavy paths with direct recursion and indexed array traversal (@davesnx)
+- Reduce default render buffer sizes (`1024 -> 256`) and improve PPX-generated buffer capacity estimation for dynamic/optional attribute code paths (@davesnx)
+- Add a compile-time fast path for static HTML escaping in `ppx/static_analysis.ml` to avoid buffer work when no escaping is required (@davesnx)
+- Extend static optimization coverage for dynamic attributes: elements with dynamic attrs and dynamic string/mixed children now generate buffer-based optimized code instead of falling back to `JSX.node` (@davesnx)
 
 ## 0.0.8
 
