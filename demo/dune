@@ -1,6 +1,8 @@
 (executable
  (name server)
  (optional)
+ (enabled_if
+  (= %{os_type} "Unix"))
  (libraries tiny_httpd tiny_httpd.core html_of_jsx html_of_jsx.htmx)
  (preprocess
   (pps html_of_jsx.ppx -htmx)))
