@@ -1,6 +1,6 @@
 (executable
  (name main)
  (enabled_if %{env:DOCS_SITE=false})
- (libraries yocaml yocaml_unix ochre tm-grammars omd html_of_jsx)
+ (libraries unix yocaml yocaml_unix ochre tm-grammars omd html_of_jsx)
  (preprocess
   (pps html_of_jsx.ppx)))

@@ -4,12 +4,25 @@
   const THEME_STORAGE_KEY = "html_of_jsx.docs.theme";
   const DEFAULT_SYNTAX = "reason";
   const root = document.documentElement;
-  const syntaxButtons = Array.from(document.querySelectorAll(".syntax-toggle [data-doc-syntax]"));
+  const syntaxToggleEl = document.querySelector(".syntax-toggle");
+  const syntaxControls = [
+    ...document.querySelectorAll(".syntax-toggle [data-doc-syntax]"),
+    ...document.querySelectorAll(".doc-code-pair__tab[data-doc-syntax]"),
+  ];
   const themeToggleButton = document.querySelector("[data-doc-theme-toggle]");
   const copyButtons = Array.from(document.querySelectorAll("[data-doc-copy]"));
+  const navToggle = document.getElementById("nav-toggle");
+  const sidebarEl = document.getElementById("doc-sidebar");
+  const hamburgerLabel = document.querySelector(".nav-hamburger");
 
   const normalizeSyntax = (value) =>
     value === "mlx" || value === "reason" ? value : null;
+
+  // Tracks whether the current URL advertises ?syntax=. Updated on init and
+  // whenever updateSyntaxQueryParam rewrites history. Used by the document
+  // click handler to short-circuit before walking the DOM with closest().
+  let currentUrlHasSyntax =
+    window.location.search.indexOf(SYNTAX_QUERY_KEY + "=") !== -1;
 
   const updateSyntaxQueryParam = (syntax) => {
     try {
@@ -21,14 +34,22 @@
       if (url.searchParams.get(SYNTAX_QUERY_KEY) === syntax) return;
       url.searchParams.set(SYNTAX_QUERY_KEY, syntax);
       window.history.replaceState(window.history.state, "", url.toString());
+      currentUrlHasSyntax = true;
     } catch (_error) {}
   };
 
+  let activeSyntax = DEFAULT_SYNTAX;
+
   const setActiveSyntax = (value, { updateQuery = true } = {}) => {
     const syntax = normalizeSyntax(value) || DEFAULT_SYNTAX;
+    activeSyntax = syntax;
     root.setAttribute("data-doc-syntax", syntax);
 
-    syntaxButtons.forEach((button) => {
+    if (syntaxToggleEl) {
+      syntaxToggleEl.setAttribute("data-active-syntax", syntax);
+    }
+
+    syntaxControls.forEach((button) => {
       const isActive = button.getAttribute("data-doc-syntax") === syntax;
       button.classList.toggle("is-active", isActive);
       button.setAttribute("aria-pressed", isActive ? "true" : "false");
@@ -46,14 +67,17 @@
     normalizeSyntax(root.getAttribute("data-doc-syntax")) || DEFAULT_SYNTAX;
   setActiveSyntax(initialSyntax, { updateQuery: false });
 
-  syntaxButtons.forEach((button) => {
+  const persistAndApplySyntax = (value) => {
+    const nextSyntax = normalizeSyntax(value) || DEFAULT_SYNTAX;
+    try {
+      localStorage.setItem(SYNTAX_STORAGE_KEY, nextSyntax);
+    } catch (_error) {}
+    setActiveSyntax(nextSyntax);
+  };
+
+  syntaxControls.forEach((button) => {
     button.addEventListener("click", () => {
-      const nextSyntax =
-        normalizeSyntax(button.getAttribute("data-doc-syntax")) || DEFAULT_SYNTAX;
-      try {
-        localStorage.setItem(SYNTAX_STORAGE_KEY, nextSyntax);
-      } catch (_error) {}
-      setActiveSyntax(nextSyntax);
+      persistAndApplySyntax(button.getAttribute("data-doc-syntax"));
     });
   });
 
@@ -138,11 +162,14 @@
   // advertises a syntax. If the user is on a clean URL, we leave outgoing
   // links alone; localStorage handles persistence on the next page.
   document.addEventListener("click", (event) => {
+    // Hot path: if the current URL doesn't have ?syntax=, we never forward it
+    // to outgoing links. Bail before any DOM traversal.
+    if (!currentUrlHasSyntax) return;
     if (event.defaultPrevented) return;
     if (event.button !== 0) return;
     if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
 
-    const anchor = event.target.closest && event.target.closest("a[href]");
+    const anchor = event.target?.closest?.("a[href]");
     if (!anchor) return;
     if (anchor.target && anchor.target !== "" && anchor.target !== "_self") return;
     if (anchor.hasAttribute("download")) return;
@@ -153,14 +180,6 @@
     const rawHref = anchor.getAttribute("href");
     if (!rawHref || rawHref[0] === "#") return;
     if (rawHref.indexOf(SYNTAX_QUERY_KEY + "=") !== -1) return;
-
-    // Don't forward syntax onto outgoing links unless the current URL
-    // explicitly has it — opting in to syntax-pinned URLs is the user's call.
-    const currentUrl = new URL(window.location.href);
-    if (!currentUrl.searchParams.has(SYNTAX_QUERY_KEY)) return;
-
-    const currentSyntax = normalizeSyntax(root.getAttribute("data-doc-syntax"));
-    if (!currentSyntax) return;
 
     let destination;
     try {
@@ -182,7 +201,7 @@
       return;
     }
 
-    destination.searchParams.set(SYNTAX_QUERY_KEY, currentSyntax);
+    destination.searchParams.set(SYNTAX_QUERY_KEY, activeSyntax);
     anchor.href = destination.toString();
   });
 
@@ -216,4 +235,63 @@
       }, 1200);
     });
   });
+
+  // Mobile drawer: ARIA wiring, focus management, link-click close, Esc close.
+  if (navToggle && sidebarEl && hamburgerLabel) {
+    const syncDrawerAria = () => {
+      const open = navToggle.checked;
+      hamburgerLabel.setAttribute("aria-expanded", open ? "true" : "false");
+      sidebarEl.setAttribute("aria-hidden", open ? "false" : "true");
+    };
+
+    const closeDrawer = () => {
+      if (navToggle.checked) {
+        navToggle.checked = false;
+        syncDrawerAria();
+      }
+    };
+
+    // Make the label keyboard-activatable as a button.
+    hamburgerLabel.setAttribute("role", "button");
+    hamburgerLabel.setAttribute("tabindex", "0");
+    syncDrawerAria();
+
+    hamburgerLabel.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        navToggle.checked = !navToggle.checked;
+        syncDrawerAria();
+      }
+    });
+
+    navToggle.addEventListener("change", syncDrawerAria);
+
+    // Close on Esc
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && navToggle.checked) {
+        closeDrawer();
+        // Return focus to the hamburger
+        hamburgerLabel.focus();
+      }
+    });
+
+    // Close on sidebar link click (so navigation feels right on mobile)
+    sidebarEl.addEventListener("click", (event) => {
+      const anchor = event.target?.closest?.("a[href]");
+      if (anchor) {
+        closeDrawer();
+      }
+    });
+
+    // Close drawer when transitioning back to desktop width.
+    const desktopMq = window.matchMedia("(min-width: 881px)");
+    const onDesktopChange = () => {
+      if (desktopMq.matches) closeDrawer();
+    };
+    if (typeof desktopMq.addEventListener === "function") {
+      desktopMq.addEventListener("change", onDesktopChange);
+    } else {
+      desktopMq.addListener(onDesktopChange);
+    }
+  }
 })();

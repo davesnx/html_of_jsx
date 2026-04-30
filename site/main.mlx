@@ -15,6 +15,54 @@ let assets_dir = Path.rel [ "site"; "assets" ]
 let target_dir = Path.rel [ "docs"; "_site" ]
 let target_assets_dir = Path.(target_dir / "assets")
 
+let changes_path = "CHANGES.md"
+
+(* A version heading in CHANGES.md looks like "## 0.0.9". We extract the first
+   such heading (the most recent release). The token after "## " is the
+   version when it starts with a digit; this skips non-version sub-headings if
+   any are introduced later. Whitespace and trailing CRs are trimmed. *)
+let extract_version_from_changes content =
+  let lines = String.split_on_char '\n' content in
+  let starts_with_digit s =
+    String.length s > 0 && s.[0] >= '0' && s.[0] <= '9'
+  in
+  let rec find = function
+    | [] -> None
+    | line :: rest ->
+        let line = String.trim line in
+        let prefix = "## " in
+        let plen = String.length prefix in
+        if
+          String.length line > plen
+          && String.sub line 0 plen = prefix
+        then
+          let token = String.trim (String.sub line plen (String.length line - plen)) in
+          if starts_with_digit token then Some token else find rest
+        else find rest
+  in
+  find lines
+
+let read_file_opt path =
+  try
+    let ic = open_in path in
+    let len = in_channel_length ic in
+    let buf = Bytes.create len in
+    really_input ic buf 0 len;
+    close_in ic;
+    Some (Bytes.unsafe_to_string buf)
+  with _ -> None
+
+let resolve_version () =
+  match read_file_opt changes_path with
+  | Some content -> (
+      match extract_version_from_changes content with
+      | Some v -> v
+      | None -> "dev"
+    )
+  | None -> "dev"
+
+let site_version = resolve_version ()
+
 let guide_order =
   [
     "index.md";
@@ -26,6 +74,35 @@ let guide_order =
     "HTMX-mode.md";
     "React-compatibility.md";
   ]
+
+(* Display labels in the sidebar override the H1-derived page title for
+   specific pages. Keep the project's voice: lowercase ppx, short names. *)
+let sidebar_label_overrides =
+  [
+    ("ppx.md", "ppx");
+    ("dream.md", "Dream");
+    ("HTMX-mode.md", "htmx");
+    ("React-compatibility.md", "React compat");
+  ]
+
+(* For API pages, derive the label from the source filename so the dotted
+   module path is preserved (Htmx-Extensions-SSE.md -> "Htmx.Extensions.SSE").
+   This keeps the parent/child relationship visible in a flat list. *)
+let label_from_api_source_name source_name =
+  let stem = Filename.remove_extension source_name in
+  String.map (fun c -> if c = '-' then '.' else c) stem
+
+let is_api_source_name source_name =
+  not (List.mem source_name guide_order)
+
+let sidebar_label_for ~source_name ~title =
+  match List.assoc_opt source_name sidebar_label_overrides with
+  | Some override -> override
+  | None when is_api_source_name source_name ->
+      label_from_api_source_name source_name
+  | None ->
+      (* For guides, fall back to the H1 title as extracted from the file. *)
+      title
 
 let highlighter =
   Ochre.create_from_json
@@ -228,6 +305,35 @@ let highlighted_code ~highlight_lang ~code () =
 
 let string_of_syntax = function Reason -> "reason" | Mlx -> "mlx"
 
+let code_pair_tabs () =
+  <div class_="doc-code-pair__tabs" role=`group aria_label="Code syntax">
+    <button
+      type_=`button
+      class_="doc-code-pair__tab"
+      dataDocSyntax="reason"
+      aria_label="Show Reason syntax">
+      <img class_="doc-code-pair__icon" src="assets/reason.svg" alt="" />
+      <span class_="doc-code-pair__label">(JSX.string "Reason")</span>
+    </button>
+    <button
+      type_=`button
+      class_="doc-code-pair__tab"
+      dataDocSyntax="mlx"
+      aria_label="Show mlx syntax">
+      <img class_="doc-code-pair__icon" src="assets/ocaml.svg" alt="" />
+      <span class_="doc-code-pair__label">(JSX.string "mlx")</span>
+    </button>
+  </div>
+
+let copy_button () =
+  <button class_="doc-code__copy" type_=`button dataDocCopy="">
+    <svg class_="doc-code__copy-icon" viewBox="0 0 24 24" aria_hidden=true>
+      <rect x="9" y="9" width="10" height="10" rx="2" />
+      <rect x="5" y="5" width="10" height="10" rx="2" />
+    </svg>
+    <span class_="doc-code__copy-label">(JSX.string "Copy")</span>
+  </button>
+
 let code_caption ~badge () =
   <figcaption class_="doc-code__meta">
     ( match badge with
@@ -236,13 +342,15 @@ let code_caption ~badge () =
     | None ->
         JSX.null
     )
-    <button class_="doc-code__copy" type_=`button dataDocCopy="">
-      <svg class_="doc-code__copy-icon" viewBox="0 0 24 24" aria_hidden=true>
-        <rect x="9" y="9" width="10" height="10" rx="2" />
-        <rect x="5" y="5" width="10" height="10" rx="2" />
-      </svg>
-      <span class_="doc-code__copy-label">(JSX.string "Copy")</span>
-    </button>
+    <copy_button />
+  </figcaption>
+
+(* For paired Reason/mlx code figures, the figcaption hosts the syntax tabs on
+   the left and the Copy button on the right — replacing the language badge. *)
+let code_caption_pair () =
+  <figcaption class_="doc-code__meta doc-code__meta--pair">
+    <code_pair_tabs />
+    <copy_button />
   </figcaption>
 
 let code_figure ?syntax ~label ~code () =
@@ -256,7 +364,7 @@ let code_figure ?syntax ~label ~code () =
       <figure class_="doc-code"><code_caption badge /> highlighted</figure>
   | Some value ->
       <figure class_="doc-code" dataSyntax=(string_of_syntax value)>
-        <code_caption badge /> highlighted
+        <code_caption_pair /> highlighted
       </figure>
 
 let syntax_pair ~reason_label ~reason_code ~mlx_label ~mlx_code () =
@@ -363,7 +471,7 @@ let rewrite_html_links pages html =
        )
        html
 
-let markdown_body ~hide_h1 pages markdown =
+let markdown_body pages markdown =
   let rec render_blocks acc blocks =
     match blocks with
     | Omd.Code_block (_, label, code) :: rest -> (
@@ -390,8 +498,6 @@ let markdown_body ~hide_h1 pages markdown =
         | _ ->
             render_blocks (code_figure ~label ~code () :: acc) rest
       )
-    | Omd.Heading (_, 1, _) :: rest when hide_h1 ->
-        render_blocks acc rest
     | block :: rest ->
         render_blocks (JSX.unsafe (Omd.to_html [ block ]) :: acc) rest
     | [] ->
@@ -439,19 +545,51 @@ let syntax_toggle () =
 let find_page_by_source_name pages source_name =
   List.find_opt (fun page -> page.source_name = source_name) pages
 
-let menu_link ~href ~label ~is_active () =
+let sidebar_link ~href ~label ~is_active () =
   if is_active then
     <li>
       <a
-        class_="site-menu__link site-menu__link--active" aria_current=`page href>
-        (JSX.string label)
+        class_="doc-sidebar__link doc-sidebar__link--active"
+        aria_current=`page
+        href>
+        <span class_="doc-sidebar__label">(JSX.string label)</span>
       </a>
     </li>
   else
-    <li><a class_="site-menu__link" href>(JSX.string label)</a></li>
+    <li>
+      <a class_="doc-sidebar__link" href>
+        <span class_="doc-sidebar__label">(JSX.string label)</span>
+      </a>
+    </li>
 
-let navigation ~pages ~active_output () =
-  let guide_links =
+(* JSX.md gets pinned to the top of the API list. The remaining pages sort by
+   a key that keeps a parent module immediately before its sub-modules:
+   "Htmx" < "Htmx.Extensions" < "Htmx.Extensions.SSE" < "Ppx".
+   We achieve this by replacing '-' with '.' in the source name (matching the
+   label conversion) and sorting case-insensitively. '.' (0x2e) sorts after
+   alphabetic chars, so a parent always precedes its dotted children. *)
+let api_sort_key source_name =
+  let stem = Filename.remove_extension source_name in
+  let dotted = String.map (fun c -> if c = '-' then '.' else c) stem in
+  String.lowercase_ascii dotted
+
+let api_pages_sorted pages =
+  let api_pages = List.filter (fun p -> not (is_guide_page p)) pages in
+  let pinned_first, others =
+    List.partition (fun p -> p.source_name = "JSX.md") api_pages
+  in
+  let sorted_others =
+    List.sort
+      (fun a b ->
+        String.compare
+          (api_sort_key a.source_name)
+          (api_sort_key b.source_name))
+      others
+  in
+  pinned_first @ sorted_others
+
+let sidebar ~pages ~active_output () =
+  let guide_items =
     guide_order
     |> List.filter_map (fun source_name ->
         if source_name = "index.md" then
@@ -459,8 +597,12 @@ let navigation ~pages ~active_output () =
         else
           match find_page_by_source_name pages source_name with
           | Some page ->
+              let label =
+                sidebar_label_for ~source_name:page.source_name
+                  ~title:page.title
+              in
               Some
-                (menu_link ~href:page.output_name ~label:page.title
+                (sidebar_link ~href:page.output_name ~label
                    ~is_active:(page.output_name = active_output)
                    ()
                 )
@@ -468,39 +610,101 @@ let navigation ~pages ~active_output () =
               None
     )
   in
-  let api_target =
-    match find_page_by_source_name pages "JSX.md" with
-    | Some page ->
-        Some page
-    | None ->
-        List.find_opt (fun page -> not (is_guide_page page)) pages
-  in
-  let current_is_api =
-    match
-      List.find_opt (fun page -> page.output_name = active_output) pages
-    with
-    | Some page ->
-        not (is_guide_page page)
-    | None ->
-        false
-  in
-  let api_link =
-    match api_target with
-    | Some page ->
-        menu_link ~href:page.output_name ~label:"API" ~is_active:current_is_api
+  let api_items =
+    api_pages_sorted pages
+    |> List.map (fun page ->
+        let label =
+          sidebar_label_for ~source_name:page.source_name ~title:page.title
+        in
+        sidebar_link ~href:page.output_name ~label
+          ~is_active:(page.output_name = active_output)
           ()
-    | None ->
-        JSX.null
+    )
   in
-  <nav class_="site-menu" aria_label="Documentation pages">
-    <ul class_="site-menu__list">(JSX.list guide_links) api_link</ul>
-  </nav>
+  <aside class_="doc-sidebar" id="doc-sidebar" aria_label="Documentation">
+    <div class_="doc-sidebar__inner">
+      <div class_="doc-sidebar__group">
+        <h2 class_="doc-sidebar__heading">(JSX.string "Guides")</h2>
+        <ul class_="doc-sidebar__list">(JSX.list guide_items)</ul>
+      </div>
+      <div class_="doc-sidebar__group">
+        <h2 class_="doc-sidebar__heading">(JSX.string "API")</h2>
+        <ul class_="doc-sidebar__list">(JSX.list api_items)</ul>
+      </div>
+    </div>
+  </aside>
+
+let breadcrumb_separator () =
+  <span class_="doc-breadcrumb__sep" aria_hidden=true>(JSX.string "/")</span>
+
+let breadcrumbs ~current () =
+  if current.source_name = "index.md" then
+    JSX.null
+  else
+    let section_label =
+      if is_guide_page current then
+        "Guides"
+      else
+        "API"
+    in
+    let page_label =
+      sidebar_label_for ~source_name:current.source_name ~title:current.title
+    in
+    <nav class_="doc-breadcrumb" aria_label="Breadcrumb">
+      <ol class_="doc-breadcrumb__list">
+        <li class_="doc-breadcrumb__item doc-breadcrumb__item--section">
+          (JSX.string section_label)
+        </li>
+        <li class_="doc-breadcrumb__sep-item">
+          <breadcrumb_separator />
+        </li>
+        <li
+          class_="doc-breadcrumb__item doc-breadcrumb__item--current"
+          aria_current=`page>
+          (JSX.string page_label)
+        </li>
+      </ol>
+    </nav>
+
+let brand_logo () =
+  <a class_="site-brand" href="index.html">
+    <span class_="site-brand__bracket site-brand__bracket--open" aria_hidden=true>
+      (JSX.string "<")
+    </span>
+    <span class_="site-brand__name">(JSX.string "html_of_jsx")</span>
+    <span class_="site-brand__bracket site-brand__bracket--close" aria_hidden=true>
+      (JSX.string "/>")
+    </span>
+  </a>
+
+let version_chip ~version () =
+  <a
+    class_="site-version"
+    href="https://opam.ocaml.org/packages/html_of_jsx/"
+    target=`_blank
+    rel="noopener noreferrer"
+    title=("View html_of_jsx " ^ version ^ " on opam")
+    aria_label=("View html_of_jsx " ^ version ^ " on opam")>
+    <span class_="site-version__label">(JSX.string ("v" ^ version))</span>
+  </a>
+
+let hamburger_button () =
+  <label
+    class_="nav-hamburger"
+    for_="nav-toggle"
+    aria_label="Toggle navigation"
+    title="Toggle navigation">
+    <span class_="nav-hamburger__bar" aria_hidden=true />
+    <span class_="nav-hamburger__bar" aria_hidden=true />
+    <span class_="nav-hamburger__bar" aria_hidden=true />
+  </label>
+
+let skip_link () =
+  <a class_="skip-link" href="#main-content">(JSX.string "Skip to content")</a>
 
 let page ~pages ~current () =
   let is_api_page = not (is_guide_page current) in
-  let article_html =
-    markdown_body ~hide_h1:(not is_api_page) pages current.markdown
-  in
+  let article_html = markdown_body pages current.markdown in
   let article_class =
     if is_api_page then
       "doc-prose"
@@ -585,41 +789,55 @@ let page ~pages ~current () =
       <script src="assets/index.js" defer=true />
     </head>
     <body>
+      <skip_link />
+      <input
+        id="nav-toggle"
+        class_="nav-toggle"
+        type_=`checkbox
+        aria_hidden=true
+      />
+      <label
+        class_="nav-backdrop"
+        for_="nav-toggle"
+        aria_hidden=true
+      />
       <header class_="site-header">
         <div class_="site-header__inner">
-          <div class_="site-header__top">
-            <div class_="site-branding">
-              <a class_="site-brand" href="index.html">
-                (JSX.string "html_of_jsx")
-              </a>
-              <a
-                target=`_blank
-                class_="site-brand__github"
-                href="https://github.com/davesnx/html_of_jsx"
-                aria_label="Open html_of_jsx GitHub repository"
-                title="GitHub repository">
-                <github_icon />
-              </a>
-            </div>
-            <div class_="site-controls">
-              <button
-                class_="theme-toggle"
-                type_=`button
-                dataDocThemeToggle=""
-                aria_label="Toggle color theme"
-                title="Toggle color theme">
-                <span class_="theme-toggle__sun" aria_hidden=true>"✹"</span>
-                <span class_="theme-toggle__moon" aria_hidden=true>"⏾"</span>
-              </button>
-              <syntax_toggle />
-            </div>
+          <div class_="site-header__leading">
+            <hamburger_button />
+            <brand_logo />
+            <a
+              target=`_blank
+              rel="noopener noreferrer"
+              class_="site-brand__github"
+              href="https://github.com/davesnx/html_of_jsx"
+              aria_label="Open html_of_jsx GitHub repository"
+              title="GitHub repository">
+              <github_icon />
+            </a>
+            <version_chip version=site_version />
           </div>
-          <navigation pages active_output=current.output_name />
+          <div class_="site-controls">
+            <syntax_toggle />
+            <button
+              class_="theme-toggle"
+              type_=`button
+              dataDocThemeToggle=""
+              aria_label="Toggle color theme"
+              title="Toggle color theme">
+              <span class_="theme-toggle__sun" aria_hidden=true>"✹"</span>
+              <span class_="theme-toggle__moon" aria_hidden=true>"⏾"</span>
+            </button>
+          </div>
         </div>
       </header>
-      <main class_="doc-main">
-        <article class_=article_class>(JSX.unsafe article_html)</article>
-      </main>
+      <div class_="doc-shell">
+        <sidebar pages active_output=current.output_name />
+        <main id="main-content" class_="doc-main">
+          <breadcrumbs current />
+          <article class_=article_class>(JSX.unsafe article_html)</article>
+        </main>
+      </div>
     </body>
   </html>
 
