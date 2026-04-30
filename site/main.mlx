@@ -1,7 +1,5 @@
 open Yocaml
 
-module Path = Yocaml.Path
-
 type syntax = Reason | Mlx
 
 type page = {
@@ -542,6 +540,7 @@ let page ~pages ~current () =
         (JSX.unsafe
            {|
 (function () {
+  var root = document.documentElement;
   try {
     var themeKey = "html_of_jsx.docs.theme";
     var theme = localStorage.getItem(themeKey);
@@ -551,8 +550,31 @@ let page ~pages ~current () =
         : window.matchMedia("(prefers-color-scheme: dark)").matches
           ? "dark"
           : "light";
-    document.documentElement.setAttribute("data-doc-theme", resolvedTheme);
+    root.setAttribute("data-doc-theme", resolvedTheme);
   } catch (_error) {}
+  try {
+    var syntaxKey = "html_of_jsx.docs.syntax";
+    var normalize = function (value) {
+      return value === "mlx" || value === "reason" ? value : null;
+    };
+    var search = window.location.search;
+    var queryParam = null;
+    if (search && search.indexOf("syntax=") !== -1) {
+      try {
+        queryParam = normalize(new URLSearchParams(search).get("syntax"));
+      } catch (_error) {}
+    }
+    var stored = null;
+    try { stored = normalize(localStorage.getItem(syntaxKey)); } catch (_error) {}
+    if (queryParam && queryParam !== stored) {
+      try { localStorage.setItem(syntaxKey, queryParam); } catch (_error) {}
+    }
+    var resolvedSyntax = queryParam || stored || "reason";
+    root.setAttribute("data-doc-syntax", resolvedSyntax);
+  } catch (_error) {
+    root.setAttribute("data-doc-syntax", "reason");
+  }
+  root.setAttribute("data-syntax-ready", "");
 })();
 |}
         )

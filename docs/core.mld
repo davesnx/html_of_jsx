@@ -2,8 +2,6 @@
 
 {1 Primitives}
 
-bpoooo
-
 [html_of_jsx] uses JSX to describe the user interface, and then renders it to HTML.
 
 JSX trees are built from values of type [JSX.element]. Each value needs to be wrapped with helpers to become elements:
@@ -321,4 +319,3 @@ JSX.render_streaming
   (fun chunk -> Dream.write stream chunk)
   (<main> <h1>(JSX.string "Streaming")</h1> </main>)
 ]}
-

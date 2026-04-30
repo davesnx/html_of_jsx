@@ -4,7 +4,8 @@
   --font-body: system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-head: "Spline Sans", "Segoe UI", system-ui, sans-serif;
   --font-logo: "IBM Plex Mono", "SFMono-Regular", monospace;
-  --font-mono: "IBM Plex Mono", "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  --font-mono:
+    "IBM Plex Mono", "SFMono-Regular", Consolas, "Liberation Mono", monospace;
 
   --bg-page: oklch(95.16% 0.0205 81.78);
   --bg-page-alt: oklch(93.26% 0.0233 75.85);
@@ -13,22 +14,22 @@
   --bg-surface-muted: oklch(95.49% 0.0193 80.12);
   --bg-header: oklch(93.47% 0.0319 82.77);
   --bg-toggle-active: oklch(90.84% 0.0309 72.16);
-  --bg-menu-link-hover: oklch(96.52% 0.0250 69.44);
-  --bg-inline-code: oklch(93.13% 0.0284 74.30);
+  --bg-menu-link-hover: oklch(96.52% 0.025 69.44);
+  --bg-inline-code: oklch(93.13% 0.0284 74.3);
   --bg-table-head: oklch(94.69% 0.0227 78.22);
   --bg-code-meta: oklch(94.55% 0.0238 73.61);
   --bg-code-copy-hover: oklch(89.35% 0.0338 73.17);
   --bg-code-copy-active: oklch(86.44% 0.0404 73.39);
 
   --text-primary: oklch(26.03% 0.0057 91.59);
-  --text-secondary: oklch(47.01% 0.0128 76.50);
-  --text-strong: oklch(26.40% 0.0371 54.78);
+  --text-secondary: oklch(47.01% 0.0128 76.5);
+  --text-strong: oklch(26.4% 0.0371 54.78);
   --text-heading: oklch(25.32% 0.0339 55.76);
-  --text-emphasis: oklch(30.10% 0.0346 60.42);
+  --text-emphasis: oklch(30.1% 0.0346 60.42);
   --text-emphasis-alt: oklch(28.82% 0.0318 57.95);
   --text-subtle: oklch(40.68% 0.0242 64.59);
   --text-code-inline: oklch(35.29% 0.0568 50.04);
-  --text-code-meta: oklch(45.79% 0.0290 71.00);
+  --text-code-meta: oklch(45.79% 0.029 71);
   --text-code-button: oklch(39.21% 0.0233 61.87);
 
   --border-subtle: oklch(90.76% 0.0303 73.88);
@@ -43,7 +44,7 @@
 
   --radius-lg: 18px;
   --radius-md: 12px;
-  --shadow-soft: 0 12px 35px oklch(28.47% 0.0370 63.71 / 0.1);
+  --shadow-soft: 0 12px 35px oklch(28.47% 0.037 63.71 / 0.1);
   --shadow-card: 0 10px 24px oklch(37.97% 0.0592 68.15 / 0.08);
 }
 
@@ -67,43 +68,43 @@
 :root[data-doc-theme="dark"] {
   color-scheme: dark;
 
-  --bg-page: oklch(26.50% 0.0180 58.00);
-  --bg-page-alt: oklch(29.00% 0.0180 58.00);
-  --bg-surface: oklch(31.00% 0.0200 57.00);
-  --bg-surface-raised: oklch(34.00% 0.0220 56.00);
-  --bg-surface-muted: oklch(32.40% 0.0200 57.00);
-  --bg-header: oklch(27.80% 0.0200 58.00 / 0.90);
-  --bg-toggle-active: oklch(38.50% 0.0300 54.00);
-  --bg-menu-link-hover: oklch(36.50% 0.0260 56.00);
-  --bg-inline-code: oklch(35.50% 0.0280 54.00);
-  --bg-table-head: oklch(36.80% 0.0250 57.00);
-  --bg-code-meta: oklch(34.70% 0.0220 58.00);
-  --bg-code-copy-hover: oklch(41.00% 0.0330 52.00);
-  --bg-code-copy-active: oklch(43.50% 0.0360 51.00);
+  --bg-page: oklch(26.5% 0.018 58);
+  --bg-page-alt: oklch(29% 0.018 58);
+  --bg-surface: oklch(31% 0.02 57);
+  --bg-surface-raised: oklch(34% 0.022 56);
+  --bg-surface-muted: oklch(32.4% 0.02 57);
+  --bg-header: oklch(27.8% 0.02 58 / 0.9);
+  --bg-toggle-active: oklch(38.5% 0.03 54);
+  --bg-menu-link-hover: oklch(36.5% 0.026 56);
+  --bg-inline-code: oklch(35.5% 0.028 54);
+  --bg-table-head: oklch(36.8% 0.025 57);
+  --bg-code-meta: oklch(34.7% 0.022 58);
+  --bg-code-copy-hover: oklch(41% 0.033 52);
+  --bg-code-copy-active: oklch(43.5% 0.036 51);
 
-  --text-primary: oklch(83.50% 0.0130 70.00);
-  --text-secondary: oklch(69.00% 0.0120 72.00);
-  --text-strong: oklch(87.00% 0.0150 70.00);
-  --text-heading: oklch(85.50% 0.0160 68.00);
-  --text-emphasis: oklch(88.00% 0.0170 66.00);
-  --text-emphasis-alt: oklch(82.00% 0.0140 68.00);
-  --text-subtle: oklch(73.50% 0.0120 70.00);
-  --text-code-inline: oklch(79.00% 0.0200 63.00);
-  --text-code-meta: oklch(71.00% 0.0120 72.00);
-  --text-code-button: oklch(75.00% 0.0120 70.00);
+  --text-primary: oklch(83.5% 0.013 70);
+  --text-secondary: oklch(69% 0.012 72);
+  --text-strong: oklch(87% 0.015 70);
+  --text-heading: oklch(85.5% 0.016 68);
+  --text-emphasis: oklch(88% 0.017 66);
+  --text-emphasis-alt: oklch(82% 0.014 68);
+  --text-subtle: oklch(73.5% 0.012 70);
+  --text-code-inline: oklch(79% 0.02 63);
+  --text-code-meta: oklch(71% 0.012 72);
+  --text-code-button: oklch(75% 0.012 70);
 
-  --border-subtle: oklch(44.00% 0.0170 58.00);
-  --border-strong: oklch(49.00% 0.0210 56.00);
+  --border-subtle: oklch(44% 0.017 58);
+  --border-strong: oklch(49% 0.021 56);
 
   --border-code-meta: var(--border-subtle);
-  --border-code-body: #221C17;
+  --border-code-body: #221c17;
 
-  --brand-link: oklch(72.00% 0.0820 58.00);
-  --brand-link-hover: oklch(77.00% 0.0950 57.00);
-  --focus-ring: oklch(70.00% 0.1100 235.00);
+  --brand-link: oklch(72% 0.082 58);
+  --brand-link-hover: oklch(77% 0.095 57);
+  --focus-ring: oklch(70% 0.11 235);
 
-  --shadow-soft: 0 12px 35px oklch(11.00% 0.0110 58.00 / 0.24);
-  --shadow-card: 0 10px 24px oklch(10.00% 0.0100 58.00 / 0.20);
+  --shadow-soft: 0 12px 35px oklch(11% 0.011 58 / 0.24);
+  --shadow-card: 0 10px 24px oklch(10% 0.01 58 / 0.2);
 }
 
 * {
@@ -152,7 +153,7 @@ button:focus-visible {
   width: 100%;
   max-width: 980px;
   margin: 0 auto;
-  padding: 0.95rem 1rem 0.85rem;
+  padding: 1rem 1rem 0rem;
 }
 
 .site-header__top {
@@ -251,7 +252,9 @@ button:focus-visible {
   color: var(--text-secondary);
   background: transparent;
   text-decoration: none;
-  transition: background-color 180ms ease, color 180ms ease;
+  transition:
+    background-color 180ms ease,
+    color 180ms ease;
 }
 
 .site-brand__github-icon {
@@ -294,7 +297,9 @@ button:focus-visible {
   color: var(--text-secondary);
   background: transparent;
   cursor: pointer;
-  transition: background-color 180ms ease, color 180ms ease;
+  transition:
+    background-color 180ms ease,
+    color 180ms ease;
 }
 
 .syntax-toggle__icon {
@@ -329,6 +334,7 @@ button:focus-visible {
   display: flex;
   flex-wrap: nowrap;
   gap: 0.45rem;
+  margin: -1px;
 }
 
 .site-menu__list li {
@@ -340,8 +346,6 @@ button:focus-visible {
   display: block;
   text-align: center;
   border-radius: 8px;
-  border: 1px solid var(--border-subtle);
-  background: var(--bg-surface-raised);
   padding: 0.35rem 0.72rem;
   font-family: var(--font-mono);
   font-size: 0.74rem;
@@ -352,11 +356,14 @@ button:focus-visible {
     background-color 180ms ease,
     border-color 180ms ease,
     color 180ms ease;
+
+  border-bottom-left-radius: 0px;
+  border-bottom-right-radius: 0px;
 }
 
 .site-menu__link:hover {
   background: var(--bg-menu-link-hover);
-  border-color: var(--border-subtle);
+  /*border-color: var(--border-subtle);*/
   color: var(--text-emphasis-alt);
   text-decoration: none;
 }
@@ -364,8 +371,9 @@ button:focus-visible {
 .site-menu__link--active,
 .site-menu__link[aria-current="page"] {
   color: var(--text-emphasis);
-  border: 1px solid transparent;
-  background: var(--bg-toggle-active);
+  border: 1px solid var(--border-subtle);
+  border-bottom: none;
+  background: var(--bg-page);
 }
 
 .doc-main {
@@ -380,11 +388,11 @@ button:focus-visible {
   padding: 0;
 }
 
-.doc-prose> :first-child {
+.doc-prose > :first-child {
   margin-top: 0;
 }
 
-.doc-prose> :last-child {
+.doc-prose > :last-child {
   margin-bottom: 0;
 }
 
@@ -440,11 +448,11 @@ button:focus-visible {
   padding-left: 1.2rem;
 }
 
-.doc-prose li+li {
+.doc-prose li + li {
   margin-top: 0.35rem;
 }
 
-.doc-prose :not(pre)>code {
+.doc-prose :not(pre) > code {
   font-family: var(--font-mono);
   font-size: 0.88em;
   font-weight: 600;
@@ -525,7 +533,9 @@ button:focus-visible {
   text-transform: uppercase;
   padding: 0.22rem 0.5rem;
   cursor: pointer;
-  transition: background-color 150ms ease, color 150ms ease;
+  transition:
+    background-color 150ms ease,
+    color 150ms ease;
 }
 
 .doc-code__copy-icon {
@@ -584,6 +594,12 @@ html[data-doc-syntax="mlx"] .doc-code-pair .doc-code[data-syntax="mlx"] {
   display: block;
 }
 
+@media (scripting: enabled) {
+  html:not([data-syntax-ready]) .doc-code-pair .doc-code[data-syntax] {
+    visibility: hidden;
+  }
+}
+
 @media (max-width: 980px) {
   .site-header__top {
     align-items: flex-start;
@@ -639,7 +655,6 @@ html[data-doc-syntax="mlx"] .doc-code-pair .doc-code[data-syntax="mlx"] {
 }
 
 @media (prefers-reduced-motion: reduce) {
-
   *,
   *::before,
   *::after {
