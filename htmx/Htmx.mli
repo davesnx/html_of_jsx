@@ -11,8 +11,8 @@ val make : ?version:string -> ?integrity:string -> unit -> JSX.element
 
 (** Helpers that load official htmx extensions from unpkg.
 
-    Each function emits a [<script src="...">] tag for the matching
-    [htmx-ext-*] package. Pin the version in production:
+    Each function emits a [<script src="...">] tag for the matching [htmx-ext-*]
+    package. Pin the version in production:
 
     {[
       <Htmx.Extensions.sse version="2.2.2" />

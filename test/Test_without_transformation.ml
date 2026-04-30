@@ -164,9 +164,7 @@ let jsx_unsafe =
 
 let format_text =
   test "format_text" @@ fun () ->
-  let app =
-    JSX.node "p" [] [ JSX.format "Hello %s %c %i 100%%" "<b>" '<' 7 ]
-  in
+  let app = JSX.node "p" [] [ JSX.format "Hello %s %c %i 100%%" "<b>" '<' 7 ] in
   assert_string (JSX.render app) "<p>Hello &lt;b&gt; &lt; 7 100%</p>"
 
 let render_svg =

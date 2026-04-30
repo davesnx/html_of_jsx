@@ -27,18 +27,22 @@ let extract_version_from_changes content =
     String.length s > 0 && s.[0] >= '0' && s.[0] <= '9'
   in
   let rec find = function
-    | [] -> None
+    | [] ->
+        None
     | line :: rest ->
         let line = String.trim line in
         let prefix = "## " in
         let plen = String.length prefix in
-        if
-          String.length line > plen
-          && String.sub line 0 plen = prefix
-        then
-          let token = String.trim (String.sub line plen (String.length line - plen)) in
-          if starts_with_digit token then Some token else find rest
-        else find rest
+        if String.length line > plen && String.sub line 0 plen = prefix then
+          let token =
+            String.trim (String.sub line plen (String.length line - plen))
+          in
+          if starts_with_digit token then
+            Some token
+          else
+            find rest
+        else
+          find rest
   in
   find lines
 
@@ -56,10 +60,13 @@ let resolve_version () =
   match read_file_opt changes_path with
   | Some content -> (
       match extract_version_from_changes content with
-      | Some v -> v
-      | None -> "dev"
+      | Some v ->
+          v
+      | None ->
+          "dev"
     )
-  | None -> "dev"
+  | None ->
+      "dev"
 
 let site_version = resolve_version ()
 
@@ -90,14 +97,21 @@ let sidebar_label_overrides =
    This keeps the parent/child relationship visible in a flat list. *)
 let label_from_api_source_name source_name =
   let stem = Filename.remove_extension source_name in
-  String.map (fun c -> if c = '-' then '.' else c) stem
+  String.map
+    (fun c ->
+      if c = '-' then
+        '.'
+      else
+        c
+    )
+    stem
 
-let is_api_source_name source_name =
-  not (List.mem source_name guide_order)
+let is_api_source_name source_name = not (List.mem source_name guide_order)
 
 let sidebar_label_for ~source_name ~title =
   match List.assoc_opt source_name sidebar_label_overrides with
-  | Some override -> override
+  | Some override ->
+      override
   | None when is_api_source_name source_name ->
       label_from_api_source_name source_name
   | None ->
@@ -349,8 +363,7 @@ let code_caption ~badge () =
    the left and the Copy button on the right — replacing the language badge. *)
 let code_caption_pair () =
   <figcaption class_="doc-code__meta doc-code__meta--pair">
-    <code_pair_tabs />
-    <copy_button />
+    <code_pair_tabs /> <copy_button />
   </figcaption>
 
 let code_figure ?syntax ~label ~code () =
@@ -570,7 +583,16 @@ let sidebar_link ~href ~label ~is_active () =
    alphabetic chars, so a parent always precedes its dotted children. *)
 let api_sort_key source_name =
   let stem = Filename.remove_extension source_name in
-  let dotted = String.map (fun c -> if c = '-' then '.' else c) stem in
+  let dotted =
+    String.map
+      (fun c ->
+        if c = '-' then
+          '.'
+        else
+          c
+      )
+      stem
+  in
   String.lowercase_ascii dotted
 
 let api_pages_sorted pages =
@@ -581,9 +603,8 @@ let api_pages_sorted pages =
   let sorted_others =
     List.sort
       (fun a b ->
-        String.compare
-          (api_sort_key a.source_name)
-          (api_sort_key b.source_name))
+        String.compare (api_sort_key a.source_name) (api_sort_key b.source_name)
+      )
       others
   in
   pinned_first @ sorted_others
@@ -655,9 +676,7 @@ let breadcrumbs ~current () =
         <li class_="doc-breadcrumb__item doc-breadcrumb__item--section">
           (JSX.string section_label)
         </li>
-        <li class_="doc-breadcrumb__sep-item">
-          <breadcrumb_separator />
-        </li>
+        <li class_="doc-breadcrumb__sep-item"><breadcrumb_separator /></li>
         <li
           class_="doc-breadcrumb__item doc-breadcrumb__item--current"
           aria_current=`page>
@@ -668,11 +687,13 @@ let breadcrumbs ~current () =
 
 let brand_logo () =
   <a class_="site-brand" href="index.html">
-    <span class_="site-brand__bracket site-brand__bracket--open" aria_hidden=true>
+    <span
+      class_="site-brand__bracket site-brand__bracket--open" aria_hidden=true>
       (JSX.string "<")
     </span>
     <span class_="site-brand__name">(JSX.string "html_of_jsx")</span>
-    <span class_="site-brand__bracket site-brand__bracket--close" aria_hidden=true>
+    <span
+      class_="site-brand__bracket site-brand__bracket--close" aria_hidden=true>
       (JSX.string "/>")
     </span>
   </a>
@@ -791,16 +812,9 @@ let page ~pages ~current () =
     <body>
       <skip_link />
       <input
-        id="nav-toggle"
-        class_="nav-toggle"
-        type_=`checkbox
-        aria_hidden=true
+        id="nav-toggle" class_="nav-toggle" type_=`checkbox aria_hidden=true
       />
-      <label
-        class_="nav-backdrop"
-        for_="nav-toggle"
-        aria_hidden=true
-      />
+      <label class_="nav-backdrop" for_="nav-toggle" aria_hidden=true />
       <header class_="site-header">
         <div class_="site-header__inner">
           <div class_="site-header__leading">

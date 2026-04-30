@@ -28,7 +28,8 @@ module Extensions = struct
 
   let sse ?version () = extension_script ~package:"sse" ?version ()
   let ws ?version () = extension_script ~package:"ws" ?version ()
-  let class_tools ?version () = extension_script ~package:"class-tools" ?version ()
+  let class_tools ?version () =
+    extension_script ~package:"class-tools" ?version ()
   let preload ?version () = extension_script ~package:"preload" ?version ()
   let path_deps ?version () = extension_script ~package:"path-deps" ?version ()
 
