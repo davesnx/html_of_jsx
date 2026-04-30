@@ -196,13 +196,13 @@ Pass [integrity] to enable SRI.
 
 {1 Extensions}
 
-Use components under [Htmx.Extensions] for extension scripts. Each extension adds its own attributes to the JSX vocabulary.
+[Htmx.Extensions] exposes one helper per official htmx extension. Each function emits the matching [<script src="...">] tag. Each extension also adds its own attributes to the JSX vocabulary.
 
 {@reasonml[
 <head>
   <Htmx version="2.0.4" />
-  <Htmx.Extensions.SSE version="2.2.2" />
-  <Htmx.Extensions.WS version="2.2.0" />
+  <Htmx.Extensions.sse version="2.2.2" />
+  <Htmx.Extensions.ws version="2.2.0" />
 </head>
 ]}
 
@@ -241,14 +241,14 @@ Use components under [Htmx.Extensions] for extension scripts. Each extension add
 {2 Available extension loaders}
 
 {ul
-{- [<Htmx.Extensions.SSE />]}
-{- [<Htmx.Extensions.WS />]}
-{- [<Htmx.Extensions.Class_tools />]}
-{- [<Htmx.Extensions.Preload />]}
-{- [<Htmx.Extensions.Path_deps />]}
-{- [<Htmx.Extensions.Loading_states />]}
-{- [<Htmx.Extensions.Response_targets />]}
-{- [<Htmx.Extensions.Head_support />]}
+{- [<Htmx.Extensions.sse />]}
+{- [<Htmx.Extensions.ws />]}
+{- [<Htmx.Extensions.class_tools />]}
+{- [<Htmx.Extensions.preload />]}
+{- [<Htmx.Extensions.path_deps />]}
+{- [<Htmx.Extensions.loading_states />]}
+{- [<Htmx.Extensions.response_targets />]}
+{- [<Htmx.Extensions.head_support />]}
 }
 
 {1 The entire page}
@@ -261,7 +261,7 @@ let page = () => {
     <head>
       <title> {JSX.string("htmx + html_of_jsx")} </title>
       <Htmx version="2.0.4" />
-      <Htmx.Extensions.SSE version="2.2.2" />
+      <Htmx.Extensions.sse version="2.2.2" />
     </head>
     <body>
       <button hx_get="/clicked" hx_swap=`outerHTML>
@@ -280,7 +280,7 @@ let page () =
     <head>
       <title>(JSX.string "htmx + html_of_jsx")</title>
       <Htmx version="2.0.4" />
-      <Htmx.Extensions.SSE version="2.2.2" />
+      <Htmx.Extensions.sse version="2.2.2" />
     </head>
     <body>
       <button hx_get="/clicked" hx_swap=`outerHTML>

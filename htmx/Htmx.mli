@@ -9,36 +9,39 @@ val make : ?version:string -> ?integrity:string -> unit -> JSX.element
     When [integrity] is provided, adds [integrity] and [crossorigin="anonymous"]
     attributes for subresource integrity. *)
 
+(** Helpers that load official htmx extensions from unpkg.
+
+    Each function emits a [<script src="...">] tag for the matching
+    [htmx-ext-*] package. Pin the version in production:
+
+    {[
+      <Htmx.Extensions.sse version="2.2.2" />
+      (* <script src="https://unpkg.com/htmx-ext-sse@2.2.2"></script> *)
+    ]}
+
+    See {{:https://htmx.org/extensions/} the official extensions list}. *)
 module Extensions : sig
-  module SSE : sig
-    val make : ?version:string -> unit -> JSX.element
-  end
+  val sse : ?version:string -> unit -> JSX.element
+  (** Loads [htmx-ext-sse]. *)
 
-  module WS : sig
-    val make : ?version:string -> unit -> JSX.element
-  end
+  val ws : ?version:string -> unit -> JSX.element
+  (** Loads [htmx-ext-ws]. *)
 
-  module Class_tools : sig
-    val make : ?version:string -> unit -> JSX.element
-  end
+  val class_tools : ?version:string -> unit -> JSX.element
+  (** Loads [htmx-ext-class-tools]. *)
 
-  module Preload : sig
-    val make : ?version:string -> unit -> JSX.element
-  end
+  val preload : ?version:string -> unit -> JSX.element
+  (** Loads [htmx-ext-preload]. *)
 
-  module Path_deps : sig
-    val make : ?version:string -> unit -> JSX.element
-  end
+  val path_deps : ?version:string -> unit -> JSX.element
+  (** Loads [htmx-ext-path-deps]. *)
 
-  module Loading_states : sig
-    val make : ?version:string -> unit -> JSX.element
-  end
+  val loading_states : ?version:string -> unit -> JSX.element
+  (** Loads [htmx-ext-loading-states]. *)
 
-  module Response_targets : sig
-    val make : ?version:string -> unit -> JSX.element
-  end
+  val response_targets : ?version:string -> unit -> JSX.element
+  (** Loads [htmx-ext-response-targets]. *)
 
-  module Head_support : sig
-    val make : ?version:string -> unit -> JSX.element
-  end
+  val head_support : ?version:string -> unit -> JSX.element
+  (** Loads [htmx-ext-head-support]. *)
 end

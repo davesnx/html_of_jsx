@@ -26,37 +26,18 @@ module Extensions = struct
     in
     script_node src
 
-  module SSE = struct
-    let make ?version () = extension_script ~package:"sse" ?version ()
-  end
+  let sse ?version () = extension_script ~package:"sse" ?version ()
+  let ws ?version () = extension_script ~package:"ws" ?version ()
+  let class_tools ?version () = extension_script ~package:"class-tools" ?version ()
+  let preload ?version () = extension_script ~package:"preload" ?version ()
+  let path_deps ?version () = extension_script ~package:"path-deps" ?version ()
 
-  module WS = struct
-    let make ?version () = extension_script ~package:"ws" ?version ()
-  end
+  let loading_states ?version () =
+    extension_script ~package:"loading-states" ?version ()
 
-  module Class_tools = struct
-    let make ?version () = extension_script ~package:"class-tools" ?version ()
-  end
+  let response_targets ?version () =
+    extension_script ~package:"response-targets" ?version ()
 
-  module Preload = struct
-    let make ?version () = extension_script ~package:"preload" ?version ()
-  end
-
-  module Path_deps = struct
-    let make ?version () = extension_script ~package:"path-deps" ?version ()
-  end
-
-  module Loading_states = struct
-    let make ?version () =
-      extension_script ~package:"loading-states" ?version ()
-  end
-
-  module Response_targets = struct
-    let make ?version () =
-      extension_script ~package:"response-targets" ?version ()
-  end
-
-  module Head_support = struct
-    let make ?version () = extension_script ~package:"head-support" ?version ()
-  end
+  let head_support ?version () =
+    extension_script ~package:"head-support" ?version ()
 end
