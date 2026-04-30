@@ -5,7 +5,7 @@ type static_part =
   | Dynamic_string of expression
   | Dynamic_int of expression
   | Dynamic_float of expression
-  | Dynamic_stringf of expression * (arg_label * expression) list
+  | Dynamic_format of expression * (arg_label * expression) list
   | Dynamic_element of expression
 
 let rec coalesce_static_parts = function
@@ -147,14 +147,14 @@ let extract_jsx_float_arg expr =
   | _ ->
       None
 
-let extract_jsx_stringf_call expr =
+let extract_jsx_format_call expr =
   match expr.pexp_desc with
   | Pexp_apply
-      ( { pexp_desc = Pexp_ident { txt = Ldot (Lident "JSX", "stringf"); _ }; _ },
+      ( { pexp_desc = Pexp_ident { txt = Ldot (Lident "JSX", "format"); _ }; _ },
         (Nolabel, fmt) :: args
       )
   | Pexp_apply
-      ( { pexp_desc = Pexp_ident { txt = Lident "stringf"; _ }; _ },
+      ( { pexp_desc = Pexp_ident { txt = Lident "format"; _ }; _ },
         (Nolabel, fmt) :: args
       ) ->
       Some (fmt, args)
@@ -192,7 +192,7 @@ let extract_literal_format_arg = function
   | _ ->
       None
 
-let render_literal_stringf fmt args =
+let render_literal_format fmt args =
   let len = String.length fmt in
   let buf = Buffer.create len in
   let rec loop i remaining_args =
@@ -254,12 +254,12 @@ let render_literal_stringf fmt args =
   in
   loop 0 args
 
-let extract_jsx_stringf_literal expr =
-  match extract_jsx_stringf_call expr with
+let extract_jsx_format_literal expr =
+  match extract_jsx_format_call expr with
   | Some (fmt_expr, args) -> (
       match extract_literal_string fmt_expr with
       | Some fmt ->
-          render_literal_stringf fmt args |> Option.map escape_html
+          render_literal_format fmt args |> Option.map escape_html
       | None ->
           None
     )
@@ -512,11 +512,11 @@ let analyze_child (expr : expression) : static_part =
         |> Option.map (fun f -> Static_str (Float.to_string f))
       );
       (fun () ->
-        extract_jsx_stringf_literal expr |> Option.map (fun s -> Static_str s)
+        extract_jsx_format_literal expr |> Option.map (fun s -> Static_str s)
       );
       (fun () ->
-        extract_jsx_stringf_call expr
-        |> Option.map (fun (fmt, args) -> Dynamic_stringf (fmt, args))
+        extract_jsx_format_call expr
+        |> Option.map (fun (fmt, args) -> Dynamic_format (fmt, args))
       );
       (fun () ->
         extract_jsx_string_arg expr |> Option.map (fun e -> Dynamic_string e)

@@ -4,7 +4,7 @@
 
 - Fix `data-attributes` being rendered as `data_-attributes` (@davesnx)
 - Add `JSX.pp` for pretty-printing HTML with indentation, powered by `pretty_expressive` (@davesnx)
-- Add `JSX.stringf` for escaped `Printf`-style text formatting and teach the PPX to optimize literal-only `stringf` calls at compile time (@davesnx)
+- Add `JSX.format` for escaped `Printf`-style text formatting and teach the PPX to optimize literal-only `format` calls at compile time (@davesnx)
 - Improve runtime render speed in `JSX.write` by replacing iterator-heavy paths with direct recursion and indexed array traversal (@davesnx)
 - Reduce default render buffer sizes (`1024 -> 256`) and improve PPX-generated buffer capacity estimation for dynamic/optional attribute code paths (@davesnx)
 - Add a compile-time fast path for static HTML escaping in `ppx/static_analysis.ml` to avoid buffer work when no escaping is required (@davesnx)

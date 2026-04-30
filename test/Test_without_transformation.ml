@@ -162,10 +162,10 @@ let jsx_unsafe =
      el.classList.remove(\"hidden\"); setTimeout(() => { \
      el.classList.add(\"hidden\"); }, 3000); } </script>"
 
-let stringf_text =
-  test "stringf_text" @@ fun () ->
+let format_text =
+  test "format_text" @@ fun () ->
   let app =
-    JSX.node "p" [] [ JSX.stringf "Hello %s %c %i 100%%" "<b>" '<' 7 ]
+    JSX.node "p" [] [ JSX.format "Hello %s %c %i 100%%" "<b>" '<' 7 ]
   in
   assert_string (JSX.render app) "<p>Hello &lt;b&gt; &lt; 7 100%</p>"
 
@@ -226,6 +226,6 @@ let tests =
       render_with_doc_type;
       render_svg;
       jsx_unsafe;
-      stringf_text;
+      format_text;
     ]
   )

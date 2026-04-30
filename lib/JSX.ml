@@ -101,7 +101,7 @@ type element =
 
 let string txt = String txt
 let text = string
-let stringf fmt = Printf.ksprintf string fmt
+let format fmt = Printf.ksprintf string fmt
 let unsafe txt = Unsafe txt
 let null = Null
 let int i = Int i

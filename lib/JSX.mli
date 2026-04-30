@@ -247,17 +247,17 @@ val text : string -> element
       let element : JSX.element = JSX.text "Hello, World!"
     ]} *)
 
-val stringf : ('a, unit, string, element) format4 -> 'a
+val format : ('a, unit, string, element) format4 -> 'a
 (** Helper to render formatted text as a JSX element.
 
     This formats a string using [Printf]-style directives and then renders the
     result as escaped text, just like [JSX.string].
 
     {@reasonml[
-      let element : JSX.element = JSX.stringf("Hello %s #%i", name, count);
+      let element : JSX.element = JSX.format("Hello %s #%i", name, count);
     ]}
     {@mlx[
-      let element : JSX.element = JSX.stringf "Hello %s #%i" name count
+      let element : JSX.element = JSX.format "Hello %s #%i" name count
     ]} *)
 
 val unsafe : string -> element

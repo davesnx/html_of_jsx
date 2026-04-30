@@ -13,9 +13,9 @@ let nested_static =
   <div> <span> <b> {JSX.string("hello")} </b> </span> </div>;
 let static_with_text = <div> {JSX.string("hello world")} </div>;
 let static_formatted_text =
-  <div> {JSX.stringf("Hello %s %c %i 100%%", "<b>", '<', 7)} </div>;
+  <div> {JSX.format("Hello %s %c %i 100%%", "<b>", '<', 7)} </div>;
 let unsupported_static_formatted_text =
-  <div> {JSX.stringf("Price %f", 3.14)} </div>;
+  <div> {JSX.format("Price %f", 3.14)} </div>;
 
 /* Test: DOCTYPE for html tag */
 let html_page =
@@ -41,14 +41,14 @@ let dynamic_five_strings = (a, b, c, d, e) =>
     {JSX.string(e)}
   </span>;
 let dynamic_formatted_child = (name, initial, count) =>
-  <div> {JSX.stringf("Hello %s %c %i", name, initial, count)} </div>;
+  <div> {JSX.format("Hello %s %c %i", name, initial, count)} </div>;
 
 /* Test: Dynamic attributes */
 let dynamic_attr = className => <div class_=className />;
 let dynamic_attr_with_string_child = (className, name) =>
   <div class_=className> {JSX.string(name)} </div>;
 let dynamic_attr_with_formatted_child = (className, name, count) =>
-  <div class_=className> {JSX.stringf("Hello %s %i", name, count)} </div>;
+  <div class_=className> {JSX.format("Hello %s %i", name, count)} </div>;
 let dynamic_attr_with_mixed_child = (className, child) =>
   <div class_=className> child </div>;
 let dynamic_bool_attr_with_child = (disabled, name) =>

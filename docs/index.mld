@@ -14,7 +14,7 @@ A JSX transformation and a library to write HTML in {{:https://reasonml.github.i
 {- Minimal core API
   {ul
   {- [JSX.render] to render a JSX element to an HTML string}
-  {- Helpers: [JSX.string], [JSX.stringf], [JSX.int], [JSX.float], [JSX.null], [JSX.list], [JSX.array], [JSX.unsafe]}
+  {- Helpers: [JSX.string], [JSX.format], [JSX.int], [JSX.float], [JSX.null], [JSX.list], [JSX.array], [JSX.unsafe]}
   {- Advanced rendering: [JSX.render_to_channel], [JSX.render_streaming]}
   }}
 {- Designed to work on the server, but can be used on the client side as well (with {{:https://melange.re}Melange} or {{:https://ocsigen.org/js_of_ocaml/}js_of_ocaml})}
