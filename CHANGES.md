@@ -3,6 +3,8 @@
 ## Unreleased
 
 - Renamed `JSX.stringf` -> `JSX.format` (@davesnx)
+- Add zero-copy fast path in `JSX.render`: `Unsafe`/`Null`/`String` elements skip the intermediate buffer entirely, making rendering of fully optimized trees free (@davesnx)
+- PPX buffer splicing: nested JSX elements now write directly into the parent's buffer instead of materializing an intermediate buffer and string per element, cutting render time up to ~50% and allocations up to ~60% on dynamic pages (@davesnx)
 
 ## 0.0.9
 

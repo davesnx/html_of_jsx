@@ -30,22 +30,15 @@
       (),
     );
   let component = (~name) => {
-    let __html_buf = Buffer.create(75);
+    let __html_buf = Buffer.create(84);
     {
       Buffer.add_string(__html_buf, "<div>");
-      JSX.write(
-        __html_buf,
-        {
-          let __html_buf = Buffer.create(73);
-          {
-            Buffer.add_string(__html_buf, "<h1>");
-            JSX.write(__html_buf, "Hello, " ++ name ++ "!");
-            Buffer.add_string(__html_buf, "</h1>");
-            ();
-          };
-          JSX.unsafe(Buffer.contents(__html_buf));
-        },
-      );
+      {
+        Buffer.add_string(__html_buf, "<h1>");
+        JSX.write(__html_buf, "Hello, " ++ name ++ "!");
+        Buffer.add_string(__html_buf, "</h1>");
+        ();
+      };
       Buffer.add_string(__html_buf, "</div>");
       ();
     };

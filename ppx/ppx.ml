@@ -256,18 +256,167 @@ let transform_attributes ~loc ~tag_name attrs =
       [%expr Stdlib.List.filter_map Stdlib.Fun.id [%e attrs]]
 
 let default_buffer_size = 256
+let buffer_var_name = "__html_buf"
 
 let generate_dynamic_format_code ~loc ~buf_ident fmt args =
   let callback = [%expr JSX.escape [%e buf_ident]] in
   let base = [%expr Printf.ksprintf [%e callback] [%e fmt]] in
   pexp_apply ~loc base args
 
+(* Buffer splicing: detect a child expression that is exactly the code shape
+   this ppx generates for a dynamic element:
+
+     let __html_buf = Buffer.create <int> in
+     <ops>;
+     JSX.unsafe (Buffer.contents __html_buf)
+
+   When a parent element writes such a child with [JSX.write __html_buf child],
+   the child allocates its own buffer, copies it into a string
+   (Buffer.contents) and then JSX.write copies that string into the parent
+   buffer. Since the parent buffer variable shares the same name
+   ([buffer_var_name]), we can drop the inner [let] and splice <ops> directly
+   into the parent's sequence: every reference to __html_buf inside <ops> then
+   resolves to the parent's buffer, skipping the intermediate buffer and both
+   string copies.
+
+   Returns [Some (estimated_size, ops)] where [estimated_size] is the child's
+   Buffer.create size estimate and [ops] is the inner operations sequence
+   (a nested Pexp_sequence ending in [()]), or [None] when the expression is
+   not exactly this generated shape. *)
+let match_spliceable_buffer_expr (expr : expression) :
+    (int * expression) option =
+  match expr.pexp_desc with
+  | Pexp_let
+      ( Nonrecursive,
+        [
+          {
+            pvb_pat = { ppat_desc = Ppat_var { txt = pat_name; _ }; _ };
+            pvb_expr = create_expr;
+            _;
+          };
+        ],
+        body
+      )
+    when String.equal pat_name buffer_var_name -> (
+      let is_buffer_create_int =
+        match create_expr.pexp_desc with
+        | Pexp_apply
+            ( {
+                pexp_desc =
+                  Pexp_ident { txt = Ldot (Lident "Buffer", "create"); _ };
+                _;
+              },
+              [
+                ( Nolabel,
+                  { pexp_desc = Pexp_constant (Pconst_integer (size, None)); _ }
+                );
+              ]
+            ) ->
+            int_of_string_opt size
+        | _ ->
+            None
+      in
+      let is_jsx_unsafe_buffer_contents (final : expression) =
+        match final.pexp_desc with
+        | Pexp_apply
+            ( {
+                pexp_desc = Pexp_ident { txt = Ldot (Lident "JSX", "unsafe"); _ };
+                _;
+              },
+              [
+                ( Nolabel,
+                  {
+                    pexp_desc =
+                      Pexp_apply
+                        ( {
+                            pexp_desc =
+                              Pexp_ident
+                                { txt = Ldot (Lident "Buffer", "contents"); _ };
+                            _;
+                          },
+                          [
+                            ( Nolabel,
+                              {
+                                pexp_desc = Pexp_ident { txt = Lident buf; _ };
+                                _;
+                              }
+                            );
+                          ]
+                        );
+                    _;
+                  }
+                );
+              ]
+            ) ->
+            String.equal buf buffer_var_name
+        | _ ->
+            false
+      in
+      match (is_buffer_create_int, body.pexp_desc) with
+      | Some size, Pexp_sequence (ops, final)
+        when is_jsx_unsafe_buffer_contents final ->
+          Some (size, ops)
+      | _ ->
+          None
+    )
+  | _ ->
+      None
+
+(* Generate the buffer operation for a single static/dynamic part. Shared by
+   all codegen paths (buffer, dynamic attrs and optional attrs). *)
+let generate_part_code ~loc ~buf_ident part =
+  match part with
+  | Static_analysis.Static_str s ->
+      let s_expr = estring ~loc s in
+      [%expr Buffer.add_string [%e buf_ident] [%e s_expr]]
+  | Static_analysis.Dynamic_string expr ->
+      [%expr JSX.escape [%e buf_ident] [%e expr]]
+  | Static_analysis.Dynamic_int expr ->
+      (* Int.to_string cannot produce escapable characters, skip JSX.escape *)
+      [%expr Buffer.add_string [%e buf_ident] (Int.to_string [%e expr])]
+  | Static_analysis.Dynamic_float expr ->
+      (* Float.to_string cannot produce escapable characters, skip JSX.escape *)
+      [%expr Buffer.add_string [%e buf_ident] (Float.to_string [%e expr])]
+  | Static_analysis.Dynamic_format (fmt, args) ->
+      generate_dynamic_format_code ~loc ~buf_ident fmt args
+  | Static_analysis.Dynamic_element expr -> (
+      match match_spliceable_buffer_expr expr with
+      | Some (_size, ops) ->
+          (* Splice the child's buffer operations directly into the parent's
+             sequence, skipping the intermediate buffer allocation and string
+             copies. The spliced ops reference [buffer_var_name], which
+             resolves to the parent's buffer once the inner [let] is gone. *)
+          ops
+      | None ->
+          [%expr JSX.write [%e buf_ident] [%e expr]]
+    )
+
+(* Extra buffer size gained by splicing children: a spliceable child
+   contributes its own estimated size instead of the [reserved] bytes the
+   caller already accounts for per dynamic part. *)
+let extra_splice_size ~reserved parts =
+  List.fold_left parts ~init:0 ~f:(fun acc part ->
+      match part with
+      | Static_analysis.Dynamic_element expr -> (
+          match match_spliceable_buffer_expr expr with
+          | Some (size, _ops) ->
+              acc + max 0 (size - reserved)
+          | None ->
+              acc
+        )
+      | _ ->
+          acc
+  )
+
 let generate_buffer_code ~loc ~parts ~static_size ~dynamic_count =
   let buf_var = "__html_buf" in
   let buf_ident = pexp_ident ~loc { loc; txt = Lident buf_var } in
   let buf_pat = ppat_var ~loc { loc; txt = buf_var } in
-  (* Estimate buffer size: static + 64 bytes per dynamic part *)
-  let estimated_size = static_size + (dynamic_count * 64) in
+  (* Estimate buffer size: static + 64 bytes per dynamic part, plus the
+     estimated size of spliced children *)
+  let estimated_size =
+    static_size + (dynamic_count * 64) + extra_splice_size ~reserved:64 parts
+  in
   let buffer_size =
     if estimated_size > 0 then
       estimated_size
@@ -275,26 +424,7 @@ let generate_buffer_code ~loc ~parts ~static_size ~dynamic_count =
       default_buffer_size
   in
   let buffer_size_expr = eint ~loc buffer_size in
-  let generate_part_code part =
-    match part with
-    | Static_analysis.Static_str s ->
-        let s_expr = estring ~loc s in
-        [%expr Buffer.add_string [%e buf_ident] [%e s_expr]]
-    | Static_analysis.Dynamic_string expr ->
-        [%expr JSX.escape [%e buf_ident] [%e expr]]
-    | Static_analysis.Dynamic_int expr ->
-        (* Int.to_string cannot produce escapable characters, skip JSX.escape *)
-        [%expr Buffer.add_string [%e buf_ident] (Int.to_string [%e expr])]
-    | Static_analysis.Dynamic_float expr ->
-        (* Float.to_string cannot produce escapable characters, skip JSX.escape *)
-        [%expr Buffer.add_string [%e buf_ident] (Float.to_string [%e expr])]
-    | Static_analysis.Dynamic_format (fmt, args) ->
-        generate_dynamic_format_code ~loc ~buf_ident fmt args
-    | Static_analysis.Dynamic_element expr ->
-        [%expr JSX.write [%e buf_ident] [%e expr]]
-  in
-
-  let ops = List.map ~f:generate_part_code parts in
+  let ops = List.map ~f:(generate_part_code ~loc ~buf_ident) parts in
   let seq =
     List.fold_right ops ~init:[%expr ()] ~f:(fun op acc ->
         [%expr
@@ -349,7 +479,9 @@ let generate_dynamic_attrs_code ~loc analysis =
       5 + String.length tag_name
   in
   let estimated_size =
-    static_size + ((List.length dynamic_attrs + dynamic_children_count) * 64)
+    static_size
+    + ((List.length dynamic_attrs + dynamic_children_count) * 64)
+    + extra_splice_size ~reserved:64 children_parts
   in
   let buffer_size =
     if estimated_size > 0 then
@@ -409,23 +541,9 @@ let generate_dynamic_attrs_code ~loc analysis =
 
   let dynamic_attr_ops = List.map ~f:generate_dynamic_attr_code dynamic_attrs in
 
-  let generate_child_part_code part =
-    match part with
-    | Static_analysis.Static_str s ->
-        let s_expr = estring ~loc s in
-        [%expr Buffer.add_string [%e buf_ident] [%e s_expr]]
-    | Static_analysis.Dynamic_string expr ->
-        [%expr JSX.escape [%e buf_ident] [%e expr]]
-    | Static_analysis.Dynamic_int expr ->
-        [%expr Buffer.add_string [%e buf_ident] (Int.to_string [%e expr])]
-    | Static_analysis.Dynamic_float expr ->
-        [%expr Buffer.add_string [%e buf_ident] (Float.to_string [%e expr])]
-    | Static_analysis.Dynamic_format (fmt, args) ->
-        generate_dynamic_format_code ~loc ~buf_ident fmt args
-    | Static_analysis.Dynamic_element expr ->
-        [%expr JSX.write [%e buf_ident] [%e expr]]
+  let children_ops =
+    List.map ~f:(generate_part_code ~loc ~buf_ident) children_parts
   in
-  let children_ops = List.map ~f:generate_child_part_code children_parts in
 
   (* Generate opening tag end *)
   let open_tag_end =
@@ -504,7 +622,11 @@ let generate_optional_attrs_code ~loc analysis =
     else
       5 + String.length tag_name
   in
-  let estimated_size = static_size + (List.length optional_attrs * 64) in
+  let estimated_size =
+    static_size
+    + (List.length optional_attrs * 64)
+    + extra_splice_size ~reserved:0 children_parts
+  in
   let buffer_size =
     if estimated_size > 0 then
       estimated_size
@@ -580,24 +702,9 @@ let generate_optional_attrs_code ~loc analysis =
   in
 
   (* Generate code for children *)
-  let generate_part_code part =
-    match part with
-    | Static_analysis.Static_str s ->
-        let s_expr = estring ~loc s in
-        [%expr Buffer.add_string [%e buf_ident] [%e s_expr]]
-    | Static_analysis.Dynamic_string expr ->
-        [%expr JSX.escape [%e buf_ident] [%e expr]]
-    | Static_analysis.Dynamic_int expr ->
-        [%expr Buffer.add_string [%e buf_ident] (Int.to_string [%e expr])]
-    | Static_analysis.Dynamic_float expr ->
-        [%expr Buffer.add_string [%e buf_ident] (Float.to_string [%e expr])]
-    | Static_analysis.Dynamic_format (fmt, args) ->
-        generate_dynamic_format_code ~loc ~buf_ident fmt args
-    | Static_analysis.Dynamic_element expr ->
-        [%expr JSX.write [%e buf_ident] [%e expr]]
+  let children_ops =
+    List.map ~f:(generate_part_code ~loc ~buf_ident) children_parts
   in
-
-  let children_ops = List.map ~f:generate_part_code children_parts in
 
   (* Generate closing tag *)
   let close_tag =

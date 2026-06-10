@@ -161,9 +161,21 @@ let write out element =
   write element
 
 let render element =
-  let out = Buffer.create 256 in
-  write out element;
-  Buffer.contents out
+  match element with
+  | Null ->
+      ""
+  | Unsafe out ->
+      (* The ppx compiles most elements down to [Unsafe html], render is a
+         no-op in that case: return the string without copying. *)
+      out
+  | String text ->
+      let out = Buffer.create (String.length text) in
+      escape out text;
+      Buffer.contents out
+  | element ->
+      let out = Buffer.create 256 in
+      write out element;
+      Buffer.contents out
 
 let render_to_channel (chan : out_channel) element =
   let out = Buffer.create 256 in

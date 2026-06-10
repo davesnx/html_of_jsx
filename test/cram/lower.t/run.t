@@ -90,104 +90,69 @@
     JSX.unsafe(Buffer.contents(__html_buf));
   };
   let lower_children_nested = {
-    let __html_buf = Buffer.create(98);
+    let __html_buf = Buffer.create(245);
     {
       Buffer.add_string(__html_buf, "<div class=\"flex-container\">");
-      JSX.write(
-        __html_buf,
+      {
+        Buffer.add_string(__html_buf, "<div class=\"sidebar\">");
         {
-          let __html_buf = Buffer.create(155);
+          Buffer.add_string(__html_buf, "<h2 class=\"title\">");
+          JSX.write(__html_buf, "jsoo-react" |> s);
+          Buffer.add_string(__html_buf, "</h2>");
+          ();
+        };
+        {
+          Buffer.add_string(__html_buf, "<nav class=\"menu\">");
           {
-            Buffer.add_string(__html_buf, "<div class=\"sidebar\">");
+            Buffer.add_string(__html_buf, "<ul>");
             JSX.write(
               __html_buf,
-              {
-                let __html_buf = Buffer.create(87);
-                {
-                  Buffer.add_string(__html_buf, "<h2 class=\"title\">");
-                  JSX.write(__html_buf, "jsoo-react" |> s);
-                  Buffer.add_string(__html_buf, "</h2>");
-                  ();
-                };
-                JSX.unsafe(Buffer.contents(__html_buf));
-              },
+              examples
+              |> List.map(e => {
+                   let __html_buf = Buffer.create(166);
+                   {
+                     Buffer.add_string(__html_buf, "<li>");
+                     {
+                       {
+                         Buffer.add_char(__html_buf, '<');
+                         Buffer.add_string(__html_buf, "a");
+                         Buffer.add_string(
+                           __html_buf,
+                           " onclick=\"console.log\"",
+                         );
+                       };
+                       {
+                         Buffer.add_char(__html_buf, ' ');
+                         Buffer.add_string(__html_buf, "href");
+                         Buffer.add_string(__html_buf, "=\"");
+                         JSX.escape(__html_buf, e.path);
+                         Buffer.add_char(__html_buf, '"');
+                       };
+                       Buffer.add_char(__html_buf, '>');
+                       JSX.write(__html_buf, e.title |> s);
+                       {
+                         Buffer.add_string(__html_buf, "</");
+                         Buffer.add_string(__html_buf, "a");
+                         Buffer.add_char(__html_buf, '>');
+                       };
+                       ();
+                     };
+                     Buffer.add_string(__html_buf, "</li>");
+                     ();
+                   };
+                   JSX.unsafe(Buffer.contents(__html_buf));
+                 })
+              |> React.list,
             );
-            JSX.write(
-              __html_buf,
-              {
-                let __html_buf = Buffer.create(88);
-                {
-                  Buffer.add_string(__html_buf, "<nav class=\"menu\">");
-                  JSX.write(
-                    __html_buf,
-                    {
-                      let __html_buf = Buffer.create(73);
-                      {
-                        Buffer.add_string(__html_buf, "<ul>");
-                        JSX.write(
-                          __html_buf,
-                          examples
-                          |> List.map(e => {
-                               let __html_buf = Buffer.create(73);
-                               {
-                                 Buffer.add_string(__html_buf, "<li>");
-                                 JSX.write(
-                                   __html_buf,
-                                   {
-                                     let __html_buf = Buffer.create(157);
-                                     {
-                                       {
-                                         Buffer.add_char(__html_buf, '<');
-                                         Buffer.add_string(__html_buf, "a");
-                                         Buffer.add_string(
-                                           __html_buf,
-                                           " onclick=\"console.log\"",
-                                         );
-                                       };
-                                       {
-                                         Buffer.add_char(__html_buf, ' ');
-                                         Buffer.add_string(__html_buf, "href");
-                                         Buffer.add_string(__html_buf, "=\"");
-                                         JSX.escape(__html_buf, e.path);
-                                         Buffer.add_char(__html_buf, '"');
-                                       };
-                                       Buffer.add_char(__html_buf, '>');
-                                       JSX.write(__html_buf, e.title |> s);
-                                       {
-                                         Buffer.add_string(__html_buf, "</");
-                                         Buffer.add_string(__html_buf, "a");
-                                         Buffer.add_char(__html_buf, '>');
-                                       };
-                                       ();
-                                     };
-                                     JSX.unsafe(Buffer.contents(__html_buf));
-                                   },
-                                 );
-                                 Buffer.add_string(__html_buf, "</li>");
-                                 ();
-                               };
-                               JSX.unsafe(Buffer.contents(__html_buf));
-                             })
-                          |> React.list,
-                        );
-                        Buffer.add_string(__html_buf, "</ul>");
-                        ();
-                      };
-                      JSX.unsafe(Buffer.contents(__html_buf));
-                    },
-                  );
-                  Buffer.add_string(__html_buf, "</nav>");
-                  ();
-                };
-                JSX.unsafe(Buffer.contents(__html_buf));
-              },
-            );
-            Buffer.add_string(__html_buf, "</div>");
+            Buffer.add_string(__html_buf, "</ul>");
             ();
           };
-          JSX.unsafe(Buffer.contents(__html_buf));
-        },
-      );
+          Buffer.add_string(__html_buf, "</nav>");
+          ();
+        };
+        Buffer.add_string(__html_buf, "</div>");
+        ();
+      };
       Buffer.add_string(__html_buf, "</div>");
       ();
     };
