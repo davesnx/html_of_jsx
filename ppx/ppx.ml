@@ -283,8 +283,8 @@ let generate_dynamic_format_code ~loc ~buf_ident fmt args =
    Buffer.create size estimate and [ops] is the inner operations sequence
    (a nested Pexp_sequence ending in [()]), or [None] when the expression is
    not exactly this generated shape. *)
-let match_spliceable_buffer_expr (expr : expression) :
-    (int * expression) option =
+let match_spliceable_buffer_expr (expr : expression) : (int * expression) option
+    =
   match expr.pexp_desc with
   | Pexp_let
       ( Nonrecursive,

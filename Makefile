@@ -92,6 +92,9 @@ pin: # pin dependencies
 	opam pin add textmate-language "https://github.com/davesnx/ocaml-textmate-language.git#46ea3bd50d4413797e562b08eb87cb9d5694ca30" --yes --no-action
 	opam pin add tm-grammars "https://github.com/davesnx/tm-grammars.git#7bc690111b6d6a9c6896bc35aa17bfb854c33a2d" --yes --no-action
 	opam pin add ochre "https://github.com/davesnx/ochre.git#f367ec7b372e20fddabc065201cf696564361abe" --yes --no-action
+	# reason 3.18.0 adds OCaml 5.5 support; pin until opam-repository PR #30093 is merged.
+	# --ignore-pin-depends avoids reason's dev-time pin-depends pulling in a ppxlib fork.
+	opam pin add reason.3.18.0 "https://codeload.github.com/reasonml/reason/tar.gz/470c25d19494928b8926d35ddcbc9ba46663e888" --yes --no-action --ignore-pin-depends
 
 .PHONY: init
 init: setup-githooks create-switch pin install ## Create a local dev enviroment
