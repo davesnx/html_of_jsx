@@ -7,6 +7,7 @@
 - Fix escaping of constant `JSX.string` children inside fragments: `<> {JSX.string("<script>")} </>` was inlined without HTML-encoding (@davesnx)
 - Fix ill-typed generated code for optional booleanish attributes (e.g. `?spellcheck`) when the static optimization is disabled (@davesnx)
 - Fragments now use the same optimized buffer codegen as elements: constant children collapse at compile time and dynamic children are spliced into a single buffer instead of allocating a `JSX.list` (@davesnx)
+- `JSX.escape` copies runs of clean characters in bulk instead of char-by-char after the first escape; `JSX.render` returns clean strings and int/float elements without buffer copies (@davesnx)
 - The unoptimized attribute path (`-disable-static-opt` or fallback) no longer allocates `Some`/`filter_map` wrappers when no optional attribute is present (@davesnx)
 - Add zero-copy fast path in `JSX.render`: `Unsafe`/`Null`/`String` elements skip the intermediate buffer entirely, making rendering of fully optimized trees free (@davesnx)
 - PPX buffer splicing: nested JSX elements now write directly into the parent's buffer instead of materializing an intermediate buffer and string per element, cutting render time up to ~50% and allocations up to ~60% on dynamic pages (@davesnx)

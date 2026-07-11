@@ -201,6 +201,21 @@ let render_svg =
      L 5 3 z M 14 3 L 14 5 L 17.585938 5 L 8.2929688 14.292969 L 9.7070312 \
      15.707031 L 19 6.4140625 L 19 10 L 21 10 L 21 3 L 14 3 z\"></path></svg>"
 
+let render_clean_string_no_copy =
+  test "render_clean_string_no_copy" @@ fun () ->
+  (* Clean strings are returned without copying *)
+  let text = "no escapable characters here" in
+  let rendered = JSX.render (JSX.string text) in
+  assert_string rendered text;
+  if not (rendered == text) then
+    Alcotest.fail "expected physical equality for clean string render"
+
+let render_escaped_string =
+  test "render_escaped_string" @@ fun () ->
+  assert_string
+    (JSX.render (JSX.string "a < b & 'c'"))
+    "a &lt; b &amp; &apos;c&apos;"
+
 let tests =
   ( "render",
     [
@@ -225,5 +240,7 @@ let tests =
       render_svg;
       jsx_unsafe;
       format_text;
+      render_clean_string_no_copy;
+      render_escaped_string;
     ]
   )

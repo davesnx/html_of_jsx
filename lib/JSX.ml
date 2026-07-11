@@ -19,40 +19,51 @@ let is_self_closing_tag = function
   | _ ->
       false
 
-let escape buf s =
-  let length = String.length s in
-  if length = 0 then
-    ()
-  else
-    let exception First_char_to_escape of int in
-    match
-      for i = 0 to length - 1 do
-        match String.unsafe_get s i with
-        | '&' | '<' | '>' | '\'' | '"' ->
-            raise_notrace (First_char_to_escape i)
-        | _ ->
-            ()
-      done
-    with
-    | exception First_char_to_escape first ->
-        if first > 0 then Buffer.add_substring buf s 0 first;
-        for i = first to length - 1 do
-          match String.unsafe_get s i with
-          | '&' ->
-              Buffer.add_string buf "&amp;"
-          | '<' ->
-              Buffer.add_string buf "&lt;"
-          | '>' ->
-              Buffer.add_string buf "&gt;"
-          | '\'' ->
-              Buffer.add_string buf "&apos;"
-          | '"' ->
-              Buffer.add_string buf "&quot;"
-          | c ->
-              Buffer.add_char buf c
-        done
+(* Escapes by copying runs of clean characters in bulk with
+   [Buffer.add_substring] and only splicing in entities where needed. Clean
+   strings are copied with a single [add_substring].
+
+   These are top-level functions taking all state as arguments on purpose:
+   inner recursive functions would capture [buf]/[s] and allocate a closure
+   on every [escape] call, which is on the hot path of every dynamic
+   string. *)
+let rec escape_loop buf s length run_start i =
+  if i = length then (
+    if length > run_start then
+      Buffer.add_substring buf s run_start (length - run_start)
+  ) else
+    match String.unsafe_get s i with
+    | '&' ->
+        escape_entity buf s length run_start i "&amp;"
+    | '<' ->
+        escape_entity buf s length run_start i "&lt;"
+    | '>' ->
+        escape_entity buf s length run_start i "&gt;"
+    | '\'' ->
+        escape_entity buf s length run_start i "&apos;"
+    | '"' ->
+        escape_entity buf s length run_start i "&quot;"
     | _ ->
-        Buffer.add_string buf s
+        escape_loop buf s length run_start (i + 1)
+
+and escape_entity buf s length run_start i entity =
+  if i > run_start then Buffer.add_substring buf s run_start (i - run_start);
+  Buffer.add_string buf entity;
+  escape_loop buf s length (i + 1) (i + 1)
+
+let escape buf s = escape_loop buf s (String.length s) 0 0
+
+(* [true] when [escape] would write [s] unchanged *)
+let rec is_clean_string_from s length i =
+  i = length
+  ||
+  match String.unsafe_get s i with
+  | '&' | '<' | '>' | '\'' | '"' ->
+      false
+  | _ ->
+      is_clean_string_from s length (i + 1)
+
+let is_clean_string s = is_clean_string_from s (String.length s) 0
 
 type attribute =
   string * [ `Bool of bool | `Int of int | `Float of float | `String of string ]
@@ -168,10 +179,17 @@ let render element =
       (* The ppx compiles most elements down to [Unsafe html], render is a
          no-op in that case: return the string without copying. *)
       out
+  | String text when is_clean_string text ->
+      (* Nothing to escape: return the string without copying. *)
+      text
   | String text ->
-      let out = Buffer.create (String.length text) in
+      let out = Buffer.create (String.length text + 16) in
       escape out text;
       Buffer.contents out
+  | Int i ->
+      Int.to_string i
+  | Float f ->
+      Float.to_string f
   | element ->
       let out = Buffer.create 256 in
       write out element;
