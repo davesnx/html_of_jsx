@@ -151,12 +151,14 @@ let polyvariant_to_string_match ~loc options scrutinee =
       :: match_expr.pexp_attributes;
   }
 
+(* Returns an expression of type [attribute] when [is_optional] is false,
+   and of type [attribute option] when [is_optional] is true. *)
 let make_attribute ~loc ~is_optional ~prop attribute_name attribute_value =
   let open Html_attributes in
   match (prop, is_optional) with
   | Rich_attribute { type_ = String; _ }, false
   | Attribute { type_ = String; _ }, false ->
-      [%expr Some ([%e attribute_name], `String [%e attribute_value])]
+      [%expr [%e attribute_name], `String [%e attribute_value]]
   | Rich_attribute { type_ = String; _ }, true
   | Attribute { type_ = String; _ }, true ->
       [%expr
@@ -165,7 +167,7 @@ let make_attribute ~loc ~is_optional ~prop attribute_name attribute_value =
           [%e attribute_value]]
   | Rich_attribute { type_ = Int; _ }, false
   | Attribute { type_ = Int; _ }, false ->
-      [%expr Some ([%e attribute_name], `Int [%e attribute_value])]
+      [%expr [%e attribute_name], `Int [%e attribute_value]]
   | Rich_attribute { type_ = Int; _ }, true | Attribute { type_ = Int; _ }, true
     ->
       [%expr
@@ -174,7 +176,7 @@ let make_attribute ~loc ~is_optional ~prop attribute_name attribute_value =
           [%e attribute_value]]
   | Rich_attribute { type_ = Bool; _ }, false
   | Attribute { type_ = Bool; _ }, false ->
-      [%expr Some ([%e attribute_name], `Bool [%e attribute_value])]
+      [%expr [%e attribute_name], `Bool [%e attribute_value]]
   | Rich_attribute { type_ = Bool; _ }, true
   | Attribute { type_ = Bool; _ }, true ->
       [%expr
@@ -184,20 +186,19 @@ let make_attribute ~loc ~is_optional ~prop attribute_name attribute_value =
   (* BooleanishString needs to transform bool into string *)
   | Rich_attribute { type_ = BooleanishString; _ }, false
   | Attribute { type_ = BooleanishString; _ }, false ->
-      [%expr
-        Some ([%e attribute_name], `String (Bool.to_string [%e attribute_value]))]
+      [%expr [%e attribute_name], `String (Bool.to_string [%e attribute_value])]
   | Rich_attribute { type_ = BooleanishString; _ }, true
   | Attribute { type_ = BooleanishString; _ }, true ->
       [%expr
         Stdlib.Option.map
-          (fun v -> ([%e attribute_name], `String v))
-          (Bool.to_string [%e attribute_value])]
+          (fun v -> ([%e attribute_name], `String (Bool.to_string v)))
+          [%e attribute_value]]
   | Rich_attribute { type_ = Polyvariant options; _ }, false
   | Attribute { type_ = Polyvariant options; _ }, false ->
       let match_expr =
         polyvariant_to_string_match ~loc options attribute_value
       in
-      [%expr Some ([%e attribute_name], `String [%e match_expr])]
+      [%expr [%e attribute_name], `String [%e match_expr]]
   | Rich_attribute { type_ = Polyvariant options; _ }, true
   | Attribute { type_ = Polyvariant options; _ }, true ->
       let match_expr = polyvariant_to_string_match ~loc options [%expr v] in
@@ -206,7 +207,7 @@ let make_attribute ~loc ~is_optional ~prop attribute_name attribute_value =
           (fun v -> ([%e attribute_name], `String [%e match_expr]))
           [%e attribute_value]]
   | Event _, false ->
-      [%expr Some ([%e attribute_name], `String [%e attribute_value])]
+      [%expr [%e attribute_name], `String [%e attribute_value]]
   | Event _, true ->
       [%expr
         Stdlib.Option.map
@@ -215,7 +216,12 @@ let make_attribute ~loc ~is_optional ~prop attribute_name attribute_value =
 
 let is_optional = function Optional _ -> true | _ -> false
 
-let transform_labelled ~loc:_parentLoc ~tag_name props (prop_label, value) =
+(* When [wrap_some] is true the resulting list has type [attribute option
+   list] (optional attributes produce [None] when absent), so non-optional
+   attributes are wrapped in [Some]. When false, the list is a plain
+   [attribute list] with no wrapping and no runtime filtering. *)
+let transform_labelled ~loc:_parentLoc ~tag_name ~wrap_some props
+    (prop_label, value) =
   let loc = props.pexp_loc in
   match prop_label with
   | Nolabel ->
@@ -241,19 +247,36 @@ let transform_labelled ~loc:_parentLoc ~tag_name props (prop_label, value) =
         make_attribute ~loc ~is_optional ~prop:attribute attribute_name_expr
           attribute_value
       in
-      [%expr [%e attribute_final] :: [%e props]]
+      let cell =
+        if is_optional then
+          (* Already an [attribute option] *)
+          attribute_final
+        else if wrap_some then
+          [%expr Some [%e attribute_final]]
+        else
+          attribute_final
+      in
+      [%expr [%e cell] :: [%e props]]
 
 let transform_attributes ~loc ~tag_name attrs =
-  let attrs =
-    List.rev attrs
-    |> List.fold_left ~f:(transform_labelled ~loc ~tag_name) ~init:[%expr []]
+  let has_optional =
+    List.exists attrs ~f:(fun (label, _) -> is_optional label)
   in
-  match attrs with
+  let attrs_expr =
+    List.rev attrs
+    |> List.fold_left
+         ~f:(transform_labelled ~loc ~tag_name ~wrap_some:has_optional)
+         ~init:[%expr []]
+  in
+  match attrs_expr with
   | [%expr []] ->
       [%expr []]
-  | attrs ->
-      (* We need to filter attributes since optionals are represented as None *)
-      [%expr Stdlib.List.filter_map Stdlib.Fun.id [%e attrs]]
+  | attrs_expr when has_optional ->
+      (* Optional attributes are represented as [None] when absent, filter
+         them out at runtime *)
+      [%expr Stdlib.List.filter_map Stdlib.Fun.id [%e attrs_expr]]
+  | attrs_expr ->
+      attrs_expr
 
 let default_buffer_size = 256
 let buffer_var_name = "__html_buf"

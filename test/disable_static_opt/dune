@@ -1,0 +1,10 @@
+; Compiled with -disable-static-opt so the JSX.node fallback codegen is
+; type-checked and executed. Compilation of this test is itself a
+; regression test for codegen bugs that only exist in the unoptimized path.
+
+(test
+ (name test_disable_static_opt)
+ (modules test_disable_static_opt)
+ (libraries html_of_jsx)
+ (preprocess
+  (pps html_of_jsx.ppx -disable-static-opt)))
