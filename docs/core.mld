@@ -306,7 +306,7 @@ JSX.render_to_channel(stdout, <div> {JSX.string("Hello")} </div>);
 JSX.render_to_channel stdout (<div>(JSX.string "Hello")</div>)
 ]}
 
-When your server provides a streaming callback (for example {{!page-dream}Dream} web server), can use [JSX.render_streaming] to stream the HTML chunks directly into the response body:
+When your server provides a streaming callback (for example {{!page-dream}Dream} web server), can use [JSX.render_streaming] to stream the HTML chunks directly into the response body. Chunks are emitted incrementally as soon as [chunk_size] bytes (default [4096]) are rendered, so clients start receiving large pages before rendering finishes:
 
 {@reasonml[
 JSX.render_streaming(

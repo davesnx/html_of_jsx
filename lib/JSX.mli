@@ -102,11 +102,14 @@ val render_to_channel : out_channel -> element -> unit
       );
     ]} *)
 
-val render_streaming : (string -> unit) -> element -> unit
-(** Render a JSX.element using a streaming callback function.
+val render_streaming : ?chunk_size:int -> (string -> unit) -> element -> unit
+(** Render a JSX.element incrementally, invoking the callback with HTML chunks
+    as soon as they are available.
 
-    This function renders the element and passes the result to the callback
-    function, useful for frameworks that support streaming responses.
+    Chunks are emitted whenever the internal buffer reaches [chunk_size] bytes
+    (default: [4096]), so large documents start streaming before rendering has
+    finished instead of being buffered whole. Useful for frameworks that support
+    streaming responses.
 
     {@reasonml[
       JSX.render_streaming(html => Dream.write(stream, html),

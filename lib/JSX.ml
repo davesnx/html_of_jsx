@@ -200,10 +200,56 @@ let render_to_channel (chan : out_channel) element =
   write out element;
   Buffer.output_buffer chan out
 
-let render_streaming (write_fn : string -> unit) element =
-  let out = Buffer.create 256 in
-  write out element;
-  write_fn (Buffer.contents out)
+let render_streaming ?(chunk_size = 4096) (write_fn : string -> unit) element =
+  let out = Buffer.create chunk_size in
+  let flush_if_full () =
+    if Buffer.length out >= chunk_size then (
+      write_fn (Buffer.contents out);
+      Buffer.clear out
+    )
+  in
+  (* Mirrors [write], with flush points after leaves and tag boundaries so
+     chunks are emitted as soon as [chunk_size] bytes are available instead
+     of buffering the whole document. *)
+  let rec go element =
+    match element with
+    | Null ->
+        ()
+    | List list ->
+        List.iter go list
+    | Array arr ->
+        Array.iter go arr
+    | String text ->
+        escape out text;
+        flush_if_full ()
+    | Unsafe text ->
+        Buffer.add_string out text;
+        flush_if_full ()
+    | Int i ->
+        Buffer.add_string out (Int.to_string i)
+    | Float f ->
+        Buffer.add_string out (Float.to_string f)
+    | Node { tag; attributes; _ } when is_self_closing_tag tag ->
+        Buffer.add_char out '<';
+        Buffer.add_string out tag;
+        List.iter (write_attribute out) attributes;
+        Buffer.add_string out " />";
+        flush_if_full ()
+    | Node { tag; attributes; children } ->
+        if tag = "html" then Buffer.add_string out "<!DOCTYPE html>";
+        Buffer.add_char out '<';
+        Buffer.add_string out tag;
+        List.iter (write_attribute out) attributes;
+        Buffer.add_char out '>';
+        flush_if_full ();
+        List.iter go children;
+        Buffer.add_string out "</";
+        Buffer.add_string out tag;
+        Buffer.add_char out '>';
+        flush_if_full ()
+  in
+  go element;
+  if Buffer.length out > 0 then write_fn (Buffer.contents out)
 
 let pp ?(width = 80) element =
   let module CF =

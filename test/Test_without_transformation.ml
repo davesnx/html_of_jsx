@@ -201,6 +201,34 @@ let render_svg =
      L 5 3 z M 14 3 L 14 5 L 17.585938 5 L 8.2929688 14.292969 L 9.7070312 \
      15.707031 L 19 6.4140625 L 19 10 L 21 10 L 21 3 L 14 3 z\"></path></svg>"
 
+let render_streaming_chunks =
+  test "render_streaming_chunks" @@ fun () ->
+  (* A tree big enough to overflow a tiny chunk_size: chunks must be emitted
+     incrementally and concatenate to the same output as [render]. *)
+  let items =
+    List.init 50 (fun i ->
+        JSX.node "li"
+          [ ("class", `String "item") ]
+          [ JSX.string (Printf.sprintf "item %d & more" i) ]
+    )
+  in
+  let ul = JSX.node "ul" [] items in
+  let chunks = ref [] in
+  JSX.render_streaming ~chunk_size:64
+    (fun chunk -> chunks := chunk :: !chunks)
+    ul;
+  let streamed = String.concat "" (List.rev !chunks) in
+  assert_string streamed (JSX.render ul);
+  if List.length !chunks < 2 then
+    Alcotest.fail "expected render_streaming to emit multiple chunks"
+
+let render_streaming_small_document_single_chunk =
+  test "render_streaming_small_document_single_chunk" @@ fun () ->
+  let div = JSX.node "div" [] [ JSX.string "hello" ] in
+  let chunks = ref [] in
+  JSX.render_streaming (fun chunk -> chunks := chunk :: !chunks) div;
+  assert_string (String.concat "" (List.rev !chunks)) "<div>hello</div>"
+
 let render_clean_string_no_copy =
   test "render_clean_string_no_copy" @@ fun () ->
   (* Clean strings are returned without copying *)
@@ -240,6 +268,8 @@ let tests =
       render_svg;
       jsx_unsafe;
       format_text;
+      render_streaming_chunks;
+      render_streaming_small_document_single_chunk;
       render_clean_string_no_copy;
       render_escaped_string;
     ]
