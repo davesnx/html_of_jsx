@@ -27,16 +27,21 @@ Two deliberate exceptions, kept as fast-path baselines:
 Input data (users, products, comments) is precomputed at module init: we
 measure rendering, not test-data generation.
 
-## Canonical baselines
+## Baselines are local
 
-`bench/results/` contains exactly two tracked files:
+Benchmark results are machine-specific, so nothing under `bench/results/` is
+tracked (`bench/results/.gitignore` ignores `*.json`). Cross-commit tracking
+happens in CI via `benchmark-action` instead.
+
+Before starting performance work, generate baselines on the commit you want
+to compare against:
 
 - `baseline.json`: runtime benchmark baseline (`make bench-baseline`).
 - `compile_baseline.json`: compile-time baseline
   (`dune exec bench/compile_bench.exe -- --runs 3 --save bench/results/compile_baseline.json`).
 
-Refresh them on the commit you want to compare against; don't commit ad-hoc
-experiment results.
+Then compare with `make bench-compare` and
+`dune exec bench/compile_bench.exe -- --compare bench/results/compile_baseline.json`.
 
 ## Usage
 
