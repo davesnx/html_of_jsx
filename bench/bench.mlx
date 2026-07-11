@@ -261,12 +261,17 @@ let run_bench ~cfg ~name ~render =
     runs_us = latencies;
   }
 
+(* Every scenario except the ones marked "static" or "prebuilt" constructs
+   the element tree on every call: with the PPX static optimization, element
+   construction *is* rendering, so prebuilding elements outside the timed
+   function would measure a no-op. *)
 let scenarios =
   [
-    ("Trivial", Scenarios.Trivial.render);
+    ("Trivial (static)", Scenarios.Trivial.render);
     ("Dashboard", Scenarios.Dashboard.render);
     ("Blog (50 comments)", Scenarios.Blog.render);
     ("Table (100 rows)", Scenarios.Table.render);
+    ("Table (100 rows, prebuilt)", Scenarios.Table.render_prebuilt);
     ("E-commerce", Scenarios.Ecommerce.render);
     ("Form", Scenarios.Form.render);
     ("Deep tree (50)", Scenarios.DeepTree.render);

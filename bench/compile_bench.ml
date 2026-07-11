@@ -35,6 +35,11 @@ let fixtures =
       ppx_target = "bench/compile_fixtures/nested_mixed/nested_mixed.mlx.pp.ml";
       total_target = "bench/compile_fixtures/nested_mixed";
     };
+    {
+      name = "large-mixed";
+      ppx_target = "bench/compile_fixtures/large_mixed/large_mixed.mlx.pp.ml";
+      total_target = "bench/compile_fixtures/large_mixed";
+    };
   ]
 
 let default_config =

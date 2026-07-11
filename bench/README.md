@@ -8,6 +8,36 @@
 - Compare against a baseline while accounting for run-to-run noise.
 - Persist raw runs in JSON for later analysis.
 
+## What scenarios measure
+
+Every scenario constructs the element tree **inside** the timed function.
+With the PPX static optimization, element construction *is* rendering (the
+PPX collapses static markup and writes dynamic parts into buffers eagerly),
+so a scenario that prebuilds its element outside the timed function measures
+a pointer return, not rendering.
+
+Two deliberate exceptions, kept as fast-path baselines:
+
+- `Trivial (static)`: fully static markup. The PPX collapses it to a
+  constant string at compile time; ~0us is the correct result and it exists
+  to demonstrate (and guard) the static-collapse optimization.
+- `Table (100 rows, prebuilt)`: renders a prebuilt element, demonstrating
+  that `JSX.render` on an already-constructed tree is ~free.
+
+Input data (users, products, comments) is precomputed at module init: we
+measure rendering, not test-data generation.
+
+## Canonical baselines
+
+`bench/results/` contains exactly two tracked files:
+
+- `baseline.json`: runtime benchmark baseline (`make bench-baseline`).
+- `compile_baseline.json`: compile-time baseline
+  (`dune exec bench/compile_bench.exe -- --runs 3 --save bench/results/compile_baseline.json`).
+
+Refresh them on the commit you want to compare against; don't commit ad-hoc
+experiment results.
+
 ## Usage
 
 ```sh
@@ -84,3 +114,8 @@ Compile-time benchmark includes synthetic fixtures for:
 - `static-heavy`: many mostly static JSX trees.
 - `attr-heavy`: many attributes and dynamic attribute values.
 - `nested-mixed`: deep nesting with mixed string/int/float/element children.
+- `large-mixed`: ~800 generated components (~7k lines) rotating through the
+  four main PPX codegen paths (fully static, dynamic attributes, optional
+  attributes, dynamic children). Large enough that per-attribute-lookup
+  regressions in the PPX are unmistakable. Regenerate with
+  `ocaml bench/compile_fixtures/large_mixed/gen.ml > bench/compile_fixtures/large_mixed/large_mixed.mlx`.

@@ -1,6 +1,10 @@
-(* Scenario: Trivial
-   Baseline test - simplest possible component
-   Purpose: Measure baseline overhead of rendering *)
+(* Scenario: Trivial (static)
+   Baseline test - simplest possible component.
+
+   Note: this element is fully static, so the PPX collapses it into a
+   constant [JSX.unsafe] string at compile time and [JSX.render] returns it
+   without copying. A ~0us result here is correct and demonstrates the
+   static optimization; it does not exercise the runtime write path. *)
 
 let make () = <div>(JSX.string "Hello World")</div>
 let render () = JSX.render (make ())

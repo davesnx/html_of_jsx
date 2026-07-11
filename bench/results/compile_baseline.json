@@ -1,0 +1,9 @@
+{
+  "config": {"runs": 3, "threshold_ppx_pct": 10.00, "threshold_total_pct": 10.00},
+  "results": [
+    {"name": "static-heavy", "ppx_median_ms": 1607.097, "total_median_ms": 1641.394, "ppx_ms_runs": [1698.570, 1580.822, 1607.097], "total_ms_runs": [1634.135, 1641.394, 1718.514]},
+    {"name": "attr-heavy", "ppx_median_ms": 1639.477, "total_median_ms": 1665.259, "ppx_ms_runs": [1639.477, 1662.765, 1560.211], "total_ms_runs": [1665.259, 1658.547, 1792.331]},
+    {"name": "nested-mixed", "ppx_median_ms": 1558.673, "total_median_ms": 1690.736, "ppx_ms_runs": [1602.178, 1524.810, 1558.673], "total_ms_runs": [1709.457, 1690.736, 1642.716]},
+    {"name": "large-mixed", "ppx_median_ms": 1801.622, "total_median_ms": 3419.249, "ppx_ms_runs": [1795.784, 2042.521, 1801.622], "total_ms_runs": [3419.249, 3601.912, 3391.672]}
+  ]
+}

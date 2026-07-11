@@ -438,14 +438,13 @@ let page ~comments =
     </body>
   </html>
 
+(* Input data is precomputed: we measure element construction + rendering,
+   not test-data generation. *)
 let comments_10 = generate_comments 10 1
 let comments_50 = generate_comments 50 1
 let comments_100 = generate_comments 100 1
-let blog_10_el = page ~comments:comments_10
-let blog_50_el = page ~comments:comments_50
-let blog_100_el = page ~comments:comments_100
-let blog_10 () = blog_10_el
-let blog_50 () = blog_50_el
-let blog_100 () = blog_100_el
+let blog_10 () = page ~comments:comments_10
+let blog_50 () = page ~comments:comments_50
+let blog_100 () = page ~comments:comments_100
 let make () = blog_50 ()
 let render () = JSX.render (make ())

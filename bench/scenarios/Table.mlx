@@ -233,14 +233,20 @@ let data_table users =
     </div>
   </div>
 
+(* Input data is precomputed: we measure element construction + rendering,
+   not test-data generation. *)
 let users_10 = generate_users 10
 let users_50 = generate_users 50
 let users_100 = generate_users 100
-let table_10_el = data_table users_10
-let table_50_el = data_table users_50
-let table_100_el = data_table users_100
-let table_10 () = table_10_el
-let table_50 () = table_50_el
-let table_100 () = table_100_el
+let table_10 () = data_table users_10
+let table_50 () = data_table users_50
+let table_100 () = data_table users_100
 let make () = table_100 ()
 let render () = JSX.render (make ())
+
+(* Prebuilt variant: the element is constructed once, so this measures
+   [JSX.render] on an already-built tree. With the PPX static optimization
+   the tree is a single [Unsafe] string, so this is expected to be ~0 and
+   demonstrates the render-of-prebuilt fast path. *)
+let prebuilt_el = data_table users_100
+let render_prebuilt () = JSX.render prebuilt_el

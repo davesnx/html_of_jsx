@@ -10,6 +10,7 @@
 - `JSX.render_streaming` now streams for real: chunks are emitted incrementally every `?chunk_size` bytes (default 4096) instead of buffering the whole document (@davesnx)
 - `JSX.escape` copies runs of clean characters in bulk instead of char-by-char after the first escape; `JSX.render` returns clean strings and int/float elements without buffer copies (@davesnx)
 - The unoptimized attribute path (`-disable-static-opt` or fallback) no longer allocates `Some`/`filter_map` wrappers when no optional attribute is present (@davesnx)
+- Benchmarks: scenarios now construct elements inside the timed function (several scenarios previously measured rendering of a prebuilt static string, i.e. a no-op); added a `large-mixed` compile-time fixture that guards against PPX attribute-lookup regressions (@davesnx)
 - Add zero-copy fast path in `JSX.render`: `Unsafe`/`Null`/`String` elements skip the intermediate buffer entirely, making rendering of fully optimized trees free (@davesnx)
 - PPX buffer splicing: nested JSX elements now write directly into the parent's buffer instead of materializing an intermediate buffer and string per element, cutting render time up to ~50% and allocations up to ~60% on dynamic pages (@davesnx)
 
