@@ -250,6 +250,24 @@ let lowercase_component =
     );
   });
 
+/* Regression: constant JSX.string children of fragments must be escaped */
+let fragment_escapes_static_strings =
+  test("fragment_escapes_static_strings", () => {
+    let component = <> {JSX.string("<script>alert('&')</script>")} <br /> </>;
+    assert_string(
+      JSX.render(component),
+      {|&lt;script&gt;alert(&apos;&amp;&apos;)&lt;/script&gt;<br />|},
+    );
+  });
+
+let fragment_with_dynamic_children =
+  test("fragment_with_dynamic_children", () => {
+    let name = "d & g";
+    let count = 3;
+    let component = <> {JSX.string(name)} <span /> {JSX.int(count)} </>;
+    assert_string(JSX.render(component), {|d &amp; g<span></span>3|});
+  });
+
 let tests = (
   "Reason with JSX",
   [
@@ -279,5 +297,7 @@ let tests = (
     create_element_variadic,
     aria_props,
     lowercase_component,
+    fragment_escapes_static_strings,
+    fragment_with_dynamic_children,
   ],
 );

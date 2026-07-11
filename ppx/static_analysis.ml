@@ -555,7 +555,6 @@ let analyze_children children =
 
 type element_analysis =
   | Fully_static of string
-  | Needs_string_concat of static_part list
   | Needs_buffer of {
       parts : static_part list;
       static_size : int;
@@ -576,6 +575,27 @@ type element_analysis =
       is_self_closing : bool;
     }
   | Cannot_optimize
+
+let static_size_of_parts parts =
+  List.fold_left
+    (fun acc part ->
+      match part with Static_str s -> acc + String.length s | _ -> acc
+    )
+    0 parts
+
+let dynamic_count_of_parts parts =
+  List.fold_left
+    (fun acc part -> match part with Static_str _ -> acc | _ -> acc + 1)
+    0 parts
+
+let needs_buffer_of_parts parts =
+  let parts = coalesce_static_parts parts in
+  Needs_buffer
+    {
+      parts;
+      static_size = static_size_of_parts parts;
+      dynamic_count = dynamic_count_of_parts parts;
+    }
 
 let analyze_element ~tag_name ~attrs ~children =
   let attrs_result = analyze_attributes ~tag_name attrs in
@@ -634,33 +654,11 @@ let analyze_element ~tag_name ~attrs ~children =
           tag_name
       in
       Fully_static html
-  | All_static attrs_html, All_string_dynamic parts ->
+  | All_static attrs_html, (All_string_dynamic parts | Mixed_children parts) ->
       let open_tag = Printf.sprintf "<%s%s>" tag_name attrs_html in
       let close_tag = Printf.sprintf "</%s>" tag_name in
-      let all_parts =
-        [ Static_str open_tag ] @ parts @ [ Static_str close_tag ]
-      in
-      Needs_string_concat (coalesce_static_parts all_parts)
-  | All_static attrs_html, Mixed_children parts ->
-      let open_tag = Printf.sprintf "<%s%s>" tag_name attrs_html in
-      let close_tag = Printf.sprintf "</%s>" tag_name in
-      let all_parts =
-        coalesce_static_parts
-          ([ Static_str open_tag ] @ parts @ [ Static_str close_tag ])
-      in
-      let static_size =
-        List.fold_left
-          (fun acc part ->
-            match part with Static_str s -> acc + String.length s | _ -> acc
-          )
-          0 all_parts
-      in
-      let dynamic_count =
-        List.fold_left
-          (fun acc part -> match part with Static_str _ -> acc | _ -> acc + 1)
-          0 all_parts
-      in
-      Needs_buffer { parts = all_parts; static_size; dynamic_count }
+      needs_buffer_of_parts
+        ([ Static_str open_tag ] @ parts @ [ Static_str close_tag ])
   | Has_optional (optional_attrs, static_attrs), No_children ->
       Has_optional_attrs
         {

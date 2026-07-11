@@ -283,8 +283,8 @@ let generate_dynamic_format_code ~loc ~buf_ident fmt args =
    Buffer.create size estimate and [ops] is the inner operations sequence
    (a nested Pexp_sequence ending in [()]), or [None] when the expression is
    not exactly this generated shape. *)
-let match_spliceable_buffer_expr (expr : expression) :
-    (int * expression) option =
+let match_spliceable_buffer_expr (expr : expression) : (int * expression) option
+    =
   match expr.pexp_desc with
   | Pexp_let
       ( Nonrecursive,
@@ -760,23 +760,6 @@ let rewrite_node_optimized ~loc tag_name args children =
       let html_with_doctype = Static_analysis.maybe_add_doctype tag_name html in
       let html_expr = estring ~loc html_with_doctype in
       [%expr JSX.unsafe [%e html_expr]]
-  | Static_analysis.Needs_string_concat parts_list ->
-      (* For string concat, estimate sizes *)
-      let static_size =
-        List.fold_left parts_list ~init:0 ~f:(fun acc part ->
-            match part with
-            | Static_analysis.Static_str s ->
-                acc + String.length s
-            | _ ->
-                acc
-        )
-      in
-      let dynamic_count =
-        List.fold_left parts_list ~init:0 ~f:(fun acc part ->
-            match part with Static_analysis.Static_str _ -> acc | _ -> acc + 1
-        )
-      in
-      generate_buffer_code ~loc ~parts:parts_list ~static_size ~dynamic_count
   | Static_analysis.Needs_buffer { parts; static_size; dynamic_count } ->
       generate_buffer_code ~loc ~parts ~static_size ~dynamic_count
   | Static_analysis.Has_optional_attrs _ as optional_data ->
@@ -876,90 +859,41 @@ let extract_children_from_list expr =
   in
   extract [] expr
 
-(* Analyze fragment children and generate optimized code if possible *)
+(* Analyze fragment children and generate optimized code. Each child is
+   classified with [Static_analysis.analyze_child], so constant children
+   collapse into static strings (with proper escaping for [JSX.string]) and
+   dynamic children get the same buffer codegen as element children,
+   including buffer splicing of nested generated elements. *)
 let optimize_fragment ~loc ~mapper children_expr =
-  let children_list = extract_children_from_list children_expr in
-  if children_list = [] then
-    [%expr JSX.list []]
-  else
-    (* Analyze each child to see if we can optimize - check if they're static JSX elements *)
-    let can_optimize, static_parts =
-      List.fold_left
-        ~f:(fun (can_opt, parts) child ->
-          let transformed = mapper#expression child in
-          (* Check if the transformed child is a static JSX.unsafe or JSX.string *)
-          match transformed.pexp_desc with
-          | Pexp_apply
-              ( {
-                  pexp_desc =
-                    Pexp_ident
-                      { txt = Ldot (Lident "JSX", ("unsafe" | "string")); _ };
-                  _;
-                },
-                [ (Nolabel, arg) ]
-              ) -> (
-              match arg.pexp_desc with
-              | Pexp_constant (Pconst_string (s, _, _)) ->
-                  (can_opt, Static_analysis.Static_str s :: parts)
-              | _ ->
-                  (false, parts)
-            )
-          | _ ->
-              (false, parts)
+  match extract_children_from_list children_expr with
+  | [] -> (
+      match children_expr.pexp_desc with
+      | Pexp_construct ({ txt = Lident "[]"; _ }, None) ->
+          [%expr JSX.list []]
+      | _ ->
+          (* Not a literal list (e.g. it has an expression tail): keep the
+             runtime JSX.list *)
+          let transformed_children =
+            transform_items_of_list ~loc ~mapper children_expr
+          in
+          [%expr JSX.list [%e transformed_children]]
+    )
+  | children -> (
+      let parts =
+        List.map children ~f:(fun child ->
+            Static_analysis.analyze_child (mapper#expression child)
         )
-        ~init:(true, []) children_list
-    in
-    (* If all children are static, generate direct buffer writes *)
-    if can_optimize && static_parts <> [] then
-      let buf_var = "__html_buf" in
-      let buf_ident = pexp_ident ~loc { loc; txt = Lident buf_var } in
-      let buf_pat = ppat_var ~loc { loc; txt = buf_var } in
-      let static_parts_rev = List.rev static_parts in
-      let static_size =
-        List.fold_left static_parts_rev ~init:0 ~f:(fun acc part ->
-            match part with
-            | Static_analysis.Static_str s ->
-                acc + String.length s
-            | _ ->
-                acc
-        )
+        |> Static_analysis.coalesce_static_parts
       in
-      let buffer_size =
-        if static_size > 0 then
-          static_size
-        else
-          default_buffer_size
-      in
-      let buffer_size_expr = eint ~loc buffer_size in
-      let ops =
-        List.map
-          ~f:(function
-            | Static_analysis.Static_str s ->
-                let s_expr = estring ~loc s in
-                [%expr Buffer.add_string [%e buf_ident] [%e s_expr]]
-            | _ ->
-                assert false
-            )
-          static_parts_rev
-      in
-      let seq =
-        List.fold_right ops ~init:[%expr ()] ~f:(fun op acc ->
-            [%expr
-              [%e op];
-              [%e acc]]
-        )
-      in
-      [%expr
-        let [%p buf_pat] = Buffer.create [%e buffer_size_expr] in
-        [%e seq];
-        JSX.unsafe (Buffer.contents [%e buf_ident])]
-    else
-      (* Fall back to JSX.list for dynamic children - but generate sequential writes without list *)
-      let transformed_children =
-        transform_items_of_list ~loc ~mapper children_expr
-      in
-      (* For now, use JSX.list - we can optimize this further later *)
-      [%expr JSX.list [%e transformed_children]]
+      match parts with
+      | [ Static_analysis.Static_str s ] ->
+          (* Fully static fragment: collapse to a constant string *)
+          [%expr JSX.unsafe [%e estring ~loc s]]
+      | parts ->
+          let static_size = Static_analysis.static_size_of_parts parts in
+          let dynamic_count = Static_analysis.dynamic_count_of_parts parts in
+          generate_buffer_code ~loc ~parts ~static_size ~dynamic_count
+    )
 
 let rewrite_jsx =
   object (self)

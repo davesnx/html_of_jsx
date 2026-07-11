@@ -298,15 +298,7 @@ Test static JSX optimization
     JSX.unsafe(
       "<div>&lt;script&gt;alert(&apos;xss&apos;)&lt;/script&gt;</div>",
     );
-  let static_fragment = {
-    let __html_buf = Buffer.create(24);
-    {
-      Buffer.add_string(__html_buf, "<div></div>");
-      Buffer.add_string(__html_buf, "<span></span>");
-      ();
-    };
-    JSX.unsafe(Buffer.contents(__html_buf));
-  };
+  let static_fragment = JSX.unsafe("<div></div><span></span>");
   let dynamic_int = count => {
     let __html_buf = Buffer.create(75);
     {
