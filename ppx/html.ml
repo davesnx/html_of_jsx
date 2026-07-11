@@ -1737,15 +1737,38 @@ let getJSXName = function
   | Event { jsxName; _ } ->
       jsxName
 
-let domPropNames =
-  commonSvgAttributes () @ getCommonHtmlAttributes () |> List.map getJSXName
-
 type errors = [ `ElementNotFound | `AttributeNotFound of string option ]
 
-let getAttributes tag =
-  let elements = svgElements @ htmlElements () in
-  List.find_opt (fun element -> element.tag = tag) elements
-  |> Option.to_result ~none:`ElementNotFound
+(* Index of tag -> (element, jsxName -> prop), built lazily on first lookup.
+
+   It must be lazy (not computed at module init) because
+   [Extra_attributes.get_attributes] depends on driver flags such as [-htmx]
+   and [-react], which are parsed after this module is loaded but before any
+   rewriting happens.
+
+   The first occurrence wins for both tags and attribute names, matching the
+   [List.find_opt] semantics this index replaces. *)
+let element_index =
+  lazy
+    (let elements = svgElements @ htmlElements () in
+     let index = Hashtbl.create 256 in
+     List.iter
+       (fun element ->
+         if not (Hashtbl.mem index element.tag) then (
+           let attribute_index = Hashtbl.create 512 in
+           List.iter
+             (fun prop ->
+               let jsxName = getJSXName prop in
+               if not (Hashtbl.mem attribute_index jsxName) then
+                 Hashtbl.add attribute_index jsxName prop
+             )
+             element.attributes;
+           Hashtbl.add index element.tag (element, attribute_index)
+         )
+       )
+       elements;
+     index
+    )
 
 let isDataAttribute = String.starts_with ~prefix:"data"
 
@@ -1822,10 +1845,11 @@ let find_closest_name invalid domPropNames =
     Some name
 
 let findByName tag jsxName =
-  let byName p = getJSXName p = jsxName in
-  match getAttributes tag with
-  | Ok { attributes; _ } -> (
-      match List.find_opt byName attributes with
+  match Hashtbl.find_opt (Lazy.force element_index) tag with
+  | None ->
+      Error `ElementNotFound
+  | Some (element, attribute_index) -> (
+      match Hashtbl.find_opt attribute_index jsxName with
       | Some prop ->
           Ok prop
       | None -> (
@@ -1833,7 +1857,8 @@ let findByName tag jsxName =
             let name = camelcaseToKebabcase jsxName in
             Ok (Attribute { name; jsxName; type_ = String })
           else
-            let jsxNames = List.map getJSXName attributes in
+            (* Error path only: linear scan for a suggestion is fine here *)
+            let jsxNames = List.map getJSXName element.attributes in
             match find_closest_name jsxName jsxNames with
             | Some closest ->
                 Error (`AttributeNotFound (Some closest))
@@ -1841,8 +1866,6 @@ let findByName tag jsxName =
                 Error (`AttributeNotFound None)
         )
     )
-  | Error err ->
-      Error err
 
 let is_html_element tag =
   match tag with

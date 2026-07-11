@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Renamed `JSX.stringf` -> `JSX.format` (@davesnx)
+- Massive PPX compile-time improvement: the HTML attribute database is now built once instead of being reconstructed on every attribute lookup (6-8x faster on attribute-heavy files) (@davesnx)
 - Add zero-copy fast path in `JSX.render`: `Unsafe`/`Null`/`String` elements skip the intermediate buffer entirely, making rendering of fully optimized trees free (@davesnx)
 - PPX buffer splicing: nested JSX elements now write directly into the parent's buffer instead of materializing an intermediate buffer and string per element, cutting render time up to ~50% and allocations up to ~60% on dynamic pages (@davesnx)
 
