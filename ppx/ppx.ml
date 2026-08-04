@@ -59,7 +59,8 @@ let rewrite_component ~loc tag args children =
     | Some [ children ] ->
         (Labelled "children", children) :: args
     | Some children ->
-        (Labelled "children", [%expr [%e pexp_list ~loc children]]) :: args
+        (Labelled "children", [%expr JSX.list [%e pexp_list ~loc children]])
+        :: args
   in
   pexp_apply ~loc component props
 

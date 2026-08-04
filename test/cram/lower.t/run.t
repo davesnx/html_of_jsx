@@ -78,7 +78,8 @@
     JSX.unsafe(Buffer.contents(__html_buf));
   };
   let lower_child_single = JSX.unsafe("<div><div></div></div>");
-  let lower_children_multiple = (foo, bar) => lower(~children=[foo, bar], ());
+  let lower_children_multiple = (foo, bar) =>
+    lower(~children=JSX.list([foo, bar]), ());
   let lower_child_with_upper_as_children = {
     let __html_buf = Buffer.create(75);
     {

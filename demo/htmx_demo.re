@@ -80,13 +80,13 @@ module Todo_item = {
 };
 
 module Section = {
-  let make = (~title: string, ~children: list(JSX.element), ()) => {
+  let make = (~title: string, ~children: JSX.element, ()) => {
     <section
       style="margin-bottom: 40px; padding: 24px; border: 1px solid #444; border-radius: 8px">
       <h2 style="margin: 0 0 16px 0; font-size: 1.3rem">
         {JSX.string(title)}
       </h2>
-      {JSX.list(children)}
+      children
     </section>;
   };
 };

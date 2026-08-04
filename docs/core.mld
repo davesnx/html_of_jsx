@@ -137,10 +137,10 @@ let badge ~label ?(kind = "info") () =
 
 {1 The [children] property}
 
-[children] is a special property that receives nested elements from component invocation. This is the foundation for composition.
+[children] is a special property that receives nested elements from component invocation. This is the foundation for composition. Components receive one [JSX.element]: the ppx passes a single child directly and groups multiple children with [JSX.list]. Define [children] as [JSX.element], not [JSX.element list].
 
 {@reasonml[
-let hero = (~children, ()) => {
+let hero = (~children: JSX.element, ()) => {
   <main class_="fancy-hero"> {children} </main>;
 };
 
@@ -153,7 +153,7 @@ let html = JSX.render(
 /* <main class="fancy-hero"><h1>Welcome</h1><p>Composable content</p></main> */
 ]}
 {@mlx[
-let hero ~children () =
+let hero ~(children : JSX.element) () =
   <main class_="fancy-hero">(children)</main>
 
 let html = JSX.render (
@@ -219,7 +219,7 @@ Module components are identified by their uppercase name and require a [make] fu
 
 {@reasonml[
 module Button = {
-  let make = (~children, ()) => {
+  let make = (~children: JSX.element, ()) => {
     <button onclick="onClickHandler"> {children} </button>;
   };
 };
@@ -228,7 +228,7 @@ let html = JSX.render(<Button> {JSX.string("Click me")} </Button>)
 ]}
 {@mlx[
 module Button = struct
-  let make ~children () =
+  let make ~(children : JSX.element) () =
     <button onclick="onClickHandler">(children)</button>
 end
 

@@ -4,7 +4,7 @@
   let upper_prop = Upper.make(~count, ());
   let upper_children_single = foo => Upper.make(~children=foo, ());
   let upper_children_multiple = (foo, bar) =>
-    Upper.make(~children=[foo, bar], ());
+    Upper.make(~children=JSX.list([foo, bar]), ());
   let upper_children =
     Page.make(~children=JSX.unsafe("<h1>Yep</h1>"), ~moreProps="hgalo", ());
   let upper_nested_module = Foo.Bar.make(~a=1, ~b="1", ());

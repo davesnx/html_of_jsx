@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- [BREAKING] Component invocations now group multiple children with `JSX.list`, so components receive `JSX.element` for both single and multiple children. `JSX.fragment` now accepts `JSX.element` to follow the same convention. (@davesnx)
 - Renamed `JSX.stringf` -> `JSX.format` (@davesnx)
 - Massive PPX compile-time improvement: the HTML attribute database is now built once instead of being reconstructed on every attribute lookup (6-8x faster on attribute-heavy files) (@davesnx)
 - Fix escaping of constant `JSX.string` children inside fragments: `<> {JSX.string("<script>")} </>` was inlined without HTML-encoding (@davesnx)

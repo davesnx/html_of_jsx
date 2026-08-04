@@ -195,9 +195,7 @@ let children_multiple_elements =
   test("children_multiple_elements", () => {
     assert_string(
       JSX.render(
-        <Component cosas=false>
-          <> <div> <span /> </div> <span /> </>
-        </Component>,
+        <Component cosas=false> <div> <span /> </div> <span /> </Component>,
       ),
       {|<div><div><span></span></div><span></span></div>|},
     )

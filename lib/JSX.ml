@@ -119,7 +119,7 @@ let int i = Int i
 let float f = Float f
 let list arr = List arr
 let array arr = Array arr
-let fragment ~children () = List children
+let fragment ~(children : element) () = children
 let node tag attributes children = Node { tag; attributes; children }
 
 let write out element =

@@ -136,7 +136,20 @@ val float : float -> element
       let element : JSX.element = JSX.float 3.14
     ]} *)
 
-val fragment : children:element list -> unit -> element
+val fragment : children:element -> unit -> element
+(** Return [children] as a fragment component.
+
+    Component children are already a single [element]: the JSX ppx wraps
+    multiple siblings with [list]. This function primarily enables explicit
+    fragment syntax in mlx.
+
+    {@mlx[
+      let element : JSX.element =
+        <JSX.fragment>
+          <span>"First"</span>
+          <span>"Second"</span>
+        </JSX.fragment>
+    ]} *)
 
 val int : int -> element
 (** Helper to render an integer.
