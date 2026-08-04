@@ -81,7 +81,7 @@ jobs:
         if: matrix.os == 'ubuntu-latest' && matrix.ocaml-compiler == '5.4.0'
         uses: benchmark-action/github-action-benchmark@v1
         with:
-          name: html_of_jsx Benchmarks
+          name: html_of_jsx Benchmarks v2
           tool: 'customBiggerIsBetter'
           output-file-path: bench_results.json
           github-token: ${{ secrets.GITHUB_TOKEN }}
