@@ -1,12 +1,12 @@
 # Changes
 
-## Unreleased
+## 0.1.0
 
 - [BREAKING] Component invocations now group multiple children with `JSX.list`, so components receive `JSX.element` for both single and multiple children. `JSX.fragment` now accepts `JSX.element` to follow the same convention. (@davesnx)
-- Renamed `JSX.stringf` -> `JSX.format` (@davesnx)
+- [BREAKING] Renamed `JSX.stringf` -> `JSX.format` (@davesnx)
 - Massive PPX compile-time improvement: the HTML attribute database is now built once instead of being reconstructed on every attribute lookup (6-8x faster on attribute-heavy files) (@davesnx)
 - Fix escaping of constant `JSX.string` children inside fragments: `<> {JSX.string("<script>")} </>` was inlined without HTML-encoding (@davesnx)
-- Fix ill-typed generated code for optional booleanish attributes (e.g. `?spellcheck`) when the static optimization is disabled (@davesnx)
+- [BREAKING] Fix ill-typed generated code for optional booleanish attributes (e.g. `?spellcheck`) when the static optimization is disabled (@davesnx)
 - Fragments now use the same optimized buffer codegen as elements: constant children collapse at compile time and dynamic children are spliced into a single buffer instead of allocating a `JSX.list` (@davesnx)
 - `JSX.render_streaming` now streams for real: chunks are emitted incrementally every `?chunk_size` bytes (default 4096) instead of buffering the whole document (@davesnx)
 - `JSX.escape` copies runs of clean characters in bulk instead of char-by-char after the first escape; `JSX.render` returns clean strings and int/float elements without buffer copies (@davesnx)
