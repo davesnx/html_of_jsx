@@ -1,4 +1,4 @@
-(lang dune 3.17)
+(lang dune 3.24)
 (generate_opam_files true)
 (implicit_transitive_deps false)
 
@@ -19,9 +19,6 @@
    (ocaml (>= 4.14))
    (ppxlib (>= 0.25.0))
    (pretty_expressive (>= 0.5))
-  (dune
-   (or (and (>= 3.22) (= :with-doc "true"))
-    (= :with-doc "false")))
 
   ;; Documentation
   (odoc :with-doc)
