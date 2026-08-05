@@ -70,7 +70,7 @@ jobs:
         run: make test
 
       - name: Run benchmarks
-        if: runner.os != 'Windows'
+        if: matrix.os == 'ubuntu-latest' && matrix.ocaml-compiler == '5.4.0'
         run: make bench
 
       - name: Run benchmarks (JSON output for tracking)
