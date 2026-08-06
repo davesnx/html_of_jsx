@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1785930005799,
+  "lastUpdate": 1786014111694,
   "repoUrl": "https://github.com/davesnx/html_of_jsx",
   "entries": {
     "html_of_jsx Benchmarks": [
@@ -3471,6 +3471,95 @@ window.BENCHMARK_DATA = {
           {
             "name": "escape (dirty)",
             "value": 13599645.79,
+            "unit": "ops/sec"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "dsnxmoreno@gmail.com",
+            "name": "David Sancho",
+            "username": "davesnx"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "3f61c8c2fb2bc70823e37ceae9af542aa493ffd0",
+          "message": "Merge pull request #44 from davesnx/remove-pretty-expressive\n\nRemove pretty_expressive dependency",
+          "timestamp": "2026-08-06T12:34:12+02:00",
+          "tree_id": "8c2631da0272ba0e26e12202ae76b13cb21ce648",
+          "url": "https://github.com/davesnx/html_of_jsx/commit/3f61c8c2fb2bc70823e37ceae9af542aa493ffd0"
+        },
+        "date": 1786014110555,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Trivial (static)",
+            "value": 327318251.24,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Dashboard",
+            "value": 36959.19,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Blog (50 comments)",
+            "value": 5353.66,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Table (100 rows)",
+            "value": 4029.46,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Table (100 rows, prebuilt)",
+            "value": 456514893.14,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "E-commerce",
+            "value": 3790.62,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Form",
+            "value": 32872.55,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Deep tree (50)",
+            "value": 7755.86,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Wide tree (100)",
+            "value": 5368.97,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Shallow tree",
+            "value": 75396.21,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Props heavy",
+            "value": 4327.78,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "escape (clean)",
+            "value": 19356046.07,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "escape (dirty)",
+            "value": 6049491.03,
             "unit": "ops/sec"
           }
         ]
