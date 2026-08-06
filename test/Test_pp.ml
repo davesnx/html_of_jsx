@@ -486,6 +486,46 @@ let width_boundary_breaks =
   <span>ok</span>
 </div>|}
 
+let continuation_exact_fit =
+  test "continuation_exact_fit" @@ fun () ->
+  let elements =
+    JSX.list
+      [
+        JSX.node "div" [] [ JSX.node "span" [] [ JSX.string "x" ] ];
+        JSX.node "p" [] [ JSX.string "tail" ];
+      ]
+  in
+  assert_string
+    (JSX.pp ~width:36 elements)
+    "<div><span>x</span></div><p>tail</p>"
+
+let continuation_overflow_breaks_group =
+  test "continuation_overflow_breaks_group" @@ fun () ->
+  let elements =
+    JSX.list
+      [
+        JSX.node "div" [] [ JSX.node "span" [] [ JSX.string "x" ] ];
+        JSX.node "p" [] [ JSX.string "tail" ];
+      ]
+  in
+  assert_string
+    (JSX.pp ~width:35 elements)
+    {|<div>
+  <span>x</span>
+</div><p>tail</p>|}
+
+let hard_line_invalidates_flat_group =
+  test "hard_line_invalidates_flat_group" @@ fun () ->
+  let element =
+    JSX.node "div" [] [ JSX.node "span" [] [ JSX.string "a\nb" ] ]
+  in
+  assert_string
+    (JSX.pp ~width:1000 element)
+    {|<div>
+  <span>a
+  b</span>
+</div>|}
+
 let default_width_is_80 =
   test "default_width_is_80" @@ fun () ->
   (* 79 x's + <p></p> = 86 chars. At width 80, text stays inline *)
@@ -807,6 +847,9 @@ let tests =
       very_narrow_deep_break;
       width_boundary_fits;
       width_boundary_breaks;
+      continuation_exact_fit;
+      continuation_overflow_breaks_group;
+      hard_line_invalidates_flat_group;
       default_width_is_80;
       long_text_stays_inline;
       long_attribute_value;

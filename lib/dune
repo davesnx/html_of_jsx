@@ -1,4 +1,3 @@
 (library
  (name JSX)
- (public_name html_of_jsx)
- (libraries pretty_expressive))
+ (public_name html_of_jsx))
