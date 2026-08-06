@@ -25,12 +25,9 @@ type element
 val pp : ?width:int -> element -> string
 (** Pretty-print a JSX.element as a formatted HTML string.
 
-    This uses the
-    {{:https://opam.ocaml.org/packages/pretty_expressive/} pretty_expressive}
-    optimal printer to produce indented, human-readable HTML. The [width]
-    parameter (default 80) controls the target page width: elements that fit
-    within the width stay on one line, while longer content is broken across
-    lines with 2-space indentation.
+    The [width] parameter (default 80) controls the target page width: elements
+    that fit within the width stay on one line, while longer content is broken
+    across lines with 2-space indentation.
 
     {@reasonml[
       let html: string = JSX.pp(

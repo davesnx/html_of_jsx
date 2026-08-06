@@ -18,7 +18,6 @@
   (depends
    (ocaml (>= 4.14))
    (ppxlib (>= 0.25.0))
-   (pretty_expressive (>= 0.5))
 
   ;; Documentation
   (odoc :with-doc)

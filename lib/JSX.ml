@@ -251,25 +251,193 @@ let render_streaming ?(chunk_size = 4096) (write_fn : string -> unit) element =
   go element;
   if Buffer.length out > 0 then write_fn (Buffer.contents out)
 
+module Pretty = struct
+  type doc = { node : node; flat_width : int option }
+
+  and node =
+    | Empty
+    | Text of string
+    | Soft_line
+    | Hard_line
+    | Concat of doc list
+    | Nest of int * doc
+    | Group of doc
+
+  type mode = Flat | Broken
+
+  type frame = Doc of int * mode * doc | Docs of int * mode * doc list
+
+  type layout =
+    | End
+    | Invalid
+    | Emit_text of string * layout Lazy.t
+    | Emit_line of int * layout Lazy.t
+
+  let saturating_add left right =
+    if left > max_int - right then
+      max_int
+    else
+      left + right
+
+  let add_flat_width left right =
+    match (left, right) with
+    | Some left, Some right ->
+        Some (saturating_add left right)
+    | None, _ | _, None ->
+        None
+
+  let empty = { node = Empty; flat_width = Some 0 }
+
+  let text value =
+    if value = "" then
+      empty
+    else
+      { node = Text value; flat_width = Some (String.length value) }
+
+  let break = { node = Soft_line; flat_width = Some 0 }
+  let hard_line = { node = Hard_line; flat_width = None }
+
+  let concat docs =
+    match docs with
+    | [] ->
+        empty
+    | [ doc ] ->
+        doc
+    | docs ->
+        let flat_width =
+          List.fold_left
+            (fun width doc -> add_flat_width width doc.flat_width)
+            (Some 0) docs
+        in
+        { node = Concat docs; flat_width }
+
+  let nest amount doc =
+    if amount = 0 then
+      doc
+    else
+      { node = Nest (amount, doc); flat_width = doc.flat_width }
+
+  let group doc = { node = Group doc; flat_width = doc.flat_width }
+
+  let remaining_width width column =
+    if column > width then
+      -1
+    else
+      width - column
+
+  let rec select width column frames =
+    match frames with
+    | [] ->
+        lazy End
+    | Doc (indent, mode, doc) :: rest -> (
+        match doc.node with
+        | Empty ->
+            select width column rest
+        | Text value ->
+            lazy
+              (Emit_text
+                 ( value,
+                   select width
+                     (saturating_add column (String.length value))
+                     rest
+                 )
+              )
+        | Soft_line when mode = Flat ->
+            select width column rest
+        | Soft_line ->
+            lazy (Emit_line (indent, select width indent rest))
+        | Hard_line when mode = Flat ->
+            lazy Invalid
+        | Hard_line ->
+            lazy (Emit_line (indent, select width indent rest))
+        | Concat docs ->
+            select width column (Docs (indent, mode, docs) :: rest)
+        | Nest (amount, child) ->
+            select width column
+              (Doc (saturating_add indent amount, mode, child) :: rest)
+        | Group child when mode = Flat ->
+            select width column (Doc (indent, Flat, child) :: rest)
+        | Group child -> (
+            let broken () =
+              select width column (Doc (indent, Broken, child) :: rest)
+            in
+            let remaining = remaining_width width column in
+            match child.flat_width with
+            | None ->
+                broken ()
+            | Some flat_width when flat_width > remaining ->
+                broken ()
+            | Some _ ->
+                (* Include the continuation so adjacent groups and fragments
+                   cannot make a locally fitting group overflow the line. *)
+                let candidate =
+                  select width column (Doc (indent, Flat, child) :: rest)
+                in
+                if fits remaining candidate then
+                  candidate
+                else
+                  broken ()
+          )
+      )
+    | Docs (_, _, []) :: rest ->
+        select width column rest
+    | Docs (indent, mode, doc :: docs) :: rest ->
+        select width column
+          (Doc (indent, mode, doc) :: Docs (indent, mode, docs) :: rest)
+
+  and fits remaining layout =
+    if remaining < 0 then
+      false
+    else
+      match Lazy.force layout with
+      | Invalid ->
+          false
+      | End | Emit_line _ ->
+          true
+      | Emit_text (value, rest) ->
+          let length = String.length value in
+          length <= remaining && fits (remaining - length) rest
+
+  let format ~width doc =
+    let out = Buffer.create 256 in
+    let layout = ref (select width 0 [ Doc (0, Broken, doc) ]) in
+    let finished = ref false in
+    while not !finished do
+      match Lazy.force !layout with
+      | End ->
+          finished := true
+      | Invalid ->
+          assert false
+      | Emit_text (value, rest) ->
+          Buffer.add_string out value;
+          layout := rest
+      | Emit_line (indent, rest) ->
+          Buffer.add_char out '\n';
+          Buffer.add_string out (String.make indent ' ');
+          layout := rest
+    done;
+    Buffer.contents out
+end
+
 let pp ?(width = 80) element =
-  let module CF =
-    (val Pretty_expressive.Printer.default_cost_factory ~page_width:width ())
+  let open Pretty in
+  let map_docs f values = List.rev (List.rev_map f values) in
+  let separate separator = function
+    | [] ->
+        []
+    | doc :: docs ->
+        List.fold_left
+          (fun result doc -> doc :: separator :: result)
+          [ doc ] docs
+        |> List.rev
   in
-  let module P = Pretty_expressive.Printer.Make (CF) in
-  let open P in
   let escape_to_string s =
     let buf = Buffer.create (String.length s) in
     escape buf s;
     Buffer.contents buf
   in
   let text_with_newlines s =
-    match String.split_on_char '\n' s with
-    | [] ->
-        empty
-    | [ line ] ->
-        text line
-    | line :: rest ->
-        List.fold_left (fun acc l -> acc ^^ hard_nl ^^ text l) (text line) rest
+    concat (separate hard_line (map_docs text (String.split_on_char '\n' s)))
   in
   let is_text_like = function
     | String _ | Int _ | Float _ | Unsafe _ | Null ->
@@ -290,9 +458,7 @@ let pp ?(width = 80) element =
     | name, `Float value ->
         text (" " ^ name ^ "=\"" ^ Float.to_string value ^ "\"")
   in
-  let doc_of_attributes attrs =
-    List.fold_left (fun acc a -> acc ^^ doc_of_attribute a) empty attrs
-  in
+  let doc_of_attributes attrs = concat (map_docs doc_of_attribute attrs) in
   let rec doc_of = function
     | Null ->
         empty
@@ -309,34 +475,40 @@ let pp ?(width = 80) element =
     | Array arr ->
         doc_of_children (Array.to_list arr)
     | Node { tag; attributes; _ } when is_self_closing_tag tag ->
-        text ("<" ^ tag) ^^ doc_of_attributes attributes ^^ text " />"
+        concat [ text ("<" ^ tag); doc_of_attributes attributes; text " />" ]
     | Node { tag; attributes; children } -> (
         let prefix =
           if tag = "html" then
-            text "<!DOCTYPE html>" ^^ hard_nl
+            concat [ text "<!DOCTYPE html>"; hard_line ]
           else
             empty
         in
         let open_tag =
-          text ("<" ^ tag) ^^ doc_of_attributes attributes ^^ text ">"
+          concat [ text ("<" ^ tag); doc_of_attributes attributes; text ">" ]
         in
         let close_tag = text ("</" ^ tag ^ ">") in
         match children with
         | [] ->
-            prefix ^^ open_tag ^^ close_tag
+            concat [ prefix; open_tag; close_tag ]
         | _ when List.for_all is_text_like children ->
-            prefix ^^ open_tag ^^ doc_of_children children ^^ close_tag
+            concat [ prefix; open_tag; doc_of_children children; close_tag ]
         | _ ->
             let children_doc = doc_of_block_children children in
-            prefix
-            ^^ group
-                 (open_tag
-                 ^^ nest 2 (break ^^ children_doc)
-                 ^^ break ^^ close_tag
-                 )
+            concat
+              [
+                prefix;
+                group
+                  (concat
+                     [
+                       open_tag;
+                       nest 2 (concat [ break; children_doc ]);
+                       break;
+                       close_tag;
+                     ]
+                  );
+              ]
       )
-  and doc_of_children elements =
-    List.fold_left (fun acc el -> acc ^^ doc_of el) empty elements
+  and doc_of_children elements = concat (map_docs doc_of elements)
   and doc_of_block_children elements =
     let docs =
       List.filter_map
@@ -348,7 +520,7 @@ let pp ?(width = 80) element =
         empty
     | [ d ] ->
         d
-    | d :: rest ->
-        List.fold_left (fun acc d -> acc ^^ break ^^ d) d rest
+    | docs ->
+        concat (separate break docs)
   in
-  pretty_format (doc_of element)
+  format ~width (doc_of element)
