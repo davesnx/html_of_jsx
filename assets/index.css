@@ -35,7 +35,6 @@
   --border-subtle: oklch(90.76% 0.0303 73.88);
   --border-strong: oklch(87.72% 0.0381 71.18);
   --border-code-meta: var(--border-strong);
-  --border-code-body: var(--border-strong);
 
   --brand-link: oklch(44.58% 0.0861 48.39);
   --brand-link-hover: oklch(36.26% 0.0757 43.79);
@@ -85,7 +84,6 @@
   --border-strong: oklch(49% 0.021 56);
 
   --border-code-meta: var(--border-subtle);
-  --border-code-body: #221c17;
 
   --brand-link: oklch(72% 0.082 58);
   --brand-link-hover: oklch(77% 0.095 57);
@@ -813,7 +811,7 @@ button:focus-visible {
 .doc-code .doc-code__pre {
   margin: 0;
   padding: 0.95rem 1rem;
-  border: 1px solid var(--border-code-body);
+  border: 1px solid var(--border-code-meta);
   border-top: 0;
   border-radius: 0 0 var(--radius-md) var(--radius-md);
 }
