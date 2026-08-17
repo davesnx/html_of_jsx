@@ -137,6 +137,13 @@ let basename_exn path =
   | None ->
       invalid_arg ("Expected a basename for path: " ^ Path.to_string path)
 
+(* The public PPX library is a build tool, not a user-facing API module. *)
+let hidden_doc_sources = [ "Ppx.md" ]
+
+let is_visible_doc_source path =
+  Path.has_extension "md" path
+  && not (List.mem (basename_exn path) hidden_doc_sources)
+
 let output_name_of_source_name source_name =
   let stem = Filename.remove_extension source_name in
   if stem = "index" then
@@ -887,7 +894,7 @@ let copy_assets cache =
 
 let write_pages pages source_files cache =
   let open Eff in
-  let deps = Deps.from_list source_files in
+  let deps = Deps.from_list (Path.rel [ "site"; "main.mlx" ] :: source_files) in
   let rec write_all cache = function
     | [] ->
         return cache
@@ -906,7 +913,7 @@ let write_pages pages source_files cache =
 let process_all () =
   let open Eff in
   let* source_files =
-    read_directory ~on:`Source ~only:`Files ~where:(Path.has_extension "md")
+    read_directory ~on:`Source ~only:`Files ~where:is_visible_doc_source
       source_dir
   in
   let source_files =
@@ -920,7 +927,8 @@ let process_all () =
   let* pages = load_pages source_files in
   Action.with_cache ~on:`Source cache_file (fun cache ->
       let* cache = write_pages pages source_files cache in
-      copy_assets cache
+      let* cache = copy_assets cache in
+      Action.remove_residuals ~target:target_dir cache
   )
 
 type cli_mode = Build | Serve of int
