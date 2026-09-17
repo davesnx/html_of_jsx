@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1789606727064,
+  "lastUpdate": 1789608365067,
   "repoUrl": "https://github.com/davesnx/html_of_jsx",
   "entries": {
     "html_of_jsx Benchmarks": [
@@ -3827,6 +3827,95 @@ window.BENCHMARK_DATA = {
           {
             "name": "escape (dirty)",
             "value": 9364355.41,
+            "unit": "ops/sec"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "dsnxmoreno@gmail.com",
+            "name": "David Sancho",
+            "username": "davesnx"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "d00026c94a9a8f4c8cca696cd0d8939f0e6f3c2b",
+          "message": "Merge pull request #46 from davesnx/fix/optional-attrs-with-dynamic\n\nKeep optional attributes when an element also has dynamic ones",
+          "timestamp": "2026-09-17T02:58:54+02:00",
+          "tree_id": "b4d476280c0db98b95d15d6e3218b5ed5934bbfd",
+          "url": "https://github.com/davesnx/html_of_jsx/commit/d00026c94a9a8f4c8cca696cd0d8939f0e6f3c2b"
+        },
+        "date": 1789608363734,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Trivial (static)",
+            "value": 1042420486.9,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Dashboard",
+            "value": 73217.64,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Blog (50 comments)",
+            "value": 10835.17,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Table (100 rows)",
+            "value": 8219.17,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Table (100 rows, prebuilt)",
+            "value": 2171904905.68,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "E-commerce",
+            "value": 7803.27,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Form",
+            "value": 66375.68,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Deep tree (50)",
+            "value": 15658.29,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Wide tree (100)",
+            "value": 11205.27,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Shallow tree",
+            "value": 146720.47,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Props heavy",
+            "value": 8685.38,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "escape (clean)",
+            "value": 41010025.14,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "escape (dirty)",
+            "value": 11896755.66,
             "unit": "ops/sec"
           }
         ]
