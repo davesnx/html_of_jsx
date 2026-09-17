@@ -39,7 +39,7 @@
         Buffer.add_char(__html_buf, ' ');
         Buffer.add_string(__html_buf, "tabindex");
         Buffer.add_string(__html_buf, "=\"");
-        Buffer.add_string(__html_buf, Int.to_string(v));
+        JSX.write_int(__html_buf, v);
         Buffer.add_char(__html_buf, '"');
       | None => ()
       };

@@ -244,6 +244,24 @@ let render_escaped_string =
     (JSX.render (JSX.string "a < b & 'c'"))
     "a &lt; b &amp; &apos;c&apos;"
 
+let render_int_child =
+  test "render_int_child" @@ fun () ->
+  let check n =
+    let div = JSX.node "div" [] [ JSX.int n ] in
+    assert_string (JSX.render div) ("<div>" ^ string_of_int n ^ "</div>")
+  in
+  List.iter check [ 0; 1; 9; 10; 99; 100; -1; -10; max_int; min_int ];
+  let state = Random.State.make [| 42 |] in
+  for _ = 1 to 300 do
+    check (Random.State.bits state - (1 lsl 29))
+  done
+
+let render_int_attribute =
+  test "render_int_attribute" @@ fun () ->
+  let div = JSX.node "div" [ ("tabindex", `Int min_int) ] [] in
+  assert_string (JSX.render div)
+    ("<div tabindex=\"" ^ string_of_int min_int ^ "\"></div>")
+
 let tests =
   ( "render",
     [
@@ -272,5 +290,7 @@ let tests =
       render_streaming_small_document_single_chunk;
       render_clean_string_no_copy;
       render_escaped_string;
+      render_int_child;
+      render_int_attribute;
     ]
   )

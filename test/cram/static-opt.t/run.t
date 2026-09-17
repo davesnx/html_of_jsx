@@ -228,7 +228,7 @@ Test static JSX optimization
         Buffer.add_char(__html_buf, ' ');
         Buffer.add_string(__html_buf, "tabindex");
         Buffer.add_string(__html_buf, "=\"");
-        Buffer.add_string(__html_buf, Int.to_string(tabindex));
+        JSX.write_int(__html_buf, tabindex);
         Buffer.add_char(__html_buf, '"');
       };
       Buffer.add_char(__html_buf, '>');
@@ -258,7 +258,7 @@ Test static JSX optimization
         Buffer.add_char(__html_buf, '"');
       };
       Buffer.add_char(__html_buf, '>');
-      Buffer.add_string(__html_buf, Int.to_string(count));
+      JSX.write_int(__html_buf, count);
       Buffer.add_string(__html_buf, Float.to_string(price));
       {
         Buffer.add_string(__html_buf, "</");
@@ -337,7 +337,7 @@ Test static JSX optimization
     let __html_buf = Buffer.create(75);
     {
       Buffer.add_string(__html_buf, "<div>");
-      Buffer.add_string(__html_buf, Int.to_string(count));
+      JSX.write_int(__html_buf, count);
       Buffer.add_string(__html_buf, "</div>");
       ();
     };
@@ -357,7 +357,7 @@ Test static JSX optimization
     let __html_buf = Buffer.create(135);
     {
       Buffer.add_string(__html_buf, "<p>");
-      Buffer.add_string(__html_buf, Int.to_string(count));
+      JSX.write_int(__html_buf, count);
       JSX.escape(__html_buf, name);
       Buffer.add_string(__html_buf, "</p>");
       ();
