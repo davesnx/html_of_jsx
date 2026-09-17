@@ -2,134 +2,148 @@
   let lower = JSX.unsafe("<div></div>");
   let lower_empty_attr = JSX.unsafe("<div class=\"\"></div>");
   let lower_inline_styles = {
-    let __html_buf = Buffer.create(75);
-    {
-      Buffer.add_string(__html_buf, "<div style=\"");
-      JSX.escape(__html_buf, Style.make(~backgroundColor="gainsboro", ()));
-      Buffer.add_string(__html_buf, "\"></div>");
-      ();
-    };
-    JSX.unsafe(Buffer.contents(__html_buf));
+    let __html_v1 = Style.make(~backgroundColor="gainsboro", ());
+    JSX.writer(
+      75,
+      __html_buf => {
+        Buffer.add_string(__html_buf, "<div style=\"");
+        JSX.escape(__html_buf, __html_v1);
+        Buffer.add_string(__html_buf, "\"></div>");
+        ();
+      },
+    );
   };
   let lower_opt_attr = {
-    let __html_buf = Buffer.create(75);
-    {
-      Buffer.add_string(__html_buf, "<div");
-      switch (tabindex) {
-      | Some(v) =>
-        Buffer.add_char(__html_buf, ' ');
-        Buffer.add_string(__html_buf, "tabindex");
-        Buffer.add_string(__html_buf, "=\"");
-        JSX.write_int(__html_buf, v);
-        Buffer.add_char(__html_buf, '"');
-      | None => ()
-      };
-      Buffer.add_string(__html_buf, "></div>");
-      ();
-    };
-    JSX.unsafe(Buffer.contents(__html_buf));
+    let __html_v2 = tabindex;
+    JSX.writer(
+      75,
+      __html_buf => {
+        Buffer.add_string(__html_buf, "<div");
+        switch (__html_v2) {
+        | Some(v) =>
+          Buffer.add_string(__html_buf, " tabindex=\"");
+          JSX.write_int(__html_buf, v);
+          Buffer.add_char(__html_buf, '"');
+        | None => ()
+        };
+        Buffer.add_string(__html_buf, "></div>");
+        ();
+      },
+    );
   };
   let lowerWithChildAndProps = foo => {
-    let __html_buf = Buffer.create(111);
-    {
-      Buffer.add_string(
-        __html_buf,
-        "<a tabindex=\"1\" href=\"https://example.com\">",
-      );
-      JSX.write(__html_buf, foo);
-      Buffer.add_string(__html_buf, "</a>");
-      ();
-    };
-    JSX.unsafe(Buffer.contents(__html_buf));
+    let __html_v3 = foo;
+    JSX.writer(
+      111,
+      __html_buf => {
+        Buffer.add_string(
+          __html_buf,
+          "<a tabindex=\"1\" href=\"https://example.com\">",
+        );
+        JSX.write(__html_buf, __html_v3);
+        Buffer.add_string(__html_buf, "</a>");
+        ();
+      },
+    );
   };
   let lower_child_static = JSX.unsafe("<div><span></span></div>");
   let lower_child_ident = {
-    let __html_buf = Buffer.create(75);
-    {
-      Buffer.add_string(__html_buf, "<div>");
-      JSX.write(__html_buf, lolaspa);
-      Buffer.add_string(__html_buf, "</div>");
-      ();
-    };
-    JSX.unsafe(Buffer.contents(__html_buf));
+    let __html_v4 = lolaspa;
+    JSX.writer(
+      75,
+      __html_buf => {
+        Buffer.add_string(__html_buf, "<div>");
+        JSX.write(__html_buf, __html_v4);
+        Buffer.add_string(__html_buf, "</div>");
+        ();
+      },
+    );
   };
   let lower_child_single = JSX.unsafe("<div><div></div></div>");
   let lower_children_multiple = (foo, bar) =>
     lower(~children=JSX.list([foo, bar]), ());
   let lower_child_with_upper_as_children = {
-    let __html_buf = Buffer.create(75);
-    {
-      Buffer.add_string(__html_buf, "<div>");
-      JSX.write(__html_buf, App.make());
-      Buffer.add_string(__html_buf, "</div>");
-      ();
-    };
-    JSX.unsafe(Buffer.contents(__html_buf));
+    let __html_v5 = App.make();
+    JSX.writer(
+      75,
+      __html_buf => {
+        Buffer.add_string(__html_buf, "<div>");
+        JSX.write(__html_buf, __html_v5);
+        Buffer.add_string(__html_buf, "</div>");
+        ();
+      },
+    );
   };
   let lower_children_nested = {
-    let __html_buf = Buffer.create(245);
-    {
-      Buffer.add_string(__html_buf, "<div class=\"flex-container\">");
-      {
-        Buffer.add_string(__html_buf, "<div class=\"sidebar\">");
+    let __html_v6 = "jsoo-react" |> s;
+    let __html_v9 =
+      examples
+      |> List.map(e => {
+           let __html_v7 = e.path;
+           let __html_v8 = e.title |> s;
+           JSX.writer(
+             166,
+             __html_buf => {
+               Buffer.add_string(__html_buf, "<li>");
+               {
+                 Buffer.add_string(
+                   __html_buf,
+                   "<a onclick=\"console.log\" href=\"",
+                 );
+                 JSX.escape(__html_buf, __html_v7);
+                 Buffer.add_string(__html_buf, "\">");
+                 JSX.write(__html_buf, __html_v8);
+                 Buffer.add_string(__html_buf, "</a>");
+                 ();
+               };
+               Buffer.add_string(__html_buf, "</li>");
+               ();
+             },
+           );
+         })
+      |> React.list;
+    JSX.writer(
+      245,
+      __html_buf => {
+        Buffer.add_string(__html_buf, "<div class=\"flex-container\">");
         {
-          Buffer.add_string(__html_buf, "<h2 class=\"title\">");
-          JSX.write(__html_buf, "jsoo-react" |> s);
-          Buffer.add_string(__html_buf, "</h2>");
-          ();
-        };
-        {
-          Buffer.add_string(__html_buf, "<nav class=\"menu\">");
+          Buffer.add_string(__html_buf, "<div class=\"sidebar\">");
           {
-            Buffer.add_string(__html_buf, "<ul>");
-            JSX.write(
-              __html_buf,
-              examples
-              |> List.map(e => {
-                   let __html_buf = Buffer.create(166);
-                   {
-                     Buffer.add_string(__html_buf, "<li>");
-                     {
-                       Buffer.add_string(
-                         __html_buf,
-                         "<a onclick=\"console.log\" href=\"",
-                       );
-                       JSX.escape(__html_buf, e.path);
-                       Buffer.add_string(__html_buf, "\">");
-                       JSX.write(__html_buf, e.title |> s);
-                       Buffer.add_string(__html_buf, "</a>");
-                       ();
-                     };
-                     Buffer.add_string(__html_buf, "</li>");
-                     ();
-                   };
-                   JSX.unsafe(Buffer.contents(__html_buf));
-                 })
-              |> React.list,
-            );
-            Buffer.add_string(__html_buf, "</ul>");
+            Buffer.add_string(__html_buf, "<h2 class=\"title\">");
+            JSX.write(__html_buf, __html_v6);
+            Buffer.add_string(__html_buf, "</h2>");
             ();
           };
-          Buffer.add_string(__html_buf, "</nav>");
+          {
+            Buffer.add_string(__html_buf, "<nav class=\"menu\">");
+            {
+              Buffer.add_string(__html_buf, "<ul>");
+              JSX.write(__html_buf, __html_v9);
+              Buffer.add_string(__html_buf, "</ul>");
+              ();
+            };
+            Buffer.add_string(__html_buf, "</nav>");
+            ();
+          };
+          Buffer.add_string(__html_buf, "</div>");
           ();
         };
         Buffer.add_string(__html_buf, "</div>");
         ();
-      };
-      Buffer.add_string(__html_buf, "</div>");
-      ();
-    };
-    JSX.unsafe(Buffer.contents(__html_buf));
+      },
+    );
   };
   let lower_ref_with_children = {
-    let __html_buf = Buffer.create(101);
-    {
-      Buffer.add_string(__html_buf, "<button class=\"FancyButton\">");
-      JSX.write(__html_buf, children);
-      Buffer.add_string(__html_buf, "</button>");
-      ();
-    };
-    JSX.unsafe(Buffer.contents(__html_buf));
+    let __html_v10 = children;
+    JSX.writer(
+      101,
+      __html_buf => {
+        Buffer.add_string(__html_buf, "<button class=\"FancyButton\">");
+        JSX.write(__html_buf, __html_v10);
+        Buffer.add_string(__html_buf, "</button>");
+        ();
+      },
+    );
   };
   let lower_with_many_props =
     JSX.unsafe(

@@ -17,7 +17,7 @@
  (description "html_of_jsx is a JSX transformation and a library to write HTML declaratively in OCaml (mlx) and Reason.")
   (depends
    (ocaml (>= 4.14))
-   (ppxlib (>= 0.25.0))
+   (ppxlib (>= 0.36.0))
 
   ;; Documentation
   (odoc :with-doc)

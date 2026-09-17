@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- PPX: elements compile to `JSX.writer` closures that write straight into the parent buffer, removing a buffer and two copies per component boundary; rendering an already built element value now re-runs its writes instead of returning a cached string (@davesnx)
 - Fix optional attributes being dropped when the same element also has a dynamic (non-literal) attribute: `<div ?id class_=cls />` rendered without `id` (@davesnx)
 - Write integers as digits straight into the render buffer (`JSX.write_int`) instead of allocating `Int.to_string` (@davesnx)
 - PPX: emit one `Buffer.add_string` per run of static text around dynamic and optional attributes instead of one call per fragment (@davesnx)

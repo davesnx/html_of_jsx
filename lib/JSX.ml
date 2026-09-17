@@ -125,6 +125,7 @@ type element =
     }
   | List of element list
   | Array of element array
+  | Writer of { size : int; write : Buffer.t -> unit }
 
 let string txt = String txt
 let text = string
@@ -137,6 +138,7 @@ let list arr = List arr
 let array arr = Array arr
 let fragment ~(children : element) () = children
 let node tag attributes children = Node { tag; attributes; children }
+let writer size write = Writer { size; write }
 
 let write out element =
   let rec write_list = function
@@ -155,6 +157,8 @@ let write out element =
     match element with
     | Null ->
         ()
+    | Writer w ->
+        w.write out
     | List list ->
         write_list list
     | Node { tag; attributes; _ } when is_self_closing_tag tag ->
@@ -191,6 +195,10 @@ let render element =
   match element with
   | Null ->
       ""
+  | Writer w ->
+      let out = Buffer.create w.size in
+      w.write out;
+      Buffer.contents out
   | Unsafe out ->
       (* The ppx compiles most elements down to [Unsafe html], render is a
          no-op in that case: return the string without copying. *)
@@ -231,6 +239,9 @@ let render_streaming ?(chunk_size = 4096) (write_fn : string -> unit) element =
     match element with
     | Null ->
         ()
+    | Writer w ->
+        w.write out;
+        flush_if_full ()
     | List list ->
         List.iter go list
     | Array arr ->
@@ -456,7 +467,7 @@ let pp ?(width = 80) element =
     concat (separate hard_line (map_docs text (String.split_on_char '\n' s)))
   in
   let is_text_like = function
-    | String _ | Int _ | Float _ | Unsafe _ | Null ->
+    | String _ | Int _ | Float _ | Unsafe _ | Null | Writer _ ->
         true
     | Node _ | List _ | Array _ ->
         false
@@ -486,6 +497,8 @@ let pp ?(width = 80) element =
         text (Float.to_string f)
     | Unsafe s ->
         text_with_newlines s
+    | Writer _ as w ->
+        text_with_newlines (render w)
     | List elements ->
         doc_of_children elements
     | Array arr ->
