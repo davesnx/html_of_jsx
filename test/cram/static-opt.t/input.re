@@ -57,6 +57,7 @@ let dynamic_int_attr_with_child = (tabindex, name) =>
   <div tabindex=tabindex> {JSX.string(name)} </div>;
 let dynamic_attr_with_int_float_children = (className, count, price) =>
   <div class_=className> {JSX.int(count)} {JSX.float(price)} </div>;
+let optional_and_dynamic = (~id=?, ~cls, ()) => <div ?id class_=cls />;
 
 /* Test: Element-typed dynamic children (uses Buffer) */
 let dynamic_element = child => <div> child </div>;

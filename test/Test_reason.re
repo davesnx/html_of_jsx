@@ -266,6 +266,57 @@ let fragment_with_dynamic_children =
     assert_string(JSX.render(component), {|d &amp; g<span></span>3|});
   });
 
+/* Regression: an element mixing an optional attribute with a dynamic
+   (non-literal) one used to silently drop the optional attribute, because
+   the two were tracked in separate lists and only one list was ever used. */
+let optional_and_dynamic_attrs =
+  test("optional_and_dynamic_attrs", () => {
+    let render = (id, className) => JSX.render(<div ?id class_=className />);
+    assert_string(
+      render(Some("main"), "container"),
+      {|<div id="main" class="container"></div>|},
+    );
+    assert_string(
+      render(None, "container"),
+      {|<div class="container"></div>|},
+    );
+  });
+
+let optional_bool_and_dynamic_string_attrs =
+  test("optional_bool_and_dynamic_string_attrs", () => {
+    let render = (disabled, cls) =>
+      JSX.render(<button ?disabled class_=cls />);
+    assert_string(
+      render(Some(true), "btn"),
+      {|<button disabled class="btn"></button>|},
+    );
+    assert_string(render(None, "btn"), {|<button class="btn"></button>|});
+  });
+
+/* Pins source-order rendering: the optional attribute appears before the
+   dynamic one here, and after it in [dynamic_before_optional_attr]. */
+let optional_before_dynamic_attr =
+  test("optional_before_dynamic_attr", () => {
+    let id = Some("main");
+    let className = "container";
+    let div = <div ?id class_=className />;
+    assert_string(
+      JSX.render(div),
+      {|<div id="main" class="container"></div>|},
+    );
+  });
+
+let dynamic_before_optional_attr =
+  test("dynamic_before_optional_attr", () => {
+    let className = "container";
+    let id = Some("main");
+    let div = <div class_=className ?id />;
+    assert_string(
+      JSX.render(div),
+      {|<div class="container" id="main"></div>|},
+    );
+  });
+
 let tests = (
   "Reason with JSX",
   [
@@ -297,5 +348,9 @@ let tests = (
     lowercase_component,
     fragment_escapes_static_strings,
     fragment_with_dynamic_children,
+    optional_and_dynamic_attrs,
+    optional_bool_and_dynamic_string_attrs,
+    optional_before_dynamic_attr,
+    dynamic_before_optional_attr,
   ],
 );

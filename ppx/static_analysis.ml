@@ -394,45 +394,47 @@ let analyze_attribute ~tag_name (label, expr) : attr_analysis_result =
         )
     )
 
+(* Optional (`?id`) and dynamic (non-literal `~x`) attributes must render in
+   one ordered list: keeping them apart, as two separate lists, is what made
+   [analyze_attributes] silently drop one kind whenever an element mixed both
+   (only one of the two lists was ever consulted by the caller). *)
+type attr_item =
+  | Optional_item of attr_render_info * expression
+  | Dynamic_item of attr_render_info * expression
+
 type attrs_analysis =
   | All_static of string
-  | Has_optional of (attr_render_info * expression) list * string
-  | Has_dynamic_attrs of {
-      static_attrs : string;
-      dynamic_attrs : (attr_render_info * expression) list;
-    }
+  | Has_attrs of { static_attrs : string; items : attr_item list }
   | Validation_failed
 
 let analyze_attributes ~tag_name attrs =
-  let rec loop static_buf optionals dynamic_attrs = function
+  let rec loop static_buf items = function
     | [] ->
-        if dynamic_attrs <> [] then
-          Has_dynamic_attrs
-            {
-              static_attrs = Buffer.contents static_buf;
-              dynamic_attrs = List.rev dynamic_attrs;
-            }
-        else if optionals = [] then
+        if items = [] then
           All_static (Buffer.contents static_buf)
         else
-          Has_optional (List.rev optionals, Buffer.contents static_buf)
+          Has_attrs
+            {
+              static_attrs = Buffer.contents static_buf;
+              items = List.rev items;
+            }
     | attr :: rest -> (
         match analyze_attribute ~tag_name attr with
         | Invalid ->
             Validation_failed
         | Ok None ->
-            loop static_buf optionals dynamic_attrs rest
+            loop static_buf items rest
         | Ok (Some (Static_attr (info, value))) ->
             Buffer.add_string static_buf
               (render_static_attr_with_info info value);
-            loop static_buf optionals dynamic_attrs rest
+            loop static_buf items rest
         | Ok (Some (Optional_attr (info, expr))) ->
-            loop static_buf ((info, expr) :: optionals) dynamic_attrs rest
+            loop static_buf (Optional_item (info, expr) :: items) rest
         | Ok (Some (Dynamic_attr (info, expr))) ->
-            loop static_buf optionals ((info, expr) :: dynamic_attrs) rest
+            loop static_buf (Dynamic_item (info, expr) :: items) rest
       )
   in
-  loop (Buffer.create 64) [] [] attrs
+  loop (Buffer.create 64) [] attrs
 
 type children_analysis =
   | No_children
@@ -560,17 +562,10 @@ type element_analysis =
       static_size : int;
       dynamic_count : int;
     }
-  | Has_optional_attrs of {
-      tag_name : string;
-      static_attrs : string;
-      optional_attrs : (attr_render_info * expression) list;
-      children_parts : static_part list;
-      is_self_closing : bool;
-    }
   | Dynamic_attrs_children of {
       tag_name : string;
       static_attrs : string;
-      dynamic_attrs : (attr_render_info * expression) list;
+      attr_items : attr_item list;
       children_parts : static_part list;
       is_self_closing : bool;
     }
@@ -604,41 +599,39 @@ let analyze_element ~tag_name ~attrs ~children =
   match (attrs_result, children_result) with
   | Validation_failed, _ ->
       Cannot_optimize
-  | ( Has_dynamic_attrs { static_attrs; dynamic_attrs },
-      All_static_children children_html ) ->
+  | Has_attrs { static_attrs; items }, No_children ->
       Dynamic_attrs_children
         {
           tag_name;
           static_attrs;
-          dynamic_attrs;
-          children_parts = [ Static_str children_html ];
-          is_self_closing = is_self_closing_tag tag_name;
-        }
-  | Has_dynamic_attrs { static_attrs; dynamic_attrs }, No_children ->
-      Dynamic_attrs_children
-        {
-          tag_name;
-          static_attrs;
-          dynamic_attrs;
+          attr_items = items;
           children_parts = [];
           is_self_closing = is_self_closing_tag tag_name;
         }
-  | Has_dynamic_attrs { static_attrs; dynamic_attrs }, All_string_dynamic parts
-    ->
+  | Has_attrs { static_attrs; items }, All_static_children children_html ->
       Dynamic_attrs_children
         {
           tag_name;
           static_attrs;
-          dynamic_attrs;
+          attr_items = items;
+          children_parts = [ Static_str children_html ];
+          is_self_closing = false;
+        }
+  | Has_attrs { static_attrs; items }, All_string_dynamic parts ->
+      Dynamic_attrs_children
+        {
+          tag_name;
+          static_attrs;
+          attr_items = items;
           children_parts = parts;
           is_self_closing = false;
         }
-  | Has_dynamic_attrs { static_attrs; dynamic_attrs }, Mixed_children parts ->
+  | Has_attrs { static_attrs; items }, Mixed_children parts ->
       Dynamic_attrs_children
         {
           tag_name;
           static_attrs;
-          dynamic_attrs;
+          attr_items = items;
           children_parts = parts;
           is_self_closing = false;
         }
@@ -659,43 +652,6 @@ let analyze_element ~tag_name ~attrs ~children =
       let close_tag = Printf.sprintf "</%s>" tag_name in
       needs_buffer_of_parts
         ([ Static_str open_tag ] @ parts @ [ Static_str close_tag ])
-  | Has_optional (optional_attrs, static_attrs), No_children ->
-      Has_optional_attrs
-        {
-          tag_name;
-          static_attrs;
-          optional_attrs;
-          children_parts = [];
-          is_self_closing = is_self_closing_tag tag_name;
-        }
-  | ( Has_optional (optional_attrs, static_attrs),
-      All_static_children children_html ) ->
-      Has_optional_attrs
-        {
-          tag_name;
-          static_attrs;
-          optional_attrs;
-          children_parts = [ Static_str children_html ];
-          is_self_closing = false;
-        }
-  | Has_optional (optional_attrs, static_attrs), All_string_dynamic parts ->
-      Has_optional_attrs
-        {
-          tag_name;
-          static_attrs;
-          optional_attrs;
-          children_parts = parts;
-          is_self_closing = false;
-        }
-  | Has_optional (optional_attrs, static_attrs), Mixed_children parts ->
-      Has_optional_attrs
-        {
-          tag_name;
-          static_attrs;
-          optional_attrs;
-          children_parts = parts;
-          is_self_closing = false;
-        }
 
 let maybe_add_doctype tag_name html =
   if tag_name = "html" then
