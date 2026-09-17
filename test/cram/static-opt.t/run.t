@@ -93,24 +93,9 @@ Test static JSX optimization
   let dynamic_attr = className => {
     let __html_buf = Buffer.create(75);
     {
-      {
-        Buffer.add_char(__html_buf, '<');
-        Buffer.add_string(__html_buf, "div");
-        Buffer.add_string(__html_buf, "");
-      };
-      {
-        Buffer.add_char(__html_buf, ' ');
-        Buffer.add_string(__html_buf, "class");
-        Buffer.add_string(__html_buf, "=\"");
-        JSX.escape(__html_buf, className);
-        Buffer.add_char(__html_buf, '"');
-      };
-      Buffer.add_char(__html_buf, '>');
-      {
-        Buffer.add_string(__html_buf, "</");
-        Buffer.add_string(__html_buf, "div");
-        Buffer.add_char(__html_buf, '>');
-      };
+      Buffer.add_string(__html_buf, "<div class=\"");
+      JSX.escape(__html_buf, className);
+      Buffer.add_string(__html_buf, "\"></div>");
       ();
     };
     JSX.unsafe(Buffer.contents(__html_buf));
@@ -118,25 +103,11 @@ Test static JSX optimization
   let dynamic_attr_with_string_child = (className, name) => {
     let __html_buf = Buffer.create(139);
     {
-      {
-        Buffer.add_char(__html_buf, '<');
-        Buffer.add_string(__html_buf, "div");
-        Buffer.add_string(__html_buf, "");
-      };
-      {
-        Buffer.add_char(__html_buf, ' ');
-        Buffer.add_string(__html_buf, "class");
-        Buffer.add_string(__html_buf, "=\"");
-        JSX.escape(__html_buf, className);
-        Buffer.add_char(__html_buf, '"');
-      };
-      Buffer.add_char(__html_buf, '>');
+      Buffer.add_string(__html_buf, "<div class=\"");
+      JSX.escape(__html_buf, className);
+      Buffer.add_string(__html_buf, "\">");
       JSX.escape(__html_buf, name);
-      {
-        Buffer.add_string(__html_buf, "</");
-        Buffer.add_string(__html_buf, "div");
-        Buffer.add_char(__html_buf, '>');
-      };
+      Buffer.add_string(__html_buf, "</div>");
       ();
     };
     JSX.unsafe(Buffer.contents(__html_buf));
@@ -144,25 +115,11 @@ Test static JSX optimization
   let dynamic_attr_with_formatted_child = (className, name, count) => {
     let __html_buf = Buffer.create(139);
     {
-      {
-        Buffer.add_char(__html_buf, '<');
-        Buffer.add_string(__html_buf, "div");
-        Buffer.add_string(__html_buf, "");
-      };
-      {
-        Buffer.add_char(__html_buf, ' ');
-        Buffer.add_string(__html_buf, "class");
-        Buffer.add_string(__html_buf, "=\"");
-        JSX.escape(__html_buf, className);
-        Buffer.add_char(__html_buf, '"');
-      };
-      Buffer.add_char(__html_buf, '>');
+      Buffer.add_string(__html_buf, "<div class=\"");
+      JSX.escape(__html_buf, className);
+      Buffer.add_string(__html_buf, "\">");
       Printf.ksprintf(JSX.escape(__html_buf), "Hello %s %i", name, count);
-      {
-        Buffer.add_string(__html_buf, "</");
-        Buffer.add_string(__html_buf, "div");
-        Buffer.add_char(__html_buf, '>');
-      };
+      Buffer.add_string(__html_buf, "</div>");
       ();
     };
     JSX.unsafe(Buffer.contents(__html_buf));
@@ -170,25 +127,11 @@ Test static JSX optimization
   let dynamic_attr_with_mixed_child = (className, child) => {
     let __html_buf = Buffer.create(139);
     {
-      {
-        Buffer.add_char(__html_buf, '<');
-        Buffer.add_string(__html_buf, "div");
-        Buffer.add_string(__html_buf, "");
-      };
-      {
-        Buffer.add_char(__html_buf, ' ');
-        Buffer.add_string(__html_buf, "class");
-        Buffer.add_string(__html_buf, "=\"");
-        JSX.escape(__html_buf, className);
-        Buffer.add_char(__html_buf, '"');
-      };
-      Buffer.add_char(__html_buf, '>');
+      Buffer.add_string(__html_buf, "<div class=\"");
+      JSX.escape(__html_buf, className);
+      Buffer.add_string(__html_buf, "\">");
       JSX.write(__html_buf, child);
-      {
-        Buffer.add_string(__html_buf, "</");
-        Buffer.add_string(__html_buf, "div");
-        Buffer.add_char(__html_buf, '>');
-      };
+      Buffer.add_string(__html_buf, "</div>");
       ();
     };
     JSX.unsafe(Buffer.contents(__html_buf));
@@ -196,22 +139,14 @@ Test static JSX optimization
   let dynamic_bool_attr_with_child = (disabled, name) => {
     let __html_buf = Buffer.create(145);
     {
-      {
-        Buffer.add_char(__html_buf, '<');
-        Buffer.add_string(__html_buf, "button");
-        Buffer.add_string(__html_buf, "");
-      };
+      Buffer.add_string(__html_buf, "<button");
       if (disabled) {
         Buffer.add_char(__html_buf, ' ');
         Buffer.add_string(__html_buf, "disabled");
       };
-      Buffer.add_char(__html_buf, '>');
+      Buffer.add_string(__html_buf, ">");
       JSX.escape(__html_buf, name);
-      {
-        Buffer.add_string(__html_buf, "</");
-        Buffer.add_string(__html_buf, "button");
-        Buffer.add_char(__html_buf, '>');
-      };
+      Buffer.add_string(__html_buf, "</button>");
       ();
     };
     JSX.unsafe(Buffer.contents(__html_buf));
@@ -219,25 +154,11 @@ Test static JSX optimization
   let dynamic_int_attr_with_child = (tabindex, name) => {
     let __html_buf = Buffer.create(139);
     {
-      {
-        Buffer.add_char(__html_buf, '<');
-        Buffer.add_string(__html_buf, "div");
-        Buffer.add_string(__html_buf, "");
-      };
-      {
-        Buffer.add_char(__html_buf, ' ');
-        Buffer.add_string(__html_buf, "tabindex");
-        Buffer.add_string(__html_buf, "=\"");
-        JSX.write_int(__html_buf, tabindex);
-        Buffer.add_char(__html_buf, '"');
-      };
-      Buffer.add_char(__html_buf, '>');
+      Buffer.add_string(__html_buf, "<div tabindex=\"");
+      JSX.write_int(__html_buf, tabindex);
+      Buffer.add_string(__html_buf, "\">");
       JSX.escape(__html_buf, name);
-      {
-        Buffer.add_string(__html_buf, "</");
-        Buffer.add_string(__html_buf, "div");
-        Buffer.add_char(__html_buf, '>');
-      };
+      Buffer.add_string(__html_buf, "</div>");
       ();
     };
     JSX.unsafe(Buffer.contents(__html_buf));
@@ -245,26 +166,12 @@ Test static JSX optimization
   let dynamic_attr_with_int_float_children = (className, count, price) => {
     let __html_buf = Buffer.create(203);
     {
-      {
-        Buffer.add_char(__html_buf, '<');
-        Buffer.add_string(__html_buf, "div");
-        Buffer.add_string(__html_buf, "");
-      };
-      {
-        Buffer.add_char(__html_buf, ' ');
-        Buffer.add_string(__html_buf, "class");
-        Buffer.add_string(__html_buf, "=\"");
-        JSX.escape(__html_buf, className);
-        Buffer.add_char(__html_buf, '"');
-      };
-      Buffer.add_char(__html_buf, '>');
+      Buffer.add_string(__html_buf, "<div class=\"");
+      JSX.escape(__html_buf, className);
+      Buffer.add_string(__html_buf, "\">");
       JSX.write_int(__html_buf, count);
       Buffer.add_string(__html_buf, Float.to_string(price));
-      {
-        Buffer.add_string(__html_buf, "</");
-        Buffer.add_string(__html_buf, "div");
-        Buffer.add_char(__html_buf, '>');
-      };
+      Buffer.add_string(__html_buf, "</div>");
       ();
     };
     JSX.unsafe(Buffer.contents(__html_buf));
@@ -272,11 +179,7 @@ Test static JSX optimization
   let optional_and_dynamic = (~id=?, ~cls, ()) => {
     let __html_buf = Buffer.create(139);
     {
-      {
-        Buffer.add_char(__html_buf, '<');
-        Buffer.add_string(__html_buf, "div");
-        Buffer.add_string(__html_buf, "");
-      };
+      Buffer.add_string(__html_buf, "<div");
       switch (id) {
       | Some(v) =>
         Buffer.add_char(__html_buf, ' ');
@@ -286,19 +189,9 @@ Test static JSX optimization
         Buffer.add_char(__html_buf, '"');
       | None => ()
       };
-      {
-        Buffer.add_char(__html_buf, ' ');
-        Buffer.add_string(__html_buf, "class");
-        Buffer.add_string(__html_buf, "=\"");
-        JSX.escape(__html_buf, cls);
-        Buffer.add_char(__html_buf, '"');
-      };
-      Buffer.add_char(__html_buf, '>');
-      {
-        Buffer.add_string(__html_buf, "</");
-        Buffer.add_string(__html_buf, "div");
-        Buffer.add_char(__html_buf, '>');
-      };
+      Buffer.add_string(__html_buf, " class=\"");
+      JSX.escape(__html_buf, cls);
+      Buffer.add_string(__html_buf, "\"></div>");
       ();
     };
     JSX.unsafe(Buffer.contents(__html_buf));

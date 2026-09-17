@@ -4,24 +4,9 @@
   let lower_inline_styles = {
     let __html_buf = Buffer.create(75);
     {
-      {
-        Buffer.add_char(__html_buf, '<');
-        Buffer.add_string(__html_buf, "div");
-        Buffer.add_string(__html_buf, "");
-      };
-      {
-        Buffer.add_char(__html_buf, ' ');
-        Buffer.add_string(__html_buf, "style");
-        Buffer.add_string(__html_buf, "=\"");
-        JSX.escape(__html_buf, Style.make(~backgroundColor="gainsboro", ()));
-        Buffer.add_char(__html_buf, '"');
-      };
-      Buffer.add_char(__html_buf, '>');
-      {
-        Buffer.add_string(__html_buf, "</");
-        Buffer.add_string(__html_buf, "div");
-        Buffer.add_char(__html_buf, '>');
-      };
+      Buffer.add_string(__html_buf, "<div style=\"");
+      JSX.escape(__html_buf, Style.make(~backgroundColor="gainsboro", ()));
+      Buffer.add_string(__html_buf, "\"></div>");
       ();
     };
     JSX.unsafe(Buffer.contents(__html_buf));
@@ -29,11 +14,7 @@
   let lower_opt_attr = {
     let __html_buf = Buffer.create(75);
     {
-      {
-        Buffer.add_char(__html_buf, '<');
-        Buffer.add_string(__html_buf, "div");
-        Buffer.add_string(__html_buf, "");
-      };
+      Buffer.add_string(__html_buf, "<div");
       switch (tabindex) {
       | Some(v) =>
         Buffer.add_char(__html_buf, ' ');
@@ -43,12 +24,7 @@
         Buffer.add_char(__html_buf, '"');
       | None => ()
       };
-      Buffer.add_char(__html_buf, '>');
-      {
-        Buffer.add_string(__html_buf, "</");
-        Buffer.add_string(__html_buf, "div");
-        Buffer.add_char(__html_buf, '>');
-      };
+      Buffer.add_string(__html_buf, "></div>");
       ();
     };
     JSX.unsafe(Buffer.contents(__html_buf));
@@ -114,28 +90,14 @@
                    {
                      Buffer.add_string(__html_buf, "<li>");
                      {
-                       {
-                         Buffer.add_char(__html_buf, '<');
-                         Buffer.add_string(__html_buf, "a");
-                         Buffer.add_string(
-                           __html_buf,
-                           " onclick=\"console.log\"",
-                         );
-                       };
-                       {
-                         Buffer.add_char(__html_buf, ' ');
-                         Buffer.add_string(__html_buf, "href");
-                         Buffer.add_string(__html_buf, "=\"");
-                         JSX.escape(__html_buf, e.path);
-                         Buffer.add_char(__html_buf, '"');
-                       };
-                       Buffer.add_char(__html_buf, '>');
+                       Buffer.add_string(
+                         __html_buf,
+                         "<a onclick=\"console.log\" href=\"",
+                       );
+                       JSX.escape(__html_buf, e.path);
+                       Buffer.add_string(__html_buf, "\">");
                        JSX.write(__html_buf, e.title |> s);
-                       {
-                         Buffer.add_string(__html_buf, "</");
-                         Buffer.add_string(__html_buf, "a");
-                         Buffer.add_char(__html_buf, '>');
-                       };
+                       Buffer.add_string(__html_buf, "</a>");
                        ();
                      };
                      Buffer.add_string(__html_buf, "</li>");
