@@ -60,6 +60,8 @@ jobs:
         run: opam install . --deps-only --with-test --with-doc -y
 
       - name: Build
+        env:
+          BUILD_DEMO: ${{ (runner.os == 'Windows' || matrix.ocaml-compiler == '4.14.2') && 'false' || 'true' }}
         run: make build
 
       - name: Check formatting
