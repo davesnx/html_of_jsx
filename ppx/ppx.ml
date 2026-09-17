@@ -396,8 +396,8 @@ let generate_part_code ~loc ~buf_ident part =
   | Static_analysis.Dynamic_string expr ->
       [%expr JSX.escape [%e buf_ident] [%e expr]]
   | Static_analysis.Dynamic_int expr ->
-      (* Int.to_string cannot produce escapable characters, skip JSX.escape *)
-      [%expr Buffer.add_string [%e buf_ident] (Int.to_string [%e expr])]
+      (* Ints cannot produce escapable characters, skip JSX.escape *)
+      [%expr JSX.write_int [%e buf_ident] [%e expr]]
   | Static_analysis.Dynamic_float expr ->
       (* Float.to_string cannot produce escapable characters, skip JSX.escape *)
       [%expr Buffer.add_string [%e buf_ident] (Float.to_string [%e expr])]
@@ -537,8 +537,7 @@ let generate_attrs_code ~loc analysis =
               | Html_attributes.String ->
                   [%expr JSX.escape [%e buf_ident] [%e expr]]
               | Html_attributes.Int ->
-                  [%expr
-                    Buffer.add_string [%e buf_ident] (Int.to_string [%e expr])]
+                  [%expr JSX.write_int [%e buf_ident] [%e expr]]
               | Html_attributes.Bool | Html_attributes.BooleanishString ->
                   [%expr
                     Buffer.add_string [%e buf_ident] (Bool.to_string [%e expr])]
@@ -573,7 +572,7 @@ let generate_attrs_code ~loc analysis =
               | Html_attributes.String ->
                   [%expr JSX.escape [%e buf_ident] v]
               | Html_attributes.Int ->
-                  [%expr Buffer.add_string [%e buf_ident] (Int.to_string v)]
+                  [%expr JSX.write_int [%e buf_ident] v]
               | Html_attributes.Bool | Html_attributes.BooleanishString ->
                   [%expr Buffer.add_string [%e buf_ident] (Bool.to_string v)]
               | Html_attributes.Polyvariant options ->

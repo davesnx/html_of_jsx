@@ -65,6 +65,22 @@ let rec is_clean_string_from s length i =
 
 let is_clean_string s = is_clean_string_from s (String.length s) 0
 
+let rec write_int_digits buf n =
+  if n <= -10 then (
+    write_int_digits buf (n / 10);
+    Buffer.add_char buf (Char.chr (Char.code '0' - (n mod 10)))
+  ) else
+    Buffer.add_char buf (Char.chr (Char.code '0' - n))
+
+let write_int buf n =
+  if n < 0 then Buffer.add_char buf '-';
+  write_int_digits buf
+    ( if n < 0 then
+        n
+      else
+        -n
+    )
+
 type attribute =
   string * [ `Bool of bool | `Int of int | `Float of float | `String of string ]
 
@@ -89,7 +105,7 @@ let write_attribute out (attr : attribute) =
       Buffer.add_char out '"'
   | name, `Int value ->
       write_name_and_eq name;
-      Buffer.add_string out (Int.to_string value);
+      write_int out value;
       Buffer.add_char out '"'
   | name, `Float value ->
       write_name_and_eq name;
@@ -161,7 +177,7 @@ let write out element =
     | Unsafe text ->
         Buffer.add_string out text
     | Int i ->
-        Buffer.add_string out (Int.to_string i)
+        write_int out i
     | Float f ->
         Buffer.add_string out (Float.to_string f)
     | Array arr ->
@@ -226,7 +242,7 @@ let render_streaming ?(chunk_size = 4096) (write_fn : string -> unit) element =
         Buffer.add_string out text;
         flush_if_full ()
     | Int i ->
-        Buffer.add_string out (Int.to_string i)
+        write_int out i
     | Float f ->
         Buffer.add_string out (Float.to_string f)
     | Node { tag; attributes; _ } when is_self_closing_tag tag ->

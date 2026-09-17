@@ -310,6 +310,24 @@ val escape : Buffer.t -> string -> unit
       Buffer.contents buf (* "&lt;script&gt;" *)
     ]} *)
 
+val write_int : Buffer.t -> int -> unit
+(** Write an integer's decimal digits directly to a buffer.
+
+    This is an advanced function used mostly by the PPX for optimized rendering:
+    it writes digits straight into the buffer instead of allocating an
+    intermediate string.
+
+    {@reasonml[
+      let buf = Buffer.create(256);
+      JSX.write_int(buf, 42);
+      Buffer.contents(buf); /* "42" */
+    ]}
+    {@mlx[
+      let buf = Buffer.create 256 in
+      JSX.write_int buf 42;
+      Buffer.contents buf (* "42" *)
+    ]} *)
+
 val write : Buffer.t -> element -> unit
 (** Write an element directly to a buffer.
 

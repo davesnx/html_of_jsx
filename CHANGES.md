@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fix optional attributes being dropped when the same element also has a dynamic (non-literal) attribute: `<div ?id class_=cls />` rendered without `id` (@davesnx)
+- Write integers as digits straight into the render buffer (`JSX.write_int`) instead of allocating `Int.to_string` (@davesnx)
 
 ## 0.1.0
 
