@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1789611287599,
+  "lastUpdate": 1789612098496,
   "repoUrl": "https://github.com/davesnx/html_of_jsx",
   "entries": {
     "html_of_jsx Benchmarks": [
@@ -4005,6 +4005,95 @@ window.BENCHMARK_DATA = {
           {
             "name": "escape (dirty)",
             "value": 6803651.91,
+            "unit": "ops/sec"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "dsnxmoreno@gmail.com",
+            "name": "David Sancho",
+            "username": "davesnx"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "c5548b1deae2fe4776775ec96199ccd8cce19c9d",
+          "message": "Merge pull request #49 from davesnx/perf/writer-closures\n\nCompile elements to writer closures that write into the parent buffer",
+          "timestamp": "2026-09-17T04:07:59+02:00",
+          "tree_id": "947c3e3e918ec6f4e5b84a80e32df5e5f858a2c0",
+          "url": "https://github.com/davesnx/html_of_jsx/commit/c5548b1deae2fe4776775ec96199ccd8cce19c9d"
+        },
+        "date": 1789612097940,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Trivial (static)",
+            "value": 263939788.34,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Dashboard",
+            "value": 44017.12,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Blog (50 comments)",
+            "value": 7938.46,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Table (100 rows)",
+            "value": 4846.91,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Table (100 rows, prebuilt writer)",
+            "value": 6804.92,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "E-commerce",
+            "value": 4592.49,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Form",
+            "value": 47114.38,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Deep tree (50)",
+            "value": 20528.23,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Wide tree (100)",
+            "value": 5892.47,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Shallow tree",
+            "value": 123295.87,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Props heavy",
+            "value": 5882.64,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "escape (clean)",
+            "value": 22544770.86,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "escape (dirty)",
+            "value": 7092405.84,
             "unit": "ops/sec"
           }
         ]
