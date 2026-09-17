@@ -281,6 +281,14 @@ let transform_attributes ~loc ~tag_name attrs =
 
 let default_buffer_size = 256
 let buffer_var_name = "__html_buf"
+let var_counter = ref 0
+
+let fresh_var ~loc () =
+  incr var_counter;
+  let name = Printf.sprintf "__html_v%d" !var_counter in
+  (ppat_var ~loc { loc; txt = name }, pexp_ident ~loc { loc; txt = Lident name })
+
+type binding = pattern * expression
 
 let generate_dynamic_format_code ~loc ~buf_ident fmt args =
   let callback = [%expr JSX.escape [%e buf_ident]] in
@@ -290,129 +298,95 @@ let generate_dynamic_format_code ~loc ~buf_ident fmt args =
 (* Buffer splicing: detect a child expression that is exactly the code shape
    this ppx generates for a dynamic element:
 
-     let __html_buf = Buffer.create <int> in
-     <ops>;
-     JSX.unsafe (Buffer.contents __html_buf)
+     let __html_v1 = <expr1> in
+     ...
+     JSX.writer <int> (fun __html_buf -> <ops>)
 
    When a parent element writes such a child with [JSX.write __html_buf child],
-   the child allocates its own buffer, copies it into a string
-   (Buffer.contents) and then JSX.write copies that string into the parent
-   buffer. Since the parent buffer variable shares the same name
-   ([buffer_var_name]), we can drop the inner [let] and splice <ops> directly
-   into the parent's sequence: every reference to __html_buf inside <ops> then
-   resolves to the parent's buffer, skipping the intermediate buffer and both
-   string copies.
+   the child's closure is called through one more indirection. Since every
+   generated closure names its parameter [buffer_var_name], the parent can
+   drop the [JSX.writer] wrapper and the [fun], move the child's bindings into
+   its own let-chain at the child's position (so they still evaluate at the
+   same point, in the same order) and splice <ops> into its own body: every
+   reference to __html_buf inside <ops> then resolves to the parent's buffer.
 
-   Returns [Some (estimated_size, ops)] where [estimated_size] is the child's
-   Buffer.create size estimate and [ops] is the inner operations sequence
-   (a nested Pexp_sequence ending in [()]), or [None] when the expression is
-   not exactly this generated shape. *)
-let match_spliceable_buffer_expr (expr : expression) : (int * expression) option
-    =
-  match expr.pexp_desc with
-  | Pexp_let
-      ( Nonrecursive,
+   Returns [Some (estimated_size, bindings, ops)], or [None] when the
+   expression is not exactly this generated shape. *)
+let match_spliceable_buffer_expr (expr : expression) :
+    (int * binding list * expression) option =
+  let rec split_let_chain acc (e : expression) =
+    match e.pexp_desc with
+    | Pexp_let (Nonrecursive, [ { pvb_pat; pvb_expr; _ } ], body) ->
+        split_let_chain ((pvb_pat, pvb_expr) :: acc) body
+    | _ ->
+        (List.rev acc, e)
+  in
+  let bindings, final = split_let_chain [] expr in
+  match final.pexp_desc with
+  | Pexp_apply
+      ( { pexp_desc = Pexp_ident { txt = Ldot (Lident "JSX", "writer"); _ }; _ },
         [
-          {
-            pvb_pat = { ppat_desc = Ppat_var { txt = pat_name; _ }; _ };
-            pvb_expr = create_expr;
-            _;
-          };
-        ],
-        body
-      )
-    when String.equal pat_name buffer_var_name -> (
-      let is_buffer_create_int =
-        match create_expr.pexp_desc with
-        | Pexp_apply
-            ( {
-                pexp_desc =
-                  Pexp_ident { txt = Ldot (Lident "Buffer", "create"); _ };
-                _;
-              },
-              [
-                ( Nolabel,
-                  { pexp_desc = Pexp_constant (Pconst_integer (size, None)); _ }
-                );
-              ]
-            ) ->
-            int_of_string_opt size
-        | _ ->
-            None
-      in
-      let is_jsx_unsafe_buffer_contents (final : expression) =
-        match final.pexp_desc with
-        | Pexp_apply
-            ( {
-                pexp_desc = Pexp_ident { txt = Ldot (Lident "JSX", "unsafe"); _ };
-                _;
-              },
-              [
-                ( Nolabel,
-                  {
-                    pexp_desc =
-                      Pexp_apply
-                        ( {
-                            pexp_desc =
-                              Pexp_ident
-                                { txt = Ldot (Lident "Buffer", "contents"); _ };
-                            _;
-                          },
-                          [
-                            ( Nolabel,
-                              {
-                                pexp_desc = Pexp_ident { txt = Lident buf; _ };
-                                _;
-                              }
-                            );
-                          ]
-                        );
-                    _;
-                  }
-                );
-              ]
-            ) ->
-            String.equal buf buffer_var_name
-        | _ ->
-            false
-      in
-      match (is_buffer_create_int, body.pexp_desc) with
-      | Some size, Pexp_sequence (ops, final)
-        when is_jsx_unsafe_buffer_contents final ->
-          Some (size, ops)
+          ( Nolabel,
+            { pexp_desc = Pexp_constant (Pconst_integer (size, None)); _ }
+          );
+          (Nolabel, closure);
+        ]
+      ) -> (
+      match closure.pexp_desc with
+      | Pexp_function
+          ( [ { pparam_desc = Pparam_val (Nolabel, None, buf_pat); _ } ],
+            None,
+            Pfunction_body ops
+          ) -> (
+          match (int_of_string_opt size, buf_pat.ppat_desc) with
+          | Some size, Ppat_var { txt = pat_name; _ }
+            when String.equal pat_name buffer_var_name ->
+              Some (size, bindings, ops)
+          | _ ->
+              None
+        )
       | _ ->
           None
     )
   | _ ->
       None
 
-(* Generate the buffer operation for a single static/dynamic part. Shared by
-   all codegen paths (buffer, dynamic attrs and optional attrs). *)
-let generate_part_code ~loc ~buf_ident part =
+let generate_part_code ~loc ~buf_ident part : binding list * expression =
   match part with
   | Static_analysis.Static_str s ->
       let s_expr = estring ~loc s in
-      [%expr Buffer.add_string [%e buf_ident] [%e s_expr]]
+      ([], [%expr Buffer.add_string [%e buf_ident] [%e s_expr]])
   | Static_analysis.Dynamic_string expr ->
-      [%expr JSX.escape [%e buf_ident] [%e expr]]
+      let pat, ident = fresh_var ~loc () in
+      ([ (pat, expr) ], [%expr JSX.escape [%e buf_ident] [%e ident]])
   | Static_analysis.Dynamic_int expr ->
       (* Ints cannot produce escapable characters, skip JSX.escape *)
-      [%expr JSX.write_int [%e buf_ident] [%e expr]]
+      let pat, ident = fresh_var ~loc () in
+      ([ (pat, expr) ], [%expr JSX.write_int [%e buf_ident] [%e ident]])
   | Static_analysis.Dynamic_float expr ->
       (* Float.to_string cannot produce escapable characters, skip JSX.escape *)
-      [%expr Buffer.add_string [%e buf_ident] (Float.to_string [%e expr])]
+      let pat, ident = fresh_var ~loc () in
+      ( [ (pat, expr) ],
+        [%expr Buffer.add_string [%e buf_ident] (Float.to_string [%e ident])]
+      )
   | Static_analysis.Dynamic_format (fmt, args) ->
-      generate_dynamic_format_code ~loc ~buf_ident fmt args
+      let bindings, new_args =
+        List.fold_left args ~init:([], [])
+          ~f:(fun (bindings, new_args) (label, arg_expr) ->
+            let pat, ident = fresh_var ~loc () in
+            ((pat, arg_expr) :: bindings, (label, ident) :: new_args)
+        )
+      in
+      ( List.rev bindings,
+        generate_dynamic_format_code ~loc ~buf_ident fmt (List.rev new_args)
+      )
   | Static_analysis.Dynamic_element expr -> (
       match match_spliceable_buffer_expr expr with
-      | Some (_size, ops) ->
-          (* Splice the child's buffer operations directly into the parent's
-             sequence, skipping the intermediate buffer allocation and string
-             copies. The spliced ops reference [buffer_var_name], which
-             resolves to the parent's buffer once the inner [let] is gone. *)
-          ops
+      | Some (_size, bindings, ops) ->
+          (bindings, ops)
       | None ->
-          [%expr JSX.write [%e buf_ident] [%e expr]]
+          let pat, ident = fresh_var ~loc () in
+          ([ (pat, expr) ], [%expr JSX.write [%e buf_ident] [%e ident]])
     )
 
 (* Extra buffer size gained by splicing children: a spliceable child
@@ -423,13 +397,36 @@ let extra_splice_size ~reserved parts =
       match part with
       | Static_analysis.Dynamic_element expr -> (
           match match_spliceable_buffer_expr expr with
-          | Some (size, _ops) ->
+          | Some (size, _bindings, _ops) ->
               acc + max 0 (size - reserved)
           | None ->
               acc
         )
       | _ ->
           acc
+  )
+
+let combine_codes codes =
+  let bindings =
+    List.fold_right codes ~init:[] ~f:(fun (b, _) acc -> b @ acc)
+  in
+  let ops = List.map ~f:snd codes in
+  (bindings, ops)
+
+let wrap_in_writer ~loc ~buf_pat ~bindings ~ops ~buffer_size_expr =
+  let body =
+    List.fold_right ops ~init:[%expr ()] ~f:(fun op acc ->
+        [%expr
+          [%e op];
+          [%e acc]]
+    )
+  in
+  let closure = pexp_fun ~loc Nolabel None buf_pat body in
+  let writer_call = [%expr JSX.writer [%e buffer_size_expr] [%e closure]] in
+  List.fold_right bindings ~init:writer_call ~f:(fun (pat, expr) acc ->
+      [%expr
+        let [%p pat] = [%e expr] in
+        [%e acc]]
   )
 
 let generate_buffer_code ~loc ~parts ~static_size ~dynamic_count =
@@ -448,24 +445,14 @@ let generate_buffer_code ~loc ~parts ~static_size ~dynamic_count =
       default_buffer_size
   in
   let buffer_size_expr = eint ~loc buffer_size in
-  let ops = List.map ~f:(generate_part_code ~loc ~buf_ident) parts in
-  let seq =
-    List.fold_right ops ~init:[%expr ()] ~f:(fun op acc ->
-        [%expr
-          [%e op];
-          [%e acc]]
-    )
-  in
-
-  [%expr
-    let [%p buf_pat] = Buffer.create [%e buffer_size_expr] in
-    [%e seq];
-    JSX.unsafe (Buffer.contents [%e buf_ident])]
+  let codes = List.map ~f:(generate_part_code ~loc ~buf_ident) parts in
+  let bindings, ops = combine_codes codes in
+  wrap_in_writer ~loc ~buf_pat ~bindings ~ops ~buffer_size_expr
 
 type attrs_part =
   | Lit of string
   | Child of Static_analysis.static_part
-  | Code of expression
+  | Code of binding list * expression
 
 let rec coalesce_attrs_parts = function
   | Lit a :: Lit b :: rest ->
@@ -479,11 +466,11 @@ let generate_attrs_part ~loc ~buf_ident = function
   | Lit "" ->
       None
   | Lit s ->
-      Some [%expr Buffer.add_string [%e buf_ident] [%e estring ~loc s]]
+      Some ([], [%expr Buffer.add_string [%e buf_ident] [%e estring ~loc s]])
   | Child part ->
       Some (generate_part_code ~loc ~buf_ident part)
-  | Code e ->
-      Some e
+  | Code (bindings, e) ->
+      Some (bindings, e)
 
 let attr_value_write_code ~loc ~buf_ident
     (info : Static_analysis.attr_render_info) value_expr =
@@ -499,49 +486,54 @@ let attr_value_write_code ~loc ~buf_ident
       [%expr Buffer.add_string [%e buf_ident] [%e match_expr]]
 
 let attr_item_parts ~loc ~buf_ident (item : Static_analysis.attr_item) =
+  let pat, ident = fresh_var ~loc () in
   match item with
   | Static_analysis.Dynamic_item (info, expr) when info.is_boolean ->
+      let html_name_expr = estring ~loc (" " ^ info.html_name) in
       [
         Code
-          [%expr
-            if [%e expr] then (
-              Buffer.add_char [%e buf_ident] ' ';
-              Buffer.add_string [%e buf_ident] [%e estring ~loc info.html_name]
-            )];
+          ( [ (pat, expr) ],
+            [%expr
+              if [%e ident] then
+                Buffer.add_string [%e buf_ident] [%e html_name_expr]]
+          );
       ]
   | Static_analysis.Dynamic_item (info, expr) ->
       [
         Lit (Printf.sprintf " %s=\"" info.html_name);
-        Code (attr_value_write_code ~loc ~buf_ident info expr);
+        Code ([ (pat, expr) ], attr_value_write_code ~loc ~buf_ident info ident);
         Lit "\"";
       ]
   | Static_analysis.Optional_item (info, expr) when info.is_boolean ->
+      let html_name_expr = estring ~loc (" " ^ info.html_name) in
       [
         Code
-          [%expr
-            match [%e expr] with
-            | Some true ->
-                Buffer.add_char [%e buf_ident] ' ';
-                Buffer.add_string [%e buf_ident]
-                  [%e estring ~loc info.html_name]
-            | Some false | None ->
-                ()];
+          ( [ (pat, expr) ],
+            [%expr
+              match [%e ident] with
+              | Some true ->
+                  Buffer.add_string [%e buf_ident] [%e html_name_expr]
+              | Some false | None ->
+                  ()]
+          );
       ]
   | Static_analysis.Optional_item (info, expr) ->
-      let html_name_expr = estring ~loc info.html_name in
+      let name_prefix_expr =
+        estring ~loc (Printf.sprintf " %s=\"" info.html_name)
+      in
       let value_write = attr_value_write_code ~loc ~buf_ident info [%expr v] in
       [
         Code
-          [%expr
-            match [%e expr] with
-            | Some v ->
-                Buffer.add_char [%e buf_ident] ' ';
-                Buffer.add_string [%e buf_ident] [%e html_name_expr];
-                Buffer.add_string [%e buf_ident] "=\"";
-                [%e value_write];
-                Buffer.add_char [%e buf_ident] '"'
-            | None ->
-                ()];
+          ( [ (pat, expr) ],
+            [%expr
+              match [%e ident] with
+              | Some v ->
+                  Buffer.add_string [%e buf_ident] [%e name_prefix_expr];
+                  [%e value_write];
+                  Buffer.add_char [%e buf_ident] '"'
+              | None ->
+                  ()]
+          );
       ]
 
 let generate_attrs_code ~loc analysis =
@@ -619,23 +611,13 @@ let generate_attrs_code ~loc analysis =
     else
       children_as_parts @ [ Lit ("</" ^ tag_name ^ ">") ]
   in
-  let ops =
+  let codes =
     List.filter_map
       ~f:(generate_attrs_part ~loc ~buf_ident)
       (coalesce_attrs_parts all_parts)
   in
-  let seq =
-    List.fold_right ops ~init:[%expr ()] ~f:(fun op acc ->
-        [%expr
-          [%e op];
-          [%e acc]]
-    )
-  in
-
-  [%expr
-    let [%p buf_pat] = Buffer.create [%e buffer_size_expr] in
-    [%e seq];
-    JSX.unsafe (Buffer.contents [%e buf_ident])]
+  let bindings, ops = combine_codes codes in
+  wrap_in_writer ~loc ~buf_pat ~bindings ~ops ~buffer_size_expr
 
 let rewrite_node_unoptimized ~loc tag_name args children =
   let dom_node_name = estring ~loc tag_name in

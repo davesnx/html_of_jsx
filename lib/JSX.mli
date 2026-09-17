@@ -344,3 +344,22 @@ val write : Buffer.t -> element -> unit
       JSX.write buf (JSX.string "Hello");
       Buffer.contents buf (* "Hello" *)
     ]} *)
+
+val writer : int -> (Buffer.t -> unit) -> element
+(** Create an element that writes directly into a caller-supplied buffer.
+
+    This is an advanced function used mostly by the PPX for optimized rendering:
+    it lets a child element write into whatever buffer its parent is already
+    using, instead of building its own string that the parent then has to copy.
+    [size] is the estimated number of bytes the write will produce; it is used
+    to preallocate a buffer when the element is rendered on its own (e.g. with
+    [render]).
+
+    {@reasonml[
+      let element: JSX.element =
+        JSX.writer(16, buf => Buffer.add_string(buf, "Hello"));
+    ]}
+    {@mlx[
+      let element : JSX.element =
+        JSX.writer 16 (fun buf -> Buffer.add_string buf "Hello")
+    ]} *)

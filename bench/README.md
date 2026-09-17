@@ -10,19 +10,20 @@
 
 ## What scenarios measure
 
-Every scenario constructs the element tree **inside** the timed function.
-With the PPX static optimization, element construction *is* rendering (the
-PPX collapses static markup and writes dynamic parts into buffers eagerly),
-so a scenario that prebuilds its element outside the timed function measures
-a pointer return, not rendering.
+Every scenario constructs the element tree **inside** the timed function:
+construction evaluates the dynamic parts eagerly and the PPX compiles the
+markup to writer closures, so building and rendering together is the cost a
+request pays.
 
-Two deliberate exceptions, kept as fast-path baselines:
+Two deliberate exceptions:
 
 - `Trivial (static)`: fully static markup. The PPX collapses it to a
   constant string at compile time; ~0us is the correct result and it exists
   to demonstrate (and guard) the static-collapse optimization.
-- `Table (100 rows, prebuilt)`: renders a prebuilt element, demonstrating
-  that `JSX.render` on an already-constructed tree is ~free.
+- `Table (100 rows, prebuilt writer)`: renders an element that was built
+  once outside the timed function. It measures only the write pass (the
+  closures run again on every render), so it tracks the cost of the writer
+  path without element construction.
 
 Input data (users, products, comments) is precomputed at module init: we
 measure rendering, not test-data generation.

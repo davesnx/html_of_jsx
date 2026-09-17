@@ -208,6 +208,30 @@ let optional_and_dynamic_attrs () =
     {|<div id="main" class="container"></div>|};
   assert_string (render None "container") {|<div class="container"></div>|}
 
+let evaluation_order () =
+  let order = ref [] in
+  let track name value =
+    order := name :: !order;
+    value
+  in
+  let div =
+    <div id=(track "attr-id" "x") class_=(track "attr-class" "y")>
+      (JSX.string (track "child-1" "a")) (JSX.int (track "child-2" 1))
+    </div>
+  in
+  assert_string
+    (String.concat "," (List.rev !order))
+    "attr-id,attr-class,child-1,child-2";
+  ignore (JSX.render div)
+
+module Badge = struct
+  let make ~label () = <span>(JSX.string label)</span>
+end
+
+let component_inside_literal_element () =
+  let div = <div class_="wrap"><Badge label="ok" /></div> in
+  assert_string (JSX.render div) {|<div class="wrap"><span>ok</span></div>|}
+
 let tests =
   ( "Test with mlx",
     [
@@ -243,5 +267,7 @@ let tests =
       test "target_polyvariant_opt_none" target_polyvariant_opt_none;
       test "data_attributes" data_attributes;
       test "optional_and_dynamic_attrs" optional_and_dynamic_attrs;
+      test "evaluation_order" evaluation_order;
+      test "component_inside_literal_element" component_inside_literal_element;
     ]
   )
