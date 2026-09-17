@@ -1,6 +1,11 @@
 project_name = html_of_jsx
 
 DUNE = opam exec -- dune
+
+# Dune finds its root by walking up to the outermost dune-project, so a
+# worktree nested inside another checkout resolves to the wrong one.
+export DUNE_ROOT := $(CURDIR)
+
 opam_file = $(project_name).opam
 
 .PHONY: help
