@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1789612098496,
+  "lastUpdate": 1789613858455,
   "repoUrl": "https://github.com/davesnx/html_of_jsx",
   "entries": {
     "html_of_jsx Benchmarks": [
@@ -4094,6 +4094,95 @@ window.BENCHMARK_DATA = {
           {
             "name": "escape (dirty)",
             "value": 7092405.84,
+            "unit": "ops/sec"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "dsnxmoreno@gmail.com",
+            "name": "David Sancho",
+            "username": "davesnx"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "2f7052f56e59197499ce61a33a6f78e25d633f34",
+          "message": "Merge pull request #51 from davesnx/ci/benchmark-alert-threshold\n\nRaise the CI benchmark alert threshold to 500%",
+          "timestamp": "2026-09-17T04:37:11+02:00",
+          "tree_id": "a1b72559e757247415325c7dd26c439b77fb652a",
+          "url": "https://github.com/davesnx/html_of_jsx/commit/2f7052f56e59197499ce61a33a6f78e25d633f34"
+        },
+        "date": 1789613857422,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Trivial (static)",
+            "value": 385539875.18,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Dashboard",
+            "value": 48167.47,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Blog (50 comments)",
+            "value": 8545.26,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Table (100 rows)",
+            "value": 5193.76,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Table (100 rows, prebuilt writer)",
+            "value": 7298.78,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "E-commerce",
+            "value": 4826.2,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Form",
+            "value": 51639.81,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Deep tree (50)",
+            "value": 21396.65,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Wide tree (100)",
+            "value": 6079.34,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Shallow tree",
+            "value": 136422.89,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Props heavy",
+            "value": 6338.54,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "escape (clean)",
+            "value": 28875509.53,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "escape (dirty)",
+            "value": 8049574.51,
             "unit": "ops/sec"
           }
         ]
