@@ -1,11 +1,6 @@
 project_name = html_of_jsx
 
 DUNE = opam exec -- dune
-
-# Dune finds its root by walking up to the outermost dune-project, so a
-# worktree nested inside another checkout resolves to the wrong one.
-export DUNE_ROOT := $(CURDIR)
-
 opam_file = $(project_name).opam
 
 .PHONY: help
@@ -18,19 +13,19 @@ help: ## Print this help message
 
 .PHONY: build
 build: ## Build the project, including non installable libraries and executables
-	$(DUNE) build @all
+	$(DUNE) build --root . @all
 
 .PHONY: build-prod
 build-prod: ## Build for production (--profile=prod)
-	$(DUNE) build --profile=prod @all
+	$(DUNE) build --root . --profile=prod @all
 
 .PHONY: bench
 bench: ## Run benchmarks (human-readable output)
-	$(DUNE) exec bench/bench.exe
+	$(DUNE) exec --root . bench/bench.exe
 
 .PHONY: bench-ci
 bench-ci: ## Run benchmarks with JSON output for CI mostly
-	$(DUNE) exec bench/bench.exe -- --json-benchmark-action > bench_results.json
+	$(DUNE) exec --root . bench/bench.exe -- --json-benchmark-action > bench_results.json
 
 .PHONY: bench-compare
 bench-compare: ## Compare with baseline (outputs latency diff)
@@ -38,44 +33,44 @@ bench-compare: ## Compare with baseline (outputs latency diff)
 		echo "No baseline found. Run 'make bench-baseline' first."; \
 		exit 1; \
 	fi
-	$(DUNE) exec bench/bench.exe -- --compare bench/results/baseline.json
+	$(DUNE) exec --root . bench/bench.exe -- --compare bench/results/baseline.json
 
 .PHONY: bench-baseline
 bench-baseline: ## Save current results as new baseline
-	$(DUNE) exec bench/bench.exe -- --json > bench/results/baseline.json
+	$(DUNE) exec --root . bench/bench.exe -- --json > bench/results/baseline.json
 	@echo "Baseline saved to bench/results/baseline.json"
 
 .PHONY: bench-memory
 bench-memory: ## Run memory allocation benchmarks
-	$(DUNE) exec bench/memory.exe
+	$(DUNE) exec --root . bench/memory.exe
 
 .PHONY: dev
 dev: ## Build in watch mode
-	$(DUNE) build -w @all
+	$(DUNE) build --root . -w @all
 
 .PHONY: clean
 clean: ## Clean artifacts
-	$(DUNE) clean
+	$(DUNE) clean --root .
 
 .PHONY: test
 test: ## Run the tests
-	$(DUNE) build @runtest
+	$(DUNE) build --root . @runtest
 
 .PHONY: test-watch
 test-watch: ## Run the tests in watch mode
-	$(DUNE) build @runtest -w
+	$(DUNE) build --root . @runtest -w
 
 .PHONY: test-promote
 test-promote: ## Updates snapshots and promotes it to correct
-	$(DUNE) build @runtest --auto-promote
+	$(DUNE) build --root . @runtest --auto-promote
 
 .PHONY: format
 format: ## Format the codebase with ocamlformat
-	$(DUNE) build @fmt --auto-promote
+	$(DUNE) build --root . @fmt --auto-promote
 
 .PHONY: format-check
 format-check: ## Checks if format is correct
-	$(DUNE) build @fmt
+	$(DUNE) build --root . @fmt
 
 .PHONY: init
 setup-githooks: ## Setup githooks
@@ -102,11 +97,11 @@ init: setup-githooks create-switch pin install ## Create a local dev enviroment
 
 .PHONY: demo
 demo: ## Run demo executable
-	$(DUNE) exec demo/server.exe
+	$(DUNE) exec --root . demo/server.exe
 
 .PHONY: demo-watch
 demo-watch: ## Run demo executable
-	$(DUNE) exec -w demo/server.exe
+	$(DUNE) exec --root . -w demo/server.exe
 
 .PHONY: demo-client
 demo-client: build ## Run client's demo
