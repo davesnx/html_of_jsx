@@ -269,6 +269,40 @@ Test static JSX optimization
     };
     JSX.unsafe(Buffer.contents(__html_buf));
   };
+  let optional_and_dynamic = (~id=?, ~cls, ()) => {
+    let __html_buf = Buffer.create(139);
+    {
+      {
+        Buffer.add_char(__html_buf, '<');
+        Buffer.add_string(__html_buf, "div");
+        Buffer.add_string(__html_buf, "");
+      };
+      switch (id) {
+      | Some(v) =>
+        Buffer.add_char(__html_buf, ' ');
+        Buffer.add_string(__html_buf, "id");
+        Buffer.add_string(__html_buf, "=\"");
+        JSX.escape(__html_buf, v);
+        Buffer.add_char(__html_buf, '"');
+      | None => ()
+      };
+      {
+        Buffer.add_char(__html_buf, ' ');
+        Buffer.add_string(__html_buf, "class");
+        Buffer.add_string(__html_buf, "=\"");
+        JSX.escape(__html_buf, cls);
+        Buffer.add_char(__html_buf, '"');
+      };
+      Buffer.add_char(__html_buf, '>');
+      {
+        Buffer.add_string(__html_buf, "</");
+        Buffer.add_string(__html_buf, "div");
+        Buffer.add_char(__html_buf, '>');
+      };
+      ();
+    };
+    JSX.unsafe(Buffer.contents(__html_buf));
+  };
   let dynamic_element = child => {
     let __html_buf = Buffer.create(75);
     {

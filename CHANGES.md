@@ -1,5 +1,9 @@
 # Changes
 
+## Unreleased
+
+- Fix optional attributes being dropped when the same element also has a dynamic (non-literal) attribute: `<div ?id class_=cls />` rendered without `id` (@davesnx)
+
 ## 0.1.0
 
 - [BREAKING] Component invocations now group multiple children with `JSX.list`, so components receive `JSX.element` for both single and multiple children. `JSX.fragment` now accepts `JSX.element` to follow the same convention. (@davesnx)

@@ -201,6 +201,13 @@ let data_attributes () =
   let div = <div data_foo data_bar /> in
   assert_string (JSX.render div) {|<div data-foo="bar" data-bar="baz"></div>|}
 
+let optional_and_dynamic_attrs () =
+  let render id cls = JSX.render <div ?id class_=cls /> in
+  assert_string
+    (render (Some "main") "container")
+    {|<div id="main" class="container"></div>|};
+  assert_string (render None "container") {|<div class="container"></div>|}
+
 let tests =
   ( "Test with mlx",
     [
@@ -235,5 +242,6 @@ let tests =
       test "target_polyvariant_opt_some" target_polyvariant_opt_some;
       test "target_polyvariant_opt_none" target_polyvariant_opt_none;
       test "data_attributes" data_attributes;
+      test "optional_and_dynamic_attrs" optional_and_dynamic_attrs;
     ]
   )
