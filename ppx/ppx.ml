@@ -462,6 +462,88 @@ let generate_buffer_code ~loc ~parts ~static_size ~dynamic_count =
     [%e seq];
     JSX.unsafe (Buffer.contents [%e buf_ident])]
 
+type attrs_part =
+  | Lit of string
+  | Child of Static_analysis.static_part
+  | Code of expression
+
+let rec coalesce_attrs_parts = function
+  | Lit a :: Lit b :: rest ->
+      coalesce_attrs_parts (Lit (a ^ b) :: rest)
+  | x :: rest ->
+      x :: coalesce_attrs_parts rest
+  | [] ->
+      []
+
+let generate_attrs_part ~loc ~buf_ident = function
+  | Lit "" ->
+      None
+  | Lit s ->
+      Some [%expr Buffer.add_string [%e buf_ident] [%e estring ~loc s]]
+  | Child part ->
+      Some (generate_part_code ~loc ~buf_ident part)
+  | Code e ->
+      Some e
+
+let attr_value_write_code ~loc ~buf_ident
+    (info : Static_analysis.attr_render_info) value_expr =
+  match info.kind with
+  | Html_attributes.String ->
+      [%expr JSX.escape [%e buf_ident] [%e value_expr]]
+  | Html_attributes.Int ->
+      [%expr JSX.write_int [%e buf_ident] [%e value_expr]]
+  | Html_attributes.Bool | Html_attributes.BooleanishString ->
+      [%expr Buffer.add_string [%e buf_ident] (Bool.to_string [%e value_expr])]
+  | Html_attributes.Polyvariant options ->
+      let match_expr = polyvariant_to_string_match ~loc options value_expr in
+      [%expr Buffer.add_string [%e buf_ident] [%e match_expr]]
+
+let attr_item_parts ~loc ~buf_ident (item : Static_analysis.attr_item) =
+  match item with
+  | Static_analysis.Dynamic_item (info, expr) when info.is_boolean ->
+      [
+        Code
+          [%expr
+            if [%e expr] then (
+              Buffer.add_char [%e buf_ident] ' ';
+              Buffer.add_string [%e buf_ident] [%e estring ~loc info.html_name]
+            )];
+      ]
+  | Static_analysis.Dynamic_item (info, expr) ->
+      [
+        Lit (Printf.sprintf " %s=\"" info.html_name);
+        Code (attr_value_write_code ~loc ~buf_ident info expr);
+        Lit "\"";
+      ]
+  | Static_analysis.Optional_item (info, expr) when info.is_boolean ->
+      [
+        Code
+          [%expr
+            match [%e expr] with
+            | Some true ->
+                Buffer.add_char [%e buf_ident] ' ';
+                Buffer.add_string [%e buf_ident]
+                  [%e estring ~loc info.html_name]
+            | Some false | None ->
+                ()];
+      ]
+  | Static_analysis.Optional_item (info, expr) ->
+      let html_name_expr = estring ~loc info.html_name in
+      let value_write = attr_value_write_code ~loc ~buf_ident info [%expr v] in
+      [
+        Code
+          [%expr
+            match [%e expr] with
+            | Some v ->
+                Buffer.add_char [%e buf_ident] ' ';
+                Buffer.add_string [%e buf_ident] [%e html_name_expr];
+                Buffer.add_string [%e buf_ident] "=\"";
+                [%e value_write];
+                Buffer.add_char [%e buf_ident] '"'
+            | None ->
+                ()];
+      ]
+
 let generate_attrs_code ~loc analysis =
   let tag_name, static_attrs, attr_items, children_parts, is_self_closing =
     match analysis with
@@ -509,128 +591,41 @@ let generate_attrs_code ~loc analysis =
       default_buffer_size
   in
   let buffer_size_expr = eint ~loc buffer_size in
-  let tag_name_expr = estring ~loc tag_name in
-  let static_attrs_expr = estring ~loc static_attrs in
 
-  (* Generate opening tag start *)
-  let open_tag_start =
-    [%expr
-      Buffer.add_char [%e buf_ident] '<';
-      Buffer.add_string [%e buf_ident] [%e tag_name_expr];
-      Buffer.add_string [%e buf_ident] [%e static_attrs_expr]]
+  let attr_parts =
+    List.concat_map ~f:(attr_item_parts ~loc ~buf_ident) attr_items
   in
-
-  let generate_attr_item_code = function
-    | Static_analysis.Dynamic_item
-        ((info : Static_analysis.attr_render_info), expr) -> (
-        let html_name_expr = estring ~loc info.html_name in
-        match info.is_boolean with
-        | true ->
-            [%expr
-              if [%e expr] then (
-                Buffer.add_char [%e buf_ident] ' ';
-                Buffer.add_string [%e buf_ident] [%e html_name_expr]
-              )]
-        | false ->
-            let value_escape_code =
-              match info.kind with
-              | Html_attributes.String ->
-                  [%expr JSX.escape [%e buf_ident] [%e expr]]
-              | Html_attributes.Int ->
-                  [%expr JSX.write_int [%e buf_ident] [%e expr]]
-              | Html_attributes.Bool | Html_attributes.BooleanishString ->
-                  [%expr
-                    Buffer.add_string [%e buf_ident] (Bool.to_string [%e expr])]
-              | Html_attributes.Polyvariant options ->
-                  let match_expr =
-                    polyvariant_to_string_match ~loc options expr
-                  in
-                  [%expr Buffer.add_string [%e buf_ident] [%e match_expr]]
-            in
-            [%expr
-              Buffer.add_char [%e buf_ident] ' ';
-              Buffer.add_string [%e buf_ident] [%e html_name_expr];
-              Buffer.add_string [%e buf_ident] "=\"";
-              [%e value_escape_code];
-              Buffer.add_char [%e buf_ident] '"']
-      )
-    | Static_analysis.Optional_item
-        ((info : Static_analysis.attr_render_info), expr) -> (
-        let html_name_expr = estring ~loc info.html_name in
-        match info.is_boolean with
-        | true ->
-            [%expr
-              match [%e expr] with
-              | Some true ->
-                  Buffer.add_char [%e buf_ident] ' ';
-                  Buffer.add_string [%e buf_ident] [%e html_name_expr]
-              | Some false | None ->
-                  ()]
-        | false ->
-            let value_escape_code =
-              match info.kind with
-              | Html_attributes.String ->
-                  [%expr JSX.escape [%e buf_ident] v]
-              | Html_attributes.Int ->
-                  [%expr JSX.write_int [%e buf_ident] v]
-              | Html_attributes.Bool | Html_attributes.BooleanishString ->
-                  [%expr Buffer.add_string [%e buf_ident] (Bool.to_string v)]
-              | Html_attributes.Polyvariant options ->
-                  let match_expr =
-                    polyvariant_to_string_match ~loc options [%expr v]
-                  in
-                  [%expr Buffer.add_string [%e buf_ident] [%e match_expr]]
-            in
-            [%expr
-              match [%e expr] with
-              | Some v ->
-                  Buffer.add_char [%e buf_ident] ' ';
-                  Buffer.add_string [%e buf_ident] [%e html_name_expr];
-                  Buffer.add_string [%e buf_ident] "=\"";
-                  [%e value_escape_code];
-                  Buffer.add_char [%e buf_ident] '"'
-              | None ->
-                  ()]
+  let children_as_parts =
+    List.map children_parts ~f:(function
+      | Static_analysis.Static_str s ->
+          Lit s
+      | other ->
+          Child other
       )
   in
-
-  let attr_ops = List.map ~f:generate_attr_item_code attr_items in
-
-  let children_ops =
-    List.map ~f:(generate_part_code ~loc ~buf_ident) children_parts
-  in
-
-  (* Generate opening tag end *)
-  let open_tag_end =
-    if is_self_closing then
-      [%expr Buffer.add_string [%e buf_ident] " />"]
-    else
-      [%expr Buffer.add_char [%e buf_ident] '>']
-  in
-
-  (* Generate closing tag *)
-  let close_tag =
-    if is_self_closing then
-      [%expr ()]
-    else
-      [%expr
-        Buffer.add_string [%e buf_ident] "</";
-        Buffer.add_string [%e buf_ident] [%e tag_name_expr];
-        Buffer.add_char [%e buf_ident] '>']
-  in
-
-  (* Combine all operations *)
-  let all_ops =
-    (open_tag_start :: attr_ops)
-    @ [ open_tag_end ]
+  let all_parts =
+    (Lit ("<" ^ tag_name ^ static_attrs) :: attr_parts)
+    @ [
+        Lit
+          ( if is_self_closing then
+              " />"
+            else
+              ">"
+          );
+      ]
     @
     if is_self_closing then
-      [ close_tag ]
+      []
     else
-      children_ops @ [ close_tag ]
+      children_as_parts @ [ Lit ("</" ^ tag_name ^ ">") ]
+  in
+  let ops =
+    List.filter_map
+      ~f:(generate_attrs_part ~loc ~buf_ident)
+      (coalesce_attrs_parts all_parts)
   in
   let seq =
-    List.fold_right all_ops ~init:[%expr ()] ~f:(fun op acc ->
+    List.fold_right ops ~init:[%expr ()] ~f:(fun op acc ->
         [%expr
           [%e op];
           [%e acc]]
