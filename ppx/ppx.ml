@@ -520,9 +520,6 @@ let generate_attrs_code ~loc analysis =
       Buffer.add_string [%e buf_ident] [%e static_attrs_expr]]
   in
 
-  (* Code for one attribute, in source order. A dynamic attribute writes
-     unconditionally; an optional one matches Some/None at runtime. Both kinds
-     must stay in a single ordered pass (see [Static_analysis.attr_item]). *)
   let generate_attr_item_code = function
     | Static_analysis.Dynamic_item
         ((info : Static_analysis.attr_render_info), expr) -> (

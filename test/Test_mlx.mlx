@@ -201,8 +201,6 @@ let data_attributes () =
   let div = <div data_foo data_bar /> in
   assert_string (JSX.render div) {|<div data-foo="bar" data-bar="baz"></div>|}
 
-(* Regression: an element mixing an optional attribute with a dynamic
-   (non-literal) one used to silently drop the optional attribute. *)
 let optional_and_dynamic_attrs () =
   let render id cls = JSX.render <div ?id class_=cls /> in
   assert_string

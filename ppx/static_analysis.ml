@@ -394,10 +394,6 @@ let analyze_attribute ~tag_name (label, expr) : attr_analysis_result =
         )
     )
 
-(* Optional (`?id`) and dynamic (non-literal `~x`) attributes must render in
-   one ordered list: keeping them apart, as two separate lists, is what made
-   [analyze_attributes] silently drop one kind whenever an element mixed both
-   (only one of the two lists was ever consulted by the caller). *)
 type attr_item =
   | Optional_item of attr_render_info * expression
   | Dynamic_item of attr_render_info * expression

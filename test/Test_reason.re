@@ -266,9 +266,6 @@ let fragment_with_dynamic_children =
     assert_string(JSX.render(component), {|d &amp; g<span></span>3|});
   });
 
-/* Regression: an element mixing an optional attribute with a dynamic
-   (non-literal) one used to silently drop the optional attribute, because
-   the two were tracked in separate lists and only one list was ever used. */
 let optional_and_dynamic_attrs =
   test("optional_and_dynamic_attrs", () => {
     let render = (id, className) => JSX.render(<div ?id class_=className />);
@@ -293,8 +290,6 @@ let optional_bool_and_dynamic_string_attrs =
     assert_string(render(None, "btn"), {|<button class="btn"></button>|});
   });
 
-/* Pins source-order rendering: the optional attribute appears before the
-   dynamic one here, and after it in [dynamic_before_optional_attr]. */
 let optional_before_dynamic_attr =
   test("optional_before_dynamic_attr", () => {
     let id = Some("main");
