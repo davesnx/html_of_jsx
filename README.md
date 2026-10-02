@@ -8,12 +8,12 @@
 ## Features
 
 - Brings the *"component model"* to HTML
+- Type-safe, validates attributes and their types
+- Works with [Reason](https://reasonml.github.io) and [mlx](https://github.com/ocaml-mlx/mlx)
 - Supports all of the Reason's [JSX](https://reasonml.github.io/docs/en/jsx) features (uppercase components, fragments, optional attributes, punning)
 - but with a few improvements (lowercase components, no need to add the ppx annotation)
 - No React idioms (no `className`, no `htmlFor`, no `onChange`, etc...)
 - Integrates well with [htmx](https://htmx.org)
-- Type-safe, validates attributes and their types ([it can be better thought](https://github.com/davesnx/html_of_jsx/issues/2))
-- Works with [OCaml](https://ocaml.org), [Reason](https://reasonml.github.io) and [mlx](https://github.com/ocaml-mlx/mlx)
 - Minimal core API
   - `JSX.render` to render a JSX element to an HTML string
   - Helpers to construct nodes: `JSX.string`, `JSX.int`, `JSX.float`, `JSX.null`, `JSX.list`, `JSX.array`, `JSX.unsafe`
@@ -33,13 +33,14 @@ opam install html_of_jsx -y
 
 ## Usage
 
-```reason
-let element: JSX.element = <a href="https://x.com/davesnx">
-  <span> {"Click me!"} </span>
-</a>;
+```mlx
+let element: JSX.element =
+  <a href="https://x.com/davesnx">
+    <span> (JSX.string "Click me!") </span>
+  </a>
 
-let html: string = JSX.render(element);
-/* <a href="https://x.com/davesnx"><span>Click me!</span></a> */
+let html: string = JSX.render element
+(* <a href="https://x.com/davesnx"><span>Click me!</span></a> *)
 ```
 
 Check the [demo/server.re](./demo/server.re) file to see a full example.
