@@ -12,11 +12,11 @@
     ]}
 
     {@mlx[
-      let html: string = JSX.render (
-        <div>
-          <h1>(JSX.string "Hello, World!")</h1>
-        </div>
-      );
+      let html : string =
+        JSX.render
+          <div>
+            <h1>(JSX.string "Hello, World!")</h1>
+          </div>
     ]} *)
 
 type element
@@ -70,12 +70,13 @@ val render : element -> string
       Printf.printf("%s", html); /* <div><h1>Hello, World!</h1></div> */
     ]}
     {@mlx[
-      let html: string = JSX.render (
-        <div>
-          <h1>(JSX.string "Hello, World!")</h1>
-        </div>
-
-      Printf.printf "%s" html (* <div><h1>Hello, World!</h1></div> *)
+      let html : string =
+        JSX.render
+          <div>
+            <h1>(JSX.string "Hello, World!")</h1>
+          </div>
+      in
+      print_string html (* <div><h1>Hello, World!</h1></div> *)
     ]} *)
 
 val render_to_channel : out_channel -> element -> unit
@@ -92,11 +93,10 @@ val render_to_channel : out_channel -> element -> unit
       );
     ]}
     {@mlx[
-      JSX.render_to_channel stdout (
+      JSX.render_to_channel stdout
         <div>
           <h1>(JSX.string "Hello, World!")</h1>
         </div>
-      );
     ]} *)
 
 val render_streaming : ?chunk_size:int -> (string -> unit) -> element -> unit
@@ -116,9 +116,11 @@ val render_streaming : ?chunk_size:int -> (string -> unit) -> element -> unit
       );
     ]}
     {@mlx[
-      JSX.render_streaming (fun html -> Dream.write stream html) (<div>
-        <h1>(JSX.string "Hello, World!")</h1>
-      </div>)
+      JSX.render_streaming
+        (fun html -> Dream.write stream html)
+        <div>
+          <h1>(JSX.string "Hello, World!")</h1>
+        </div>
     ]} *)
 
 val float : float -> element
@@ -254,10 +256,10 @@ val text : string -> element
     This function is deprecated in favor of [JSX.string].
 
     {@reasonml[
-      let element : JSX.element = JSX.text("Hello, World!");
+      let element : JSX.element = JSX.string("Hello, World!");
     ]}
     {@mlx[
-      let element : JSX.element = JSX.text "Hello, World!"
+      let element : JSX.element = JSX.string "Hello, World!"
     ]} *)
 
 val format : ('a, unit, string, element) format4 -> 'a
@@ -282,12 +284,12 @@ val unsafe : string -> element
     style tag.
 
     {@reasonml[
-      let content: string = "Raw HTML";
-      let script: JSX.element = <script>{content}</script>
+      let content: string = "console.log('Hello')";
+      let script: JSX.element = <script> {JSX.unsafe(content)} </script>;
     ]}
     {@mlx[
-      let content: string = "Raw HTML" in
-      let script: JSX.element = <script> content </script>
+      let content : string = "console.log('Hello')"
+      let script : JSX.element = <script>(JSX.unsafe content)</script>
     ]} *)
 
 val escape : Buffer.t -> string -> unit

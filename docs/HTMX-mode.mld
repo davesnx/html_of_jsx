@@ -223,7 +223,7 @@ Pass [integrity] to enable SRI.
 
 {@reasonml[
 <div hx_ext="ws" ws_connect="/chat">
-  <form ws_send="">
+  <form ws_send=true>
     <input name="message" />
     <button type_=`submit> "Send" </button>
   </form>

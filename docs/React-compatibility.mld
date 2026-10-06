@@ -36,7 +36,7 @@ JSX.render(
     <label htmlFor="email"> {JSX.string("Email")} </label>
     <input
       id="email"
-      type_="email"
+      type_=`email
       tabIndex=1
       maxLength=100
       autoComplete="email"

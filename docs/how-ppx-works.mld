@@ -33,7 +33,7 @@ When a tree contains no dynamic parts, the ppx pre-computes the entire HTML stri
 
 {@reasonml[
 <div class_="banner"> <strong> "Hello" </strong> </div>
-/* compiles to: JSX.unsafe "<div class=\"banner\"><strong>Hello</strong></div>" */
+/* compiles to: JSX.unsafe("<div class=\"banner\"><strong>Hello</strong></div>") */
 ]}
 {@mlx[
 <div class_="banner"> <strong> "Hello" </strong> </div>
@@ -52,31 +52,27 @@ When a tree mixes static and dynamic parts, the ppx:
 
 {@reasonml[
 let greeting = (~name, ()) => {
-  <div class_="greeting">
-    <h1> {JSX.string("Hello, " ++ name ++ "!")} </h1>
-  </div>;
+  <div class_="greeting"> {JSX.string("Hello, " ++ name ++ "!")} </div>;
 };
 
 /* compiles roughly to:
    let buf = Buffer.create(<estimated_size>);
-   Buffer.add_string(buf, "<div class=\"greeting\"><h1>");
-   JSX.escape(buf, "Hello, " ^ name ^ "!");
-   Buffer.add_string(buf, "</h1></div>");
+   Buffer.add_string(buf, "<div class=\"greeting\">");
+   JSX.escape(buf, "Hello, " ++ name ++ "!");
+   Buffer.add_string(buf, "</div>");
    JSX.unsafe(Buffer.contents(buf));
 */
 ]}
 
 {@mlx[
 let greeting ~name () =
-  <div class_="greeting">
-    <h1>(JSX.string ("Hello, " ^ name ^ "!"))</h1>
-  </div>
+  <div class_="greeting">(JSX.string ("Hello, " ^ name ^ "!"))</div>
 
 (* compiles roughly to:
    let buf = Buffer.create <estimated_size> in
-   Buffer.add_string buf "<div class=\"greeting\"><h1>";
+   Buffer.add_string buf "<div class=\"greeting\">";
    JSX.escape buf ("Hello, " ^ name ^ "!");
-   Buffer.add_string buf "</h1></div>";
+   Buffer.add_string buf "</div>";
    JSX.unsafe (Buffer.contents buf)
 *)
 ]}
@@ -92,10 +88,6 @@ When all children are static but some attributes are dynamic, the ppx pre-comput
 {2 Optional attributes}
 
 When a component receives optional props, the ppx generates conditional attribute rendering while still pre-computing the static parts of the element.
-
-{2 Fallback}
-
-When the tree cannot be analyzed (e.g. it contains spread expressions or complex control flow), the ppx falls back to [JSX.node], which builds the element at runtime.
 
 {1 Escaping}
 
