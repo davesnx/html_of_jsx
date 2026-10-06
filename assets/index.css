@@ -615,8 +615,10 @@ button:focus-visible {
 }
 
 .doc-prose h2 {
-  margin-top: 3rem;
+  margin-top: 2.5rem;
   margin-bottom: 0.75rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border-subtle);
   font-size: 1.625rem;
 }
 
