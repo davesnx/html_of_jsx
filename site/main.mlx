@@ -86,7 +86,6 @@ let guide_order =
    specific pages. Keep the project's voice: lowercase ppx, short names. *)
 let sidebar_label_overrides =
   [
-    ("ppx.md", "ppx");
     ("dream.md", "Dream");
     ("HTMX-mode.md", "htmx");
     ("React-compatibility.md", "React compat");

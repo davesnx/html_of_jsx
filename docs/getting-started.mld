@@ -57,7 +57,7 @@ A library:
  (preprocess (pps html_of_jsx.ppx)))
 ]}
 
-See {{!page-ppx}ppx settings} for all available flags.
+See {{!page-ppx}Preprocessing flags} for all available flags.
 
 {1 Syntax setup}
 
@@ -102,6 +102,6 @@ The [vscode-ocaml-platform] extension supports both Reason and mlx out of the bo
 {1 Next}
 
 - {{!page-core}Core API} for basic usage
-- {{!page-ppx}Settings} for ppx flags
+- {{!page-ppx}Preprocessing flags} to turn on htmx or React attributes
 - {{!page-dream}Dream integration} to integrate with Dream
 - {{!page-"how-ppx-works"}How the ppx works} for a closer look at the JSX transformation.

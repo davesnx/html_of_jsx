@@ -1,12 +1,10 @@
-{0 ppx}
+{0 Preprocessing flags}
 
 The [html_of_jsx.ppx] preprocessor transforms JSX syntax into efficient HTML rendering code, validating attributes and their types at compile time.
 
-{1 Settings}
-
 Pass flags after [html_of_jsx.ppx] in your dune [(preprocess ...)] stanza.
 
-{2 [-htmx]}
+{1 [-htmx]}
 
 Enables htmx attributes ([hx_get], [hx_post], [hx_swap], ...) and extension-specific attributes ([sse_connect], [ws_send], ...) on all HTML elements.
 
@@ -16,7 +14,7 @@ Enables htmx attributes ([hx_get], [hx_post], [hx_swap], ...) and extension-spec
 
 Requires the [html_of_jsx.htmx] library for the [<Htmx />] script loader. See {{!page-"HTMX-mode"}HTMX mode}.
 
-{2 [-react]}
+{1 [-react]}
 
 Enables React DOM aliases: [className] maps to [class] and [htmlFor] maps to [for]. Useful as a migration bridge from React/Reason-React codebases.
 
@@ -26,7 +24,7 @@ Enables React DOM aliases: [className] maps to [class] and [htmlFor] maps to [fo
 
 See {{!page-"React-compatibility"}React compatibility}.
 
-{2 [-disable-static-opt]}
+{1 [-disable-static-opt]}
 
 Disables compile-time static analysis and optimization. Every element falls back to the generic [JSX.node] constructor. Useful for debugging the ppx output.
 
