@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1791287423343,
+  "lastUpdate": 1791299513785,
   "repoUrl": "https://github.com/davesnx/html_of_jsx",
   "entries": {
     "html_of_jsx Benchmarks": [
@@ -4628,6 +4628,95 @@ window.BENCHMARK_DATA = {
           {
             "name": "escape (dirty)",
             "value": 13629565.32,
+            "unit": "ops/sec"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "dsnxmoreno@gmail.com",
+            "name": "David Sancho Moreno",
+            "username": "davesnx"
+          },
+          "committer": {
+            "email": "dsnxmoreno@gmail.com",
+            "name": "David Sancho Moreno",
+            "username": "davesnx"
+          },
+          "distinct": true,
+          "id": "215fd1aa16d1db86985e8f1437ad24605bda9d3b",
+          "message": "Add empty interface to ppx module to drop odoc hidden constructor warning",
+          "timestamp": "2026-10-06T16:50:57+02:00",
+          "tree_id": "f591095f7b328d7fe4bf1781579e28168063341e",
+          "url": "https://github.com/davesnx/html_of_jsx/commit/215fd1aa16d1db86985e8f1437ad24605bda9d3b"
+        },
+        "date": 1791299513263,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Trivial (static)",
+            "value": 575302976.72,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Dashboard",
+            "value": 56829.57,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Blog (50 comments)",
+            "value": 10193.05,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Table (100 rows)",
+            "value": 6373.11,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Table (100 rows, prebuilt writer)",
+            "value": 8545.49,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "E-commerce",
+            "value": 6081.51,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Form",
+            "value": 60001.16,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Deep tree (50)",
+            "value": 26578.88,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Wide tree (100)",
+            "value": 7819.35,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Shallow tree",
+            "value": 154602.99,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Props heavy",
+            "value": 7581.64,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "escape (clean)",
+            "value": 30584555.14,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "escape (dirty)",
+            "value": 8225971.6,
             "unit": "ops/sec"
           }
         ]
