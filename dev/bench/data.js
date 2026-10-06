@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1791286107528,
+  "lastUpdate": 1791287423343,
   "repoUrl": "https://github.com/davesnx/html_of_jsx",
   "entries": {
     "html_of_jsx Benchmarks": [
@@ -4539,6 +4539,95 @@ window.BENCHMARK_DATA = {
           {
             "name": "escape (dirty)",
             "value": 6695748.95,
+            "unit": "ops/sec"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "dsnxmoreno@gmail.com",
+            "name": "David Sancho Moreno",
+            "username": "davesnx"
+          },
+          "committer": {
+            "email": "dsnxmoreno@gmail.com",
+            "name": "David Sancho Moreno",
+            "username": "davesnx"
+          },
+          "distinct": true,
+          "id": "d32adcc070d572acc0d6653f7060f12b00c8c209",
+          "message": "Redesign docs site with Oxide-inspired palette and Cal Sans\n\n- Replace the brown/sand palette with cool neutrals and a green accent\n  taken from oxide.computer, in both light and dark themes\n- Use Cal Sans (sharp, SHRP=100) for headings and Cal Sans Text for body;\n  keep IBM Plex Mono for code and labels; drop unused Spline Sans\n- Swap gruvbox code themes for matching Oxide-palette themes\n- Remove breadcrumbs and the animated logo brackets\n- Align the version chip height with the other header controls\n- Mark *.woff2 as binary so `* text eol=lf` does not corrupt fonts",
+          "timestamp": "2026-10-06T13:29:44+02:00",
+          "tree_id": "edccb17215a8fcdcd7c2dff10573e76d6256d269",
+          "url": "https://github.com/davesnx/html_of_jsx/commit/d32adcc070d572acc0d6653f7060f12b00c8c209"
+        },
+        "date": 1791287422141,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Trivial (static)",
+            "value": 519556012.81,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Dashboard",
+            "value": 80361.1,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Blog (50 comments)",
+            "value": 14236.6,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Table (100 rows)",
+            "value": 8963.03,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Table (100 rows, prebuilt writer)",
+            "value": 11798.1,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "E-commerce",
+            "value": 8929.1,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Form",
+            "value": 87011.61,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Deep tree (50)",
+            "value": 39149.82,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Wide tree (100)",
+            "value": 11549.34,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Shallow tree",
+            "value": 231330.36,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Props heavy",
+            "value": 11427.9,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "escape (clean)",
+            "value": 46809509.32,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "escape (dirty)",
+            "value": 13629565.32,
             "unit": "ops/sec"
           }
         ]
