@@ -138,7 +138,7 @@ let basename_exn path =
       invalid_arg ("Expected a basename for path: " ^ Path.to_string path)
 
 (* The public PPX library is a build tool, not a user-facing API module. *)
-let hidden_doc_sources = [ "Ppx.md" ]
+let hidden_doc_sources = [ "Html_of_jsx_ppx.md" ]
 
 let is_visible_doc_source path =
   Path.has_extension "md" path

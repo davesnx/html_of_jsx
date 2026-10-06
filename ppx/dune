@@ -1,5 +1,5 @@
 (library
- (name ppx)
+ (name html_of_jsx_ppx)
  (public_name html_of_jsx.ppx)
  (kind ppx_rewriter)
  (libraries ppxlib ppxlib.astlib html_of_jsx)
