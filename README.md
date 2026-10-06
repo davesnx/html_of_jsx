@@ -3,13 +3,13 @@
 
 ### Render HTML with JSX
 
-**html_of_jsx** is a JSX transformation and a library to write HTML in [OCaml](https://ocaml.org), [Reason](https://reasonml.github.io) and [mlx](https://github.com/ocaml-mlx/mlx).
+**html_of_jsx** is a ppx transformation and a library to write HTML in [OCaml](https://ocaml.org), [Reason](https://reasonml.github.io) and [mlx](https://github.com/ocaml-mlx/mlx).
 
 ## Features
 
 - Brings the *"component model"* to HTML
 - Type-safe, validates attributes and their types
-- Works with [Reason](https://reasonml.github.io) and [mlx](https://github.com/ocaml-mlx/mlx)
+- Works with [OCaml](https://ocaml.org), [Reason](https://reasonml.github.io) and [mlx](https://github.com/ocaml-mlx/mlx).
 - Supports all of the Reason's [JSX](https://reasonml.github.io/docs/en/jsx) features (uppercase components, fragments, optional attributes, punning)
 - but with a few improvements (lowercase components, no need to add the ppx annotation)
 - No React idioms (no `className`, no `htmlFor`, no `onChange`, etc...)
