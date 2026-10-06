@@ -91,9 +91,18 @@ let status_badge = (~count, ()) => {
 let status_badge ~count () =
   <div>
     <span class_="badge">
-      (JSX.string (if count = 0 then "No items" else Int.to_string count ^ " items"))
+      (JSX.string
+         ( if count = 0 then
+             "No items"
+           else
+             Int.to_string count
+             ^ " items"
+         )
+      )
     </span>
-    <span class_="count">(JSX.int count)</span>
+    <span class_="count">
+      (JSX.int count)
+    </span>
   </div>
 ]}
 
@@ -112,7 +121,8 @@ let html = JSX.render(<greeting name="lola" />);
 let greeting ~name () =
   <div> <h1>(JSX.string ("Hello, " ^ name ^ "!"))</h1> </div>
 
-let html = JSX.render (<greeting name="lola" />)
+let html =
+  JSX.render (<greeting name="lola" />)
 ]}
 
 {2 Optional props with defaults}
@@ -129,7 +139,8 @@ let badge = (~label, ~kind="info", ()) => {
 ]}
 {@mlx[
 let badge ~label ?(kind = "info") () =
-  <span class_={"badge badge-" ^ kind}>(JSX.string label)</span>
+  <span class_=("badge badge-" ^ kind)>
+    (JSX.string label)</span>
 
 <badge label="Ready" />              (* kind defaults to "info" *)
 <badge label="Error" kind="danger" />
@@ -154,7 +165,8 @@ let html = JSX.render(
 ]}
 {@mlx[
 let hero ~(children : JSX.element) () =
-  <main class_="fancy-hero">(children)</main>
+  <main class_="fancy-hero">
+    (children)</main>
 
 let html = JSX.render (
   <hero>
@@ -229,7 +241,8 @@ let html = JSX.render(<Button> {JSX.string("Click me")} </Button>)
 {@mlx[
 module Button = struct
   let make ~(children : JSX.element) () =
-    <button onclick="onClickHandler">(children)</button>
+    <button onclick="onClickHandler">
+      (children)</button>
 end
 
 let html = JSX.render (<Button>(JSX.string "Click me")</Button>)
@@ -250,10 +263,12 @@ let alert = (~message, ~visible, ()) => {
 ]}
 {@mlx[
 let alert ~message ~visible () =
-  if visible then
-    <div class_="alert">(JSX.string message)</div>
-  else
+  if visible then begin
+    <div class_="alert">
+      (JSX.string message)</div>
+  end else begin
     JSX.null
+  end
 ]}
 
 This works with any pattern match:
@@ -269,8 +284,10 @@ let user_greeting = (~user, ()) => {
 {@mlx[
 let user_greeting ~user () =
   match user with
-  | Some name -> <h1>(JSX.string ("Welcome, " ^ name))</h1>
-  | None -> <h1>(JSX.string "Welcome, guest")</h1>
+  | Some name ->
+    <h1>(JSX.string ("Welcome, " ^ name))</h1>
+  | None ->
+    <h1>(JSX.string "Welcome, guest")</h1>
 ]}
 
 {1 Unsafe HTML}
@@ -317,5 +334,6 @@ JSX.render_streaming(
 {@mlx[
 JSX.render_streaming
   (fun chunk -> Dream.write stream chunk)
-  (<main> <h1>(JSX.string "Streaming")</h1> </main>)
+  (<main>
+     <h1>(JSX.string "Streaming")</h1> </main>)
 ]}

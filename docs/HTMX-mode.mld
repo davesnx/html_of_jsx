@@ -40,9 +40,9 @@ JSX.render <a hx_get="/profile" hx_swap=`outerHTML> (JSX.string "Load profile") 
 {@mlx[
 <button hx_get="/items"> (JSX.string "Load") </button>
 <form hx_post="/submit"> children </form>
-<button hx_delete={"/items/" ++ id}> (JSX.string "Remove") </button>
-<button hx_put={"/items/" ++ id}> (JSX.string "Replace") </button>
-<button hx_patch={"/items/" ++ id}> (JSX.string "Update") </button>
+<button hx_delete=("/items/" ^ id)> (JSX.string "Remove") </button>
+<button hx_put=("/items/" ^ id)> (JSX.string "Replace") </button>
+<button hx_patch=("/items/" ^ id)> (JSX.string "Update") </button>
 ]}
 
 {2 Targeting and swapping}
@@ -165,7 +165,8 @@ let counter ~count () =
       hx_swap=`outerHTML>
       (JSX.string "-")
     </button>
-    <span id="counter">(JSX.int count)</span>
+    <span id="counter">
+      (JSX.int count)</span>
     <button
       hx_post="/counter/increment"
       hx_target="#counter"
@@ -225,13 +226,13 @@ Pass [integrity] to enable SRI.
 <div hx_ext="ws" ws_connect="/chat">
   <form ws_send=true>
     <input name="message" />
-    <button type_=`submit> "Send" </button>
+    <button type_=`submit> {JSX.string("Send")} </button>
   </form>
 </div>
 ]}
 {@mlx[
 <div hx_ext="ws" ws_connect="/chat">
-  <form ws_send="">
+  <form ws_send=true>
     <input name="message" />
     <button type_=`submit> (JSX.string "Send") </button>
   </form>
@@ -278,7 +279,8 @@ let page = () => {
 let page () =
   <html lang="en">
     <head>
-      <title>(JSX.string "htmx + html_of_jsx")</title>
+      <title>
+        (JSX.string "htmx + html_of_jsx")</title>
       <Htmx version="2.0.4" />
       <Htmx.Extensions.sse version="2.2.2" />
     </head>

@@ -40,7 +40,8 @@ let () =
 let page ~title ~children () =
   <html lang="en">
     <head><title>(JSX.string title)</title></head>
-    <body>(children)</body>
+    <body>
+      (children)</body>
   </html>
 
 let () =
@@ -76,11 +77,14 @@ Dream.get("/stream", _req =>
 
 {@mlx[
 Dream.get "/stream" (fun _req ->
-  Dream.stream ~headers:[("Content-Type", "text/html")] (fun stream ->
-    JSX.render_streaming
-      (fun chunk -> ignore (Dream.write stream chunk))
-      (<page title="Streamed">
-        <p>(JSX.string "This page is streamed")</p>
-      </page>);
-    Dream.close stream))
+  Dream.stream
+    ~headers:[("Content-Type", "text/html")]
+    (fun stream -> begin
+      JSX.render_streaming
+        (fun chunk -> ignore (Dream.write stream chunk))
+        (<page title="Streamed">
+          <p>(JSX.string "This page is streamed")</p>
+        </page>);
+      Dream.close stream
+    end))
 ]}

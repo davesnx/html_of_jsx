@@ -66,7 +66,8 @@ let greeting = (~name, ()) => {
 
 {@mlx[
 let greeting ~name () =
-  <div class_="greeting">(JSX.string ("Hello, " ^ name ^ "!"))</div>
+  <div class_="greeting">
+    (JSX.string ("Hello, " ^ name ^ "!"))</div>
 
 (* compiles roughly to:
    let buf = Buffer.create <estimated_size> in
