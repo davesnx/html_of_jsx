@@ -1,14 +1,14 @@
 {0 html_of_jsx}
 
-A JSX transformation and a library to write HTML in {{:https://reasonml.github.io}Reason} and {{:https://github.com/ocaml-mlx/mlx}mlx}.
+A ppx transformation and a library to write HTML in {{:https://ocaml.org}OCaml}, {{:https://reasonml.github.io}Reason} and {{:https://github.com/ocaml-mlx/mlx}mlx}.
 
 {1 Features}
 
 {ul
 {- Brings the {i "component model"} to HTML}
-{- Supports all of Reason's {{:https://reasonml.github.io/docs/en/jsx}JSX} features (uppercase components, fragments, optional attributes, punning) with a few improvements (lowercase components, no ppx annotation needed)}
-{- Works with {{:https://reasonml.github.io}Reason} and {{:https://github.com/ocaml-mlx/mlx}mlx}}
 {- {b Type-safe}: each element only accepts its valid attributes, and attribute values are checked at compile time}
+{- Works with {{:https://ocaml.org}OCaml}, {{:https://reasonml.github.io}Reason} and {{:https://github.com/ocaml-mlx/mlx}mlx}}
+{- Supports all of Reason's {{:https://reasonml.github.io/docs/en/jsx}JSX} features (uppercase components, fragments, optional attributes, punning) with a few improvements (lowercase components, no ppx annotation needed)}
 {- Sticks to HTML standard attributes: No React idioms ([className], [htmlFor], etc.)}
 {- Integrates well with {{:https://htmx.org}htmx}}
 {- Minimal core API
@@ -35,21 +35,23 @@ See {{!page-"getting-started"}Getting started} for dune package manager, opam pi
 
 {1 Usage}
 
-{@reasonml[
-let element = <a href="https://x.com/davesnx">
-  <span> {JSX.string("Click me!")} </span>
-</a>;
-
-let html = JSX.render(element);
-/* <a href="https://x.com/davesnx"><span>Click me!</span></a> */
-]}
 {@mlx[
-let element = <a href="https://x.com/davesnx">
-  <span>(JSX.string "Click me!")</span>
-</a>
+let element: JSX.element =
+  <a href="https://x.com/davesnx">
+    <span> (JSX.string "Click me!") </span>
+  </a>
 
-let html = JSX.render element
+let html: string = JSX.render element
 (* <a href="https://x.com/davesnx"><span>Click me!</span></a> *)
+]}
+{@reasonml[
+let element: JSX.element =
+  <a href="https://x.com/davesnx">
+    <span> {JSX.string("Click me!")} </span>
+  </a>;
+
+let html: string = JSX.render(element);
+/* <a href="https://x.com/davesnx"><span>Click me!</span></a> */
 ]}
 
 See {{!page-core}Core API} for elements, children, components, and rendering.

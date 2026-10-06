@@ -16,7 +16,7 @@
 - Integrates well with [htmx](https://htmx.org)
 - Minimal core API
   - `JSX.render` to render a JSX element to an HTML string
-  - Helpers to construct nodes: `JSX.string`, `JSX.int`, `JSX.float`, `JSX.null`, `JSX.list`, `JSX.array`, `JSX.unsafe`
+  - Helpers to construct nodes: `JSX.string`, `JSX.format`, `JSX.int`, `JSX.float`, `JSX.null`, `JSX.list`, `JSX.array`, `JSX.unsafe`
   - Advanced rendering: `JSX.render_to_channel`, `JSX.render_streaming`
 - Designed to work on the server, but can be used on the client-side as well (with [Melange](https://melange.re) or [jsoo](https://ocsigen.org/js_of_ocaml/))
 
