@@ -261,15 +261,16 @@ let make_code_theme ~name ~fg ~bg ~comment ~string ~number ~keyword ~fn ~typ =
       ]
     ()
 
-let code_theme_gruvbox_light =
-  make_code_theme ~name:"gruvbox-light" ~fg:"#3C3836" ~bg:"#FEF6ED"
-    ~comment:"#928374" ~string:"#79740E" ~number:"#8F3F71" ~keyword:"#9D0006"
-    ~fn:"#B57614" ~typ:"#076678"
+(* Colors come from the Oxide Computer palette, matching assets/index.css. *)
+let code_theme_light =
+  make_code_theme ~name:"oxide-light" ~fg:"#202225" ~bg:"#F6F7F8"
+    ~comment:"#67696B" ~string:"#006B4A" ~number:"#804E00" ~keyword:"#4E4FA1"
+    ~fn:"#73418F" ~typ:"#005F65"
 
-let code_theme_gruvbox =
-  make_code_theme ~name:"gruvbox" ~fg:"#EBDBB2" ~bg:"#2C241E" ~comment:"#928374"
-    ~string:"#B8BB26" ~number:"#D3869B" ~keyword:"#FB4934" ~fn:"#FABD2F"
-    ~typ:"#8EC07C"
+let code_theme_dark =
+  make_code_theme ~name:"oxide-dark" ~fg:"#CDCECF" ~bg:"#131519"
+    ~comment:"#858689" ~string:"#37E6A8" ~number:"#FEBB55" ~keyword:"#ADC2FF"
+    ~fn:"#DEBDFF" ~typ:"#FFB3BE"
 
 let code_theme_dark_css =
   {|
@@ -313,9 +314,8 @@ let highlighted_code ~highlight_lang ~code () =
           ~code_class:"doc-code__code" ()
       in
       try
-        Ochre.to_html highlighter ~options:ochre_options
-          ~theme:code_theme_gruvbox_light
-          ~extra_themes:[ ("dark", code_theme_gruvbox) ]
+        Ochre.to_html highlighter ~options:ochre_options ~theme:code_theme_light
+          ~extra_themes:[ ("dark", code_theme_dark) ]
           ~lang:language code
         |> JSX.unsafe
       with exn ->
@@ -662,48 +662,8 @@ let sidebar ~pages ~active_output () =
     </div>
   </aside>
 
-let breadcrumb_separator () =
-  <span class_="doc-breadcrumb__sep" aria_hidden=true>(JSX.string "/")</span>
-
-let breadcrumbs ~current () =
-  if current.source_name = "index.md" then
-    JSX.null
-  else
-    let section_label =
-      if is_guide_page current then
-        "Guides"
-      else
-        "API"
-    in
-    let page_label =
-      sidebar_label_for ~source_name:current.source_name ~title:current.title
-    in
-    <nav class_="doc-breadcrumb" aria_label="Breadcrumb">
-      <ol class_="doc-breadcrumb__list">
-        <li class_="doc-breadcrumb__item doc-breadcrumb__item--section">
-          (JSX.string section_label)
-        </li>
-        <li class_="doc-breadcrumb__sep-item"><breadcrumb_separator /></li>
-        <li
-          class_="doc-breadcrumb__item doc-breadcrumb__item--current"
-          aria_current=`page>
-          (JSX.string page_label)
-        </li>
-      </ol>
-    </nav>
-
 let brand_logo () =
-  <a class_="site-brand" href="index.html">
-    <span
-      class_="site-brand__bracket site-brand__bracket--open" aria_hidden=true>
-      (JSX.string "<")
-    </span>
-    <span class_="site-brand__name">(JSX.string "html_of_jsx")</span>
-    <span
-      class_="site-brand__bracket site-brand__bracket--close" aria_hidden=true>
-      (JSX.string "/>")
-    </span>
-  </a>
+  <a class_="site-brand" href="index.html">(JSX.string "html_of_jsx")</a>
 
 let version_chip ~version () =
   <a
@@ -758,14 +718,14 @@ let page ~pages ~current () =
         rel="preload"
         as_="font"
         type_="font/woff2"
-        href="assets/ibm-plex-mono-600.woff2"
+        href="assets/cal-sans-text.woff2"
         crossorigin="anonymous"
       />
       <link
         rel="preload"
         as_="font"
         type_="font/woff2"
-        href="assets/spline-sans-700.woff2"
+        href="assets/cal-sans-display.woff2"
         crossorigin="anonymous"
       />
       <script>
@@ -855,7 +815,6 @@ let page ~pages ~current () =
       <div class_="doc-shell">
         <sidebar pages active_output=current.output_name />
         <main id="main-content" class_="doc-main">
-          <breadcrumbs current />
           <article class_=article_class>(JSX.unsafe article_html)</article>
         </main>
       </div>

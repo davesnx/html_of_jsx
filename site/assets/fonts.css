@@ -14,10 +14,20 @@
   src: url("ibm-plex-mono-600.woff2") format("woff2");
 }
 
+/* Cal Sans is pinned to its sharp form (SHRP=100, wght=600) with only the
+   optical-size axis left variable. Both Cal Sans files are Latin subsets. */
 @font-face {
-  font-family: "Spline Sans";
+  font-family: "Cal Sans";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("cal-sans-display.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Cal Sans Text";
   font-style: normal;
   font-weight: 400 700;
   font-display: swap;
-  src: url("spline-sans-700.woff2") format("woff2");
+  src: url("cal-sans-text.woff2") format("woff2");
 }
