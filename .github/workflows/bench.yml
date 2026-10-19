@@ -39,15 +39,21 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
 
+      - name: List pins
+        id: pins
+        shell: bash
+        run: |
+          {
+            echo 'list<<EOF'
+            make -s pin-list
+            echo EOF
+          } >> "$GITHUB_OUTPUT"
+
       - name: Setup OCaml and dependencies
         uses: ml-in-barcelona/gh-ci-action@main
         with:
           ocaml-compiler: 5.4.0
-          pins: |
-            oniguruma https://github.com/alan-j-hu/ocaml-oniguruma.git#57c194207d2a0c3d7fbfd302d8e21dd7f17422ea
-            textmate-language https://github.com/davesnx/ocaml-textmate-language.git#46ea3bd50d4413797e562b08eb87cb9d5694ca30
-            tm-grammars https://github.com/davesnx/tm-grammars.git#7bc690111b6d6a9c6896bc35aa17bfb854c33a2d
-            ochre https://github.com/davesnx/ochre.git#f367ec7b372e20fddabc065201cf696564361abe
+          pins: ${{ steps.pins.outputs.list }}
           with-doc: true
           with-dev-setup: true
 
