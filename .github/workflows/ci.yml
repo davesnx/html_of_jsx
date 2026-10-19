@@ -81,10 +81,6 @@ jobs:
         if: ${{ !cancelled() }}
         uses: ml-in-barcelona/gh-ci-action/dune-cache/save@main
 
-      - name: Run benchmarks
-        if: matrix.os == 'ubuntu-latest' && matrix.ocaml-compiler == '5.4.0'
-        run: make bench
-
       - name: Run benchmarks (JSON output for tracking)
         if: matrix.os == 'ubuntu-latest' && matrix.ocaml-compiler == '5.4.0'
         run: make bench-ci
