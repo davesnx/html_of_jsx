@@ -1,0 +1,78 @@
+name: Benchmarks
+
+on:
+  push:
+    branches:
+    - main
+    paths:
+    - 'lib/**'
+    - 'ppx/**'
+    - 'htmx/**'
+    - 'bench/**'
+    - '.github/workflows/bench.yml'
+  pull_request:
+    paths:
+    - 'lib/**'
+    - 'ppx/**'
+    - 'htmx/**'
+    - 'bench/**'
+    - '.github/workflows/bench.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: write
+
+jobs:
+  bench:
+    name: Benchmarks
+
+    runs-on: ubuntu-latest
+
+    env:
+      TERM: dumb
+      OPAMYES: 1
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: List pins
+        id: pins
+        shell: bash
+        run: |
+          {
+            echo 'list<<EOF'
+            make -s pin-list
+            echo EOF
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Setup OCaml and dependencies
+        uses: ml-in-barcelona/gh-ci-action@v1.0.0
+        with:
+          ocaml-compiler: 5.4.0
+          pins: ${{ steps.pins.outputs.list }}
+          with-doc: true
+          with-dev-setup: true
+
+      - name: Load dune cache
+        uses: ml-in-barcelona/gh-ci-action/dune-cache/load@v1.0.0
+
+      - name: Run benchmarks
+        run: make bench-ci
+
+      - name: Store benchmark result
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          name: html_of_jsx Benchmarks v2
+          tool: 'customBiggerIsBetter'
+          output-file-path: bench_results.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: ${{ github.ref == 'refs/heads/main' }}
+          gh-pages-branch: gh-pages
+          benchmark-data-dir-path: dev/bench
+          alert-threshold: '500%'
+          fail-on-alert: true
+          summary-always: true

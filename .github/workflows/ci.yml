@@ -7,6 +7,12 @@ on:
     tags:
     - '*'
   pull_request:
+  schedule:
+    - cron: '0 6 * * 1,4'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: write
@@ -43,21 +49,27 @@ jobs:
         with:
           fetch-depth: ${{ startsWith(github.ref, 'refs/tags/') && '0' || '1' }}
 
-      - name: Use OCaml ${{ matrix.ocaml-compiler }}
-        uses: ocaml/setup-ocaml@v3
+      - name: List pins
+        id: pins
+        shell: bash
+        run: |
+          {
+            echo 'list<<EOF'
+            make -s pin-list
+            echo EOF
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Setup OCaml and dependencies
+        uses: ml-in-barcelona/gh-ci-action@v1.0.0
         with:
           ocaml-compiler: ${{ matrix.ocaml-compiler }}
+          pins: ${{ steps.pins.outputs.list }}
+          with-doc: true
+          # Windows and 4.14.2 skip the dev-setup tools.
+          with-dev-setup: ${{ runner.os != 'Windows' && matrix.ocaml-compiler != '4.14.2' }}
 
-      - name: Pin dependencies
-        run: make pin
-
-      - name: Install (with dev-setup)
-        if: runner.os != 'Windows' && matrix.ocaml-compiler != '4.14.2'
-        run: make install
-
-      - name: Install (without dev-setup)
-        if: runner.os == 'Windows' || matrix.ocaml-compiler == '4.14.2'
-        run: opam install . --deps-only --with-test --with-doc -y
+      - name: Load dune cache
+        uses: ml-in-barcelona/gh-ci-action/dune-cache/load@v1.0.0
 
       - name: Build
         env:
@@ -71,24 +83,9 @@ jobs:
       - name: Run tests
         run: make test
 
-      - name: Run benchmarks (JSON output for tracking)
-        if: matrix.os == 'ubuntu-latest' && matrix.ocaml-compiler == '5.4.0'
-        run: make bench-ci
-
-      - name: Store benchmark result
-        if: matrix.os == 'ubuntu-latest' && matrix.ocaml-compiler == '5.4.0'
-        uses: benchmark-action/github-action-benchmark@v1
-        with:
-          name: html_of_jsx Benchmarks v2
-          tool: 'customBiggerIsBetter'
-          output-file-path: bench_results.json
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          auto-push: ${{ github.ref == 'refs/heads/main' }}
-          gh-pages-branch: gh-pages
-          benchmark-data-dir-path: dev/bench
-          alert-threshold: '500%'
-          fail-on-alert: true
-          summary-always: true
+      - name: Save dune cache
+        if: ${{ !cancelled() }}
+        uses: ml-in-barcelona/gh-ci-action/dune-cache/save@v1.0.0
 
       - name: Build docs site
         if: github.ref == 'refs/heads/main' && matrix.os == 'ubuntu-latest' && matrix.ocaml-compiler == '5.4.0'
