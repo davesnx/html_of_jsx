@@ -63,9 +63,7 @@ jobs:
           with-dev-setup: ${{ runner.os != 'Windows' && matrix.ocaml-compiler != '4.14.2' }}
 
       - name: Load dune cache
-        uses: ml-in-barcelona/gh-ci-action/dune-cache@main
-        with:
-          ocaml-compiler: ${{ matrix.ocaml-compiler }}
+        uses: ml-in-barcelona/gh-ci-action/dune-cache/load@main
 
       - name: Build
         env:
