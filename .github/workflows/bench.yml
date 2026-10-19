@@ -1,0 +1,72 @@
+name: Benchmarks
+
+on:
+  push:
+    branches:
+    - main
+    paths:
+    - 'lib/**'
+    - 'ppx/**'
+    - 'htmx/**'
+    - 'bench/**'
+    - '.github/workflows/bench.yml'
+  pull_request:
+    paths:
+    - 'lib/**'
+    - 'ppx/**'
+    - 'htmx/**'
+    - 'bench/**'
+    - '.github/workflows/bench.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: write
+
+jobs:
+  bench:
+    name: Benchmarks
+
+    runs-on: ubuntu-latest
+
+    env:
+      TERM: dumb
+      OPAMYES: 1
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup OCaml and dependencies
+        uses: ml-in-barcelona/gh-ci-action@main
+        with:
+          ocaml-compiler: 5.4.0
+          pins: |
+            oniguruma https://github.com/alan-j-hu/ocaml-oniguruma.git#57c194207d2a0c3d7fbfd302d8e21dd7f17422ea
+            textmate-language https://github.com/davesnx/ocaml-textmate-language.git#46ea3bd50d4413797e562b08eb87cb9d5694ca30
+            tm-grammars https://github.com/davesnx/tm-grammars.git#7bc690111b6d6a9c6896bc35aa17bfb854c33a2d
+            ochre https://github.com/davesnx/ochre.git#f367ec7b372e20fddabc065201cf696564361abe
+          with-doc: true
+          with-dev-setup: true
+
+      - name: Load dune cache
+        uses: ml-in-barcelona/gh-ci-action/dune-cache/load@main
+
+      - name: Run benchmarks
+        run: make bench-ci
+
+      - name: Store benchmark result
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          name: html_of_jsx Benchmarks v2
+          tool: 'customBiggerIsBetter'
+          output-file-path: bench_results.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: ${{ github.ref == 'refs/heads/main' }}
+          gh-pages-branch: gh-pages
+          benchmark-data-dir-path: dev/bench
+          alert-threshold: '500%'
+          fail-on-alert: true
+          summary-always: true

@@ -81,25 +81,6 @@ jobs:
         if: ${{ !cancelled() }}
         uses: ml-in-barcelona/gh-ci-action/dune-cache/save@main
 
-      - name: Run benchmarks (JSON output for tracking)
-        if: matrix.os == 'ubuntu-latest' && matrix.ocaml-compiler == '5.4.0'
-        run: make bench-ci
-
-      - name: Store benchmark result
-        if: matrix.os == 'ubuntu-latest' && matrix.ocaml-compiler == '5.4.0'
-        uses: benchmark-action/github-action-benchmark@v1
-        with:
-          name: html_of_jsx Benchmarks v2
-          tool: 'customBiggerIsBetter'
-          output-file-path: bench_results.json
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          auto-push: ${{ github.ref == 'refs/heads/main' }}
-          gh-pages-branch: gh-pages
-          benchmark-data-dir-path: dev/bench
-          alert-threshold: '500%'
-          fail-on-alert: true
-          summary-always: true
-
       - name: Build docs site
         if: github.ref == 'refs/heads/main' && matrix.os == 'ubuntu-latest' && matrix.ocaml-compiler == '5.4.0'
         run: make docs-site
