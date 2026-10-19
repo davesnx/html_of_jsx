@@ -7,6 +7,12 @@ on:
     tags:
     - '*'
   pull_request:
+  schedule:
+    - cron: '0 6 * * 1'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: write
@@ -43,21 +49,17 @@ jobs:
         with:
           fetch-depth: ${{ startsWith(github.ref, 'refs/tags/') && '0' || '1' }}
 
-      - name: Use OCaml ${{ matrix.ocaml-compiler }}
-        uses: ocaml/setup-ocaml@v3
+      - name: Setup OCaml and dependencies
+        uses: ml-in-barcelona/gh-ci-action@main
         with:
           ocaml-compiler: ${{ matrix.ocaml-compiler }}
+          # Windows and 4.14.2 skip the dev-setup tools.
+          install: ${{ (runner.os == 'Windows' || matrix.ocaml-compiler == '4.14.2') && 'make pin && opam install . --deps-only --with-test --with-doc -y' || 'make pin install' }}
 
-      - name: Pin dependencies
-        run: make pin
-
-      - name: Install (with dev-setup)
-        if: runner.os != 'Windows' && matrix.ocaml-compiler != '4.14.2'
-        run: make install
-
-      - name: Install (without dev-setup)
-        if: runner.os == 'Windows' || matrix.ocaml-compiler == '4.14.2'
-        run: opam install . --deps-only --with-test --with-doc -y
+      - name: Load dune cache
+        uses: ml-in-barcelona/gh-ci-action/dune-cache@main
+        with:
+          ocaml-compiler: ${{ matrix.ocaml-compiler }}
 
       - name: Build
         env:
@@ -70,6 +72,10 @@ jobs:
 
       - name: Run tests
         run: make test
+
+      - name: Save dune cache
+        if: ${{ !cancelled() }}
+        uses: ml-in-barcelona/gh-ci-action/dune-cache/save@main
 
       - name: Run benchmarks
         if: matrix.os == 'ubuntu-latest' && matrix.ocaml-compiler == '5.4.0'
