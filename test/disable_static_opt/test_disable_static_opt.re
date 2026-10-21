@@ -20,6 +20,8 @@ let with_optionals = (~id=?, ~tabindex=?, ~disabled=?, ()) =>
 /* Static + dynamic mix through the JSX.node path. */
 let mixed = name => <div class_="container"> {JSX.string(name)} </div>;
 
+let fragment = name => <> <span /> {JSX.string(name)} </>;
+
 let () = {
   check(
     "booleanish some",
@@ -46,5 +48,10 @@ let () = {
     "mixed",
     ~expected="<div class=\"container\">Hello &amp; bye</div>",
     ~actual=JSX.render(mixed("Hello & bye")),
+  );
+  check(
+    "fragment",
+    ~expected="<span></span>a &amp; b",
+    ~actual=JSX.render(fragment("a & b")),
   );
 };

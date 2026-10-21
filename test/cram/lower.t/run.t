@@ -6,9 +6,9 @@
     JSX.writer(
       75,
       __html_buf => {
-        Buffer.add_string(__html_buf, "<div style=\"");
+        Stdlib.Buffer.add_string(__html_buf, "<div style=\"");
         JSX.escape(__html_buf, __html_v1);
-        Buffer.add_string(__html_buf, "\"></div>");
+        Stdlib.Buffer.add_string(__html_buf, "\"></div>");
         ();
       },
     );
@@ -18,15 +18,15 @@
     JSX.writer(
       75,
       __html_buf => {
-        Buffer.add_string(__html_buf, "<div");
+        Stdlib.Buffer.add_string(__html_buf, "<div");
         switch (__html_v2) {
         | Some(v) =>
-          Buffer.add_string(__html_buf, " tabindex=\"");
+          Stdlib.Buffer.add_string(__html_buf, " tabindex=\"");
           JSX.write_int(__html_buf, v);
-          Buffer.add_char(__html_buf, '"');
+          Stdlib.Buffer.add_char(__html_buf, '"');
         | None => ()
         };
-        Buffer.add_string(__html_buf, "></div>");
+        Stdlib.Buffer.add_string(__html_buf, "></div>");
         ();
       },
     );
@@ -36,12 +36,12 @@
     JSX.writer(
       111,
       __html_buf => {
-        Buffer.add_string(
+        Stdlib.Buffer.add_string(
           __html_buf,
           "<a tabindex=\"1\" href=\"https://example.com\">",
         );
         JSX.write(__html_buf, __html_v3);
-        Buffer.add_string(__html_buf, "</a>");
+        Stdlib.Buffer.add_string(__html_buf, "</a>");
         ();
       },
     );
@@ -52,9 +52,9 @@
     JSX.writer(
       75,
       __html_buf => {
-        Buffer.add_string(__html_buf, "<div>");
+        Stdlib.Buffer.add_string(__html_buf, "<div>");
         JSX.write(__html_buf, __html_v4);
-        Buffer.add_string(__html_buf, "</div>");
+        Stdlib.Buffer.add_string(__html_buf, "</div>");
         ();
       },
     );
@@ -67,9 +67,9 @@
     JSX.writer(
       75,
       __html_buf => {
-        Buffer.add_string(__html_buf, "<div>");
+        Stdlib.Buffer.add_string(__html_buf, "<div>");
         JSX.write(__html_buf, __html_v5);
-        Buffer.add_string(__html_buf, "</div>");
+        Stdlib.Buffer.add_string(__html_buf, "</div>");
         ();
       },
     );
@@ -84,19 +84,19 @@
            JSX.writer(
              166,
              __html_buf => {
-               Buffer.add_string(__html_buf, "<li>");
+               Stdlib.Buffer.add_string(__html_buf, "<li>");
                {
-                 Buffer.add_string(
+                 Stdlib.Buffer.add_string(
                    __html_buf,
                    "<a onclick=\"console.log\" href=\"",
                  );
                  JSX.escape(__html_buf, __html_v7);
-                 Buffer.add_string(__html_buf, "\">");
+                 Stdlib.Buffer.add_string(__html_buf, "\">");
                  JSX.write(__html_buf, __html_v8);
-                 Buffer.add_string(__html_buf, "</a>");
+                 Stdlib.Buffer.add_string(__html_buf, "</a>");
                  ();
                };
-               Buffer.add_string(__html_buf, "</li>");
+               Stdlib.Buffer.add_string(__html_buf, "</li>");
                ();
              },
            );
@@ -105,30 +105,30 @@
     JSX.writer(
       245,
       __html_buf => {
-        Buffer.add_string(__html_buf, "<div class=\"flex-container\">");
+        Stdlib.Buffer.add_string(__html_buf, "<div class=\"flex-container\">");
         {
-          Buffer.add_string(__html_buf, "<div class=\"sidebar\">");
+          Stdlib.Buffer.add_string(__html_buf, "<div class=\"sidebar\">");
           {
-            Buffer.add_string(__html_buf, "<h2 class=\"title\">");
+            Stdlib.Buffer.add_string(__html_buf, "<h2 class=\"title\">");
             JSX.write(__html_buf, __html_v6);
-            Buffer.add_string(__html_buf, "</h2>");
+            Stdlib.Buffer.add_string(__html_buf, "</h2>");
             ();
           };
           {
-            Buffer.add_string(__html_buf, "<nav class=\"menu\">");
+            Stdlib.Buffer.add_string(__html_buf, "<nav class=\"menu\">");
             {
-              Buffer.add_string(__html_buf, "<ul>");
+              Stdlib.Buffer.add_string(__html_buf, "<ul>");
               JSX.write(__html_buf, __html_v9);
-              Buffer.add_string(__html_buf, "</ul>");
+              Stdlib.Buffer.add_string(__html_buf, "</ul>");
               ();
             };
-            Buffer.add_string(__html_buf, "</nav>");
+            Stdlib.Buffer.add_string(__html_buf, "</nav>");
             ();
           };
-          Buffer.add_string(__html_buf, "</div>");
+          Stdlib.Buffer.add_string(__html_buf, "</div>");
           ();
         };
-        Buffer.add_string(__html_buf, "</div>");
+        Stdlib.Buffer.add_string(__html_buf, "</div>");
         ();
       },
     );
@@ -138,9 +138,9 @@
     JSX.writer(
       101,
       __html_buf => {
-        Buffer.add_string(__html_buf, "<button class=\"FancyButton\">");
+        Stdlib.Buffer.add_string(__html_buf, "<button class=\"FancyButton\">");
         JSX.write(__html_buf, __html_v10);
-        Buffer.add_string(__html_buf, "</button>");
+        Stdlib.Buffer.add_string(__html_buf, "</button>");
         ();
       },
     );

@@ -9,3 +9,6 @@ let dynamic_child = name => <div> {JSX.string(name)} </div>;
 /* Test: Optional booleanish-string attribute (regression: Bool.to_string
    must be applied to the unwrapped value inside Option.map) */
 let optional_booleanish = (~spellcheck=?, ()) => <div ?spellcheck />;
+
+/* Test: Fragments are not optimized either */
+let fragment = name => <> <span /> {JSX.string(name)} </>;

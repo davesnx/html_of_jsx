@@ -6,4 +6,5 @@ let () =
       Test_htmx.tests;
       Test_mlx.tests;
       Test_pp.tests;
+      Test_hygiene.tests;
     ]

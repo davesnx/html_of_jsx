@@ -187,12 +187,13 @@ let make_attribute ~loc ~is_optional ~prop attribute_name attribute_value =
   (* BooleanishString needs to transform bool into string *)
   | Rich_attribute { type_ = BooleanishString; _ }, false
   | Attribute { type_ = BooleanishString; _ }, false ->
-      [%expr [%e attribute_name], `String (Bool.to_string [%e attribute_value])]
+      [%expr
+        [%e attribute_name], `String (Stdlib.Bool.to_string [%e attribute_value])]
   | Rich_attribute { type_ = BooleanishString; _ }, true
   | Attribute { type_ = BooleanishString; _ }, true ->
       [%expr
         Stdlib.Option.map
-          (fun v -> ([%e attribute_name], `String (Bool.to_string v)))
+          (fun v -> ([%e attribute_name], `String (Stdlib.Bool.to_string v)))
           [%e attribute_value]]
   | Rich_attribute { type_ = Polyvariant options; _ }, false
   | Attribute { type_ = Polyvariant options; _ }, false ->
@@ -281,18 +282,19 @@ let transform_attributes ~loc ~tag_name attrs =
 
 let default_buffer_size = 256
 let buffer_var_name = "__html_buf"
+let generated_var_prefix = "__html_v"
 let var_counter = ref 0
 
 let fresh_var ~loc () =
   incr var_counter;
-  let name = Printf.sprintf "__html_v%d" !var_counter in
+  let name = Printf.sprintf "%s%d" generated_var_prefix !var_counter in
   (ppat_var ~loc { loc; txt = name }, pexp_ident ~loc { loc; txt = Lident name })
 
 type binding = pattern * expression
 
 let generate_dynamic_format_code ~loc ~buf_ident fmt args =
   let callback = [%expr JSX.escape [%e buf_ident]] in
-  let base = [%expr Printf.ksprintf [%e callback] [%e fmt]] in
+  let base = [%expr Stdlib.Printf.ksprintf [%e callback] [%e fmt]] in
   pexp_apply ~loc base args
 
 (* Buffer splicing: detect a child expression that is exactly the code shape
@@ -322,40 +324,53 @@ let match_spliceable_buffer_expr (expr : expression) :
         (List.rev acc, e)
   in
   let bindings, final = split_let_chain [] expr in
-  match final.pexp_desc with
-  | Pexp_apply
-      ( { pexp_desc = Pexp_ident { txt = Ldot (Lident "JSX", "writer"); _ }; _ },
-        [
-          ( Nolabel,
-            { pexp_desc = Pexp_constant (Pconst_integer (size, None)); _ }
-          );
-          (Nolabel, closure);
-        ]
-      ) -> (
-      match closure.pexp_desc with
-      | Pexp_function
-          ( [ { pparam_desc = Pparam_val (Nolabel, None, buf_pat); _ } ],
-            None,
-            Pfunction_body ops
-          ) -> (
-          match (int_of_string_opt size, buf_pat.ppat_desc) with
-          | Some size, Ppat_var { txt = pat_name; _ }
-            when String.equal pat_name buffer_var_name ->
-              Some (size, bindings, ops)
-          | _ ->
-              None
-        )
-      | _ ->
-          None
-    )
-  | _ ->
-      None
+  let is_generated_binding ((pat : pattern), _) =
+    match pat.ppat_desc with
+    | Ppat_var { txt; _ } ->
+        Stdlib.String.starts_with txt ~prefix:generated_var_prefix
+    | _ ->
+        false
+  in
+  if not (List.for_all bindings ~f:is_generated_binding) then
+    None
+  else
+    match final.pexp_desc with
+    | Pexp_apply
+        ( {
+            pexp_desc = Pexp_ident { txt = Ldot (Lident "JSX", "writer"); _ };
+            _;
+          },
+          [
+            ( Nolabel,
+              { pexp_desc = Pexp_constant (Pconst_integer (size, None)); _ }
+            );
+            (Nolabel, closure);
+          ]
+        ) -> (
+        match closure.pexp_desc with
+        | Pexp_function
+            ( [ { pparam_desc = Pparam_val (Nolabel, None, buf_pat); _ } ],
+              None,
+              Pfunction_body ops
+            ) -> (
+            match (int_of_string_opt size, buf_pat.ppat_desc) with
+            | Some size, Ppat_var { txt = pat_name; _ }
+              when String.equal pat_name buffer_var_name ->
+                Some (size, bindings, ops)
+            | _ ->
+                None
+          )
+        | _ ->
+            None
+      )
+    | _ ->
+        None
 
 let generate_part_code ~loc ~buf_ident part : binding list * expression =
   match part with
   | Static_analysis.Static_str s ->
       let s_expr = estring ~loc s in
-      ([], [%expr Buffer.add_string [%e buf_ident] [%e s_expr]])
+      ([], [%expr Stdlib.Buffer.add_string [%e buf_ident] [%e s_expr]])
   | Static_analysis.Dynamic_string expr ->
       let pat, ident = fresh_var ~loc () in
       ([ (pat, expr) ], [%expr JSX.escape [%e buf_ident] [%e ident]])
@@ -367,7 +382,9 @@ let generate_part_code ~loc ~buf_ident part : binding list * expression =
       (* Float.to_string cannot produce escapable characters, skip JSX.escape *)
       let pat, ident = fresh_var ~loc () in
       ( [ (pat, expr) ],
-        [%expr Buffer.add_string [%e buf_ident] (Float.to_string [%e ident])]
+        [%expr
+          Stdlib.Buffer.add_string [%e buf_ident]
+            (Stdlib.Float.to_string [%e ident])]
       )
   | Static_analysis.Dynamic_format (fmt, args) ->
       let bindings, new_args =
@@ -466,7 +483,8 @@ let generate_attrs_part ~loc ~buf_ident = function
   | Lit "" ->
       None
   | Lit s ->
-      Some ([], [%expr Buffer.add_string [%e buf_ident] [%e estring ~loc s]])
+      Some
+        ([], [%expr Stdlib.Buffer.add_string [%e buf_ident] [%e estring ~loc s]])
   | Child part ->
       Some (generate_part_code ~loc ~buf_ident part)
   | Code (bindings, e) ->
@@ -480,10 +498,12 @@ let attr_value_write_code ~loc ~buf_ident
   | Html_attributes.Int ->
       [%expr JSX.write_int [%e buf_ident] [%e value_expr]]
   | Html_attributes.Bool | Html_attributes.BooleanishString ->
-      [%expr Buffer.add_string [%e buf_ident] (Bool.to_string [%e value_expr])]
+      [%expr
+        Stdlib.Buffer.add_string [%e buf_ident]
+          (Stdlib.Bool.to_string [%e value_expr])]
   | Html_attributes.Polyvariant options ->
       let match_expr = polyvariant_to_string_match ~loc options value_expr in
-      [%expr Buffer.add_string [%e buf_ident] [%e match_expr]]
+      [%expr Stdlib.Buffer.add_string [%e buf_ident] [%e match_expr]]
 
 let attr_item_parts ~loc ~buf_ident (item : Static_analysis.attr_item) =
   let pat, ident = fresh_var ~loc () in
@@ -495,7 +515,7 @@ let attr_item_parts ~loc ~buf_ident (item : Static_analysis.attr_item) =
           ( [ (pat, expr) ],
             [%expr
               if [%e ident] then
-                Buffer.add_string [%e buf_ident] [%e html_name_expr]]
+                Stdlib.Buffer.add_string [%e buf_ident] [%e html_name_expr]]
           );
       ]
   | Static_analysis.Dynamic_item (info, expr) ->
@@ -512,7 +532,7 @@ let attr_item_parts ~loc ~buf_ident (item : Static_analysis.attr_item) =
             [%expr
               match [%e ident] with
               | Some true ->
-                  Buffer.add_string [%e buf_ident] [%e html_name_expr]
+                  Stdlib.Buffer.add_string [%e buf_ident] [%e html_name_expr]
               | Some false | None ->
                   ()]
           );
@@ -528,9 +548,9 @@ let attr_item_parts ~loc ~buf_ident (item : Static_analysis.attr_item) =
             [%expr
               match [%e ident] with
               | Some v ->
-                  Buffer.add_string [%e buf_ident] [%e name_prefix_expr];
+                  Stdlib.Buffer.add_string [%e buf_ident] [%e name_prefix_expr];
                   [%e value_write];
-                  Buffer.add_char [%e buf_ident] '"'
+                  Stdlib.Buffer.add_char [%e buf_ident] '"'
               | None ->
                   ()]
           );
@@ -820,7 +840,11 @@ let rewrite_jsx =
             | [], _ ->
                 super#expression expr
             | _, _rest_attributes ->
-                optimize_fragment ~loc ~mapper:self expr
+                if !disable_static_optimization then
+                  [%expr
+                    JSX.list [%e transform_items_of_list ~loc ~mapper:self expr]]
+                else
+                  optimize_fragment ~loc ~mapper:self expr
           )
         | _ ->
             super#expression expr

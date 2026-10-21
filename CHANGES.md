@@ -1,5 +1,11 @@
 # Changes
 
+## Unreleased
+
+- PPX: generated code qualifies stdlib modules with `Stdlib.`, so local modules named `Buffer`, `Float`, `Printf` or `Bool` no longer change the rendered output (@davesnx)
+- PPX: `-disable-static-opt` now also disables the fragment optimization (@davesnx)
+- PPX: `let` bindings written by the user inside a child expression keep their scope instead of being hoisted into the parent and shadowing later siblings (@davesnx)
+
 ## 0.1.1
 
 - Fix the static optimization dropping `<!DOCTYPE html>` from `<html>` elements with dynamic attributes or children (@davesnx)
