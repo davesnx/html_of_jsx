@@ -401,6 +401,11 @@ let static_attr_cases = [
   case("onclick static", <button onclick="f(\"x\")" />, None),
   case("aria static", <div aria_label="a&b" />, None),
   case("role", <div role=`button />, None),
+  case(
+    "role switch",
+    <div role=`switch_ />,
+    Some({|<div role="switch"></div>|}),
+  ),
   case("htmx static", <button hx_get="/ab=?1&c=2" hx_target="#x" />, None),
   case("htmx boost true", <div hx_boost=true />, None),
   case("htmx boost dyn", <div hx_boost=b_true />, None),
