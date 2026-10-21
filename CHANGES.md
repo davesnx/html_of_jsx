@@ -1,6 +1,6 @@
 # Changes
 
-## Unreleased
+## 0.1.2
 
 - PPX: generated code qualifies stdlib modules with `Stdlib.`, so local modules named `Buffer`, `Float`, `Printf` or `Bool` no longer change the rendered output (@davesnx)
 - PPX: `-disable-static-opt` now also disables the fragment optimization (@davesnx)

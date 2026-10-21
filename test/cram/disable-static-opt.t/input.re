@@ -10,7 +10,6 @@ let dynamic_child = name => <div> {JSX.string(name)} </div>;
    must be applied to the unwrapped value inside Option.map) */
 let optional_booleanish = (~spellcheck=?, ()) => <div ?spellcheck />;
 
-/* Test: Fragments are not optimized either */
 let fragment = name => <> <span /> {JSX.string(name)} </>;
 
 let fragment_text = (a, b) => <> "text" {JSX.string(a)} {JSX.string(b)} </>;
