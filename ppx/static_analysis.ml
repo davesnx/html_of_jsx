@@ -83,12 +83,27 @@ let rec extract_literal_string expr =
 
 let rec extract_literal_int expr =
   match expr.pexp_desc with
-  | Pexp_constant (Pconst_integer (s, _)) ->
-      Some (int_of_string s)
+  | Pexp_constant (Pconst_integer (s, None)) ->
+      int_of_string_opt s
   | Pexp_constraint (inner, _) ->
       extract_literal_int inner
   | _ ->
       None
+
+let located_error ~loc fmt =
+  Printf.ksprintf
+    (fun msg ->
+      Ast_builder.Default.pexp_extension ~loc
+        (Location.error_extensionf ~loc "[html_of_jsx] %s" msg)
+    )
+    fmt
+
+let check_helper_constant ~helper ~expected ~ok expr =
+  match expr.pexp_desc with
+  | Pexp_constant c when not (ok c) ->
+      located_error ~loc:expr.pexp_loc "JSX.%s expects %s." helper expected
+  | _ ->
+      expr
 
 let rec extract_literal_bool expr =
   match expr.pexp_desc with
@@ -110,10 +125,6 @@ let extract_jsx_string_arg expr =
           _;
         },
         [ (Nolabel, arg) ]
-      )
-  | Pexp_apply
-      ( { pexp_desc = Pexp_ident { txt = Lident ("text" | "string"); _ }; _ },
-        [ (Nolabel, arg) ]
       ) ->
       Some arg
   | _ ->
@@ -123,10 +134,6 @@ let extract_jsx_int_arg expr =
   match expr.pexp_desc with
   | Pexp_apply
       ( { pexp_desc = Pexp_ident { txt = Ldot (Lident "JSX", "int"); _ }; _ },
-        [ (Nolabel, arg) ]
-      )
-  | Pexp_apply
-      ( { pexp_desc = Pexp_ident { txt = Lident "int"; _ }; _ },
         [ (Nolabel, arg) ]
       ) ->
       Some arg
@@ -138,10 +145,6 @@ let extract_jsx_float_arg expr =
   | Pexp_apply
       ( { pexp_desc = Pexp_ident { txt = Ldot (Lident "JSX", "float"); _ }; _ },
         [ (Nolabel, arg) ]
-      )
-  | Pexp_apply
-      ( { pexp_desc = Pexp_ident { txt = Lident "float"; _ }; _ },
-        [ (Nolabel, arg) ]
       ) ->
       Some arg
   | _ ->
@@ -151,10 +154,6 @@ let extract_jsx_format_call expr =
   match expr.pexp_desc with
   | Pexp_apply
       ( { pexp_desc = Pexp_ident { txt = Ldot (Lident "JSX", "format"); _ }; _ },
-        (Nolabel, fmt) :: args
-      )
-  | Pexp_apply
-      ( { pexp_desc = Pexp_ident { txt = Lident "format"; _ }; _ },
         (Nolabel, fmt) :: args
       ) ->
       Some (fmt, args)
@@ -345,6 +344,21 @@ let render_static_attr_with_info info value =
       let value_str = render_attr_value value in
       Printf.sprintf " %s=\"%s\"" info.html_name value_str
 
+let kind_expectation = function
+  | Html_attributes.String ->
+      "a string"
+  | Html_attributes.Int ->
+      "an int"
+  | Html_attributes.Bool | Html_attributes.BooleanishString ->
+      "a bool"
+  | Html_attributes.Polyvariant options ->
+      "one of "
+      ^ String.concat " | "
+          (List.map
+             (fun (opt : Html_attributes.polyvariant) -> "`" ^ opt.type_)
+             options
+          )
+
 type attr_analysis_result = Ok of parsed_attr option | Invalid
 
 let analyze_attribute ~tag_name (label, expr) : attr_analysis_result =
@@ -363,33 +377,47 @@ let analyze_attribute ~tag_name (label, expr) : attr_analysis_result =
       | Invalid_attr ->
           Invalid
       | Valid_attr info -> (
-          let static_value =
-            match info.kind with
-            | Html_attributes.Polyvariant options -> (
-                match expr.pexp_desc with
-                | Pexp_variant (constructor, None) -> (
-                    match
-                      List.find_opt
-                        (fun (opt : Html_attributes.polyvariant) ->
-                          opt.type_ = constructor
-                        )
-                        options
-                    with
-                    | Some opt ->
-                        Some (Static_string opt.jsxName)
-                    | None ->
-                        None
-                  )
-                | _ ->
-                    None
+          let mismatch () =
+            Ok
+              (Some
+                 (Dynamic_attr
+                    ( info,
+                      located_error ~loc:expr.pexp_loc
+                        "The attribute '%s' expects %s." name
+                        (kind_expectation info.kind)
+                    )
+                 )
               )
-            | _ ->
-                extract_static_attr_value expr
           in
-          match static_value with
-          | Some value ->
+          match (info.kind, expr.pexp_desc, extract_static_attr_value expr) with
+          | Html_attributes.Polyvariant options, Pexp_variant (tag, None), _
+            -> (
+              match
+                List.find_opt
+                  (fun (opt : Html_attributes.polyvariant) -> opt.type_ = tag)
+                  options
+              with
+              | Some opt ->
+                  Ok (Some (Static_attr (info, Static_string opt.jsxName)))
+              | None ->
+                  mismatch ()
+            )
+          | Html_attributes.Polyvariant _, Pexp_variant (_, Some _), _
+          | Html_attributes.Polyvariant _, _, Some _ ->
+              mismatch ()
+          | Html_attributes.String, _, Some (Static_string _ as value)
+          | Html_attributes.Int, _, Some (Static_int _ as value)
+          | ( (Html_attributes.Bool | Html_attributes.BooleanishString),
+              _,
+              Some (Static_bool _ as value) ) ->
               Ok (Some (Static_attr (info, value)))
-          | None ->
+          | _, _, Some _ ->
+              mismatch ()
+          | _, Pexp_constant (Pconst_integer (_, None)), None ->
+              Ok (Some (Dynamic_attr (info, expr)))
+          | _, Pexp_constant _, None ->
+              mismatch ()
+          | _, _, None ->
               Ok (Some (Dynamic_attr (info, expr)))
         )
     )
@@ -445,11 +473,6 @@ let extract_jsx_unsafe_literal expr =
         [ (Nolabel, arg) ]
       ) ->
       extract_literal_string arg
-  | Pexp_apply
-      ( { pexp_desc = Pexp_ident { txt = Lident "unsafe"; _ }; _ },
-        [ (Nolabel, arg) ]
-      ) ->
-      extract_literal_string arg
   | _ ->
       None
 
@@ -464,10 +487,6 @@ let extract_jsx_float_literal expr =
   match expr.pexp_desc with
   | Pexp_apply
       ( { pexp_desc = Pexp_ident { txt = Ldot (Lident "JSX", "float"); _ }; _ },
-        [ (Nolabel, arg) ]
-      )
-  | Pexp_apply
-      ( { pexp_desc = Pexp_ident { txt = Lident "float"; _ }; _ },
         [ (Nolabel, arg) ]
       ) -> (
       match arg.pexp_desc with
@@ -517,11 +536,34 @@ let analyze_child (expr : expression) : static_part =
         |> Option.map (fun (fmt, args) -> Dynamic_format (fmt, args))
       );
       (fun () ->
-        extract_jsx_string_arg expr |> Option.map (fun e -> Dynamic_string e)
+        extract_jsx_string_arg expr
+        |> Option.map (fun e ->
+            Dynamic_string
+              (check_helper_constant ~helper:"string" ~expected:"a string"
+                 ~ok:(function Pconst_string _ -> true | _ -> false)
+                 e
+              )
+        )
       );
-      (fun () -> extract_jsx_int_arg expr |> Option.map (fun e -> Dynamic_int e));
       (fun () ->
-        extract_jsx_float_arg expr |> Option.map (fun e -> Dynamic_float e)
+        extract_jsx_int_arg expr
+        |> Option.map (fun e ->
+            Dynamic_int
+              (check_helper_constant ~helper:"int" ~expected:"an int"
+                 ~ok:(function Pconst_integer (_, None) -> true | _ -> false)
+                 e
+              )
+        )
+      );
+      (fun () ->
+        extract_jsx_float_arg expr
+        |> Option.map (fun e ->
+            Dynamic_float
+              (check_helper_constant ~helper:"float" ~expected:"a float"
+                 ~ok:(function Pconst_float _ -> true | _ -> false)
+                 e
+              )
+        )
       );
     ]
   |> Option.value ~default:(Dynamic_element expr)

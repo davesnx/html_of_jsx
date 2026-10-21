@@ -5,6 +5,9 @@
 - PPX: generated code qualifies stdlib modules with `Stdlib.`, so local modules named `Buffer`, `Float`, `Printf` or `Bool` no longer change the rendered output (@davesnx)
 - PPX: `-disable-static-opt` now also disables the fragment optimization (@davesnx)
 - PPX: `let` bindings written by the user inside a child expression keep their scope instead of being hoisted into the parent and shadowing later siblings (@davesnx)
+- Fix the static optimization treating unqualified `string`, `int`, `float`, `text`, `format` and `unsafe` calls as the `JSX` helpers when they are user-defined; only the qualified `JSX.*` forms are optimized now (@davesnx)
+- Fix literal attribute values skipping type checking under the static optimization: `<div hidden="yes" tabindex="x" id=5 />` now fails to compile with an error at the value, and suffixed integer literals (`5l`) are no longer accepted as `int` (@davesnx)
+- Fix the PPX crashing with `Failure("int_of_string")` on out-of-range integer literals; the compiler now reports its usual range error (@davesnx)
 
 ## 0.1.1
 
