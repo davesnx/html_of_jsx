@@ -1,6 +1,6 @@
 # Changes
 
-## Unreleased
+## 0.1.1
 
 - Fix the static optimization dropping `<!DOCTYPE html>` from `<html>` elements with dynamic attributes or children (@davesnx)
 - PPX: elements compile to `JSX.writer` closures that write straight into the parent buffer, removing a buffer and two copies per component boundary; rendering an already built element value now re-runs its writes instead of returning a cached string (@davesnx)
