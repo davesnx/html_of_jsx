@@ -596,7 +596,11 @@ let generate_attrs_code ~loc analysis =
       )
   in
   let all_parts =
-    (Lit ("<" ^ tag_name ^ static_attrs) :: attr_parts)
+    Lit
+      (Static_analysis.maybe_add_doctype tag_name
+         ("<" ^ tag_name ^ static_attrs)
+      )
+    :: attr_parts
     @ [
         Lit
           ( if is_self_closing then

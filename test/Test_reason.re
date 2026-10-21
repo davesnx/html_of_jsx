@@ -312,6 +312,68 @@ let dynamic_before_optional_attr =
     );
   });
 
+let html_doctype_dynamic_children =
+  test("html_doctype_dynamic_children", () => {
+    let text = "hello";
+    let page = <html> <body> {JSX.string(text)} </body> </html>;
+    assert_string(
+      JSX.render(page),
+      {|<!DOCTYPE html><html><body>hello</body></html>|},
+    );
+  });
+
+let html_doctype_dynamic_element_child =
+  test("html_doctype_dynamic_element_child", () => {
+    let body = <body> {JSX.string("hello")} </body>;
+    let page = <html> body </html>;
+    assert_string(
+      JSX.render(page),
+      {|<!DOCTYPE html><html><body>hello</body></html>|},
+    );
+  });
+
+let html_doctype_dynamic_attr =
+  test("html_doctype_dynamic_attr", () => {
+    let lang = "en";
+    let page = <html lang> <body /> </html>;
+    assert_string(
+      JSX.render(page),
+      {|<!DOCTYPE html><html lang="en"><body></body></html>|},
+    );
+  });
+
+let html_doctype_dynamic_attr_dynamic_children =
+  test("html_doctype_dynamic_attr_dynamic_children", () => {
+    let lang = "en";
+    let text = "hello";
+    let page = <html lang> <body> {JSX.string(text)} </body> </html>;
+    assert_string(
+      JSX.render(page),
+      {|<!DOCTYPE html><html lang="en"><body>hello</body></html>|},
+    );
+  });
+
+let html_doctype_optional_attr =
+  test("html_doctype_optional_attr", () => {
+    let lang = Some("en");
+    let page = <html ?lang> <body /> </html>;
+    assert_string(
+      JSX.render(page),
+      {|<!DOCTYPE html><html lang="en"><body></body></html>|},
+    );
+  });
+
+let html_doctype_once_when_nested =
+  test("html_doctype_once_when_nested", () => {
+    let text = "hello";
+    let page = <html> <body> {JSX.string(text)} </body> </html>;
+    let wrapped = <> page </>;
+    assert_string(
+      JSX.render(wrapped),
+      {|<!DOCTYPE html><html><body>hello</body></html>|},
+    );
+  });
+
 let tests = (
   "Reason with JSX",
   [
@@ -347,5 +409,11 @@ let tests = (
     optional_bool_and_dynamic_string_attrs,
     optional_before_dynamic_attr,
     dynamic_before_optional_attr,
+    html_doctype_dynamic_children,
+    html_doctype_dynamic_element_child,
+    html_doctype_dynamic_attr,
+    html_doctype_dynamic_attr_dynamic_children,
+    html_doctype_optional_attr,
+    html_doctype_once_when_nested,
   ],
 );

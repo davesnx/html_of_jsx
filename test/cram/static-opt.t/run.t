@@ -317,3 +317,50 @@ Test static JSX optimization
       },
     );
   };
+  let html_dynamic_child = text => {
+    let __html_v40 = text;
+    JSX.writer(
+      105,
+      __html_buf => {
+        Buffer.add_string(__html_buf, "<!DOCTYPE html><html>");
+        {
+          Buffer.add_string(__html_buf, "<body>");
+          JSX.escape(__html_buf, __html_v40);
+          Buffer.add_string(__html_buf, "</body>");
+          ();
+        };
+        Buffer.add_string(__html_buf, "</html>");
+        ();
+      },
+    );
+  };
+  let html_dynamic_attr = lang => {
+    let __html_v41 = lang;
+    JSX.writer(
+      90,
+      __html_buf => {
+        Buffer.add_string(__html_buf, "<!DOCTYPE html><html lang=\"");
+        JSX.escape(__html_buf, __html_v41);
+        Buffer.add_string(__html_buf, "\"><body></body></html>");
+        ();
+      },
+    );
+  };
+  let html_optional_attr = (~lang=?, ()) => {
+    let __html_v42 = lang;
+    JSX.writer(
+      90,
+      __html_buf => {
+        Buffer.add_string(__html_buf, "<!DOCTYPE html><html");
+        switch (__html_v42) {
+        | Some(v) =>
+          Buffer.add_string(__html_buf, " lang=\"");
+          JSX.escape(__html_buf, v);
+          Buffer.add_char(__html_buf, '"');
+        | None => ()
+        };
+        Buffer.add_string(__html_buf, "><body></body></html>");
+        ();
+      },
+    );
+  };

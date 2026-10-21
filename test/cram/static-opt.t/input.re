@@ -88,3 +88,8 @@ let dynamic_int = count => <div> {JSX.int(count)} </div>;
 let dynamic_float = price => <span> {JSX.float(price)} </span>;
 let mixed_int_string = (count, name) =>
   <p> {JSX.int(count)} {JSX.string(name)} </p>;
+
+/* Test: DOCTYPE for html tag with dynamic parts */
+let html_dynamic_child = text => <html> <body> {JSX.string(text)} </body> </html>;
+let html_dynamic_attr = lang => <html lang> <body /> </html>;
+let html_optional_attr = (~lang=?, ()) => <html ?lang> <body /> </html>;

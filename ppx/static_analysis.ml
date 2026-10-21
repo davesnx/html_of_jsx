@@ -588,6 +588,12 @@ let needs_buffer_of_parts parts =
       dynamic_count = dynamic_count_of_parts parts;
     }
 
+let maybe_add_doctype tag_name html =
+  if tag_name = "html" then
+    "<!DOCTYPE html>" ^ html
+  else
+    html
+
 let analyze_element ~tag_name ~attrs ~children =
   let attrs_result = analyze_attributes ~tag_name attrs in
   let children_result = analyze_children children in
@@ -644,13 +650,9 @@ let analyze_element ~tag_name ~attrs ~children =
       in
       Fully_static html
   | All_static attrs_html, (All_string_dynamic parts | Mixed_children parts) ->
-      let open_tag = Printf.sprintf "<%s%s>" tag_name attrs_html in
+      let open_tag =
+        maybe_add_doctype tag_name (Printf.sprintf "<%s%s>" tag_name attrs_html)
+      in
       let close_tag = Printf.sprintf "</%s>" tag_name in
       needs_buffer_of_parts
         ([ Static_str open_tag ] @ parts @ [ Static_str close_tag ])
-
-let maybe_add_doctype tag_name html =
-  if tag_name = "html" then
-    "<!DOCTYPE html>" ^ html
-  else
-    html
