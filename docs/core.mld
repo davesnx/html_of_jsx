@@ -23,6 +23,8 @@ JSX.format "%s %i" "Ada" 3        (* format string -> JSX.element *)
 
 All text rendered through these helpers is HTML-escaped by default, so user input is safe from XSS attacks.
 
+[JSX.float] prints with [Float.to_string]: [5.0] renders as [5.] and the output keeps 12 significant digits. [JSX.format] gives exact control, for example [JSX.format "%g" x] or [JSX.format "%.17g" x].
+
 {1 HTML attributes}
 
 [html_of_jsx] sticks to standard HTML attributes: [tabindex], [maxlength], [value], [placeholder], [autocomplete], etc... and avoids custom React attributes like [className] or [htmlFor].

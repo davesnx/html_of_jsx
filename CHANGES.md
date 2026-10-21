@@ -11,6 +11,11 @@
 - Fix the static optimization reordering attributes (static ones first): `<div class_=v tabindex=2 />` now renders attributes in source order, as the unoptimized path does (@davesnx)
 - [BREAKING] PPX: a void element (`<br>`, `<input>`, `<img>`, ...) with children is now a compile error instead of rendering `<br>x</br>` when optimized and dropping the children when unoptimized (@davesnx)
 - Fix the unoptimized path (`-disable-static-opt` or fallback) evaluating attribute and child expressions right to left: both modes now evaluate attributes then children, left to right (@davesnx)
+- Fix `JSX.render_streaming` not flushing after `JSX.int` and `JSX.float` leaves: a long list of numbers was emitted as one chunk (@davesnx)
+- `JSX.render_streaming` raises `Invalid_argument`, before writing anything, when `chunk_size` is zero or negative; it used to emit empty chunks (@davesnx)
+- [BREAKING] Rendering raises `Invalid_argument` when an attribute name is empty or contains whitespace, a control character, or one of `"`, `'`, `>`, `/`, `=`; it used to write the name unescaped. `render`, `write`, `render_to_channel`, `render_streaming` and `pp` all check it (@davesnx)
+- `JSX.pp` prints the content of `pre`, `textarea`, `script` and `style` exactly as `render` does, and keeps inline elements (`a`, `b`, `span`, `code`, `img`, ...) on one line with no added breaks or spaces around them or around text (@davesnx)
+- Document that `JSX.float` uses `Float.to_string` and that `JSX.format` gives exact control, and that `JSX.pp` is for reading and debugging (@davesnx)
 
 ## 0.1.1
 
