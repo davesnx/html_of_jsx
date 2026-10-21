@@ -12,3 +12,6 @@ let optional_booleanish = (~spellcheck=?, ()) => <div ?spellcheck />;
 
 /* Test: Fragments are not optimized either */
 let fragment = name => <> <span /> {JSX.string(name)} </>;
+
+let fragment_text = (a, b) => <> "text" {JSX.string(a)} {JSX.string(b)} </>;
+let fragment_effects = f => <> {JSX.string(f("a"))} {JSX.string(f("b"))} </>;

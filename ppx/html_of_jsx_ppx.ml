@@ -827,6 +827,32 @@ let extract_children_from_list expr =
   in
   extract [] expr
 
+let rewrite_fragment_unoptimized ~loc ~mapper children_expr =
+  match extract_children_from_list children_expr with
+  | [] ->
+      [%expr JSX.list [%e transform_items_of_list ~loc ~mapper children_expr]]
+  | children ->
+      let children =
+        List.map children ~f:(fun e ->
+            let expression =
+              match e.pexp_desc with
+              | Pexp_constant (Pconst_string _) ->
+                  let loc = e.pexp_loc in
+                  [%expr JSX.string [%e e]]
+              | _ ->
+                  e
+            in
+            mapper#expression expression
+        )
+      in
+      let bindings, idents = bind_in_order ~loc children in
+      let node = [%expr JSX.list [%e pexp_list ~loc idents]] in
+      List.fold_right bindings ~init:node ~f:(fun (pat, expr) acc ->
+          [%expr
+            let [%p pat] = [%e expr] in
+            [%e acc]]
+      )
+
 (* Analyze fragment children and generate optimized code. Each child is
    classified with [Static_analysis.analyze_child], so constant children
    collapse into static strings (with proper escaping for [JSX.string]) and
@@ -914,8 +940,7 @@ let rewrite_jsx =
                 super#expression expr
             | _, _rest_attributes ->
                 if !disable_static_optimization then
-                  [%expr
-                    JSX.list [%e transform_items_of_list ~loc ~mapper:self expr]]
+                  rewrite_fragment_unoptimized ~loc ~mapper:self expr
                 else
                   optimize_fragment ~loc ~mapper:self expr
           )
