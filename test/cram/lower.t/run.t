@@ -76,23 +76,23 @@
   };
   let lower_children_nested = {
     let __html_v6 = "jsoo-react" |> s;
-    let __html_v9 =
+    let __html_v10 =
       examples
       |> List.map(e => {
            let __html_v7 = e.path;
-           let __html_v8 = e.title |> s;
+           let __html_v9 = e.title |> s;
            JSX.writer(
              166,
              __html_buf => {
                Stdlib.Buffer.add_string(__html_buf, "<li>");
                {
+                 Stdlib.Buffer.add_string(__html_buf, "<a href=\"");
+                 JSX.escape(__html_buf, __html_v7);
                  Stdlib.Buffer.add_string(
                    __html_buf,
-                   "<a onclick=\"console.log\" href=\"",
+                   "\" onclick=\"console.log\">",
                  );
-                 JSX.escape(__html_buf, __html_v7);
-                 Stdlib.Buffer.add_string(__html_buf, "\">");
-                 JSX.write(__html_buf, __html_v8);
+                 JSX.write(__html_buf, __html_v9);
                  Stdlib.Buffer.add_string(__html_buf, "</a>");
                  ();
                };
@@ -118,7 +118,7 @@
             Stdlib.Buffer.add_string(__html_buf, "<nav class=\"menu\">");
             {
               Stdlib.Buffer.add_string(__html_buf, "<ul>");
-              JSX.write(__html_buf, __html_v9);
+              JSX.write(__html_buf, __html_v10);
               Stdlib.Buffer.add_string(__html_buf, "</ul>");
               ();
             };
@@ -134,12 +134,12 @@
     );
   };
   let lower_ref_with_children = {
-    let __html_v10 = children;
+    let __html_v11 = children;
     JSX.writer(
       101,
       __html_buf => {
         Stdlib.Buffer.add_string(__html_buf, "<button class=\"FancyButton\">");
-        JSX.write(__html_buf, __html_v10);
+        JSX.write(__html_buf, __html_v11);
         Stdlib.Buffer.add_string(__html_buf, "</button>");
         ();
       },

@@ -423,42 +423,49 @@ let analyze_attribute ~tag_name (label, expr) : attr_analysis_result =
     )
 
 type attr_item =
+  | Static_item of string
   | Optional_item of attr_render_info * expression
   | Dynamic_item of attr_render_info * expression
 
 type attrs_analysis =
   | All_static of string
-  | Has_attrs of { static_attrs : string; items : attr_item list }
+  | Has_attrs of attr_item list
   | Validation_failed
 
 let analyze_attributes ~tag_name attrs =
-  let rec loop static_buf items = function
-    | [] ->
-        if items = [] then
-          All_static (Buffer.contents static_buf)
-        else
-          Has_attrs
-            {
-              static_attrs = Buffer.contents static_buf;
-              items = List.rev items;
-            }
+  let add_static s = function
+    | Static_item prev :: items ->
+        Static_item (prev ^ s) :: items
+    | items ->
+        Static_item s :: items
+  in
+  let rec loop items = function
+    | [] -> (
+        match items with
+        | [] ->
+            All_static ""
+        | [ Static_item s ] ->
+            All_static s
+        | items ->
+            Has_attrs (List.rev items)
+      )
     | attr :: rest -> (
         match analyze_attribute ~tag_name attr with
         | Invalid ->
             Validation_failed
         | Ok None ->
-            loop static_buf items rest
+            loop items rest
         | Ok (Some (Static_attr (info, value))) ->
-            Buffer.add_string static_buf
-              (render_static_attr_with_info info value);
-            loop static_buf items rest
+            loop
+              (add_static (render_static_attr_with_info info value) items)
+              rest
         | Ok (Some (Optional_attr (info, expr))) ->
-            loop static_buf (Optional_item (info, expr) :: items) rest
+            loop (Optional_item (info, expr) :: items) rest
         | Ok (Some (Dynamic_attr (info, expr))) ->
-            loop static_buf (Dynamic_item (info, expr) :: items) rest
+            loop (Dynamic_item (info, expr) :: items) rest
       )
   in
-  loop (Buffer.create 64) [] attrs
+  loop [] attrs
 
 type children_analysis =
   | No_children
@@ -602,7 +609,6 @@ type element_analysis =
     }
   | Dynamic_attrs_children of {
       tag_name : string;
-      static_attrs : string;
       attr_items : attr_item list;
       children_parts : static_part list;
       is_self_closing : bool;
@@ -643,38 +649,34 @@ let analyze_element ~tag_name ~attrs ~children =
   match (attrs_result, children_result) with
   | Validation_failed, _ ->
       Cannot_optimize
-  | Has_attrs { static_attrs; items }, No_children ->
+  | Has_attrs items, No_children ->
       Dynamic_attrs_children
         {
           tag_name;
-          static_attrs;
           attr_items = items;
           children_parts = [];
           is_self_closing = is_self_closing_tag tag_name;
         }
-  | Has_attrs { static_attrs; items }, All_static_children children_html ->
+  | Has_attrs items, All_static_children children_html ->
       Dynamic_attrs_children
         {
           tag_name;
-          static_attrs;
           attr_items = items;
           children_parts = [ Static_str children_html ];
           is_self_closing = false;
         }
-  | Has_attrs { static_attrs; items }, All_string_dynamic parts ->
+  | Has_attrs items, All_string_dynamic parts ->
       Dynamic_attrs_children
         {
           tag_name;
-          static_attrs;
           attr_items = items;
           children_parts = parts;
           is_self_closing = false;
         }
-  | Has_attrs { static_attrs; items }, Mixed_children parts ->
+  | Has_attrs items, Mixed_children parts ->
       Dynamic_attrs_children
         {
           tag_name;
-          static_attrs;
           attr_items = items;
           children_parts = parts;
           is_self_closing = false;

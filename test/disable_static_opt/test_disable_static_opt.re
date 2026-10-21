@@ -55,3 +55,31 @@ let () = {
     ~actual=JSX.render(fragment("a & b")),
   );
 };
+
+let log = ref([]);
+let trace = (name, value) => {
+  log := [name, ...log^];
+  value;
+};
+
+let () = {
+  ignore(
+    JSX.render(
+      <div class_={trace("class", "c")} id={trace("id", "i")}>
+        {JSX.string(trace("child1", "a"))}
+        {JSX.string(trace("child2", "b"))}
+      </div>,
+    ),
+  );
+  check(
+    "evaluation order",
+    ~expected="class,id,child1,child2",
+    ~actual=String.concat(",", List.rev(log^)),
+  );
+  let v = "x";
+  check(
+    "attribute order",
+    ~expected="<div class=\"x\" tabindex=\"2\"></div>",
+    ~actual=JSX.render(<div class_=v tabindex=2 />),
+  );
+};

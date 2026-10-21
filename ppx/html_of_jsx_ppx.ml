@@ -508,6 +508,8 @@ let attr_value_write_code ~loc ~buf_ident
 let attr_item_parts ~loc ~buf_ident (item : Static_analysis.attr_item) =
   let pat, ident = fresh_var ~loc () in
   match item with
+  | Static_analysis.Static_item s ->
+      [ Lit s ]
   | Static_analysis.Dynamic_item (info, expr) when info.is_boolean ->
       let html_name_expr = estring ~loc (" " ^ info.html_name) in
       [
@@ -557,12 +559,11 @@ let attr_item_parts ~loc ~buf_ident (item : Static_analysis.attr_item) =
       ]
 
 let generate_attrs_code ~loc analysis =
-  let tag_name, static_attrs, attr_items, children_parts, is_self_closing =
+  let tag_name, attr_items, children_parts, is_self_closing =
     match analysis with
     | Static_analysis.Dynamic_attrs_children
-        { tag_name; static_attrs; attr_items; children_parts; is_self_closing }
-      ->
-        (tag_name, static_attrs, attr_items, children_parts, is_self_closing)
+        { tag_name; attr_items; children_parts; is_self_closing } ->
+        (tag_name, attr_items, children_parts, is_self_closing)
     | _ ->
         assert false
   in
@@ -583,8 +584,22 @@ let generate_attrs_code ~loc analysis =
         match part with Static_analysis.Static_str _ -> acc | _ -> acc + 1
     )
   in
+  let static_attrs_size =
+    List.fold_left attr_items ~init:0 ~f:(fun acc item ->
+        match item with
+        | Static_analysis.Static_item s ->
+            acc + String.length s
+        | _ ->
+            acc
+    )
+  in
+  let dynamic_attrs_count =
+    List.fold_left attr_items ~init:0 ~f:(fun acc item ->
+        match item with Static_analysis.Static_item _ -> acc | _ -> acc + 1
+    )
+  in
   let static_size =
-    String.length tag_name + String.length static_attrs + static_children_size
+    String.length tag_name + static_attrs_size + static_children_size
     +
     if is_self_closing then
       4
@@ -593,7 +608,7 @@ let generate_attrs_code ~loc analysis =
   in
   let estimated_size =
     static_size
-    + ((List.length attr_items + dynamic_children_count) * 64)
+    + ((dynamic_attrs_count + dynamic_children_count) * 64)
     + extra_splice_size ~reserved:64 children_parts
   in
   let buffer_size =
@@ -616,10 +631,7 @@ let generate_attrs_code ~loc analysis =
       )
   in
   let all_parts =
-    Lit
-      (Static_analysis.maybe_add_doctype tag_name
-         ("<" ^ tag_name ^ static_attrs)
-      )
+    Lit (Static_analysis.maybe_add_doctype tag_name ("<" ^ tag_name))
     :: attr_parts
     @ [
         Lit
@@ -643,15 +655,70 @@ let generate_attrs_code ~loc analysis =
   let bindings, ops = combine_codes codes in
   wrap_in_writer ~loc ~buf_pat ~bindings ~ops ~buffer_size_expr
 
+let rec is_pure_expr expr =
+  match expr.pexp_desc with
+  | Pexp_constant _ | Pexp_ident _ | Pexp_variant (_, None) ->
+      true
+  | Pexp_apply
+      ( {
+          pexp_desc =
+            Pexp_ident
+              {
+                txt =
+                  Ldot
+                    ( Lident "JSX",
+                      ("string" | "text" | "int" | "float" | "unsafe")
+                    );
+                _;
+              };
+          _;
+        },
+        [ (Nolabel, arg) ]
+      ) ->
+      is_pure_expr arg
+  | _ ->
+      false
+
+let bind_in_order ~loc exprs =
+  let impure_count =
+    List.length (List.filter exprs ~f:(fun e -> not (is_pure_expr e)))
+  in
+  let bindings, idents =
+    List.fold_left exprs ~init:([], []) ~f:(fun (bindings, idents) expr ->
+        if impure_count < 2 || is_pure_expr expr then
+          (bindings, expr :: idents)
+        else
+          let pat, ident = fresh_var ~loc () in
+          ((pat, expr) :: bindings, ident :: idents)
+    )
+  in
+  (List.rev bindings, List.rev idents)
+
 let rewrite_node_unoptimized ~loc tag_name args children =
   let dom_node_name = estring ~loc tag_name in
+  let args = List.filter args ~f:(fun (label, _) -> label <> Nolabel) in
+  let children_exprs = Option.value children ~default:[] in
+  let bindings, idents =
+    bind_in_order ~loc (List.map args ~f:snd @ children_exprs)
+  in
+  let args =
+    List.map2 args
+      (List.filteri idents ~f:(fun i _ -> i < List.length args))
+      ~f:(fun (label, _) ident -> (label, ident))
+  in
+  let children_idents =
+    List.filteri idents ~f:(fun i _ -> i >= List.length args)
+  in
   let attributes = transform_attributes ~loc ~tag_name args in
-  match children with
-  | Some children ->
-      let childrens = pexp_list ~loc children in
-      [%expr JSX.node [%e dom_node_name] [%e attributes] [%e childrens]]
-  | None ->
-      [%expr JSX.node [%e dom_node_name] [%e attributes] []]
+  let childrens = pexp_list ~loc children_idents in
+  let node =
+    [%expr JSX.node [%e dom_node_name] [%e attributes] [%e childrens]]
+  in
+  List.fold_right bindings ~init:node ~f:(fun (pat, expr) acc ->
+      [%expr
+        let [%p pat] = [%e expr] in
+        [%e acc]]
+  )
 
 let rewrite_node_optimized ~loc tag_name args children =
   let analysis =
@@ -812,6 +879,12 @@ let rewrite_jsx =
             (* div() [@JSX] *)
             | Pexp_ident { txt = Lident name; loc = name_loc }
               when Html.is_html_element name || Html.is_svg_element name ->
+                if
+                  Static_analysis.is_self_closing_tag name
+                  && Option.is_some children
+                then
+                  raise_errorf ~loc:expr.pexp_loc
+                    "<%s> is a void element and cannot have children" name;
                 rewrite_node ~loc:name_loc name rest_of_args children
             (* Reason adds `createElement` as default when an uppercase is found,
                we change it back to make *)

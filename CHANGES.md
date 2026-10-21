@@ -8,6 +8,9 @@
 - Fix the static optimization treating unqualified `string`, `int`, `float`, `text`, `format` and `unsafe` calls as the `JSX` helpers when they are user-defined; only the qualified `JSX.*` forms are optimized now (@davesnx)
 - Fix literal attribute values skipping type checking under the static optimization: `<div hidden="yes" tabindex="x" id=5 />` now fails to compile with an error at the value, and suffixed integer literals (`5l`) are no longer accepted as `int` (@davesnx)
 - Fix the PPX crashing with `Failure("int_of_string")` on out-of-range integer literals; the compiler now reports its usual range error (@davesnx)
+- Fix the static optimization reordering attributes (static ones first): `<div class_=v tabindex=2 />` now renders attributes in source order, as the unoptimized path does (@davesnx)
+- [BREAKING] PPX: a void element (`<br>`, `<input>`, `<img>`, ...) with children is now a compile error instead of rendering `<br>x</br>` when optimized and dropping the children when unoptimized (@davesnx)
+- Fix the unoptimized path (`-disable-static-opt` or fallback) evaluating attribute and child expressions right to left: both modes now evaluate attributes then children, left to right (@davesnx)
 
 ## 0.1.1
 
