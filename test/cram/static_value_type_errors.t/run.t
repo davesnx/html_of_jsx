@@ -266,3 +266,17 @@
       },
     );
   };
+  let string_attr_with_big_int = {
+    let __html_v12 = [%ocaml.error
+      "[html_of_jsx] The attribute 'title' expects a string."
+    ];
+    JSX.writer(
+      75,
+      __html_buf => {
+        Stdlib.Buffer.add_string(__html_buf, "<div title=\"");
+        JSX.escape(__html_buf, __html_v12);
+        Stdlib.Buffer.add_string(__html_buf, "\"></div>");
+        ();
+      },
+    );
+  };

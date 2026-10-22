@@ -9,3 +9,4 @@ let polyvariant_unknown_tag = <input type_=`nope />;
 let booleanish_with_string = <div spellcheck="true" />;
 let string_child_with_int = <p> {JSX.string(5)} </p>;
 let float_child_with_int = <p> {JSX.float(5)} </p>;
+let string_attr_with_big_int = <div title=99999999999999999999 />;

@@ -413,7 +413,8 @@ let analyze_attribute ~tag_name (label, expr) : attr_analysis_result =
               Ok (Some (Static_attr (info, value)))
           | _, _, Some _ ->
               mismatch ()
-          | _, Pexp_constant (Pconst_integer (_, None)), None ->
+          | Html_attributes.Int, Pexp_constant (Pconst_integer (_, None)), None
+            ->
               Ok (Some (Dynamic_attr (info, expr)))
           | _, Pexp_constant _, None ->
               mismatch ()

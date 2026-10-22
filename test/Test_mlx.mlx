@@ -232,6 +232,10 @@ let component_inside_literal_element () =
   let div = <div class_="wrap"><Badge label="ok" /></div> in
   assert_string (JSX.render div) {|<div class="wrap"><span>ok</span></div>|}
 
+let fragment_with_list_tail () =
+  let f rest = (JSX.string "a" :: JSX.string "b" :: rest) [@JSX] in
+  assert_string (JSX.render (f [ JSX.string "c" ])) "abc"
+
 let tests =
   ( "Test with mlx",
     [
@@ -269,5 +273,6 @@ let tests =
       test "optional_and_dynamic_attrs" optional_and_dynamic_attrs;
       test "evaluation_order" evaluation_order;
       test "component_inside_literal_element" component_inside_literal_element;
+      test "fragment_with_list_tail" fragment_with_list_tail;
     ]
   )

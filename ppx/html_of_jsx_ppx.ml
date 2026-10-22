@@ -774,39 +774,16 @@ let split_args ~mapper args =
   in
   (children_prop, rest)
 
-let reverse_pexp_list ~loc expr =
-  let rec go acc = function
-    | [%expr []] ->
-        acc
-    | [%expr [%e? hd] :: [%e? tl]] ->
-        go [%expr [%e hd] :: [%e acc]] tl
-    | expr ->
-        expr
-  in
-  go [%expr []] expr
-
-let list_have_tail expr =
-  match expr with
-  | Pexp_construct
-      ({ txt = Lident "::"; _ }, Some { pexp_desc = Pexp_tuple _; _ })
-  | Pexp_construct ({ txt = Lident "[]"; _ }, None) ->
-      false
-  | _ ->
-      true
-
-let transform_items_of_list ~loc ~mapper children =
-  let rec run_mapper children accum =
-    match children with
-    | [%expr []] ->
-        reverse_pexp_list ~loc accum
-    | [%expr [%e? v] :: [%e? acc]] when list_have_tail acc.pexp_desc ->
-        [%expr [%e mapper#expression v]]
-    | [%expr [%e? v] :: [%e? acc]] ->
-        run_mapper acc [%expr [%e mapper#expression v] :: [%e accum]]
-    | notAList ->
-        mapper#expression notAList
-  in
-  run_mapper children [%expr []]
+let rec transform_items_of_list ~loc ~mapper children =
+  match children with
+  | [%expr []] ->
+      [%expr []]
+  | [%expr [%e? v] :: [%e? rest]] ->
+      [%expr
+        [%e mapper#expression v]
+        :: [%e transform_items_of_list ~loc ~mapper rest]]
+  | tail ->
+      mapper#expression tail
 
 (* Extract children from a list expression for analysis *)
 let extract_children_from_list expr =
