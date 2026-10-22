@@ -1,6 +1,6 @@
 # Changes
 
-## 0.1.2
+## 0.1.1
 
 - PPX: generated code qualifies stdlib modules with `Stdlib.`, so local modules named `Buffer`, `Float`, `Printf` or `Bool` no longer change the rendered output (@davesnx)
 - PPX: `-disable-static-opt` now also disables the fragment optimization (@davesnx)
@@ -17,9 +17,6 @@
 - [BREAKING] Rendering raises `Invalid_argument` when an attribute name is empty or contains whitespace, a control character, or one of `"`, `'`, `>`, `/`, `=`; it used to write the name unescaped. `render`, `write`, `render_to_channel`, `render_streaming` and `pp` all check it (@davesnx)
 - `JSX.pp` prints the content of `pre`, `textarea`, `script` and `style` exactly as `render` does, and keeps inline elements (`a`, `b`, `span`, `code`, `img`, ...) on one line with no added breaks or spaces around them or around text (@davesnx)
 - Document that `JSX.float` uses `Float.to_string` and that `JSX.format` gives exact control, and that `JSX.pp` is for reading and debugging (@davesnx)
-
-## 0.1.1
-
 - Fix the static optimization dropping `<!DOCTYPE html>` from `<html>` elements with dynamic attributes or children (@davesnx)
 - PPX: elements compile to `JSX.writer` closures that write straight into the parent buffer, removing a buffer and two copies per component boundary; rendering an already built element value now re-runs its writes instead of returning a cached string (@davesnx)
 - Fix optional attributes being dropped when the same element also has a dynamic (non-literal) attribute: `<div ?id class_=cls />` rendered without `id` (@davesnx)
