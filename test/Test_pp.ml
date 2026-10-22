@@ -332,20 +332,22 @@ let single_child_chain_breaks =
   test "single_child_chain_breaks" @@ fun () ->
   assert_string
     (JSX.pp ~width:15
-       (JSX.node "a" []
+       (JSX.node "div" []
           [
-            JSX.node "b" []
-              [ JSX.node "c" [] [ JSX.node "d" [] [ JSX.string "x" ] ] ];
+            JSX.node "section" []
+              [
+                JSX.node "main" [] [ JSX.node "article" [] [ JSX.string "x" ] ];
+              ];
           ]
        )
     )
-    {|<a>
-  <b>
-    <c>
-      <d>x</d>
-    </c>
-  </b>
-</a>|}
+    {|<div>
+  <section>
+    <main>
+      <article>x</article>
+    </main>
+  </section>
+</div>|}
 
 let doctype_html =
   test "doctype_html" @@ fun () ->
@@ -409,9 +411,7 @@ let self_closing_tags_in_context =
        )
     )
     {|<form>
-  <input type="text" name="user" />
-  <br />
-  <input type="submit" />
+  <input type="text" name="user" /><br /><input type="submit" />
 </form>|}
 
 let wide_width_single_line =
@@ -516,14 +516,10 @@ let continuation_overflow_breaks_group =
 
 let hard_line_invalidates_flat_group =
   test "hard_line_invalidates_flat_group" @@ fun () ->
-  let element =
-    JSX.node "div" [] [ JSX.node "span" [] [ JSX.string "a\nb" ] ]
-  in
-  assert_string
-    (JSX.pp ~width:1000 element)
-    {|<div>
-  <span>a
-  b</span>
+  let element = JSX.node "div" [] [ JSX.node "p" [] [ JSX.string "a\nb" ] ] in
+  assert_string (JSX.pp ~width:1000 element) {|<div>
+  <p>a
+  b</p>
 </div>|}
 
 let default_width_is_80 =
@@ -670,6 +666,14 @@ let unsafe_multiline_style =
     )
     "<style>body {\n  margin: 0;\n  padding: 0;\n}</style>"
 
+let writer_pre_keeps_content =
+  test "writer_pre_keeps_content" @@ fun () ->
+  let pre = "<pre>line 1\n  line 2</pre>" in
+  let writer = JSX.writer 0 (fun buf -> Buffer.add_string buf pre) in
+  assert_string
+    (JSX.pp ~width:10 (JSX.node "div" [] [ JSX.node "section" [] [ writer ] ]))
+    ("<div>\n  <section>" ^ pre ^ "</section>\n</div>")
+
 let deeply_nested_single_child =
   test "deeply_nested_single_child" @@ fun () ->
   let el =
@@ -686,18 +690,18 @@ let deeply_nested_single_child_breaks =
     List.fold_left
       (fun child tag -> JSX.node tag [] [ child ])
       (JSX.string "leaf")
-      [ "e"; "d"; "c"; "b"; "a" ]
+      [ "ul"; "ol"; "div"; "section"; "main" ]
   in
   assert_string (JSX.pp ~width:10 el)
-    {|<a>
-  <b>
-    <c>
-      <d>
-        <e>leaf</e>
-      </d>
-    </c>
-  </b>
-</a>|}
+    {|<main>
+  <section>
+    <div>
+      <ol>
+        <ul>leaf</ul>
+      </ol>
+    </div>
+  </section>
+</main>|}
 
 let only_null_children =
   test "only_null_children" @@ fun () ->
@@ -862,6 +866,7 @@ let tests =
       escaping_ampersand_sequences;
       unsafe_with_newlines;
       unsafe_multiline_style;
+      writer_pre_keeps_content;
       deeply_nested_single_child;
       deeply_nested_single_child_breaks;
       only_null_children;

@@ -1,0 +1,44 @@
+(rule
+ (copy corpus.re corpus_opt.re))
+
+(rule
+ (copy corpus.re corpus_noopt.re))
+
+(rule
+ (copy corpus_react.re corpus_react_opt.re))
+
+(rule
+ (copy corpus_react.re corpus_react_noopt.re))
+
+(library
+ (name corpus_opt)
+ (modules corpus_opt)
+ (libraries html_of_jsx)
+ (preprocess
+  (pps html_of_jsx.ppx -htmx)))
+
+(library
+ (name corpus_noopt)
+ (modules corpus_noopt)
+ (libraries html_of_jsx)
+ (preprocess
+  (pps html_of_jsx.ppx -htmx -disable-static-opt)))
+
+(library
+ (name corpus_react_opt)
+ (modules corpus_react_opt)
+ (libraries html_of_jsx)
+ (preprocess
+  (pps html_of_jsx.ppx -react)))
+
+(library
+ (name corpus_react_noopt)
+ (modules corpus_react_noopt)
+ (libraries html_of_jsx)
+ (preprocess
+  (pps html_of_jsx.ppx -react -disable-static-opt)))
+
+(test
+ (name differential)
+ (modules differential)
+ (libraries corpus_opt corpus_noopt corpus_react_opt corpus_react_noopt))

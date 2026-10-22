@@ -187,12 +187,13 @@ let make_attribute ~loc ~is_optional ~prop attribute_name attribute_value =
   (* BooleanishString needs to transform bool into string *)
   | Rich_attribute { type_ = BooleanishString; _ }, false
   | Attribute { type_ = BooleanishString; _ }, false ->
-      [%expr [%e attribute_name], `String (Bool.to_string [%e attribute_value])]
+      [%expr
+        [%e attribute_name], `String (Stdlib.Bool.to_string [%e attribute_value])]
   | Rich_attribute { type_ = BooleanishString; _ }, true
   | Attribute { type_ = BooleanishString; _ }, true ->
       [%expr
         Stdlib.Option.map
-          (fun v -> ([%e attribute_name], `String (Bool.to_string v)))
+          (fun v -> ([%e attribute_name], `String (Stdlib.Bool.to_string v)))
           [%e attribute_value]]
   | Rich_attribute { type_ = Polyvariant options; _ }, false
   | Attribute { type_ = Polyvariant options; _ }, false ->
@@ -281,18 +282,19 @@ let transform_attributes ~loc ~tag_name attrs =
 
 let default_buffer_size = 256
 let buffer_var_name = "__html_buf"
+let generated_var_prefix = "__html_v"
 let var_counter = ref 0
 
 let fresh_var ~loc () =
   incr var_counter;
-  let name = Printf.sprintf "__html_v%d" !var_counter in
+  let name = Printf.sprintf "%s%d" generated_var_prefix !var_counter in
   (ppat_var ~loc { loc; txt = name }, pexp_ident ~loc { loc; txt = Lident name })
 
 type binding = pattern * expression
 
 let generate_dynamic_format_code ~loc ~buf_ident fmt args =
   let callback = [%expr JSX.escape [%e buf_ident]] in
-  let base = [%expr Printf.ksprintf [%e callback] [%e fmt]] in
+  let base = [%expr Stdlib.Printf.ksprintf [%e callback] [%e fmt]] in
   pexp_apply ~loc base args
 
 (* Buffer splicing: detect a child expression that is exactly the code shape
@@ -322,40 +324,53 @@ let match_spliceable_buffer_expr (expr : expression) :
         (List.rev acc, e)
   in
   let bindings, final = split_let_chain [] expr in
-  match final.pexp_desc with
-  | Pexp_apply
-      ( { pexp_desc = Pexp_ident { txt = Ldot (Lident "JSX", "writer"); _ }; _ },
-        [
-          ( Nolabel,
-            { pexp_desc = Pexp_constant (Pconst_integer (size, None)); _ }
-          );
-          (Nolabel, closure);
-        ]
-      ) -> (
-      match closure.pexp_desc with
-      | Pexp_function
-          ( [ { pparam_desc = Pparam_val (Nolabel, None, buf_pat); _ } ],
-            None,
-            Pfunction_body ops
-          ) -> (
-          match (int_of_string_opt size, buf_pat.ppat_desc) with
-          | Some size, Ppat_var { txt = pat_name; _ }
-            when String.equal pat_name buffer_var_name ->
-              Some (size, bindings, ops)
-          | _ ->
-              None
-        )
-      | _ ->
-          None
-    )
-  | _ ->
-      None
+  let is_generated_binding ((pat : pattern), _) =
+    match pat.ppat_desc with
+    | Ppat_var { txt; _ } ->
+        Stdlib.String.starts_with txt ~prefix:generated_var_prefix
+    | _ ->
+        false
+  in
+  if not (List.for_all bindings ~f:is_generated_binding) then
+    None
+  else
+    match final.pexp_desc with
+    | Pexp_apply
+        ( {
+            pexp_desc = Pexp_ident { txt = Ldot (Lident "JSX", "writer"); _ };
+            _;
+          },
+          [
+            ( Nolabel,
+              { pexp_desc = Pexp_constant (Pconst_integer (size, None)); _ }
+            );
+            (Nolabel, closure);
+          ]
+        ) -> (
+        match closure.pexp_desc with
+        | Pexp_function
+            ( [ { pparam_desc = Pparam_val (Nolabel, None, buf_pat); _ } ],
+              None,
+              Pfunction_body ops
+            ) -> (
+            match (int_of_string_opt size, buf_pat.ppat_desc) with
+            | Some size, Ppat_var { txt = pat_name; _ }
+              when String.equal pat_name buffer_var_name ->
+                Some (size, bindings, ops)
+            | _ ->
+                None
+          )
+        | _ ->
+            None
+      )
+    | _ ->
+        None
 
 let generate_part_code ~loc ~buf_ident part : binding list * expression =
   match part with
   | Static_analysis.Static_str s ->
       let s_expr = estring ~loc s in
-      ([], [%expr Buffer.add_string [%e buf_ident] [%e s_expr]])
+      ([], [%expr Stdlib.Buffer.add_string [%e buf_ident] [%e s_expr]])
   | Static_analysis.Dynamic_string expr ->
       let pat, ident = fresh_var ~loc () in
       ([ (pat, expr) ], [%expr JSX.escape [%e buf_ident] [%e ident]])
@@ -367,7 +382,9 @@ let generate_part_code ~loc ~buf_ident part : binding list * expression =
       (* Float.to_string cannot produce escapable characters, skip JSX.escape *)
       let pat, ident = fresh_var ~loc () in
       ( [ (pat, expr) ],
-        [%expr Buffer.add_string [%e buf_ident] (Float.to_string [%e ident])]
+        [%expr
+          Stdlib.Buffer.add_string [%e buf_ident]
+            (Stdlib.Float.to_string [%e ident])]
       )
   | Static_analysis.Dynamic_format (fmt, args) ->
       let bindings, new_args =
@@ -466,7 +483,8 @@ let generate_attrs_part ~loc ~buf_ident = function
   | Lit "" ->
       None
   | Lit s ->
-      Some ([], [%expr Buffer.add_string [%e buf_ident] [%e estring ~loc s]])
+      Some
+        ([], [%expr Stdlib.Buffer.add_string [%e buf_ident] [%e estring ~loc s]])
   | Child part ->
       Some (generate_part_code ~loc ~buf_ident part)
   | Code (bindings, e) ->
@@ -480,14 +498,18 @@ let attr_value_write_code ~loc ~buf_ident
   | Html_attributes.Int ->
       [%expr JSX.write_int [%e buf_ident] [%e value_expr]]
   | Html_attributes.Bool | Html_attributes.BooleanishString ->
-      [%expr Buffer.add_string [%e buf_ident] (Bool.to_string [%e value_expr])]
+      [%expr
+        Stdlib.Buffer.add_string [%e buf_ident]
+          (Stdlib.Bool.to_string [%e value_expr])]
   | Html_attributes.Polyvariant options ->
       let match_expr = polyvariant_to_string_match ~loc options value_expr in
-      [%expr Buffer.add_string [%e buf_ident] [%e match_expr]]
+      [%expr Stdlib.Buffer.add_string [%e buf_ident] [%e match_expr]]
 
 let attr_item_parts ~loc ~buf_ident (item : Static_analysis.attr_item) =
   let pat, ident = fresh_var ~loc () in
   match item with
+  | Static_analysis.Static_item s ->
+      [ Lit s ]
   | Static_analysis.Dynamic_item (info, expr) when info.is_boolean ->
       let html_name_expr = estring ~loc (" " ^ info.html_name) in
       [
@@ -495,7 +517,7 @@ let attr_item_parts ~loc ~buf_ident (item : Static_analysis.attr_item) =
           ( [ (pat, expr) ],
             [%expr
               if [%e ident] then
-                Buffer.add_string [%e buf_ident] [%e html_name_expr]]
+                Stdlib.Buffer.add_string [%e buf_ident] [%e html_name_expr]]
           );
       ]
   | Static_analysis.Dynamic_item (info, expr) ->
@@ -512,7 +534,7 @@ let attr_item_parts ~loc ~buf_ident (item : Static_analysis.attr_item) =
             [%expr
               match [%e ident] with
               | Some true ->
-                  Buffer.add_string [%e buf_ident] [%e html_name_expr]
+                  Stdlib.Buffer.add_string [%e buf_ident] [%e html_name_expr]
               | Some false | None ->
                   ()]
           );
@@ -528,21 +550,20 @@ let attr_item_parts ~loc ~buf_ident (item : Static_analysis.attr_item) =
             [%expr
               match [%e ident] with
               | Some v ->
-                  Buffer.add_string [%e buf_ident] [%e name_prefix_expr];
+                  Stdlib.Buffer.add_string [%e buf_ident] [%e name_prefix_expr];
                   [%e value_write];
-                  Buffer.add_char [%e buf_ident] '"'
+                  Stdlib.Buffer.add_char [%e buf_ident] '"'
               | None ->
                   ()]
           );
       ]
 
 let generate_attrs_code ~loc analysis =
-  let tag_name, static_attrs, attr_items, children_parts, is_self_closing =
+  let tag_name, attr_items, children_parts, is_self_closing =
     match analysis with
     | Static_analysis.Dynamic_attrs_children
-        { tag_name; static_attrs; attr_items; children_parts; is_self_closing }
-      ->
-        (tag_name, static_attrs, attr_items, children_parts, is_self_closing)
+        { tag_name; attr_items; children_parts; is_self_closing } ->
+        (tag_name, attr_items, children_parts, is_self_closing)
     | _ ->
         assert false
   in
@@ -563,8 +584,22 @@ let generate_attrs_code ~loc analysis =
         match part with Static_analysis.Static_str _ -> acc | _ -> acc + 1
     )
   in
+  let static_attrs_size =
+    List.fold_left attr_items ~init:0 ~f:(fun acc item ->
+        match item with
+        | Static_analysis.Static_item s ->
+            acc + String.length s
+        | _ ->
+            acc
+    )
+  in
+  let dynamic_attrs_count =
+    List.fold_left attr_items ~init:0 ~f:(fun acc item ->
+        match item with Static_analysis.Static_item _ -> acc | _ -> acc + 1
+    )
+  in
   let static_size =
-    String.length tag_name + String.length static_attrs + static_children_size
+    String.length tag_name + static_attrs_size + static_children_size
     +
     if is_self_closing then
       4
@@ -573,7 +608,7 @@ let generate_attrs_code ~loc analysis =
   in
   let estimated_size =
     static_size
-    + ((List.length attr_items + dynamic_children_count) * 64)
+    + ((dynamic_attrs_count + dynamic_children_count) * 64)
     + extra_splice_size ~reserved:64 children_parts
   in
   let buffer_size =
@@ -596,10 +631,7 @@ let generate_attrs_code ~loc analysis =
       )
   in
   let all_parts =
-    Lit
-      (Static_analysis.maybe_add_doctype tag_name
-         ("<" ^ tag_name ^ static_attrs)
-      )
+    Lit (Static_analysis.maybe_add_doctype tag_name ("<" ^ tag_name))
     :: attr_parts
     @ [
         Lit
@@ -623,15 +655,70 @@ let generate_attrs_code ~loc analysis =
   let bindings, ops = combine_codes codes in
   wrap_in_writer ~loc ~buf_pat ~bindings ~ops ~buffer_size_expr
 
+let rec is_pure_expr expr =
+  match expr.pexp_desc with
+  | Pexp_constant _ | Pexp_ident _ | Pexp_variant (_, None) ->
+      true
+  | Pexp_apply
+      ( {
+          pexp_desc =
+            Pexp_ident
+              {
+                txt =
+                  Ldot
+                    ( Lident "JSX",
+                      ("string" | "text" | "int" | "float" | "unsafe")
+                    );
+                _;
+              };
+          _;
+        },
+        [ (Nolabel, arg) ]
+      ) ->
+      is_pure_expr arg
+  | _ ->
+      false
+
+let bind_in_order ~loc exprs =
+  let impure_count =
+    List.length (List.filter exprs ~f:(fun e -> not (is_pure_expr e)))
+  in
+  let bindings, idents =
+    List.fold_left exprs ~init:([], []) ~f:(fun (bindings, idents) expr ->
+        if impure_count < 2 || is_pure_expr expr then
+          (bindings, expr :: idents)
+        else
+          let pat, ident = fresh_var ~loc () in
+          ((pat, expr) :: bindings, ident :: idents)
+    )
+  in
+  (List.rev bindings, List.rev idents)
+
 let rewrite_node_unoptimized ~loc tag_name args children =
   let dom_node_name = estring ~loc tag_name in
+  let args = List.filter args ~f:(fun (label, _) -> label <> Nolabel) in
+  let children_exprs = Option.value children ~default:[] in
+  let bindings, idents =
+    bind_in_order ~loc (List.map args ~f:snd @ children_exprs)
+  in
+  let args =
+    List.map2 args
+      (List.filteri idents ~f:(fun i _ -> i < List.length args))
+      ~f:(fun (label, _) ident -> (label, ident))
+  in
+  let children_idents =
+    List.filteri idents ~f:(fun i _ -> i >= List.length args)
+  in
   let attributes = transform_attributes ~loc ~tag_name args in
-  match children with
-  | Some children ->
-      let childrens = pexp_list ~loc children in
-      [%expr JSX.node [%e dom_node_name] [%e attributes] [%e childrens]]
-  | None ->
-      [%expr JSX.node [%e dom_node_name] [%e attributes] []]
+  let childrens = pexp_list ~loc children_idents in
+  let node =
+    [%expr JSX.node [%e dom_node_name] [%e attributes] [%e childrens]]
+  in
+  List.fold_right bindings ~init:node ~f:(fun (pat, expr) acc ->
+      [%expr
+        let [%p pat] = [%e expr] in
+        [%e acc]]
+  )
 
 let rewrite_node_optimized ~loc tag_name args children =
   let analysis =
@@ -687,39 +774,16 @@ let split_args ~mapper args =
   in
   (children_prop, rest)
 
-let reverse_pexp_list ~loc expr =
-  let rec go acc = function
-    | [%expr []] ->
-        acc
-    | [%expr [%e? hd] :: [%e? tl]] ->
-        go [%expr [%e hd] :: [%e acc]] tl
-    | expr ->
-        expr
-  in
-  go [%expr []] expr
-
-let list_have_tail expr =
-  match expr with
-  | Pexp_construct
-      ({ txt = Lident "::"; _ }, Some { pexp_desc = Pexp_tuple _; _ })
-  | Pexp_construct ({ txt = Lident "[]"; _ }, None) ->
-      false
-  | _ ->
-      true
-
-let transform_items_of_list ~loc ~mapper children =
-  let rec run_mapper children accum =
-    match children with
-    | [%expr []] ->
-        reverse_pexp_list ~loc accum
-    | [%expr [%e? v] :: [%e? acc]] when list_have_tail acc.pexp_desc ->
-        [%expr [%e mapper#expression v]]
-    | [%expr [%e? v] :: [%e? acc]] ->
-        run_mapper acc [%expr [%e mapper#expression v] :: [%e accum]]
-    | notAList ->
-        mapper#expression notAList
-  in
-  run_mapper children [%expr []]
+let rec transform_items_of_list ~loc ~mapper children =
+  match children with
+  | [%expr []] ->
+      [%expr []]
+  | [%expr [%e? v] :: [%e? rest]] ->
+      [%expr
+        [%e mapper#expression v]
+        :: [%e transform_items_of_list ~loc ~mapper rest]]
+  | tail ->
+      mapper#expression tail
 
 (* Extract children from a list expression for analysis *)
 let extract_children_from_list expr =
@@ -739,6 +803,32 @@ let extract_children_from_list expr =
         []
   in
   extract [] expr
+
+let rewrite_fragment_unoptimized ~loc ~mapper children_expr =
+  match extract_children_from_list children_expr with
+  | [] ->
+      [%expr JSX.list [%e transform_items_of_list ~loc ~mapper children_expr]]
+  | children ->
+      let children =
+        List.map children ~f:(fun e ->
+            let expression =
+              match e.pexp_desc with
+              | Pexp_constant (Pconst_string _) ->
+                  let loc = e.pexp_loc in
+                  [%expr JSX.string [%e e]]
+              | _ ->
+                  e
+            in
+            mapper#expression expression
+        )
+      in
+      let bindings, idents = bind_in_order ~loc children in
+      let node = [%expr JSX.list [%e pexp_list ~loc idents]] in
+      List.fold_right bindings ~init:node ~f:(fun (pat, expr) acc ->
+          [%expr
+            let [%p pat] = [%e expr] in
+            [%e acc]]
+      )
 
 (* Analyze fragment children and generate optimized code. Each child is
    classified with [Static_analysis.analyze_child], so constant children
@@ -792,6 +882,12 @@ let rewrite_jsx =
             (* div() [@JSX] *)
             | Pexp_ident { txt = Lident name; loc = name_loc }
               when Html.is_html_element name || Html.is_svg_element name ->
+                if
+                  Static_analysis.is_self_closing_tag name
+                  && Option.is_some children
+                then
+                  raise_errorf ~loc:expr.pexp_loc
+                    "<%s> is a void element and cannot have children" name;
                 rewrite_node ~loc:name_loc name rest_of_args children
             (* Reason adds `createElement` as default when an uppercase is found,
                we change it back to make *)
@@ -820,7 +916,10 @@ let rewrite_jsx =
             | [], _ ->
                 super#expression expr
             | _, _rest_attributes ->
-                optimize_fragment ~loc ~mapper:self expr
+                if !disable_static_optimization then
+                  rewrite_fragment_unoptimized ~loc ~mapper:self expr
+                else
+                  optimize_fragment ~loc ~mapper:self expr
           )
         | _ ->
             super#expression expr

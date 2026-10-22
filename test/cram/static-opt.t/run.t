@@ -16,9 +16,9 @@ Test static JSX optimization
     JSX.writer(
       75,
       __html_buf => {
-        Buffer.add_string(__html_buf, "<div>");
-        Printf.ksprintf(JSX.escape(__html_buf), "Price %f", __html_v1);
-        Buffer.add_string(__html_buf, "</div>");
+        Stdlib.Buffer.add_string(__html_buf, "<div>");
+        Stdlib.Printf.ksprintf(JSX.escape(__html_buf), "Price %f", __html_v1);
+        Stdlib.Buffer.add_string(__html_buf, "</div>");
         ();
       },
     );
@@ -34,9 +34,9 @@ Test static JSX optimization
     JSX.writer(
       75,
       __html_buf => {
-        Buffer.add_string(__html_buf, "<div>");
+        Stdlib.Buffer.add_string(__html_buf, "<div>");
         JSX.escape(__html_buf, __html_v2);
-        Buffer.add_string(__html_buf, "</div>");
+        Stdlib.Buffer.add_string(__html_buf, "</div>");
         ();
       },
     );
@@ -47,10 +47,10 @@ Test static JSX optimization
     JSX.writer(
       139,
       __html_buf => {
-        Buffer.add_string(__html_buf, "<div>");
+        Stdlib.Buffer.add_string(__html_buf, "<div>");
         JSX.escape(__html_buf, __html_v3);
         JSX.escape(__html_buf, __html_v4);
-        Buffer.add_string(__html_buf, "</div>");
+        Stdlib.Buffer.add_string(__html_buf, "</div>");
         ();
       },
     );
@@ -62,11 +62,11 @@ Test static JSX optimization
     JSX.writer(
       199,
       __html_buf => {
-        Buffer.add_string(__html_buf, "<p>");
+        Stdlib.Buffer.add_string(__html_buf, "<p>");
         JSX.escape(__html_buf, __html_v5);
         JSX.escape(__html_buf, __html_v6);
         JSX.escape(__html_buf, __html_v7);
-        Buffer.add_string(__html_buf, "</p>");
+        Stdlib.Buffer.add_string(__html_buf, "</p>");
         ();
       },
     );
@@ -80,13 +80,13 @@ Test static JSX optimization
     JSX.writer(
       333,
       __html_buf => {
-        Buffer.add_string(__html_buf, "<span>");
+        Stdlib.Buffer.add_string(__html_buf, "<span>");
         JSX.escape(__html_buf, __html_v8);
         JSX.escape(__html_buf, __html_v9);
         JSX.escape(__html_buf, __html_v10);
         JSX.escape(__html_buf, __html_v11);
         JSX.escape(__html_buf, __html_v12);
-        Buffer.add_string(__html_buf, "</span>");
+        Stdlib.Buffer.add_string(__html_buf, "</span>");
         ();
       },
     );
@@ -98,15 +98,15 @@ Test static JSX optimization
     JSX.writer(
       75,
       __html_buf => {
-        Buffer.add_string(__html_buf, "<div>");
-        Printf.ksprintf(
+        Stdlib.Buffer.add_string(__html_buf, "<div>");
+        Stdlib.Printf.ksprintf(
           JSX.escape(__html_buf),
           "Hello %s %c %i",
           __html_v13,
           __html_v14,
           __html_v15,
         );
-        Buffer.add_string(__html_buf, "</div>");
+        Stdlib.Buffer.add_string(__html_buf, "</div>");
         ();
       },
     );
@@ -116,9 +116,9 @@ Test static JSX optimization
     JSX.writer(
       75,
       __html_buf => {
-        Buffer.add_string(__html_buf, "<div class=\"");
+        Stdlib.Buffer.add_string(__html_buf, "<div class=\"");
         JSX.escape(__html_buf, __html_v16);
-        Buffer.add_string(__html_buf, "\"></div>");
+        Stdlib.Buffer.add_string(__html_buf, "\"></div>");
         ();
       },
     );
@@ -129,11 +129,11 @@ Test static JSX optimization
     JSX.writer(
       139,
       __html_buf => {
-        Buffer.add_string(__html_buf, "<div class=\"");
+        Stdlib.Buffer.add_string(__html_buf, "<div class=\"");
         JSX.escape(__html_buf, __html_v17);
-        Buffer.add_string(__html_buf, "\">");
+        Stdlib.Buffer.add_string(__html_buf, "\">");
         JSX.escape(__html_buf, __html_v18);
-        Buffer.add_string(__html_buf, "</div>");
+        Stdlib.Buffer.add_string(__html_buf, "</div>");
         ();
       },
     );
@@ -145,16 +145,16 @@ Test static JSX optimization
     JSX.writer(
       139,
       __html_buf => {
-        Buffer.add_string(__html_buf, "<div class=\"");
+        Stdlib.Buffer.add_string(__html_buf, "<div class=\"");
         JSX.escape(__html_buf, __html_v19);
-        Buffer.add_string(__html_buf, "\">");
-        Printf.ksprintf(
+        Stdlib.Buffer.add_string(__html_buf, "\">");
+        Stdlib.Printf.ksprintf(
           JSX.escape(__html_buf),
           "Hello %s %i",
           __html_v20,
           __html_v21,
         );
-        Buffer.add_string(__html_buf, "</div>");
+        Stdlib.Buffer.add_string(__html_buf, "</div>");
         ();
       },
     );
@@ -165,11 +165,11 @@ Test static JSX optimization
     JSX.writer(
       139,
       __html_buf => {
-        Buffer.add_string(__html_buf, "<div class=\"");
+        Stdlib.Buffer.add_string(__html_buf, "<div class=\"");
         JSX.escape(__html_buf, __html_v22);
-        Buffer.add_string(__html_buf, "\">");
+        Stdlib.Buffer.add_string(__html_buf, "\">");
         JSX.write(__html_buf, __html_v23);
-        Buffer.add_string(__html_buf, "</div>");
+        Stdlib.Buffer.add_string(__html_buf, "</div>");
         ();
       },
     );
@@ -180,13 +180,13 @@ Test static JSX optimization
     JSX.writer(
       145,
       __html_buf => {
-        Buffer.add_string(__html_buf, "<button");
+        Stdlib.Buffer.add_string(__html_buf, "<button");
         if (__html_v24) {
-          Buffer.add_string(__html_buf, " disabled");
+          Stdlib.Buffer.add_string(__html_buf, " disabled");
         };
-        Buffer.add_string(__html_buf, ">");
+        Stdlib.Buffer.add_string(__html_buf, ">");
         JSX.escape(__html_buf, __html_v25);
-        Buffer.add_string(__html_buf, "</button>");
+        Stdlib.Buffer.add_string(__html_buf, "</button>");
         ();
       },
     );
@@ -197,11 +197,11 @@ Test static JSX optimization
     JSX.writer(
       139,
       __html_buf => {
-        Buffer.add_string(__html_buf, "<div tabindex=\"");
+        Stdlib.Buffer.add_string(__html_buf, "<div tabindex=\"");
         JSX.write_int(__html_buf, __html_v26);
-        Buffer.add_string(__html_buf, "\">");
+        Stdlib.Buffer.add_string(__html_buf, "\">");
         JSX.escape(__html_buf, __html_v27);
-        Buffer.add_string(__html_buf, "</div>");
+        Stdlib.Buffer.add_string(__html_buf, "</div>");
         ();
       },
     );
@@ -213,12 +213,15 @@ Test static JSX optimization
     JSX.writer(
       203,
       __html_buf => {
-        Buffer.add_string(__html_buf, "<div class=\"");
+        Stdlib.Buffer.add_string(__html_buf, "<div class=\"");
         JSX.escape(__html_buf, __html_v28);
-        Buffer.add_string(__html_buf, "\">");
+        Stdlib.Buffer.add_string(__html_buf, "\">");
         JSX.write_int(__html_buf, __html_v29);
-        Buffer.add_string(__html_buf, Float.to_string(__html_v30));
-        Buffer.add_string(__html_buf, "</div>");
+        Stdlib.Buffer.add_string(
+          __html_buf,
+          Stdlib.Float.to_string(__html_v30),
+        );
+        Stdlib.Buffer.add_string(__html_buf, "</div>");
         ();
       },
     );
@@ -229,17 +232,17 @@ Test static JSX optimization
     JSX.writer(
       139,
       __html_buf => {
-        Buffer.add_string(__html_buf, "<div");
+        Stdlib.Buffer.add_string(__html_buf, "<div");
         switch (__html_v31) {
         | Some(v) =>
-          Buffer.add_string(__html_buf, " id=\"");
+          Stdlib.Buffer.add_string(__html_buf, " id=\"");
           JSX.escape(__html_buf, v);
-          Buffer.add_char(__html_buf, '"');
+          Stdlib.Buffer.add_char(__html_buf, '"');
         | None => ()
         };
-        Buffer.add_string(__html_buf, " class=\"");
+        Stdlib.Buffer.add_string(__html_buf, " class=\"");
         JSX.escape(__html_buf, __html_v32);
-        Buffer.add_string(__html_buf, "\"></div>");
+        Stdlib.Buffer.add_string(__html_buf, "\"></div>");
         ();
       },
     );
@@ -249,9 +252,9 @@ Test static JSX optimization
     JSX.writer(
       75,
       __html_buf => {
-        Buffer.add_string(__html_buf, "<div>");
+        Stdlib.Buffer.add_string(__html_buf, "<div>");
         JSX.write(__html_buf, __html_v33);
-        Buffer.add_string(__html_buf, "</div>");
+        Stdlib.Buffer.add_string(__html_buf, "</div>");
         ();
       },
     );
@@ -262,10 +265,10 @@ Test static JSX optimization
     JSX.writer(
       139,
       __html_buf => {
-        Buffer.add_string(__html_buf, "<div>");
+        Stdlib.Buffer.add_string(__html_buf, "<div>");
         JSX.escape(__html_buf, __html_v34);
         JSX.write(__html_buf, __html_v35);
-        Buffer.add_string(__html_buf, "</div>");
+        Stdlib.Buffer.add_string(__html_buf, "</div>");
         ();
       },
     );
@@ -284,9 +287,9 @@ Test static JSX optimization
     JSX.writer(
       75,
       __html_buf => {
-        Buffer.add_string(__html_buf, "<div>");
+        Stdlib.Buffer.add_string(__html_buf, "<div>");
         JSX.write_int(__html_buf, __html_v36);
-        Buffer.add_string(__html_buf, "</div>");
+        Stdlib.Buffer.add_string(__html_buf, "</div>");
         ();
       },
     );
@@ -296,9 +299,12 @@ Test static JSX optimization
     JSX.writer(
       77,
       __html_buf => {
-        Buffer.add_string(__html_buf, "<span>");
-        Buffer.add_string(__html_buf, Float.to_string(__html_v37));
-        Buffer.add_string(__html_buf, "</span>");
+        Stdlib.Buffer.add_string(__html_buf, "<span>");
+        Stdlib.Buffer.add_string(
+          __html_buf,
+          Stdlib.Float.to_string(__html_v37),
+        );
+        Stdlib.Buffer.add_string(__html_buf, "</span>");
         ();
       },
     );
@@ -309,10 +315,10 @@ Test static JSX optimization
     JSX.writer(
       135,
       __html_buf => {
-        Buffer.add_string(__html_buf, "<p>");
+        Stdlib.Buffer.add_string(__html_buf, "<p>");
         JSX.write_int(__html_buf, __html_v38);
         JSX.escape(__html_buf, __html_v39);
-        Buffer.add_string(__html_buf, "</p>");
+        Stdlib.Buffer.add_string(__html_buf, "</p>");
         ();
       },
     );
@@ -322,14 +328,14 @@ Test static JSX optimization
     JSX.writer(
       105,
       __html_buf => {
-        Buffer.add_string(__html_buf, "<!DOCTYPE html><html>");
+        Stdlib.Buffer.add_string(__html_buf, "<!DOCTYPE html><html>");
         {
-          Buffer.add_string(__html_buf, "<body>");
+          Stdlib.Buffer.add_string(__html_buf, "<body>");
           JSX.escape(__html_buf, __html_v40);
-          Buffer.add_string(__html_buf, "</body>");
+          Stdlib.Buffer.add_string(__html_buf, "</body>");
           ();
         };
-        Buffer.add_string(__html_buf, "</html>");
+        Stdlib.Buffer.add_string(__html_buf, "</html>");
         ();
       },
     );
@@ -339,9 +345,9 @@ Test static JSX optimization
     JSX.writer(
       90,
       __html_buf => {
-        Buffer.add_string(__html_buf, "<!DOCTYPE html><html lang=\"");
+        Stdlib.Buffer.add_string(__html_buf, "<!DOCTYPE html><html lang=\"");
         JSX.escape(__html_buf, __html_v41);
-        Buffer.add_string(__html_buf, "\"><body></body></html>");
+        Stdlib.Buffer.add_string(__html_buf, "\"><body></body></html>");
         ();
       },
     );
@@ -351,15 +357,15 @@ Test static JSX optimization
     JSX.writer(
       90,
       __html_buf => {
-        Buffer.add_string(__html_buf, "<!DOCTYPE html><html");
+        Stdlib.Buffer.add_string(__html_buf, "<!DOCTYPE html><html");
         switch (__html_v42) {
         | Some(v) =>
-          Buffer.add_string(__html_buf, " lang=\"");
+          Stdlib.Buffer.add_string(__html_buf, " lang=\"");
           JSX.escape(__html_buf, v);
-          Buffer.add_char(__html_buf, '"');
+          Stdlib.Buffer.add_char(__html_buf, '"');
         | None => ()
         };
-        Buffer.add_string(__html_buf, "><body></body></html>");
+        Stdlib.Buffer.add_string(__html_buf, "><body></body></html>");
         ();
       },
     );

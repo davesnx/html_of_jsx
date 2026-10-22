@@ -20,6 +20,8 @@ let with_optionals = (~id=?, ~tabindex=?, ~disabled=?, ()) =>
 /* Static + dynamic mix through the JSX.node path. */
 let mixed = name => <div class_="container"> {JSX.string(name)} </div>;
 
+let fragment = name => <> <span /> {JSX.string(name)} </>;
+
 let () = {
   check(
     "booleanish some",
@@ -46,5 +48,38 @@ let () = {
     "mixed",
     ~expected="<div class=\"container\">Hello &amp; bye</div>",
     ~actual=JSX.render(mixed("Hello & bye")),
+  );
+  check(
+    "fragment",
+    ~expected="<span></span>a &amp; b",
+    ~actual=JSX.render(fragment("a & b")),
+  );
+};
+
+let log = ref([]);
+let trace = (name, value) => {
+  log := [name, ...log^];
+  value;
+};
+
+let () = {
+  ignore(
+    JSX.render(
+      <div class_={trace("class", "c")} id={trace("id", "i")}>
+        {JSX.string(trace("child1", "a"))}
+        {JSX.string(trace("child2", "b"))}
+      </div>,
+    ),
+  );
+  check(
+    "evaluation order",
+    ~expected="class,id,child1,child2",
+    ~actual=String.concat(",", List.rev(log^)),
+  );
+  let v = "x";
+  check(
+    "attribute order",
+    ~expected="<div class=\"x\" tabindex=\"2\"></div>",
+    ~actual=JSX.render(<div class_=v tabindex=2 />),
   );
 };

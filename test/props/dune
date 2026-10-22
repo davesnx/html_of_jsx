@@ -1,0 +1,5 @@
+(test
+ (name props)
+ (libraries html_of_jsx)
+ (action
+  (run %{test} --seed 42 --count 5000)))
