@@ -5,6 +5,7 @@ let id = "x\"y";
 let n = 42;
 let neg = (-7);
 let f = 1.5;
+let neg_zero = (-0.);
 let b_true = true;
 let b_false = false;
 let some_str = Some("o&k");
@@ -828,7 +829,7 @@ let dynamic_child_cases = [
   case("dyn float child", <p> {JSX.float(f)} </p>, Some({|<p>1.5</p>|})),
   case("dyn float nan child", <p> {JSX.float(nan)} </p>, None),
   case("dyn float neg zero child", <p> {JSX.float(-0.)} </p>, None),
-  case("dyn float neg zero var", <p> {JSX.float(-0.)} </p>, None),
+  case("dyn float neg zero var", <p> {JSX.float(neg_zero)} </p>, None),
   case(
     "dyn float expr child",
     <p> {JSX.float(1. +. 2.)} </p>,

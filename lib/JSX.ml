@@ -598,9 +598,9 @@ let pp ?(width = 80) element =
     | Float f ->
         text (Float.to_string f)
     | Unsafe s ->
-        text_with_newlines s
+        raw s
     | Writer _ as w ->
-        text_with_newlines (render w)
+        raw (render w)
     | List elements ->
         doc_of_children elements
     | Array arr ->

@@ -557,14 +557,15 @@ let count_sub s sub =
 
 let tmp_render el =
   let path = Filename.temp_file "props" ".html" in
-  let oc = open_out_bin path in
-  JSX.render_to_channel oc el;
-  close_out oc;
-  let ic = open_in_bin path in
-  let s = really_input_string ic (in_channel_length ic) in
-  close_in ic;
-  Sys.remove path;
-  s
+  Fun.protect
+    ~finally:(fun () -> Sys.remove path)
+    (fun () ->
+      let oc = open_out_bin path in
+      Fun.protect
+        ~finally:(fun () -> close_out_noerr oc)
+        (fun () -> JSX.render_to_channel oc el);
+      In_channel.with_open_bin path In_channel.input_all
+    )
 
 type prop = {
   name : string;

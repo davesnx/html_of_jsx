@@ -666,6 +666,14 @@ let unsafe_multiline_style =
     )
     "<style>body {\n  margin: 0;\n  padding: 0;\n}</style>"
 
+let writer_pre_keeps_content =
+  test "writer_pre_keeps_content" @@ fun () ->
+  let pre = "<pre>line 1\n  line 2</pre>" in
+  let writer = JSX.writer 0 (fun buf -> Buffer.add_string buf pre) in
+  assert_string
+    (JSX.pp ~width:10 (JSX.node "div" [] [ JSX.node "section" [] [ writer ] ]))
+    ("<div>\n  <section>" ^ pre ^ "</section>\n</div>")
+
 let deeply_nested_single_child =
   test "deeply_nested_single_child" @@ fun () ->
   let el =
@@ -858,6 +866,7 @@ let tests =
       escaping_ampersand_sequences;
       unsafe_with_newlines;
       unsafe_multiline_style;
+      writer_pre_keeps_content;
       deeply_nested_single_child;
       deeply_nested_single_child_breaks;
       only_null_children;

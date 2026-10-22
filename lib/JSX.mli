@@ -31,7 +31,8 @@ val pp : ?width:int -> element -> string
 
     [pp] is a formatter for reading and debugging, not for serving pages: use
     [render] for output you send to clients. The output is the same as [render]
-    except for whitespace between elements.
+    except for whitespace between elements and after newlines in [string] and
+    [text] content, which [pp] indents.
 
     The content of [pre], [textarea], [script] and [style] is printed exactly as
     [render] prints it. Inline elements ([a], [b], [span], [code], [img], ...)
