@@ -50,6 +50,22 @@ let is_jsx = function
 
 let has_jsx_attr attrs = List.exists ~f:is_jsx attrs
 
+let is_element_application args =
+  let has_unit =
+    List.exists args ~f:(function
+      | ( Nolabel,
+          { pexp_desc = Pexp_construct ({ txt = Lident "()"; _ }, None); _ } )
+        ->
+          true
+      | _ ->
+          false
+      )
+  in
+  let has_children =
+    List.exists args ~f:(function Labelled "children", _ -> true | _ -> false)
+  in
+  has_unit && has_children
+
 let rewrite_component ~loc tag args children =
   let component = pexp_ident ~loc tag in
   let props =
@@ -874,7 +890,8 @@ let rewrite_jsx =
       try
         match expr.pexp_desc with
         | Pexp_apply (({ pexp_desc = Pexp_ident _; _ } as tag), args)
-          when has_jsx_attr expr.pexp_attributes -> (
+          when has_jsx_attr expr.pexp_attributes && is_element_application args
+          -> (
             let children, rest_of_args =
               split_args ~mapper:self#expression args
             in
@@ -903,7 +920,9 @@ let rewrite_jsx =
                 assert false
           )
         (* div() [@JSX] *)
-        | Pexp_apply (_tag, _props) when has_jsx_attr expr.pexp_attributes ->
+        | Pexp_apply (_tag, props)
+          when has_jsx_attr expr.pexp_attributes && is_element_application props
+          ->
             raise_errorf ~loc:expr.pexp_loc "tag should be an identifier"
         (* <> </> is represented as a list in the Parsetree with [@JSX] *)
         | Pexp_construct
@@ -921,6 +940,17 @@ let rewrite_jsx =
                 else
                   optimize_fragment ~loc ~mapper:self expr
           )
+        (* <>...xs</> is any other expression with [@JSX]: a list of elements *)
+        | _ when has_jsx_attr expr.pexp_attributes ->
+            let loc = expr.pexp_loc in
+            let list_expr =
+              {
+                expr with
+                pexp_attributes =
+                  List.filter ~f:(fun a -> not (is_jsx a)) expr.pexp_attributes;
+              }
+            in
+            [%expr JSX.list [%e self#expression list_expr]]
         | _ ->
             super#expression expr
       with Error err -> [%expr [%e err]]

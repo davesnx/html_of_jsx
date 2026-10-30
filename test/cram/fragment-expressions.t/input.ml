@@ -1,0 +1,7 @@
+let empty = ([] [@JSX])
+let texts = (["a"; "b"] [@JSX])
+let ident xs = (xs [@JSX])
+let mapped xs = (List.map (fun x -> JSX.string x) xs [@JSX])
+let empty_spread = (([] : JSX.element list) [@JSX])
+let nested xs = (div ~children:[ (xs [@JSX]) ] () [@JSX])
+let call f = (f () [@JSX])

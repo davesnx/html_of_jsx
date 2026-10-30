@@ -1,0 +1,27 @@
+  $ jsx-ppx-standalone --impl input.ml -o temp.ml
+  $ ocamlformat --enable-outside-detected-project --impl temp.ml
+  let empty = JSX.list []
+  let texts = JSX.unsafe "ab"
+  let ident xs = JSX.list xs
+  let mapped xs = JSX.list (List.map (fun x -> JSX.string x) xs)
+  let empty_spread = JSX.list ([] : JSX.element list)
+  
+  let nested xs =
+    let __html_v1 = JSX.list xs in
+    JSX.writer 75 (fun __html_buf ->
+        Stdlib.Buffer.add_string __html_buf "<div>";
+        JSX.write __html_buf __html_v1;
+        Stdlib.Buffer.add_string __html_buf "</div>";
+        ())
+  
+  let call f = JSX.list (f ())
+
+  $ jsx-ppx-standalone --impl input.ml -o temp.ml -disable-static-opt
+  $ ocamlformat --enable-outside-detected-project --impl temp.ml
+  let empty = JSX.list []
+  let texts = JSX.list [ JSX.string "a"; JSX.string "b" ]
+  let ident xs = JSX.list xs
+  let mapped xs = JSX.list (List.map (fun x -> JSX.string x) xs)
+  let empty_spread = JSX.list ([] : JSX.element list)
+  let nested xs = JSX.node "div" [] [ JSX.list xs ]
+  let call f = JSX.list (f ())
