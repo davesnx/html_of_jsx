@@ -15,6 +15,14 @@
         ())
   
   let call f = JSX.list (f ())
+  let comp children = Foo.make () ?children
+  let comp2 children = Foo.make () ~title:"x" ?children
+  
+  let div_opt children =
+    [%ocaml.error
+      "[html_of_jsx] The attribute 'children' is not valid on a 'div' element.\n\n\
+       If this is not correct, please open an issue at \
+       https://github.com/davesnx/html_of_jsx/issues."]
 
   $ jsx-ppx-standalone --impl input.ml -o temp.ml -disable-static-opt
   $ ocamlformat --enable-outside-detected-project --impl temp.ml
@@ -25,3 +33,11 @@
   let empty_spread = JSX.list ([] : JSX.element list)
   let nested xs = JSX.node "div" [] [ JSX.list xs ]
   let call f = JSX.list (f ())
+  let comp children = Foo.make () ?children
+  let comp2 children = Foo.make () ~title:"x" ?children
+  
+  let div_opt children =
+    [%ocaml.error
+      "[html_of_jsx] The attribute 'children' is not valid on a 'div' element.\n\n\
+       If this is not correct, please open an issue at \
+       https://github.com/davesnx/html_of_jsx/issues."]

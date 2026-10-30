@@ -62,7 +62,12 @@ let is_element_application args =
       )
   in
   let has_children =
-    List.exists args ~f:(function Labelled "children", _ -> true | _ -> false)
+    List.exists args ~f:(function
+      | (Labelled "children" | Optional "children"), _ ->
+          true
+      | _ ->
+          false
+      )
   in
   has_unit && has_children
 

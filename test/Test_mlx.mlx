@@ -67,6 +67,11 @@ let children_uppercase_children_case_optional () =
   let component = <Container><span /></Container> in
   assert_string (JSX.render component) {|<div><span></span></div>|}
 
+let children_optional_forwarded () =
+  let children = Some <span /> in
+  let component = <Container ?children /> in
+  assert_string (JSX.render component) {|<div><span></span></div>|}
+
 let children_lowercase () =
   let component = <div><span /></div> in
   assert_string (JSX.render component) {|<div><span></span></div>|}
@@ -309,6 +314,7 @@ let tests =
       test "style_opt_attribute_some" style_opt_attribute_some;
       test "style_opt_attribute_none" style_opt_attribute_none;
       test "children_uppercase" children_uppercase;
+      test "children_optional_forwarded" children_optional_forwarded;
       test "children_lowercase" children_lowercase;
       test "onclick_inline_string" onclick_inline_string;
       test "children_one_element" children_one_element;
