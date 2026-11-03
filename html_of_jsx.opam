@@ -18,8 +18,8 @@ depends: [
   "benchmark" {with-test}
   "reason" {>= "3.10.0" & with-test}
   "ocamlformat" {>= "0.26.1" & (with-dev-setup | with-test)}
-  "mlx" {with-test | with-dev-setup}
-  "ocamlformat-mlx" {with-dev-setup | with-test}
+  "mlx" {with-test & >= "0.12" | with-dev-setup & !with-test}
+  "ocamlformat-mlx" {with-test & >= "0.29.0.2" | with-dev-setup & !with-test}
   "ocaml-lsp-server" {with-dev-setup}
   "tiny_httpd" {with-dev-setup}
   "yocaml" {with-dev-setup}
