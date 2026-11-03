@@ -91,9 +91,6 @@ pin-list: # list pinned dependencies, one "<name> <url>" per line
 	@echo "textmate-language https://github.com/davesnx/ocaml-textmate-language.git#46ea3bd50d4413797e562b08eb87cb9d5694ca30"
 	@echo "tm-grammars https://github.com/davesnx/tm-grammars.git#7bc690111b6d6a9c6896bc35aa17bfb854c33a2d"
 	@echo "ochre https://github.com/davesnx/ochre.git#f367ec7b372e20fddabc065201cf696564361abe"
-	@echo "mlx https://github.com/ocaml-mlx/mlx.git#f6d929c7fa2dac74be5a96de6b31a83ebddc4014"
-	@echo "ocamlformat-mlx-lib https://github.com/ocaml-mlx/ocamlformat-mlx.git#e21280479f75ee2a60963bc3621da03794577a7a"
-	@echo "ocamlformat-mlx https://github.com/ocaml-mlx/ocamlformat-mlx.git#e21280479f75ee2a60963bc3621da03794577a7a"
 
 .PHONY: pin
 pin: # pin dependencies
