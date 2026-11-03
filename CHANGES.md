@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.2
+
+- Support mlx fragments (mlx >= 0.12): `<></>`, `<>a b</>` and children spread `<>...xs</>`, which compiles to `JSX.list xs` for any `JSX.element list` expression, such as `<>...(List.map f xs)</>` (@davesnx)
+
 ## 0.1.1
 
 - PPX: generated code qualifies stdlib modules with `Stdlib.`, so local modules named `Buffer`, `Float`, `Printf` or `Bool` no longer change the rendered output (@davesnx)
