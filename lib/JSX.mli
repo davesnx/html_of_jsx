@@ -336,6 +336,10 @@ val write : Buffer.t -> element -> unit
     This is an advanced function used mostly by the PPX for optimized rendering
     when building HTML strings incrementally.
 
+    It also lets you reuse one buffer across renders: call [Buffer.clear], then
+    [write]. This avoids growing a new buffer for every page, which [render]
+    does.
+
     {@reasonml[
       let buf = Buffer.create(256);
       JSX.write(buf, (JSX.string "Hello"));

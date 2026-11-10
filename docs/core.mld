@@ -337,3 +337,27 @@ JSX.render_streaming
   (<main>
      <h1>(JSX.string "Streaming")</h1> </main>)
 ]}
+
+{2 Reusing a buffer}
+
+[JSX.render] allocates a new buffer on every call and grows it until the page fits. For large pages that growth is a significant part of the render time. When you render many pages, keep one buffer and write into it with [JSX.write]. [Buffer.clear] empties the buffer without freeing its storage, so the next render starts with a buffer that is already big enough:
+
+{@reasonml[
+let buf = Buffer.create(4096);
+
+let respond = (page: JSX.element) => {
+  Buffer.clear(buf);
+  JSX.write(buf, page);
+  Buffer.output_buffer(stdout, buf);
+};
+]}
+{@mlx[
+let buf = Buffer.create 4096
+
+let respond (page : JSX.element) =
+  Buffer.clear buf;
+  JSX.write buf page;
+  Buffer.output_buffer stdout buf
+]}
+
+Use [Buffer.contents buf] instead of [Buffer.output_buffer] when you need a string. Two renders must not use the same buffer at the same time: keep one buffer per thread or domain, and finish reading the buffer before the next render clears it. The buffer keeps the size of the largest page it has rendered.
