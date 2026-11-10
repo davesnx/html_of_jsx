@@ -1,0 +1,12 @@
+let bool_attr_with_string = <div hidden="yes" />;
+let int_attr_with_string = <div tabindex="x" />;
+let string_attr_with_int = <div id=5 />;
+let bool_attr_with_int = <div hidden=5 />;
+let int_attr_with_suffix = <div tabindex=5l />;
+let int_child_with_suffix = <p> {JSX.int(5l)} </p>;
+let polyvariant_with_string = <input type_="checkbox" />;
+let polyvariant_unknown_tag = <input type_=`nope />;
+let booleanish_with_string = <div spellcheck="true" />;
+let string_child_with_int = <p> {JSX.string(5)} </p>;
+let float_child_with_int = <p> {JSX.float(5)} </p>;
+let string_attr_with_big_int = <div title=99999999999999999999 />;

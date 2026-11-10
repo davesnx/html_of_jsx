@@ -34,14 +34,14 @@
     JSX.writer(
       84,
       __html_buf => {
-        Buffer.add_string(__html_buf, "<div>");
+        Stdlib.Buffer.add_string(__html_buf, "<div>");
         {
-          Buffer.add_string(__html_buf, "<h1>");
+          Stdlib.Buffer.add_string(__html_buf, "<h1>");
           JSX.write(__html_buf, __html_v1);
-          Buffer.add_string(__html_buf, "</h1>");
+          Stdlib.Buffer.add_string(__html_buf, "</h1>");
           ();
         };
-        Buffer.add_string(__html_buf, "</div>");
+        Stdlib.Buffer.add_string(__html_buf, "</div>");
         ();
       },
     );

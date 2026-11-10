@@ -1,7 +1,27 @@
 # Changes
 
-## Unreleased
+## 0.1.2
 
+- Support mlx fragments (mlx >= 0.12): `<></>`, `<>a b</>` and children spread `<>...xs</>`, which compiles to `JSX.list xs` for any `JSX.element list` expression, such as `<>...(List.map f xs)</>` (@davesnx)
+
+## 0.1.1
+
+- PPX: generated code qualifies stdlib modules with `Stdlib.`, so local modules named `Buffer`, `Float`, `Printf` or `Bool` no longer change the rendered output (@davesnx)
+- PPX: `-disable-static-opt` now also disables the fragment optimization (@davesnx)
+- Fix fragments written as a list with a tail (`(a :: b :: rest) [@JSX]`) keeping only the last literal child and dropping the others and the tail (@davesnx)
+- PPX: `let` bindings written by the user inside a child expression keep their scope instead of being hoisted into the parent and shadowing later siblings (@davesnx)
+- Fix the static optimization treating unqualified `string`, `int`, `float`, `text`, `format` and `unsafe` calls as the `JSX` helpers when they are user-defined; only the qualified `JSX.*` forms are optimized now (@davesnx)
+- Fix literal attribute values skipping type checking under the static optimization: `<div hidden="yes" tabindex="x" id=5 />` now fails to compile with an error at the value, and suffixed integer literals (`5l`) are no longer accepted as `int` (@davesnx)
+- Fix the PPX crashing with `Failure("int_of_string")` on out-of-range integer literals; the compiler now reports its usual range error (@davesnx)
+- Fix the static optimization reordering attributes (static ones first): `<div class_=v tabindex=2 />` now renders attributes in source order, as the unoptimized path does (@davesnx)
+- [BREAKING] PPX: a void element (`<br>`, `<input>`, `<img>`, ...) with children is now a compile error instead of rendering `<br>x</br>` when optimized and dropping the children when unoptimized (@davesnx)
+- Fix the unoptimized path (`-disable-static-opt` or fallback) evaluating attribute and child expressions right to left: both modes now evaluate attributes then children, left to right (@davesnx)
+- Fix `JSX.render_streaming` not flushing after `JSX.int` and `JSX.float` leaves: a long list of numbers was emitted as one chunk (@davesnx)
+- `JSX.render_streaming` raises `Invalid_argument`, before writing anything, when `chunk_size` is zero or negative; it used to emit empty chunks (@davesnx)
+- [BREAKING] Rendering raises `Invalid_argument` when an attribute name is empty or contains whitespace, a control character, or one of `"`, `'`, `>`, `/`, `=`; it used to write the name unescaped. `render`, `write`, `render_to_channel`, `render_streaming` and `pp` all check it (@davesnx)
+- `JSX.pp` prints the content of `pre`, `textarea`, `script` and `style` exactly as `render` does, and keeps inline elements (`a`, `b`, `span`, `code`, `img`, ...) on one line with no added breaks or spaces around them or around text (@davesnx)
+- Document that `JSX.float` uses `Float.to_string` and that `JSX.format` gives exact control, and that `JSX.pp` is for reading and debugging (@davesnx)
+- Fix the static optimization dropping `<!DOCTYPE html>` from `<html>` elements with dynamic attributes or children (@davesnx)
 - PPX: elements compile to `JSX.writer` closures that write straight into the parent buffer, removing a buffer and two copies per component boundary; rendering an already built element value now re-runs its writes instead of returning a cached string (@davesnx)
 - Fix optional attributes being dropped when the same element also has a dynamic (non-literal) attribute: `<div ?id class_=cls />` rendered without `id` (@davesnx)
 - Write integers as digits straight into the render buffer (`JSX.write_int`) instead of allocating `Int.to_string` (@davesnx)

@@ -29,6 +29,19 @@ val pp : ?width:int -> element -> string
     that fit within the width stay on one line, while longer content is broken
     across lines with 2-space indentation.
 
+    [pp] is a formatter for reading and debugging, not for serving pages: use
+    [render] for output you send to clients. The output is the same as [render]
+    except for whitespace between elements and after newlines in [string] and
+    [text] content, which [pp] indents.
+
+    The content of [pre], [textarea], [script] and [style] is printed exactly as
+    [render] prints it. Inline elements ([a], [b], [span], [code], [img], ...)
+    stay on one line, and [pp] adds no breaks or spaces around them or around
+    text, so [<p>Hello <b>world</b>!</p>] keeps the same visible text at any
+    width.
+
+    Raises [Invalid_argument] when an attribute name is invalid, like [render].
+
     {@reasonml[
       let html: string = JSX.pp(
         <div>
@@ -59,6 +72,12 @@ val render : element -> string
 
     This function takes a JSX.element and converts it into its corresponding
     HTML string representation.
+
+    Raises [Invalid_argument] when an attribute name is empty or contains
+    whitespace, a control character, a double quote, a single quote, or one of
+    [>], [/] and [=]. [render_to_channel], [render_streaming], [write] and [pp]
+    raise the same way. Attribute names are not escaped: pass names from trusted
+    code.
 
     {@reasonml[
       let html: string = JSX.render(
@@ -108,6 +127,9 @@ val render_streaming : ?chunk_size:int -> (string -> unit) -> element -> unit
     finished instead of being buffered whole. Useful for frameworks that support
     streaming responses.
 
+    Raises [Invalid_argument], before it writes anything, when [chunk_size] is
+    zero or negative.
+
     {@reasonml[
       JSX.render_streaming(html => Dream.write(stream, html),
         <div>
@@ -127,6 +149,10 @@ val float : float -> element
 (** Helper to render a float.
 
     This function helps in rendering a float value as a JSX element.
+
+    The value is printed with [Float.to_string]: [5.0] renders as [5.] and the
+    output keeps 12 significant digits. Use [JSX.format] when you need exact
+    control, for example [JSX.format "%g" x] or [JSX.format "%.17g" x].
 
     {@reasonml[
       let element : JSX.element = JSX.float(3.14);

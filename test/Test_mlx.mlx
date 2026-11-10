@@ -67,6 +67,11 @@ let children_uppercase_children_case_optional () =
   let component = <Container><span /></Container> in
   assert_string (JSX.render component) {|<div><span></span></div>|}
 
+let children_optional_forwarded () =
+  let children = Some <span /> in
+  let component = <Container ?children /> in
+  assert_string (JSX.render component) {|<div><span></span></div>|}
+
 let children_lowercase () =
   let component = <div><span /></div> in
   assert_string (JSX.render component) {|<div><span></span></div>|}
@@ -232,6 +237,62 @@ let component_inside_literal_element () =
   let div = <div class_="wrap"><Badge label="ok" /></div> in
   assert_string (JSX.render div) {|<div class="wrap"><span>ok</span></div>|}
 
+let fragment_with_list_tail () =
+  let f rest = (JSX.string "a" :: JSX.string "b" :: rest) [@JSX] in
+  assert_string (JSX.render (f [ JSX.string "c" ])) "abc"
+
+let fragment_empty () = assert_string (JSX.render (<></>)) ""
+
+let fragment_of_strings () =
+  assert_string (JSX.render (<>(JSX.string "a") (JSX.string "b")</>)) "ab"
+
+let fragment_of_elements () =
+  assert_string (JSX.render (<><div /> <span /></>)) "<div></div><span></span>"
+
+let fragment_in_element () =
+  let list =
+    <ul><><li>(JSX.string "a")</li> <li>(JSX.string "b")</li></></ul>
+  in
+  assert_string (JSX.render list) "<ul><li>a</li><li>b</li></ul>"
+
+let element_in_fragment () =
+  let title = "x" in
+  assert_string
+    (JSX.render (<><h1>(JSX.string title)</h1> <p>(JSX.string "y")</p></>))
+    "<h1>x</h1><p>y</p>"
+
+let fragment_nested () =
+  assert_string (JSX.render (<><><b /></> <i /></>)) "<b></b><i></i>"
+
+let fragment_spread_identifier () =
+  let xs = [ JSX.string "a"; <b />; JSX.string "c" ] in
+  assert_string (JSX.render (<>...xs</>)) "a<b></b>c"
+
+let fragment_spread_list_map () =
+  let items = [ "a"; "b" ] in
+  assert_string
+    (JSX.render (<>...(List.map (fun s -> <li>(JSX.string s)</li>) items)</>))
+    "<li>a</li><li>b</li>"
+
+let fragment_spread_empty () =
+  let xs : JSX.element list = [] in
+  assert_string (JSX.render (<>...xs</>)) ""
+
+let fragment_spread_in_element () =
+  let items = [ "a"; "b" ] in
+  let list =
+    <ul><>...(List.map (fun s -> <li>(JSX.string s)</li>) items)</></ul>
+  in
+  assert_string (JSX.render list) "<ul><li>a</li><li>b</li></ul>"
+
+let fragment_spread_unit_call () =
+  let items () = [ <li /> ] in
+  assert_string (JSX.render <ul><>...(items ())</></ul>) "<ul><li></li></ul>"
+
+let fragment_spread_escapes () =
+  let xs = [ JSX.string "<&>" ] in
+  assert_string (JSX.render (<>...xs</>)) "&lt;&amp;&gt;"
+
 let tests =
   ( "Test with mlx",
     [
@@ -253,6 +314,7 @@ let tests =
       test "style_opt_attribute_some" style_opt_attribute_some;
       test "style_opt_attribute_none" style_opt_attribute_none;
       test "children_uppercase" children_uppercase;
+      test "children_optional_forwarded" children_optional_forwarded;
       test "children_lowercase" children_lowercase;
       test "onclick_inline_string" onclick_inline_string;
       test "children_one_element" children_one_element;
@@ -269,5 +331,18 @@ let tests =
       test "optional_and_dynamic_attrs" optional_and_dynamic_attrs;
       test "evaluation_order" evaluation_order;
       test "component_inside_literal_element" component_inside_literal_element;
+      test "fragment_with_list_tail" fragment_with_list_tail;
+      test "fragment_empty" fragment_empty;
+      test "fragment_of_strings" fragment_of_strings;
+      test "fragment_of_elements" fragment_of_elements;
+      test "fragment_in_element" fragment_in_element;
+      test "element_in_fragment" element_in_fragment;
+      test "fragment_nested" fragment_nested;
+      test "fragment_spread_identifier" fragment_spread_identifier;
+      test "fragment_spread_list_map" fragment_spread_list_map;
+      test "fragment_spread_empty" fragment_spread_empty;
+      test "fragment_spread_in_element" fragment_spread_in_element;
+      test "fragment_spread_unit_call" fragment_spread_unit_call;
+      test "fragment_spread_escapes" fragment_spread_escapes;
     ]
   )

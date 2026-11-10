@@ -13,10 +13,19 @@ Test with -disable-static-opt flag: all elements should use JSX.node instead of 
         Stdlib.Fun.id,
         [
           Stdlib.Option.map(
-            v => ("spellcheck", `String(Bool.to_string(v))),
+            v => ("spellcheck", `String(Stdlib.Bool.to_string(v))),
             spellcheck: option(bool),
           ),
         ],
       ),
       [],
     );
+  let fragment = name =>
+    JSX.list([JSX.node("span", [], []), JSX.string(name)]);
+  let fragment_text = (a, b) =>
+    JSX.list([JSX.string("text"), JSX.string(a), JSX.string(b)]);
+  let fragment_effects = f => {
+    let __html_v1 = JSX.string(f("a"));
+    let __html_v2 = JSX.string(f("b"));
+    JSX.list([__html_v1, __html_v2]);
+  };

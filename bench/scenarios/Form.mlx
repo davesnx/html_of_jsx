@@ -224,8 +224,7 @@ let progress_steps ~steps ~current_step =
                   <span class_=label_cls>(JSX.string label)</span>
                 </div>
                 ( if i < List.length steps - 1 then
-                    <div class_=line_cls
-                  />
+                    <div class_=line_cls />
                   else
                     JSX.null
                 )

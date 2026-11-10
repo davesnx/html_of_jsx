@@ -19,6 +19,55 @@ let is_self_closing_tag = function
   | _ ->
       false
 
+let is_verbatim_tag = function
+  | "pre" | "textarea" | "script" | "style" ->
+      true
+  | _ ->
+      false
+
+let is_inline_tag = function
+  | "a"
+  | "abbr"
+  | "b"
+  | "bdi"
+  | "bdo"
+  | "br"
+  | "button"
+  | "cite"
+  | "code"
+  | "data"
+  | "del"
+  | "dfn"
+  | "em"
+  | "embed"
+  | "i"
+  | "img"
+  | "input"
+  | "ins"
+  | "kbd"
+  | "label"
+  | "mark"
+  | "meter"
+  | "output"
+  | "progress"
+  | "q"
+  | "s"
+  | "samp"
+  | "select"
+  | "small"
+  | "span"
+  | "strong"
+  | "sub"
+  | "sup"
+  | "textarea"
+  | "time"
+  | "u"
+  | "var"
+  | "wbr" ->
+      true
+  | _ ->
+      false
+
 (* Escapes by copying runs of clean characters in bulk with
    [Buffer.add_substring] and only splicing in entities where needed. Clean
    strings are copied with a single [add_substring].
@@ -84,7 +133,22 @@ let write_int buf n =
 type attribute =
   string * [ `Bool of bool | `Int of int | `Float of float | `String of string ]
 
+let rec is_valid_attribute_name_from name length i =
+  i = length
+  ||
+  match String.unsafe_get name i with
+  | '\000' .. ' ' | '\127' | '"' | '\'' | '>' | '/' | '=' ->
+      false
+  | _ ->
+      is_valid_attribute_name_from name length (i + 1)
+
+let check_attribute_name name =
+  let length = String.length name in
+  if length = 0 || not (is_valid_attribute_name_from name length 0) then
+    invalid_arg (Printf.sprintf "JSX: invalid attribute name %S" name)
+
 let write_attribute out (attr : attribute) =
+  check_attribute_name (fst attr);
   let write_name_and_eq name =
     Buffer.add_char out ' ';
     Buffer.add_string out name;
@@ -225,6 +289,11 @@ let render_to_channel (chan : out_channel) element =
   Buffer.output_buffer chan out
 
 let render_streaming ?(chunk_size = 4096) (write_fn : string -> unit) element =
+  if chunk_size <= 0 then
+    invalid_arg
+      (Printf.sprintf
+         "JSX.render_streaming: chunk_size must be positive, got %d" chunk_size
+      );
   let out = Buffer.create chunk_size in
   let flush_if_full () =
     if Buffer.length out >= chunk_size then (
@@ -253,9 +322,11 @@ let render_streaming ?(chunk_size = 4096) (write_fn : string -> unit) element =
         Buffer.add_string out text;
         flush_if_full ()
     | Int i ->
-        write_int out i
+        write_int out i;
+        flush_if_full ()
     | Float f ->
-        Buffer.add_string out (Float.to_string f)
+        Buffer.add_string out (Float.to_string f);
+        flush_if_full ()
     | Node { tag; attributes; _ } when is_self_closing_tag tag ->
         Buffer.add_char out '<';
         Buffer.add_string out tag;
@@ -318,6 +389,14 @@ module Pretty = struct
   let text value =
     if value = "" then
       empty
+    else
+      { node = Text value; flat_width = Some (String.length value) }
+
+  let raw value =
+    if value = "" then
+      empty
+    else if String.contains value '\n' then
+      { node = Text value; flat_width = None }
     else
       { node = Text value; flat_width = Some (String.length value) }
 
@@ -473,6 +552,7 @@ let pp ?(width = 80) element =
         false
   in
   let doc_of_attribute (attr : attribute) =
+    check_attribute_name (fst attr);
     match attr with
     | _, `Bool false ->
         empty
@@ -486,6 +566,28 @@ let pp ?(width = 80) element =
         text (" " ^ name ^ "=\"" ^ Float.to_string value ^ "\"")
   in
   let doc_of_attributes attrs = concat (map_docs doc_of_attribute attrs) in
+  let rec has_text_content = function
+    | Null | Node _ ->
+        false
+    | String _ | Int _ | Float _ | Unsafe _ | Writer _ ->
+        true
+    | List elements ->
+        List.exists has_text_content elements
+    | Array arr ->
+        Array.exists has_text_content arr
+  in
+  let rec is_inline_content = function
+    | Null ->
+        false
+    | Node { tag; _ } ->
+        is_inline_tag tag
+    | String _ | Int _ | Float _ | Unsafe _ | Writer _ ->
+        true
+    | List elements ->
+        List.exists is_inline_content elements
+    | Array arr ->
+        Array.exists is_inline_content arr
+  in
   let rec doc_of = function
     | Null ->
         empty
@@ -496,13 +598,16 @@ let pp ?(width = 80) element =
     | Float f ->
         text (Float.to_string f)
     | Unsafe s ->
-        text_with_newlines s
+        raw s
     | Writer _ as w ->
-        text_with_newlines (render w)
+        raw (render w)
     | List elements ->
         doc_of_children elements
     | Array arr ->
         doc_of_children (Array.to_list arr)
+    | Node { tag; _ } as element when is_verbatim_tag tag || is_inline_tag tag
+      ->
+        raw (render element)
     | Node { tag; attributes; _ } when is_self_closing_tag tag ->
         concat [ text ("<" ^ tag); doc_of_attributes attributes; text " />" ]
     | Node { tag; attributes; children } -> (
@@ -519,7 +624,9 @@ let pp ?(width = 80) element =
         match children with
         | [] ->
             concat [ prefix; open_tag; close_tag ]
-        | _ when List.for_all is_text_like children ->
+        | _
+          when List.for_all is_text_like children
+               || List.exists has_text_content children ->
             concat [ prefix; open_tag; doc_of_children children; close_tag ]
         | _ ->
             let children_doc = doc_of_block_children children in
@@ -539,17 +646,27 @@ let pp ?(width = 80) element =
       )
   and doc_of_children elements = concat (map_docs doc_of elements)
   and doc_of_block_children elements =
-    let docs =
-      List.filter_map
-        (fun el -> match el with Null -> None | _ -> Some (doc_of el))
-        elements
+    let elements =
+      List.filter (function Null -> false | _ -> true) elements
     in
-    match docs with
+    match elements with
     | [] ->
         empty
-    | [ d ] ->
-        d
-    | docs ->
-        concat (separate break docs)
+    | first :: rest ->
+        let _, docs =
+          List.fold_left
+            (fun (previous, docs) el ->
+              let docs =
+                if is_inline_content previous && is_inline_content el then
+                  doc_of el :: docs
+                else
+                  doc_of el :: break :: docs
+              in
+              (el, docs)
+            )
+            (first, [ doc_of first ])
+            rest
+        in
+        concat (List.rev docs)
   in
   format ~width (doc_of element)

@@ -3,7 +3,10 @@ let () =
     [
       Test_without_transformation.tests;
       Test_reason.tests;
+      Test_static_values.tests;
+      Test_attrs_void.tests;
       Test_htmx.tests;
       Test_mlx.tests;
       Test_pp.tests;
+      Test_hygiene.tests;
     ]
