@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1793704770733,
+  "lastUpdate": 1794318127905,
   "repoUrl": "https://github.com/davesnx/html_of_jsx",
   "entries": {
     "html_of_jsx Benchmarks": [
@@ -5607,6 +5607,95 @@ window.BENCHMARK_DATA = {
           {
             "name": "escape (dirty)",
             "value": 6823963.35,
+            "unit": "ops/sec"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "dsnxmoreno@gmail.com",
+            "name": "David Sancho Moreno",
+            "username": "davesnx"
+          },
+          "committer": {
+            "email": "dsnxmoreno@gmail.com",
+            "name": "David Sancho Moreno",
+            "username": "davesnx"
+          },
+          "distinct": true,
+          "id": "68c43fd71682b443d3c08e003d44a7e63cbfe0e9",
+          "message": "Merge branch 'main' of github.com:davesnx/html_of_jsx\n\n* 'main' of github.com:davesnx/html_of_jsx:\n  Bump dune-release-action to v0.6.0 (#60)\n  Release mlx fragment support as 0.1.2\n  Support mlx JSX fragments and children spread (#59)\n  Use gh-ci-action v1.2.0 (#58)\n  Release the PPX and runtime fixes as 0.1.1\n  Fix some ppx bugs (#57)\n  Prepare 0.1.1\n  Keep the doctype on <html> with dynamic attributes or children (#55)",
+          "timestamp": "2026-11-10T13:31:50Z",
+          "tree_id": "6c25d6b3699029a1165797a364800deee4080d98",
+          "url": "https://github.com/davesnx/html_of_jsx/commit/68c43fd71682b443d3c08e003d44a7e63cbfe0e9"
+        },
+        "date": 1794318126658,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Trivial (static)",
+            "value": 433185184.34,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Dashboard",
+            "value": 46869.14,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Blog (50 comments)",
+            "value": 8526.59,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Table (100 rows)",
+            "value": 5060.39,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Table (100 rows, prebuilt writer)",
+            "value": 7068.62,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "E-commerce",
+            "value": 5417.25,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Form",
+            "value": 51071.21,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Deep tree (50)",
+            "value": 21222.68,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Wide tree (100)",
+            "value": 5968.29,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Shallow tree",
+            "value": 133793.29,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "Props heavy",
+            "value": 6348.91,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "escape (clean)",
+            "value": 28059853.27,
+            "unit": "ops/sec"
+          },
+          {
+            "name": "escape (dirty)",
+            "value": 7837079.45,
             "unit": "ops/sec"
           }
         ]
