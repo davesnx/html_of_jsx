@@ -118,18 +118,20 @@ let th_cls_right =
    tracking-wider"
 
 let th_labels =
-  [
-    ("ID", th_cls);
-    ("Employee", th_cls);
-    ("Role", th_cls);
-    ("Department", th_cls);
-    ("Status", th_cls);
-    ("Join Date", th_cls);
-    ("Salary", th_cls);
-    ("Manager", th_cls);
-    ("Projects", th_cls);
-    ("Actions", th_cls_right);
-  ]
+  List.map
+    (fun label -> (label, th_cls))
+    [
+      "ID";
+      "Employee";
+      "Role";
+      "Department";
+      "Status";
+      "Join Date";
+      "Salary";
+      "Manager";
+      "Projects";
+    ]
+  @ [ ("Actions", th_cls_right) ]
 
 let cell_cls = "px-6 py-4 whitespace-nowrap text-sm text-gray-500"
 
@@ -443,61 +445,44 @@ end
 let tyxml_doc doc = Format.asprintf "%a" (Tyxml.Html.pp ()) doc
 let tyxml_elt elt = Format.asprintf "%a" (Tyxml.Html.pp_elt ()) elt
 
-type case = {
-  name : string;
-  alloc_iters : int;
-  build : (string * (unit -> string)) list;
-  prebuilt : (string * (unit -> string)) list;
-}
-
 let stress n =
   let jsx = Jsx_stress.stress_render ~volume:n () in
   let ty = Tyxml_stress.stress_render n in
   let pure = Pure_stress.stress_render n in
-  {
-    name = Printf.sprintf "Stress %d" n;
-    alloc_iters = max 3 (10_000 / n);
-    build =
-      [
-        ( "html_of_jsx",
-          fun () -> JSX.render <Jsx_stress.stress_render volume=n />
-        );
-        ("tyxml", fun () -> tyxml_doc (Tyxml_stress.stress_render n));
-        ( "pure-html",
-          fun () -> Pure_html.to_string (Pure_stress.stress_render n)
-        );
-      ];
-    prebuilt =
-      [
-        ("html_of_jsx", fun () -> JSX.render jsx);
-        ("tyxml", fun () -> tyxml_doc ty);
-        ("pure-html", fun () -> Pure_html.to_string pure);
-      ];
-  }
+  ( Printf.sprintf "Stress %d" n,
+    [
+      ( "html_of_jsx",
+        (fun () -> JSX.render <Jsx_stress.stress_render volume=n />),
+        fun () -> JSX.render jsx
+      );
+      ( "tyxml",
+        (fun () -> tyxml_doc (Tyxml_stress.stress_render n)),
+        fun () -> tyxml_doc ty
+      );
+      ( "pure-html",
+        (fun () -> Pure_html.to_string (Pure_stress.stress_render n)),
+        fun () -> Pure_html.to_string pure
+      );
+    ]
+  )
 
 let table () =
   let users = Scenarios.Table.users_100 in
-  let jsx = Scenarios.Table.data_table users in
   let ty = Tyxml_table.data_table users in
   let pure = Pure_table.data_table users in
-  {
-    name = "Table (100 rows)";
-    alloc_iters = 100;
-    build =
-      [
-        ("html_of_jsx", fun () -> JSX.render (Scenarios.Table.data_table users));
-        ("tyxml", fun () -> tyxml_elt (Tyxml_table.data_table users));
-        ( "pure-html",
-          fun () -> Pure_html.to_string (Pure_table.data_table users)
-        );
-      ];
-    prebuilt =
-      [
-        ("html_of_jsx", fun () -> JSX.render jsx);
-        ("tyxml", fun () -> tyxml_elt ty);
-        ("pure-html", fun () -> Pure_html.to_string pure);
-      ];
-  }
+  ( "Table (100 rows)",
+    [
+      ("html_of_jsx", Scenarios.Table.render, Scenarios.Table.render_prebuilt);
+      ( "tyxml",
+        (fun () -> tyxml_elt (Tyxml_table.data_table users)),
+        fun () -> tyxml_elt ty
+      );
+      ( "pure-html",
+        (fun () -> Pure_html.to_string (Pure_table.data_table users)),
+        fun () -> Pure_html.to_string pure
+      );
+    ]
+  )
 
 let cases =
   List.map (fun n () -> stress n) [ 100; 1000; 10000; 100000 ] @ [ table ]
@@ -507,25 +492,23 @@ let normalize s =
     (fun s (sub, by) -> Str.global_replace (Str.regexp_string sub) by s)
     s
     [
-      ("<!DOCTYPE html>\n", "");
-      ("<!DOCTYPE html>", "");
-      (" xmlns=\"http://www.w3.org/1999/xhtml\"", "");
-      ("\n", " ");
+      ("\n<", "<"); ("\n", " "); (" xmlns=\"http://www.w3.org/1999/xhtml\"", "");
     ]
 
-let sanity c =
-  let reference = normalize ((snd (List.hd c.build)) ()) in
-  List.iter2
-    (fun (lib, build) (_, prebuilt) ->
+let sanity libs =
+  let _, first, _ = List.hd libs in
+  let expected = normalize (first ()) in
+  List.iter
+    (fun (lib, build, prebuilt) ->
       let out = build () in
       let got = normalize out in
       Printf.printf "  %-12s %8d bytes\n" lib (String.length out);
-      if got <> reference || prebuilt () <> out then (
+      if got <> expected || prebuilt () <> out then (
         let rec first_diff i =
           if
             i < String.length got
-            && i < String.length reference
-            && got.[i] = reference.[i]
+            && i < String.length expected
+            && got.[i] = expected.[i]
           then
             first_diff (i + 1)
           else
@@ -533,16 +516,17 @@ let sanity c =
         in
         let i = first_diff 0 in
         let from s = String.sub s i (min 60 (String.length s - i)) in
-        Printf.printf "  content differs at byte %d\n    %s: %S\n    %s: %S\n" i
-          (fst (List.hd c.build))
-          (from reference) lib (from got);
+        Printf.printf
+          "  content differs at byte %d\n    expected: %S\n    got:      %S\n" i
+          (from expected) (from got);
         exit 1
       )
     )
-    c.build c.prebuilt
+    libs
 
 let time_sample seconds f =
   let t0 = Unix.gettimeofday () in
+  let words = Gc.minor_words () in
   let deadline = t0 +. seconds in
   let n = ref 0 in
   let now = ref t0 in
@@ -551,15 +535,8 @@ let time_sample seconds f =
     incr n;
     now := Unix.gettimeofday ()
   done;
-  (!now -. t0) /. float_of_int !n *. 1e6
-
-let minor_words_per_op ~alloc_iters f =
-  ignore (Sys.opaque_identity (f ()));
-  let before = Gc.minor_words () in
-  for _ = 1 to alloc_iters do
-    ignore (Sys.opaque_identity (f ()))
-  done;
-  (Gc.minor_words () -. before) /. float_of_int alloc_iters
+  let n = float_of_int !n in
+  ((!now -. t0) /. n *. 1e6, (Gc.minor_words () -. words) /. n)
 
 let median xs =
   let a = Array.of_list (List.sort compare xs) in
@@ -569,55 +546,54 @@ let median xs =
   else
     (a.((n / 2) - 1) +. a.(n / 2)) /. 2.0
 
-let run ~rounds ~seconds ~alloc_iters ~name ~mode libs =
-  let samples = List.map (fun _ -> ref []) libs in
+let run ~rounds ~seconds libs =
+  let samples = Array.make (List.length libs) [] in
   for _ = 1 to rounds do
-    List.iter2
-      (fun (_, f) acc -> acc := time_sample seconds f :: !acc)
-      libs samples
+    List.iteri
+      (fun i (_, f) -> samples.(i) <- time_sample seconds f :: samples.(i))
+      libs
   done;
-  let medians = List.map (fun acc -> median !acc) samples in
-  let base = List.hd medians in
-  Printf.printf "\n%s / %s\n" name mode;
+  let us i = List.map fst samples.(i) in
+  let base = median (us 0) in
   Printf.printf "  %-12s %12s %12s %9s %14s\n" "library" "median us" "min us"
     "vs jsx" "minor w/op";
   List.iteri
-    (fun i (lib, f) ->
-      let acc = List.nth samples i in
-      let med = List.nth medians i in
+    (fun i (lib, _) ->
+      let med = median (us i) in
       Printf.printf "  %-12s %12.2f %12.2f %8.2fx %14.0f\n" lib med
-        (List.fold_left min infinity !acc)
+        (List.fold_left min infinity (us i))
         (med /. base)
-        (minor_words_per_op ~alloc_iters f)
+        (snd (List.hd samples.(i)))
     )
     libs
 
 let () =
   let rounds = ref 7 in
   let seconds = ref 0.5 in
-  let rec parse = function
-    | [] ->
-        ()
-    | "--rounds" :: v :: rest ->
-        rounds := int_of_string v;
-        parse rest
-    | "--seconds" :: v :: rest ->
-        seconds := float_of_string v;
-        parse rest
-    | arg :: _ ->
-        prerr_endline ("usage: vs [--rounds <n>] [--seconds <f>], got " ^ arg);
-        exit 2
-  in
-  parse (List.tl (Array.to_list Sys.argv));
+  Arg.parse
+    [
+      ("--rounds", Arg.Set_int rounds, "<n> rounds per library (default 7)");
+      ( "--seconds",
+        Arg.Set_float seconds,
+        "<f> seconds per sample (default 0.5)"
+      );
+    ]
+    (fun arg -> raise (Arg.Bad ("unexpected argument " ^ arg)))
+    "vs [--rounds <n>] [--seconds <f>]";
   Printf.printf "=== %d rounds x %.2fs per library ===\n" !rounds !seconds;
   List.iter
     (fun make ->
-      let c = make () in
-      Printf.printf "\n%s / same content check\n" c.name;
-      sanity c;
-      run ~rounds:!rounds ~seconds:!seconds ~alloc_iters:c.alloc_iters
-        ~name:c.name ~mode:"build+render" c.build;
-      run ~rounds:!rounds ~seconds:!seconds ~alloc_iters:c.alloc_iters
-        ~name:c.name ~mode:"render only" c.prebuilt
+      let name, libs = make () in
+      Printf.printf "\n%s / same content check\n" name;
+      sanity libs;
+      List.iter
+        (fun (mode, pick) ->
+          Printf.printf "\n%s / %s\n" name mode;
+          run ~rounds:!rounds ~seconds:!seconds (List.map pick libs)
+        )
+        [
+          ("build+render", fun (lib, build, _) -> (lib, build));
+          ("render only", fun (lib, _, prebuilt) -> (lib, prebuilt));
+        ]
     )
     cases
