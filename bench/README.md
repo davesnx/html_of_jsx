@@ -113,6 +113,42 @@ Noise band is computed as:
 
 This keeps small deltas from being over-interpreted when variance is high.
 
+## Comparison with other libraries
+
+`bench/vs` renders the same pages with html_of_jsx, TyXML, and pure-html (the
+core of dream-html). The pages are the "stress" page from
+[dream_templaters_comparison](https://github.com/katel0k/dream_templaters_comparison)
+with 100, 1000, 10000, and 100000 items, and the 100-row table from
+`bench/scenarios/Table.mlx`.
+
+Each page is measured in two modes:
+
+- `build+render`: the timed function builds the tree and renders it to a
+  string. This is the cost a request pays.
+- `render only`: the tree is built once, and only the render to a string is
+  timed.
+
+Both modes exist because libraries split work differently between building
+and rendering. Comparing one library's build+render with another library's
+render only gives a wrong result.
+
+Before timing, the benchmark checks that all libraries produce the same
+content. It then runs several rounds and measures every library once per
+round, so load changes on the host affect all libraries equally. It reports
+the median and minimum time per render, the ratio to html_of_jsx, and the
+minor words allocated per render.
+
+It needs TyXML and pure-html, which are not dependencies of this package:
+
+```sh
+opam install tyxml pure-html
+make bench-vs
+dune exec bench/vs/vs.exe -- --rounds 15 --seconds 1
+```
+
+On a busy machine, pin the process to one core, for example
+`taskset -c 3 make bench-vs`.
+
 ## Compile fixture coverage
 
 Compile-time benchmark includes synthetic fixtures for:

@@ -44,6 +44,10 @@ bench-baseline: ## Save current results as new baseline
 bench-memory: ## Run memory allocation benchmarks
 	$(DUNE) exec --root . bench/memory.exe
 
+.PHONY: bench-vs
+bench-vs: ## Compare render speed with tyxml and pure-html
+	$(DUNE) exec --root . bench/vs/vs.exe
+
 .PHONY: dev
 dev: ## Build in watch mode
 	$(DUNE) build --root . -w @all

@@ -1,0 +1,623 @@
+module Jsx_stress = struct
+  let range a b = List.init (b - a) (fun i -> a + i)
+
+  let repeating_field ~is_colored ~children () =
+    <div
+      class_=( if is_colored then
+                 "repeating_value repeating_values-colored"
+               else
+                 "repeating_value"
+             )>
+      children
+    </div>
+
+  let stress_render ~volume () =
+    <html>
+      <head><title>"Stress"</title></head>
+      <body>
+        <div>
+          (List.map
+             (fun ind ->
+               <repeating_field is_colored=(ind mod 2 == 0)>
+                 (JSX.string @@ string_of_int ind)
+               </repeating_field>
+             )
+             (range 0 volume)
+          |> JSX.list
+          )
+        </div>
+      </body>
+    </html>
+end
+
+module Tyxml_stress = struct
+  module Html = Tyxml.Html
+
+  let repeating_value ~is_colored =
+    Html.(
+      div
+        ~a:
+          [
+            a_class
+              ( if is_colored then
+                  [ "repeating_value"; "repeating_values-colored" ]
+                else
+                  [ "repeating_value" ]
+              );
+          ]
+    )
+
+  let rec _stress_render volume ind =
+    let open Html in
+    if ind < volume then
+      repeating_value ~is_colored:(ind mod 2 == 0) [ txt (string_of_int ind) ]
+      :: _stress_render volume (ind + 1)
+    else
+      []
+
+  let stress_render volume =
+    Html.(
+      html
+        (head (title @@ txt "Stress") [])
+        (body [ div (_stress_render volume 0) ])
+    )
+end
+
+module Pure_stress = struct
+  let repeating_value is_colored =
+    let open Pure_html.HTML in
+    if is_colored then
+      div [ class_ "repeating_value repeating_values-colored" ]
+    else
+      div [ class_ "repeating_value" ]
+
+  let rec _stress_render volume ind =
+    let open Pure_html in
+    if ind < volume then
+      repeating_value (ind mod 2 == 0) [ txt "%s" (string_of_int ind) ]
+      :: _stress_render volume (ind + 1)
+    else
+      []
+
+  let stress_render volume =
+    let open Pure_html in
+    let open HTML in
+    html []
+      [
+        head [] [ title [] "Stress" ];
+        body [] [ div [] (_stress_render volume 0) ];
+      ]
+end
+
+let badge (status : Scenarios.Table.status) =
+  let bg_color, text_color, label =
+    match status with
+    | Active ->
+        ("bg-green-100", "text-green-800", "Active")
+    | Inactive ->
+        ("bg-red-100", "text-red-800", "Inactive")
+    | Pending ->
+        ("bg-yellow-100", "text-yellow-800", "Pending")
+  in
+  ( Scenarios.Cx.make
+      [
+        "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs \
+         font-medium";
+        bg_color;
+        text_color;
+      ],
+    label
+  )
+
+let th_cls =
+  "px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase \
+   tracking-wider"
+
+let th_cls_right =
+  "px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase \
+   tracking-wider"
+
+let th_labels =
+  [
+    ("ID", th_cls);
+    ("Employee", th_cls);
+    ("Role", th_cls);
+    ("Department", th_cls);
+    ("Status", th_cls);
+    ("Join Date", th_cls);
+    ("Salary", th_cls);
+    ("Manager", th_cls);
+    ("Projects", th_cls);
+    ("Actions", th_cls_right);
+  ]
+
+let cell_cls = "px-6 py-4 whitespace-nowrap text-sm text-gray-500"
+
+module Tyxml_table = struct
+  open Tyxml.Html
+
+  let table_row ~(user : Scenarios.Table.user) ~is_even =
+    let row_cls =
+      if is_even then
+        "bg-white"
+      else
+        "bg-gray-50"
+    in
+    let initials = String.sub user.name 0 2 in
+    let salary_str = Printf.sprintf "$%.0f" user.salary in
+    let badge_cls, label = badge user.status in
+    tr
+      ~a:[ a_class [ row_cls ] ]
+      [
+        td
+          ~a:
+            [
+              a_class
+                [
+                  "px-6 py-4 whitespace-nowrap text-sm font-medium \
+                   text-gray-900";
+                ];
+            ]
+          [ txt (string_of_int user.id) ];
+        td
+          ~a:[ a_class [ "px-6 py-4 whitespace-nowrap" ] ]
+          [
+            div
+              ~a:[ a_class [ "flex items-center" ] ]
+              [
+                div
+                  ~a:[ a_class [ "flex-shrink-0 h-10 w-10" ] ]
+                  [
+                    div
+                      ~a:
+                        [
+                          a_class
+                            [
+                              "h-10 w-10 rounded-full bg-gray-300 flex \
+                               items-center justify-center";
+                            ];
+                        ]
+                      [
+                        span
+                          ~a:[ a_class [ "text-sm font-medium text-gray-600" ] ]
+                          [ txt initials ];
+                      ];
+                  ];
+                div
+                  ~a:[ a_class [ "ml-4" ] ]
+                  [
+                    div
+                      ~a:[ a_class [ "text-sm font-medium text-gray-900" ] ]
+                      [ txt user.name ];
+                    div
+                      ~a:[ a_class [ "text-sm text-gray-500" ] ]
+                      [ txt user.email ];
+                  ];
+              ];
+          ];
+        td ~a:[ a_class [ cell_cls ] ] [ txt user.role ];
+        td ~a:[ a_class [ cell_cls ] ] [ txt user.department ];
+        td
+          ~a:[ a_class [ "px-6 py-4 whitespace-nowrap" ] ]
+          [ span ~a:[ a_class [ badge_cls ] ] [ txt label ] ];
+        td ~a:[ a_class [ cell_cls ] ] [ txt user.join_date ];
+        td ~a:[ a_class [ cell_cls ] ] [ txt salary_str ];
+        td
+          ~a:[ a_class [ cell_cls ] ]
+          [
+            ( match user.manager with
+            | Some m ->
+                txt m
+            | None ->
+                span ~a:[ a_class [ "text-gray-400 italic" ] ] [ txt "None" ]
+            );
+          ];
+        td ~a:[ a_class [ cell_cls ] ] [ txt (string_of_int user.projects) ];
+        td
+          ~a:
+            [
+              a_class
+                [ "px-6 py-4 whitespace-nowrap text-right text-sm font-medium" ];
+            ]
+          [
+            a
+              ~a:
+                [
+                  a_href "#";
+                  a_class [ "text-blue-600 hover:text-blue-900 mr-3" ];
+                ]
+              [ txt "Edit" ];
+            a
+              ~a:[ a_href "#"; a_class [ "text-red-600 hover:text-red-900" ] ]
+              [ txt "Delete" ];
+          ];
+      ]
+
+  let data_table users =
+    div
+      ~a:[ a_class [ "flex flex-col" ] ]
+      [
+        div
+          ~a:[ a_class [ "-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8" ] ]
+          [
+            div
+              ~a:
+                [
+                  a_class
+                    [
+                      "py-2 align-middle inline-block min-w-full sm:px-6 \
+                       lg:px-8";
+                    ];
+                ]
+              [
+                div
+                  ~a:
+                    [
+                      a_class
+                        [
+                          "shadow overflow-hidden border-b border-gray-200 \
+                           sm:rounded-lg";
+                        ];
+                    ]
+                  [
+                    tablex
+                      ~a:[ a_class [ "min-w-full divide-y divide-gray-200" ] ]
+                      ~thead:
+                        (thead
+                           ~a:[ a_class [ "bg-gray-50" ] ]
+                           [
+                             tr
+                               (List.map
+                                  (fun (label, cls) ->
+                                    th
+                                      ~a:
+                                        [
+                                          Unsafe.string_attrib "scope" "col";
+                                          a_class [ cls ];
+                                        ]
+                                      [ txt label ]
+                                  )
+                                  th_labels
+                               );
+                           ]
+                        )
+                      [
+                        tbody
+                          ~a:[ a_class [ "bg-white divide-y divide-gray-200" ] ]
+                          (Array.to_list
+                             (Array.mapi
+                                (fun i user ->
+                                  table_row ~user ~is_even:(i mod 2 = 0)
+                                )
+                                users
+                             )
+                          );
+                      ];
+                  ];
+              ];
+          ];
+      ]
+end
+
+module Pure_table = struct
+  open Pure_html
+  open HTML
+
+  let table_row ~(user : Scenarios.Table.user) ~is_even =
+    let row_cls =
+      if is_even then
+        "bg-white"
+      else
+        "bg-gray-50"
+    in
+    let initials = String.sub user.name 0 2 in
+    let salary_str = Printf.sprintf "$%.0f" user.salary in
+    let badge_cls, label = badge user.status in
+    tr
+      [ class_ "%s" row_cls ]
+      [
+        td
+          [
+            class_
+              "px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900";
+          ]
+          [ txt "%d" user.id ];
+        td
+          [ class_ "px-6 py-4 whitespace-nowrap" ]
+          [
+            div
+              [ class_ "flex items-center" ]
+              [
+                div
+                  [ class_ "flex-shrink-0 h-10 w-10" ]
+                  [
+                    div
+                      [
+                        class_
+                          "h-10 w-10 rounded-full bg-gray-300 flex \
+                           items-center justify-center";
+                      ]
+                      [
+                        span
+                          [ class_ "text-sm font-medium text-gray-600" ]
+                          [ txt "%s" initials ];
+                      ];
+                  ];
+                div
+                  [ class_ "ml-4" ]
+                  [
+                    div
+                      [ class_ "text-sm font-medium text-gray-900" ]
+                      [ txt "%s" user.name ];
+                    div
+                      [ class_ "text-sm text-gray-500" ]
+                      [ txt "%s" user.email ];
+                  ];
+              ];
+          ];
+        td [ class_ "%s" cell_cls ] [ txt "%s" user.role ];
+        td [ class_ "%s" cell_cls ] [ txt "%s" user.department ];
+        td
+          [ class_ "px-6 py-4 whitespace-nowrap" ]
+          [ span [ class_ "%s" badge_cls ] [ txt "%s" label ] ];
+        td [ class_ "%s" cell_cls ] [ txt "%s" user.join_date ];
+        td [ class_ "%s" cell_cls ] [ txt "%s" salary_str ];
+        td
+          [ class_ "%s" cell_cls ]
+          [
+            ( match user.manager with
+            | Some m ->
+                txt "%s" m
+            | None ->
+                span [ class_ "text-gray-400 italic" ] [ txt "None" ]
+            );
+          ];
+        td [ class_ "%s" cell_cls ] [ txt "%d" user.projects ];
+        td
+          [
+            class_ "px-6 py-4 whitespace-nowrap text-right text-sm font-medium";
+          ]
+          [
+            a
+              [ href "#"; class_ "text-blue-600 hover:text-blue-900 mr-3" ]
+              [ txt "Edit" ];
+            a
+              [ href "#"; class_ "text-red-600 hover:text-red-900" ]
+              [ txt "Delete" ];
+          ];
+      ]
+
+  let data_table users =
+    div
+      [ class_ "flex flex-col" ]
+      [
+        div
+          [ class_ "-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8" ]
+          [
+            div
+              [
+                class_
+                  "py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8";
+              ]
+              [
+                div
+                  [
+                    class_
+                      "shadow overflow-hidden border-b border-gray-200 \
+                       sm:rounded-lg";
+                  ]
+                  [
+                    table
+                      [ class_ "min-w-full divide-y divide-gray-200" ]
+                      [
+                        thead
+                          [ class_ "bg-gray-50" ]
+                          [
+                            tr []
+                              (List.map
+                                 (fun (label, cls) ->
+                                   th
+                                     [ scope "col"; class_ "%s" cls ]
+                                     [ txt "%s" label ]
+                                 )
+                                 th_labels
+                              );
+                          ];
+                        tbody
+                          [ class_ "bg-white divide-y divide-gray-200" ]
+                          (Array.to_list
+                             (Array.mapi
+                                (fun i user ->
+                                  table_row ~user ~is_even:(i mod 2 = 0)
+                                )
+                                users
+                             )
+                          );
+                      ];
+                  ];
+              ];
+          ];
+      ]
+end
+
+let tyxml_doc doc = Format.asprintf "%a" (Tyxml.Html.pp ()) doc
+let tyxml_elt elt = Format.asprintf "%a" (Tyxml.Html.pp_elt ()) elt
+
+type case = {
+  name : string;
+  alloc_iters : int;
+  build : (string * (unit -> string)) list;
+  prebuilt : (string * (unit -> string)) list;
+}
+
+let stress n =
+  let jsx = Jsx_stress.stress_render ~volume:n () in
+  let ty = Tyxml_stress.stress_render n in
+  let pure = Pure_stress.stress_render n in
+  {
+    name = Printf.sprintf "Stress %d" n;
+    alloc_iters = max 3 (10_000 / n);
+    build =
+      [
+        ( "html_of_jsx",
+          fun () -> JSX.render <Jsx_stress.stress_render volume=n />
+        );
+        ("tyxml", fun () -> tyxml_doc (Tyxml_stress.stress_render n));
+        ( "pure-html",
+          fun () -> Pure_html.to_string (Pure_stress.stress_render n)
+        );
+      ];
+    prebuilt =
+      [
+        ("html_of_jsx", fun () -> JSX.render jsx);
+        ("tyxml", fun () -> tyxml_doc ty);
+        ("pure-html", fun () -> Pure_html.to_string pure);
+      ];
+  }
+
+let table () =
+  let users = Scenarios.Table.users_100 in
+  let jsx = Scenarios.Table.data_table users in
+  let ty = Tyxml_table.data_table users in
+  let pure = Pure_table.data_table users in
+  {
+    name = "Table (100 rows)";
+    alloc_iters = 100;
+    build =
+      [
+        ("html_of_jsx", fun () -> JSX.render (Scenarios.Table.data_table users));
+        ("tyxml", fun () -> tyxml_elt (Tyxml_table.data_table users));
+        ( "pure-html",
+          fun () -> Pure_html.to_string (Pure_table.data_table users)
+        );
+      ];
+    prebuilt =
+      [
+        ("html_of_jsx", fun () -> JSX.render jsx);
+        ("tyxml", fun () -> tyxml_elt ty);
+        ("pure-html", fun () -> Pure_html.to_string pure);
+      ];
+  }
+
+let cases =
+  List.map (fun n () -> stress n) [ 100; 1000; 10000; 100000 ] @ [ table ]
+
+let normalize s =
+  List.fold_left
+    (fun s (sub, by) -> Str.global_replace (Str.regexp_string sub) by s)
+    s
+    [
+      ("<!DOCTYPE html>\n", "");
+      ("<!DOCTYPE html>", "");
+      (" xmlns=\"http://www.w3.org/1999/xhtml\"", "");
+      ("\n", " ");
+    ]
+
+let sanity c =
+  let reference = normalize ((snd (List.hd c.build)) ()) in
+  List.iter2
+    (fun (lib, build) (_, prebuilt) ->
+      let out = build () in
+      let got = normalize out in
+      Printf.printf "  %-12s %8d bytes\n" lib (String.length out);
+      if got <> reference || prebuilt () <> out then (
+        let rec first_diff i =
+          if
+            i < String.length got
+            && i < String.length reference
+            && got.[i] = reference.[i]
+          then
+            first_diff (i + 1)
+          else
+            i
+        in
+        let i = first_diff 0 in
+        let from s = String.sub s i (min 60 (String.length s - i)) in
+        Printf.printf "  content differs at byte %d\n    %s: %S\n    %s: %S\n" i
+          (fst (List.hd c.build))
+          (from reference) lib (from got);
+        exit 1
+      )
+    )
+    c.build c.prebuilt
+
+let time_sample seconds f =
+  let t0 = Unix.gettimeofday () in
+  let deadline = t0 +. seconds in
+  let n = ref 0 in
+  let now = ref t0 in
+  while !now < deadline || !n < 3 do
+    ignore (Sys.opaque_identity (f ()));
+    incr n;
+    now := Unix.gettimeofday ()
+  done;
+  (!now -. t0) /. float_of_int !n *. 1e6
+
+let minor_words_per_op ~alloc_iters f =
+  ignore (Sys.opaque_identity (f ()));
+  let before = Gc.minor_words () in
+  for _ = 1 to alloc_iters do
+    ignore (Sys.opaque_identity (f ()))
+  done;
+  (Gc.minor_words () -. before) /. float_of_int alloc_iters
+
+let median xs =
+  let a = Array.of_list (List.sort compare xs) in
+  let n = Array.length a in
+  if n mod 2 = 1 then
+    a.(n / 2)
+  else
+    (a.((n / 2) - 1) +. a.(n / 2)) /. 2.0
+
+let run ~rounds ~seconds ~alloc_iters ~name ~mode libs =
+  let samples = List.map (fun _ -> ref []) libs in
+  for _ = 1 to rounds do
+    List.iter2
+      (fun (_, f) acc -> acc := time_sample seconds f :: !acc)
+      libs samples
+  done;
+  let medians = List.map (fun acc -> median !acc) samples in
+  let base = List.hd medians in
+  Printf.printf "\n%s / %s\n" name mode;
+  Printf.printf "  %-12s %12s %12s %9s %14s\n" "library" "median us" "min us"
+    "vs jsx" "minor w/op";
+  List.iteri
+    (fun i (lib, f) ->
+      let acc = List.nth samples i in
+      let med = List.nth medians i in
+      Printf.printf "  %-12s %12.2f %12.2f %8.2fx %14.0f\n" lib med
+        (List.fold_left min infinity !acc)
+        (med /. base)
+        (minor_words_per_op ~alloc_iters f)
+    )
+    libs
+
+let () =
+  let rounds = ref 7 in
+  let seconds = ref 0.5 in
+  let rec parse = function
+    | [] ->
+        ()
+    | "--rounds" :: v :: rest ->
+        rounds := int_of_string v;
+        parse rest
+    | "--seconds" :: v :: rest ->
+        seconds := float_of_string v;
+        parse rest
+    | arg :: _ ->
+        prerr_endline ("usage: vs [--rounds <n>] [--seconds <f>], got " ^ arg);
+        exit 2
+  in
+  parse (List.tl (Array.to_list Sys.argv));
+  Printf.printf "=== %d rounds x %.2fs per library ===\n" !rounds !seconds;
+  List.iter
+    (fun make ->
+      let c = make () in
+      Printf.printf "\n%s / same content check\n" c.name;
+      sanity c;
+      run ~rounds:!rounds ~seconds:!seconds ~alloc_iters:c.alloc_iters
+        ~name:c.name ~mode:"build+render" c.build;
+      run ~rounds:!rounds ~seconds:!seconds ~alloc_iters:c.alloc_iters
+        ~name:c.name ~mode:"render only" c.prebuilt
+    )
+    cases

@@ -1,0 +1,6 @@
+(executable
+ (name vs)
+ (optional)
+ (libraries html_of_jsx scenarios tyxml tyxml.functor pure-html unix str)
+ (preprocess
+  (pps html_of_jsx.ppx)))

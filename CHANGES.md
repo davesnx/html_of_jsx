@@ -1,5 +1,9 @@
 # Changes
 
+## Unreleased
+
+- Benchmarks: add `bench/vs` (`make bench-vs`), which compares render speed with TyXML and pure-html on the same pages, as build + render and as render only (@davesnx)
+
 ## 0.1.2
 
 - Support mlx fragments (mlx >= 0.12): `<></>`, `<>a b</>` and children spread `<>...xs</>`, which compiles to `JSX.list xs` for any `JSX.element list` expression, such as `<>...(List.map f xs)</>` (@davesnx)
