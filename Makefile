@@ -46,7 +46,7 @@ bench-memory: ## Run memory allocation benchmarks
 
 .PHONY: bench-vs
 bench-vs: ## Compare render speed with tyxml and pure-html
-	$(DUNE) exec --root . bench/vs/vs.exe
+	BENCH_VS=true $(DUNE) exec --root . bench/vs/vs.exe
 
 .PHONY: dev
 dev: ## Build in watch mode

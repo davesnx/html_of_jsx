@@ -138,12 +138,13 @@ round, so load changes on the host affect all libraries equally. It reports
 the median and minimum time per render, the ratio to html_of_jsx, and the
 minor words allocated per render.
 
-It needs TyXML and pure-html, which are not dependencies of this package:
+It needs TyXML and pure-html, which are not dependencies of this package, so
+dune builds it only when `BENCH_VS=true` is set. `make bench-vs` sets it:
 
 ```sh
 opam install tyxml pure-html
 make bench-vs
-dune exec bench/vs/vs.exe -- --rounds 15 --seconds 1
+BENCH_VS=true dune exec bench/vs/vs.exe -- --rounds 15 --seconds 1
 ```
 
 On a busy machine, pin the process to one core, for example

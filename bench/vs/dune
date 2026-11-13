@@ -1,6 +1,6 @@
 (executable
  (name vs)
- (optional)
+ (enabled_if %{env:BENCH_VS=false})
  (libraries html_of_jsx scenarios tyxml tyxml.functor pure-html unix str)
  (preprocess
   (pps html_of_jsx.ppx)))
