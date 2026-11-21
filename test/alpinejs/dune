@@ -1,0 +1,6 @@
+(test
+ (name test_alpinejs)
+ (modules test_alpinejs)
+ (libraries html_of_jsx)
+ (preprocess
+  (pps html_of_jsx.ppx -alpinejs)))
