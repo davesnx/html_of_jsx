@@ -1861,7 +1861,12 @@ let prefixedAttribute jsxName =
       else
         None
     )
-    (Extra_attributes.get_prefixes ())
+    ( match Extra_attributes.get () with
+    | Some Alpinejs ->
+        Extra_alpinejs.prefixes
+    | _ ->
+        []
+    )
 
 let findByName tag jsxName =
   match Hashtbl.find_opt (Lazy.force element_index) tag with

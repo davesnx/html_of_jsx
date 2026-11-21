@@ -18,6 +18,3 @@ let attributes_of_flags = function
 
 (* A function that loads the attributes lazy, since we need to derive the list of attributes with the ppx flags. *)
 let get_attributes () = attributes_of_flags (get ())
-
-let get_prefixes () =
-  match get () with Some Alpinejs -> Extra_alpinejs.prefixes | _ -> []
