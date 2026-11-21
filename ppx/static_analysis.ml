@@ -51,26 +51,7 @@ let escape_html s =
       done;
       Buffer.contents buf
 
-(* Duplicated from JSX.Html.is_self_closing_tag - keep in sync *)
-let is_self_closing_tag = function
-  | "area"
-  | "base"
-  | "br"
-  | "col"
-  | "embed"
-  | "hr"
-  | "img"
-  | "input"
-  | "link"
-  | "meta"
-  | "param"
-  | "source"
-  | "track"
-  | "wbr"
-  | "menuitem" ->
-      true
-  | _ ->
-      false
+let is_self_closing_tag = JSX.is_self_closing_tag
 
 let rec extract_literal_string expr =
   match expr.pexp_desc with
