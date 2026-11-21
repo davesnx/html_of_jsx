@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Restore the `doc` field in `html_of_jsx.opam`. dune-release no longer publishes documentation since 2.1.0, so the old workaround is not needed (#64, @davesnx)
+- Restore the `doc` field in `html_of_jsx.opam`, pointing at the docs site (#64, @davesnx)
 - Benchmarks: add `bench/vs` (`make bench-vs`), which compares render speed with TyXML and pure-html on the same pages, as build + render and as render only (@davesnx)
 
 ## 0.1.2
