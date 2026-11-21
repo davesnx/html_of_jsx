@@ -7,12 +7,6 @@ let issues_url = "https://github.com/davesnx/html_of_jsx/issues"
 (* Flags to control optimizations *)
 let disable_static_optimization = ref false
 
-(* There's no pexp_list on Ppxlib since is not a constructor of the Parsetree *)
-let pexp_list ~loc xs =
-  List.fold_left (List.rev xs) ~init:[%expr []] ~f:(fun xs x ->
-      [%expr [%e x] :: [%e xs]]
-  )
-
 exception Error of expression
 
 let raise_errorf ~loc fmt =
@@ -80,8 +74,7 @@ let rewrite_component ~loc tag args children =
     | Some [ children ] ->
         (Labelled "children", children) :: args
     | Some children ->
-        (Labelled "children", [%expr JSX.list [%e pexp_list ~loc children]])
-        :: args
+        (Labelled "children", [%expr JSX.list [%e elist ~loc children]]) :: args
   in
   pexp_apply ~loc component props
 
@@ -731,7 +724,7 @@ let rewrite_node_unoptimized ~loc tag_name args children =
     List.filteri idents ~f:(fun i _ -> i >= List.length args)
   in
   let attributes = transform_attributes ~loc ~tag_name args in
-  let childrens = pexp_list ~loc children_idents in
+  let childrens = elist ~loc children_idents in
   let node =
     [%expr JSX.node [%e dom_node_name] [%e attributes] [%e childrens]]
   in
@@ -844,7 +837,7 @@ let rewrite_fragment_unoptimized ~loc ~mapper children_expr =
         )
       in
       let bindings, idents = bind_in_order ~loc children in
-      let node = [%expr JSX.list [%e pexp_list ~loc idents]] in
+      let node = [%expr JSX.list [%e elist ~loc idents]] in
       List.fold_right bindings ~init:node ~f:(fun (pat, expr) acc ->
           [%expr
             let [%p pat] = [%e expr] in
