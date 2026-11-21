@@ -231,6 +231,11 @@ type attribute =
     This is used by the ppx to create the attributes of the HTML element, and
     rarely used directly. *)
 
+val is_self_closing_tag : string -> bool
+(** [is_self_closing_tag tag] is [true] when [tag] is a void element, such as
+    [br], [img] or [input]. Void elements render without a closing tag and take
+    no children. *)
+
 val node : string -> attribute list -> element list -> element
 (** The function to create an HTML DOM Node.
 

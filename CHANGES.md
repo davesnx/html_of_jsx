@@ -4,6 +4,7 @@
 
 - Restore the `doc` field in `html_of_jsx.opam`, pointing at the docs site (#64, @davesnx)
 - Benchmarks: add `bench/vs` (`make bench-vs`), which compares render speed with TyXML and pure-html on the same pages, as build + render and as render only (@davesnx)
+- Expose `JSX.is_self_closing_tag`; the PPX now uses it instead of its own copy of the void-tag list (@davesnx)
 
 ## 0.1.2
 
