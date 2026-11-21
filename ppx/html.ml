@@ -1844,30 +1844,6 @@ let find_closest_name invalid domPropNames =
   else
     Some name
 
-let prefixedAttribute jsxName =
-  List.find_map
-    (fun (jsx_prefix, prefix) ->
-      let jsx_prefix_length = String.length jsx_prefix in
-      if
-        String.starts_with ~prefix:jsx_prefix jsxName
-        && String.length jsxName > jsx_prefix_length
-      then
-        let rest =
-          String.sub jsxName jsx_prefix_length
-            (String.length jsxName - jsx_prefix_length)
-        in
-        let name = prefix ^ camelcaseToKebabcase rest in
-        Some (Attribute { name; jsxName; type_ = String })
-      else
-        None
-    )
-    ( match Extra_attributes.get () with
-    | Some Alpinejs ->
-        Extra_alpinejs.prefixes
-    | _ ->
-        []
-    )
-
 let findByName tag jsxName =
   match Hashtbl.find_opt (Lazy.force element_index) tag with
   | None ->
@@ -1877,22 +1853,17 @@ let findByName tag jsxName =
       | Some prop ->
           Ok prop
       | None -> (
-          match prefixedAttribute jsxName with
-          | Some prop ->
-              Ok prop
-          | None -> (
-              if isDataAttribute jsxName then
-                let name = camelcaseToKebabcase jsxName in
-                Ok (Attribute { name; jsxName; type_ = String })
-              else
-                (* Error path only: linear scan for a suggestion is fine here *)
-                let jsxNames = List.map getJSXName element.attributes in
-                match find_closest_name jsxName jsxNames with
-                | Some closest ->
-                    Error (`AttributeNotFound (Some closest))
-                | None ->
-                    Error (`AttributeNotFound None)
-            )
+          if isDataAttribute jsxName then
+            let name = camelcaseToKebabcase jsxName in
+            Ok (Attribute { name; jsxName; type_ = String })
+          else
+            (* Error path only: linear scan for a suggestion is fine here *)
+            let jsxNames = List.map getJSXName element.attributes in
+            match find_closest_name jsxName jsxNames with
+            | Some closest ->
+                Error (`AttributeNotFound (Some closest))
+            | None ->
+                Error (`AttributeNotFound None)
         )
     )
 

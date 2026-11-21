@@ -38,10 +38,18 @@ let () = {
       ),
   );
   check(
-    "kebab-case event names",
-    ~expected={|<div x-on:my-event="go()" x-bind:aria-label="label"></div>|},
+    "events and bindings",
+    ~expected=
+      {|<input x-on:keydown="go()" x-on:input="sync()" x-bind:disabled="busy" x-bind:value="text" />|},
     ~actual=
-      JSX.render(<div x_on_my_event="go()" x_bind_aria_label="label" />),
+      JSX.render(
+        <input
+          x_on_keydown="go()"
+          x_on_input="sync()"
+          x_bind_disabled="busy"
+          x_bind_value="text"
+        />,
+      ),
   );
   check(
     "template directives",

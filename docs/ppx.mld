@@ -18,7 +18,7 @@ Requires the [html_of_jsx.htmx] library for the [<Htmx />] script loader. See {{
 
 Enables {{:https://alpinejs.dev}Alpine.js} directives on all HTML and SVG elements: [x_data], [x_init], [x_show], [x_text], [x_html], [x_model], [x_modelable], [x_for], [x_if], [x_effect], [x_ignore], [x_ref], [x_cloak], [x_teleport], [x_id], [x_transition] and [x_transition_enter] (with [_start], [_end] and the [leave] variants).
 
-Event and attribute bindings use a prefix: [x_on_click] renders [x-on:click] and [x_bind_class] renders [x-bind:class]. The rest of the name becomes kebab-case, so [x_on_my_event] renders [x-on:my-event]. Modifiers such as [.prevent] and the [@] and [:] shorthands are not supported.
+[x_on_<event>] renders [x-on:<event>] for common DOM events ([x_on_click], [x_on_input], [x_on_keydown], [x_on_submit], ...). [x_bind_<attribute>] renders [x-bind:<attribute>] for common attributes ([x_bind_class], [x_bind_style], [x_bind_value], [x_bind_disabled], ...). The full lists are in [ppx/extra_alpinejs.ml]. Custom event names, modifiers such as [.prevent], and the [@] and [:] shorthands are not supported.
 
 {@dune[
 (preprocess (pps html_of_jsx.ppx -alpinejs))
