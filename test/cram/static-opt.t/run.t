@@ -1,4 +1,3 @@
-Test static JSX optimization
   $ ../ppx.sh --output re input.re
   let empty_div = JSX.unsafe("<div></div>");
   let div_with_class = JSX.unsafe("<div class=\"container\"></div>");

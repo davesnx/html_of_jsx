@@ -4,12 +4,10 @@ on:
   push:
     tags:
     - '*'
-  # Trigger when CI workflow completes on a tag
   workflow_run:
     workflows: ["CI"]
     types:
       - completed
-  # Also allow manual trigger for testing
   workflow_dispatch:
     inputs:
       tag:
@@ -28,10 +26,6 @@ permissions:
 jobs:
   release:
     name: Release
-    # Run only if:
-    # - Manual trigger, OR
-    # - Direct tag push, OR
-    # - CI succeeded on a tag push (not main)
     if: |
       github.event_name == 'workflow_dispatch' ||
       (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')) ||
@@ -94,7 +88,6 @@ jobs:
       - name: Initialize opam with artifacts
         if: steps.download-artifacts.outcome == 'success'
         run: |
-          # Ensure opam knows about the artifacts
           opam install . --deps-only --yes
 
       - name: Install dune-release

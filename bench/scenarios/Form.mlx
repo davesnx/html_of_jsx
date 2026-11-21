@@ -1,7 +1,3 @@
-(* Scenario: Complex Form
-   Multi-step form with many inputs and validation UI
-   Purpose: Test form-heavy page rendering *)
-
 let form_field ~id ~label ?(type_ = `text) ?(required = true)
     ?(placeholder = "") ?help_text ?error () =
   let cls =

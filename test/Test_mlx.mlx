@@ -47,13 +47,6 @@ let int_opt_attribute_none () =
   let div = <div ?tabindex /> in
   assert_string (JSX.render div) {|<div></div>|}
 
-(* let lists_as_children () =
-     let div = <> <div class_="md:w-1/3" /> <div class_="md:w-2/3" /> </> in
-     assert_string(
-       (JSX.render(div))
-       {|<div class="md:w-1/3"></div><div class="md:w-2/3"></div>|}
-     )) *)
-
 module Container = struct
   let make ?children () =
     match children with Some child -> <div>child</div> | None -> JSX.null

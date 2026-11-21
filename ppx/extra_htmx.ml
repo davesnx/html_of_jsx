@@ -1,5 +1,3 @@
-(** https://htmx.org/reference/ *)
-
 open Html_attributes
 
 let core_attributes =
@@ -29,29 +27,6 @@ let core_attributes =
         description = "issues a POST to the specified URL";
         url = "https://htmx.org/attributes/hx-post";
       };
-    (*
-        Not sure how to support those
-
-        Rich_attribute
-         {
-           name = "hx-on";
-           jsxName = "hx_on";
-           type_ =
-             String;
-            description =
-                "handle any event with a script inline";
-            url = "https://htmx.org/attributes/hx-on";
-         }; *)
-    (* Attribute
-       {
-         name = "hx-push-url";
-         jsxName = "hx_push_url";
-         type_ =
-           String;
-            description =
-              "pushes the URL into the browser location bar, creating a new history entry";
-            url = "https://htmx.org/attributes/hx-get";
-       }; *)
     Rich_attribute
       {
         name = "hx-select";
@@ -308,8 +283,6 @@ let additional_attributes =
       };
   ]
 
-(** SSE (Server-Sent Events) extension attributes
-    https://htmx.org/extensions/sse/ *)
 let sse_extension_attributes =
   [
     Rich_attribute
@@ -338,7 +311,6 @@ let sse_extension_attributes =
       };
   ]
 
-(** WebSocket extension attributes https://htmx.org/extensions/ws/ *)
 let ws_extension_attributes =
   [
     Rich_attribute
@@ -359,7 +331,6 @@ let ws_extension_attributes =
       };
   ]
 
-(** Class-tools extension attributes https://htmx.org/extensions/class-tools/ *)
 let class_tools_extension_attributes =
   [
     Rich_attribute
@@ -372,7 +343,6 @@ let class_tools_extension_attributes =
       };
   ]
 
-(** Preload extension attributes https://htmx.org/extensions/preload/ *)
 let preload_extension_attributes =
   [
     Rich_attribute
@@ -387,7 +357,6 @@ let preload_extension_attributes =
       };
   ]
 
-(** Path-deps extension attributes https://htmx.org/extensions/path-deps/ *)
 let path_deps_extension_attributes =
   [
     Rich_attribute
@@ -401,8 +370,6 @@ let path_deps_extension_attributes =
       };
   ]
 
-(** Loading-states extension attributes
-    https://htmx.org/extensions/loading-states/ *)
 let loading_states_extension_attributes =
   [
     Rich_attribute

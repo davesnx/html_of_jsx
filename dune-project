@@ -18,16 +18,13 @@
    (ocaml (>= 4.14))
    (ppxlib (>= 0.36.0))
 
-  ;; Documentation
   (odoc :with-doc)
   (odoc-parser :with-doc)
 
-  ;; Test dependencies
   (alcotest :with-test)
   (benchmark :with-test)
   (reason (and (>= 3.10.0) :with-test))
 
-  ;; Test and dev dependencies
   (ocamlformat
    (and (>= 0.26.1)
     (or :with-dev-setup :with-test)))
@@ -40,7 +37,6 @@
     (and :with-test (>= 0.29.0.2))
     (and :with-dev-setup (not :with-test))))
 
-  ;; Dev dependencies
   (ocaml-lsp-server :with-dev-setup)
   (tiny_httpd :with-dev-setup)
   (yocaml :with-dev-setup)

@@ -14,8 +14,6 @@
   src: url("ibm-plex-mono-600.woff2") format("woff2");
 }
 
-/* Cal Sans is pinned to its sharp form (SHRP=100, wght=600) with only the
-   optical-size axis left variable. Both Cal Sans files are Latin subsets. */
 @font-face {
   font-family: "Cal Sans";
   font-style: normal;

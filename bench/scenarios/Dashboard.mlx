@@ -1,7 +1,3 @@
-(* Scenario: Analytics Dashboard
-   Complex dashboard with stats, charts placeholders, and data tables
-   Purpose: Test admin/dashboard UI rendering performance *)
-
 let stat_card ~title ~value ~change ~icon ~trend =
   let trend_color =
     if trend > 0.0 then

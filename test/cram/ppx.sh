@@ -10,10 +10,8 @@ usage() {
 FLAGS=""
 FILE=""
 
-# Check if 3rd argument is flags or file
 if [ $# -ge 3 ]; then
   if [ "${3#--flags=}" != "$3" ]; then
-    # 3rd argument is flags
     FLAGS="${3#--flags=}"
     if [ $# -ge 4 ]; then
       FILE="$4"
@@ -23,7 +21,6 @@ if [ $# -ge 3 ]; then
       exit 1
     fi
   else
-    # 3rd argument is file
     FILE="$3"
   fi
 else
@@ -34,7 +31,6 @@ fi
 
 refmt --parse re --print ml "$FILE" > output.ml
 
-# Pass flags to jsx-ppx-standalone if provided
 if [ -n "$FLAGS" ]; then
   jsx-ppx-standalone --impl output.ml -o temp.ml "$FLAGS"
 else

@@ -1,7 +1,3 @@
-(* Scenario: E-commerce Page
-   Realistic product listing page with complex UI patterns
-   Purpose: Test real-world SSR performance for e-commerce use case *)
-
 type product = {
   id : int;
   name : string;
@@ -472,8 +468,6 @@ let page ~products =
     </body>
   </html>
 
-(* Input data is precomputed: we measure element construction + rendering,
-   not test-data generation. *)
 let products_24 = generate_products 24
 let products_48 = generate_products 48
 let products_100 = generate_products 100

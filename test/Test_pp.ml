@@ -316,7 +316,6 @@ let siblings_at_same_depth =
 
 let single_child_chain_fits =
   test "single_child_chain_fits" @@ fun () ->
-  (* <a><b><c><d>x</d></c></b></a> = 30 chars, fits at width 30 *)
   assert_string
     (JSX.pp ~width:30
        (JSX.node "a" []
@@ -468,7 +467,6 @@ let very_narrow_deep_break =
 
 let width_boundary_fits =
   test "width_boundary_fits" @@ fun () ->
-  (* <div><span>ok</span></div> = 26 chars, fits at width 26 *)
   assert_string
     (JSX.pp ~width:26
        (JSX.node "div" [] [ JSX.node "span" [] [ JSX.string "ok" ] ])
@@ -477,7 +475,6 @@ let width_boundary_fits =
 
 let width_boundary_breaks =
   test "width_boundary_breaks" @@ fun () ->
-  (* <div><span>ok</span></div> = 26 chars, overflows at width 25 *)
   assert_string
     (JSX.pp ~width:25
        (JSX.node "div" [] [ JSX.node "span" [] [ JSX.string "ok" ] ])
@@ -524,7 +521,6 @@ let hard_line_invalidates_flat_group =
 
 let default_width_is_80 =
   test "default_width_is_80" @@ fun () ->
-  (* 79 x's + <p></p> = 86 chars. At width 80, text stays inline *)
   let text = String.make 74 'x' in
   assert_string
     (JSX.pp (JSX.node "p" [] [ JSX.string text ]))
@@ -711,8 +707,6 @@ let only_null_children =
 
 let pp_matches_render_semantics =
   test "pp_matches_render_semantics" @@ fun () ->
-  (* At a sufficiently wide width, pp should produce the same output as render
-     (minus the DOCTYPE handling, which render also does) *)
   let el =
     JSX.node "div"
       [ ("class", `String "test") ]

@@ -248,7 +248,6 @@ let lowercase_component =
     );
   });
 
-/* Regression: constant JSX.string children of fragments must be escaped */
 let fragment_escapes_static_strings =
   test("fragment_escapes_static_strings", () => {
     let component = <> {JSX.string("<script>alert('&')</script>")} <br /> </>;

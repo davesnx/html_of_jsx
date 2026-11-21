@@ -1,4 +1,3 @@
-(* https://github.com/facebook/react/blob/97d75c9c8bcddb0daed1ed062101c7f5e9b825f4/packages/react-dom-bindings/src/shared/omittedCloseTags.js *)
 let is_self_closing_tag = function
   | "area"
   | "base"
@@ -68,14 +67,6 @@ let is_inline_tag = function
   | _ ->
       false
 
-(* Escapes by copying runs of clean characters in bulk with
-   [Buffer.add_substring] and only splicing in entities where needed. Clean
-   strings are copied with a single [add_substring].
-
-   These are top-level functions taking all state as arguments on purpose:
-   inner recursive functions would capture [buf]/[s] and allocate a closure
-   on every [escape] call, which is on the hot path of every dynamic
-   string. *)
 let rec escape_loop buf s length run_start i =
   if i = length then (
     if length > run_start then
@@ -102,7 +93,6 @@ and escape_entity buf s length run_start i entity =
 
 let escape buf s = escape_loop buf s (String.length s) 0 0
 
-(* [true] when [escape] would write [s] unchanged *)
 let rec is_clean_string_from s length i =
   i = length
   ||
@@ -157,10 +147,8 @@ let write_attribute out (attr : attribute) =
   in
   match attr with
   | _name, `Bool false ->
-      (* false attributes don't get rendered *)
       ()
   | name, `Bool true ->
-      (* true attributes render only the attribute name *)
       Buffer.add_char out ' ';
       Buffer.add_string out name
   | name, `String value ->
@@ -181,7 +169,7 @@ type element =
   | String of string
   | Int of int
   | Float of float
-  | Unsafe of string (* text without encoding *)
+  | Unsafe of string
   | Node of {
       tag : string;
       attributes : attribute list;
@@ -264,11 +252,8 @@ let render element =
       w.write out;
       Buffer.contents out
   | Unsafe out ->
-      (* The ppx compiles most elements down to [Unsafe html], render is a
-         no-op in that case: return the string without copying. *)
       out
   | String text when is_clean_string text ->
-      (* Nothing to escape: return the string without copying. *)
       text
   | String text ->
       let out = Buffer.create (String.length text + 16) in
@@ -301,9 +286,6 @@ let render_streaming ?(chunk_size = 4096) (write_fn : string -> unit) element =
       Buffer.clear out
     )
   in
-  (* Mirrors [write], with flush points after leaves and tag boundaries so
-     chunks are emitted as soon as [chunk_size] bytes are available instead
-     of buffering the whole document. *)
   let rec go element =
     match element with
     | Null ->
@@ -474,8 +456,6 @@ module Pretty = struct
             | Some flat_width when flat_width > remaining ->
                 broken ()
             | Some _ ->
-                (* Include the continuation so adjacent groups and fragments
-                   cannot make a locally fitting group overflow the line. *)
                 let candidate =
                   select width column (Doc (indent, Flat, child) :: rest)
                 in

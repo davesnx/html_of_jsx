@@ -6,7 +6,6 @@ let simple_hx_boost =
     )
   });
 
-/* SSE Extension Tests */
 let sse_connect =
   test("sse_connect", () => {
     assert_string(
@@ -43,7 +42,6 @@ let sse_complete =
     )
   });
 
-/* WebSocket Extension Tests */
 let ws_connect =
   test("ws_connect", () => {
     assert_string(
@@ -72,7 +70,6 @@ let ws_complete =
     )
   });
 
-/* Class-tools Extension Tests */
 let classes =
   test("classes", () => {
     assert_string(
@@ -81,7 +78,6 @@ let classes =
     )
   });
 
-/* Preload Extension Tests */
 let preload =
   test("preload", () => {
     assert_string(
@@ -90,7 +86,6 @@ let preload =
     )
   });
 
-/* Path-deps Extension Tests */
 let path_deps =
   test("path_deps", () => {
     assert_string(
@@ -106,7 +101,6 @@ let path_deps =
     )
   });
 
-/* Loading-states Extension Tests */
 let loading_states_basic =
   test("loading_states_basic", () => {
     assert_string(
@@ -184,30 +178,22 @@ let hx_swap_polyvariant_opt_none =
 let tests = (
   "Htmx",
   [
-    /* Core */
     simple_hx_boost,
-    /* SSE Extension */
     sse_connect,
     sse_swap,
     sse_close,
     sse_complete,
-    /* WebSocket Extension */
     ws_connect,
     ws_send,
     ws_complete,
-    /* Class-tools Extension */
     classes,
-    /* Preload Extension */
     preload,
-    /* Path-deps Extension */
     path_deps,
-    /* Loading-states Extension */
     loading_states_basic,
     loading_states_class,
     loading_states_disable,
     loading_states_delay,
     loading_states_target,
-    /* Polyvariant typed attributes */
     hx_swap_polyvariant,
     hx_swap_polyvariant_dynamic,
     hx_swap_polyvariant_opt_some,

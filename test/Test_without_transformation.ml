@@ -203,8 +203,6 @@ let render_svg =
 
 let render_streaming_chunks =
   test "render_streaming_chunks" @@ fun () ->
-  (* A tree big enough to overflow a tiny chunk_size: chunks must be emitted
-     incrementally and concatenate to the same output as [render]. *)
   let items =
     List.init 50 (fun i ->
         JSX.node "li"
@@ -231,7 +229,6 @@ let render_streaming_small_document_single_chunk =
 
 let render_clean_string_no_copy =
   test "render_clean_string_no_copy" @@ fun () ->
-  (* Clean strings are returned without copying *)
   let text = "no escapable characters here" in
   let rendered = JSX.render (JSX.string text) in
   assert_string rendered text;
