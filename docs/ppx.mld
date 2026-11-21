@@ -14,6 +14,16 @@ Enables htmx attributes ([hx_get], [hx_post], [hx_swap], ...) and extension-spec
 
 Requires the [html_of_jsx.htmx] library for the [<Htmx />] script loader. See {{!page-"HTMX-mode"}HTMX mode}.
 
+{1 [-alpinejs]}
+
+Enables {{:https://alpinejs.dev}Alpine.js} directives on all HTML and SVG elements: [x_data], [x_init], [x_show], [x_text], [x_html], [x_model], [x_modelable], [x_for], [x_if], [x_effect], [x_ignore], [x_ref], [x_cloak], [x_teleport], [x_id], [x_transition] and [x_transition_enter] (with [_start], [_end] and the [leave] variants).
+
+Event and attribute bindings use a prefix: [x_on_click] renders [x-on:click] and [x_bind_class] renders [x-bind:class]. The rest of the name becomes kebab-case, so [x_on_my_event] renders [x-on:my-event]. Modifiers such as [.prevent] and the [@] and [:] shorthands are not supported.
+
+{@dune[
+(preprocess (pps html_of_jsx.ppx -alpinejs))
+]}
+
 {1 [-react]}
 
 Enables React DOM aliases: [className] maps to [class] and [htmlFor] maps to [for]. Useful as a migration bridge from React/Reason-React codebases.

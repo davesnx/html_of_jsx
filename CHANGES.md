@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- PPX: add the `-alpinejs` flag, which enables Alpine.js directives (`x_data`, `x_show`, `x_model`, ...) and the `x_on_<event>` and `x_bind_<attribute>` prefixes, rendered as `x-on:<event>` and `x-bind:<attribute>` (@davesnx)
 - Benchmarks: add `bench/vs` (`make bench-vs`), which compares render speed with TyXML and pure-html on the same pages, as build + render and as render only (@davesnx)
 
 ## 0.1.2
