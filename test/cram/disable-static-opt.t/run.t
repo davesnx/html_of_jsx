@@ -1,4 +1,3 @@
-Test with -disable-static-opt flag: all elements should use JSX.node instead of JSX.unsafe
   $ ../ppx.sh --output re --flags="-disable-static-opt" input.re
   let static_div = JSX.node("div", [], []);
   let static_with_class =

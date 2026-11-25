@@ -9,15 +9,11 @@ let check = (~expected, ~actual, name) =>
     exit(1);
   };
 
-/* Optional booleanish-string attribute: regression test for the unoptimized
-   path generating `Bool.to_string(v: bool option)`. */
 let booleanish = (~spellcheck=?, ()) => <div ?spellcheck />;
 
-/* Optional string, int and bool attributes through the JSX.node path. */
 let with_optionals = (~id=?, ~tabindex=?, ~disabled=?, ()) =>
   <button ?id ?tabindex ?disabled />;
 
-/* Static + dynamic mix through the JSX.node path. */
 let mixed = name => <div class_="container"> {JSX.string(name)} </div>;
 
 let fragment = name => <> <span /> {JSX.string(name)} </>;

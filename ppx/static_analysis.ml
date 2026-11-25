@@ -345,7 +345,7 @@ type attr_analysis_result = Ok of parsed_attr option | Invalid
 let analyze_attribute ~tag_name (label, expr) : attr_analysis_result =
   match label with
   | Nolabel ->
-      Ok None (* Children, handled separately *)
+      Ok None
   | Optional name -> (
       match validate_attr_for_static ~tag_name name with
       | Invalid_attr ->

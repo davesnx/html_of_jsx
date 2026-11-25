@@ -1,8 +1,3 @@
-(* html_of_jsx benchmarks
-
-   Measures render latency (us per render) for various scenarios.
- *)
-
 type bench_config = {
   runs : int;
   warmup : int;
@@ -261,9 +256,6 @@ let run_bench ~cfg ~name ~render =
     runs_us = latencies;
   }
 
-(* Every scenario except the ones marked "static" or "prebuilt" constructs
-   the element tree on every call, so a request's full cost (eager
-   construction plus the writer pass) is what gets timed. *)
 let scenarios =
   [
     ("Trivial (static)", Scenarios.Trivial.render);

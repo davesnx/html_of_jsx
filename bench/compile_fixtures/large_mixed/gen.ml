@@ -1,15 +1,3 @@
-(* Generator for large_mixed.mlx.
-
-   The fixture is checked in (not generated at build time) so that
-   compile_bench measures only mlx-pp + ppx + ocaml compilation, without a
-   generator step polluting the timings after each [dune clean].
-
-   Regenerate with:
-
-     ocaml bench/compile_fixtures/large_mixed/gen.ml > \
-       bench/compile_fixtures/large_mixed/large_mixed.mlx
-*)
-
 let components = 800
 
 let header =

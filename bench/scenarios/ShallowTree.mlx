@@ -1,7 +1,3 @@
-(* Scenario: Shallow Tree
-   5 components deep with multiple props each
-   Purpose: Test prop passing and shallow component hierarchies *)
-
 let level5 ~title ~subtitle ~active ~count =
   let cls = Cx.make [ "p-4"; "rounded"; Cx.if_true "bg-blue-500" active ] in
   <div class_=cls>

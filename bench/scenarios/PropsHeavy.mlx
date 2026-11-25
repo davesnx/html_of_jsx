@@ -1,7 +1,3 @@
-(* Scenario: Props Heavy
-   Components with many HTML attributes/props
-   Purpose: Test attribute serialization performance *)
-
 let heavy_div ~id children =
   let div_id = Printf.sprintf "heavy-div-%d" id in
   let testid = Printf.sprintf "test-heavy-%d" id in

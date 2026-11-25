@@ -14,5 +14,4 @@ let attributes_of_flags = function
   | Some React ->
       Extra_react.attributes
 
-(* A function that loads the attributes lazy, since we need to derive the list of attributes with the ppx flags. *)
 let get_attributes () = attributes_of_flags (get ())

@@ -1,7 +1,3 @@
-(* Scenario: Table Rendering
-   Real-world data table patterns
-   Purpose: Test realistic table rendering performance *)
-
 type status = Active | Inactive | Pending
 
 type user = {
@@ -233,8 +229,6 @@ let data_table users =
     </div>
   </div>
 
-(* Input data is precomputed: we measure element construction + rendering,
-   not test-data generation. *)
 let users_10 = generate_users 10
 let users_50 = generate_users 50
 let users_100 = generate_users 100
@@ -244,8 +238,5 @@ let table_100 () = data_table users_100
 let make () = table_100 ()
 let render () = JSX.render (make ())
 
-(* Prebuilt variant: the element is constructed once, so this measures
-   [JSX.render] on an already-built tree, i.e. only the writer pass without
-   element construction. *)
 let prebuilt_el = data_table users_100
 let render_prebuilt () = JSX.render prebuilt_el

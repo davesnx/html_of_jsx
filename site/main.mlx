@@ -17,10 +17,6 @@ let target_assets_dir = Path.(target_dir / "assets")
 
 let changes_path = "CHANGES.md"
 
-(* A version heading in CHANGES.md looks like "## 0.0.9". We extract the first
-   such heading (the most recent release). The token after "## " is the
-   version when it starts with a digit; this skips non-version sub-headings if
-   any are introduced later. Whitespace and trailing CRs are trimmed. *)
 let extract_version_from_changes content =
   let lines = String.split_on_char '\n' content in
   let starts_with_digit s =
@@ -82,8 +78,6 @@ let guide_order =
     "React-compatibility.md";
   ]
 
-(* Display labels in the sidebar override the H1-derived page title for
-   specific pages. Keep the project's voice: lowercase ppx, short names. *)
 let sidebar_label_overrides =
   [
     ("dream.md", "Dream");
@@ -91,9 +85,6 @@ let sidebar_label_overrides =
     ("React-compatibility.md", "React compat");
   ]
 
-(* For API pages, derive the label from the source filename so the dotted
-   module path is preserved (Htmx-Extensions-SSE.md -> "Htmx.Extensions.SSE").
-   This keeps the parent/child relationship visible in a flat list. *)
 let label_from_api_source_name source_name =
   let stem = Filename.remove_extension source_name in
   String.map
@@ -114,7 +105,6 @@ let sidebar_label_for ~source_name ~title =
   | None when is_api_source_name source_name ->
       label_from_api_source_name source_name
   | None ->
-      (* For guides, fall back to the H1 title as extracted from the file. *)
       title
 
 let highlighter =
@@ -136,7 +126,6 @@ let basename_exn path =
   | None ->
       invalid_arg ("Expected a basename for path: " ^ Path.to_string path)
 
-(* The public PPX library is a build tool, not a user-facing API module. *)
 let hidden_doc_sources = [ "Html_of_jsx_ppx.md" ]
 
 let is_visible_doc_source path =
@@ -260,7 +249,6 @@ let make_code_theme ~name ~fg ~bg ~comment ~string ~number ~keyword ~fn ~typ =
       ]
     ()
 
-(* Colors come from the Oxide Computer palette, matching assets/index.css. *)
 let code_theme_light =
   make_code_theme ~name:"oxide-light" ~fg:"#202225" ~bg:"#F6F7F8"
     ~comment:"#67696B" ~string:"#006B4A" ~number:"#804E00" ~keyword:"#4E4FA1"
@@ -365,8 +353,6 @@ let code_caption ~badge () =
     <copy_button />
   </figcaption>
 
-(* For paired Reason/mlx code figures, the figcaption hosts the syntax tabs on
-   the left and the Copy button on the right — replacing the language badge. *)
 let code_caption_pair () =
   <figcaption class_="doc-code__meta doc-code__meta--pair">
     <code_pair_tabs /> <copy_button />
@@ -581,12 +567,6 @@ let sidebar_link ~href ~label ~is_active () =
       </a>
     </li>
 
-(* JSX.md gets pinned to the top of the API list. The remaining pages sort by
-   a key that keeps a parent module immediately before its sub-modules:
-   "Htmx" < "Htmx.Extensions" < "Htmx.Extensions.SSE" < "Ppx".
-   We achieve this by replacing '-' with '.' in the source name (matching the
-   label conversion) and sorting case-insensitively. '.' (0x2e) sorts after
-   alphabetic chars, so a parent always precedes its dotted children. *)
 let api_sort_key source_name =
   let stem = Filename.remove_extension source_name in
   let dotted =

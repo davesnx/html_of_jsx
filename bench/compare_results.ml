@@ -1,13 +1,5 @@
-(* Benchmark comparison tool
-
-   Usage:
-     compare_results baseline.json new.json           # Human-readable output
-     compare_results --markdown baseline.json new.json # Markdown for PR comments
-*)
-
 type result = { name : string; latency_us : float }
 
-(* Parse JSON benchmark results file *)
 let parse_json_file filename =
   let ic = open_in filename in
   let content = really_input_string ic (in_channel_length ic) in
@@ -16,7 +8,6 @@ let parse_json_file filename =
   let results = ref [] in
   let lines = String.split_on_char '\n' content in
 
-  (* Track current object's fields *)
   let current_name = ref None in
   let current_latency = ref None in
 
@@ -36,12 +27,10 @@ let parse_json_file filename =
       let pattern = "\"" ^ key ^ "\":" in
       let idx = Str.search_forward (Str.regexp_string pattern) line 0 in
       let start = idx + String.length pattern in
-      (* Skip whitespace *)
       let start = ref start in
       while !start < String.length line && line.[!start] = ' ' do
         incr start
       done;
-      (* Extract number *)
       let end_pos = ref !start in
       while
         !end_pos < String.length line
@@ -60,21 +49,18 @@ let parse_json_file filename =
 
   List.iter
     (fun line ->
-      (* Check for name field *)
       ( match extract_string_value line "name" with
       | Some n ->
           current_name := Some n
       | None ->
           ()
       );
-      (* Check for latency_us field *)
       ( match extract_float_value line "latency_us" with
       | Some l ->
           current_latency := Some l
       | None ->
           ()
       );
-      (* If we have all fields, create result *)
       match (!current_name, !current_latency) with
       | Some name, Some latency_us ->
           results := { name; latency_us } :: !results;
@@ -87,7 +73,6 @@ let parse_json_file filename =
 
   List.rev !results
 
-(* Format latency for display *)
 let format_latency us =
   if us < 1.0 then
     Printf.sprintf "%.2f µs" us
@@ -98,10 +83,8 @@ let format_latency us =
   else
     Printf.sprintf "%.1f ms" (us /. 1000.0)
 
-(* Calculate percentage change (positive = regression, negative = improvement) *)
 let calc_change baseline current = (current -. baseline) /. baseline *. 100.0
 
-(* Compare results and output in human-readable format *)
 let compare_text baseline_results new_results =
   Printf.printf "=== Benchmark Comparison ===\n\n";
   Printf.printf "%-28s %12s %12s %12s\n" "Scenario" "Baseline" "Current"
@@ -153,10 +136,8 @@ let compare_text baseline_results new_results =
   Printf.printf "\nSummary: %d improved (>5%%), %d regressed, %d unchanged\n"
     !improved !regressed !unchanged;
 
-  (* Return true if no regressions *)
   !regressed = 0
 
-(* Compare results and output in markdown format for PR comments *)
 let compare_markdown baseline_results new_results =
   Printf.printf "## Benchmark Results\n\n";
   Printf.printf "| Scenario | Baseline | Current | Change |\n";
@@ -203,7 +184,6 @@ let compare_markdown baseline_results new_results =
     "\n**Summary**: %d improved (>5%%), %d regressed, %d unchanged\n" !improved
     !regressed !unchanged;
 
-  (* Return true if no regressions *)
   !regressed = 0
 
 let () =
@@ -218,7 +198,6 @@ let () =
       args
   in
   let files = List.tl files in
-  (* Remove program name *)
   let files = List.filter (fun s -> s <> "--markdown") files in
 
   if List.length files < 2 then (

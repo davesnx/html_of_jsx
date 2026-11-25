@@ -1,16 +1,5 @@
-(* Memory allocation benchmark for html_of_jsx
-
-   Run with: dune exec ./bench/memory.exe
-
-   Measures:
-   1. Static object sizes (reachable words)
-   2. Allocation costs (minor words allocated during construction)
-   3. Comparison between list vs array for attributes
-*)
-
 let words_of obj = Obj.reachable_words (Obj.repr obj)
 
-(* Run N iterations and measure total allocation *)
 let measure_alloc_n n f =
   Gc.full_major ();
   let before = Gc.stat () in
@@ -61,7 +50,6 @@ let () =
   Printf.printf "  Delta (list - array): %d words\n\n"
     (words_of attr_list - words_of attr_array);
 
-  (* More attributes *)
   let make_attr i =
     (Printf.sprintf "attr%d" i, `String (Printf.sprintf "value%d" i))
   in

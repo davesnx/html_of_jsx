@@ -18,18 +18,12 @@
   const normalizeSyntax = (value) =>
     value === "mlx" || value === "reason" ? value : null;
 
-  // Tracks whether the current URL advertises ?syntax=. Updated on init and
-  // whenever updateSyntaxQueryParam rewrites history. Used by the document
-  // click handler to short-circuit before walking the DOM with closest().
   let currentUrlHasSyntax =
     window.location.search.indexOf(SYNTAX_QUERY_KEY + "=") !== -1;
 
   const updateSyntaxQueryParam = (syntax) => {
     try {
       const url = new URL(window.location.href);
-      // Only keep an existing ?syntax= param canonical. If the URL doesn't
-      // already advertise a syntax, leave it clean — localStorage handles
-      // persistence, and we don't want to pollute every URL after a toggle.
       if (!url.searchParams.has(SYNTAX_QUERY_KEY)) return;
       if (url.searchParams.get(SYNTAX_QUERY_KEY) === syntax) return;
       url.searchParams.set(SYNTAX_QUERY_KEY, syntax);
@@ -60,9 +54,6 @@
     }
   };
 
-  // The inline <head> script already resolved the syntax from ?syntax= and
-  // localStorage and set data-doc-syntax + data-syntax-ready before paint.
-  // Sync the toggle UI to that value without overwriting the query param.
   const initialSyntax =
     normalizeSyntax(root.getAttribute("data-doc-syntax")) || DEFAULT_SYNTAX;
   setActiveSyntax(initialSyntax, { updateQuery: false });
@@ -157,13 +148,7 @@
     document.body.removeChild(textarea);
   };
 
-  // Same-origin link clicks should preserve `?syntax=` so the URL stays
-  // canonical across navigations — but only when the *current* URL already
-  // advertises a syntax. If the user is on a clean URL, we leave outgoing
-  // links alone; localStorage handles persistence on the next page.
   document.addEventListener("click", (event) => {
-    // Hot path: if the current URL doesn't have ?syntax=, we never forward it
-    // to outgoing links. Bail before any DOM traversal.
     if (!currentUrlHasSyntax) return;
     if (event.defaultPrevented) return;
     if (event.button !== 0) return;
@@ -174,9 +159,6 @@
     if (anchor.target && anchor.target !== "" && anchor.target !== "_self") return;
     if (anchor.hasAttribute("download")) return;
 
-    // Cheap pre-filters before constructing a URL: skip pure-fragment
-    // navigations (so smooth-scroll for `#section` keeps working) and skip
-    // anchors whose href already advertises a syntax param.
     const rawHref = anchor.getAttribute("href");
     if (!rawHref || rawHref[0] === "#") return;
     if (rawHref.indexOf(SYNTAX_QUERY_KEY + "=") !== -1) return;
@@ -191,9 +173,6 @@
     if (destination.origin !== window.location.origin) return;
     if (destination.searchParams.has(SYNTAX_QUERY_KEY)) return;
 
-    // Skip same-document navigations (e.g. `<a href="page#frag">` from the
-    // same page) so the browser performs an in-page scroll instead of a full
-    // reload triggered by the new query param.
     if (
       destination.pathname === window.location.pathname &&
       destination.search === window.location.search
@@ -236,7 +215,6 @@
     });
   });
 
-  // Mobile drawer: ARIA wiring, focus management, link-click close, Esc close.
   if (navToggle && sidebarEl && hamburgerLabel) {
     const syncDrawerAria = () => {
       const open = navToggle.checked;
@@ -251,7 +229,6 @@
       }
     };
 
-    // Make the label keyboard-activatable as a button.
     hamburgerLabel.setAttribute("role", "button");
     hamburgerLabel.setAttribute("tabindex", "0");
     syncDrawerAria();
@@ -266,16 +243,13 @@
 
     navToggle.addEventListener("change", syncDrawerAria);
 
-    // Close on Esc
     document.addEventListener("keydown", (event) => {
       if (event.key === "Escape" && navToggle.checked) {
         closeDrawer();
-        // Return focus to the hamburger
         hamburgerLabel.focus();
       }
     });
 
-    // Close on sidebar link click (so navigation feels right on mobile)
     sidebarEl.addEventListener("click", (event) => {
       const anchor = event.target?.closest?.("a[href]");
       if (anchor) {
@@ -283,7 +257,6 @@
       }
     });
 
-    // Close drawer when transitioning back to desktop width.
     const desktopMq = window.matchMedia("(min-width: 881px)");
     const onDesktopChange = () => {
       if (desktopMq.matches) closeDrawer();
