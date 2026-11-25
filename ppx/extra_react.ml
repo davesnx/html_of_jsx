@@ -87,4 +87,36 @@ let attributes =
         jsxName = "defaultValue";
         type_ = String;
       };
+
+    (* https://reactjs.org/docs/dom-elements.html *)
+    (* Attribute
+      {
+        name = "dangerouslySetInnerHTML";
+        jsxName = "dangerouslySetInnerHTML";
+        type_ = String;
+      }; *)
+    (* Attribute
+      {
+        name = "ref";
+        jsxName = "ref";
+        type_ = Ref;
+      };
+    Attribute
+      {
+        name = "key";
+        jsxName = "key";
+        type_ = String;
+      };
+    Attribute
+      {
+        name = "suppressContentEditableWarning";
+        jsxName = "suppressContentEditableWarning";
+        type_ = Bool;
+      };
+    Attribute
+      {
+        name = "suppressHydrationWarning";
+        jsxName = "suppressHydrationWarning";
+        type_ = Bool;
+      }; *)
   ]

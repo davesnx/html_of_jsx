@@ -4,6 +4,7 @@ module List = ListLabels
 
 let issues_url = "https://github.com/davesnx/html_of_jsx/issues"
 
+(* Flags to control optimizations *)
 let disable_static_optimization = ref false
 
 exception Error of expression
@@ -165,6 +166,8 @@ let polyvariant_to_string_match ~loc options scrutinee =
       :: match_expr.pexp_attributes;
   }
 
+(* Returns an expression of type [attribute] when [is_optional] is false,
+   and of type [attribute option] when [is_optional] is true. *)
 let make_attribute ~loc ~is_optional ~prop attribute_name attribute_value =
   let open Html_attributes in
   match (prop, is_optional) with
@@ -195,6 +198,7 @@ let make_attribute ~loc ~is_optional ~prop attribute_name attribute_value =
         Stdlib.Option.map
           (fun v -> ([%e attribute_name], `Bool v))
           [%e attribute_value]]
+  (* BooleanishString needs to transform bool into string *)
   | Rich_attribute { type_ = BooleanishString; _ }, false
   | Attribute { type_ = BooleanishString; _ }, false ->
       [%expr
@@ -228,6 +232,10 @@ let make_attribute ~loc ~is_optional ~prop attribute_name attribute_value =
 
 let is_optional = function Optional _ -> true | _ -> false
 
+(* When [wrap_some] is true the resulting list has type [attribute option
+   list] (optional attributes produce [None] when absent), so non-optional
+   attributes are wrapped in [Some]. When false, the list is a plain
+   [attribute list] with no wrapping and no runtime filtering. *)
 let transform_labelled ~loc:_parentLoc ~tag_name ~wrap_some props
     (prop_label, value) =
   let loc = props.pexp_loc in
@@ -257,6 +265,7 @@ let transform_labelled ~loc:_parentLoc ~tag_name ~wrap_some props
       in
       let cell =
         if is_optional then
+          (* Already an [attribute option] *)
           attribute_final
         else if wrap_some then
           [%expr Some [%e attribute_final]]
@@ -279,6 +288,8 @@ let transform_attributes ~loc ~tag_name attrs =
   | [%expr []] ->
       [%expr []]
   | attrs_expr when has_optional ->
+      (* Optional attributes are represented as [None] when absent, filter
+         them out at runtime *)
       [%expr Stdlib.List.filter_map Stdlib.Fun.id [%e attrs_expr]]
   | attrs_expr ->
       attrs_expr
@@ -300,6 +311,23 @@ let generate_dynamic_format_code ~loc ~buf_ident fmt args =
   let base = [%expr Stdlib.Printf.ksprintf [%e callback] [%e fmt]] in
   pexp_apply ~loc base args
 
+(* Buffer splicing: detect a child expression that is exactly the code shape
+   this ppx generates for a dynamic element:
+
+     let __html_v1 = <expr1> in
+     ...
+     JSX.writer <int> (fun __html_buf -> <ops>)
+
+   When a parent element writes such a child with [JSX.write __html_buf child],
+   the child's closure is called through one more indirection. Since every
+   generated closure names its parameter [buffer_var_name], the parent can
+   drop the [JSX.writer] wrapper and the [fun], move the child's bindings into
+   its own let-chain at the child's position (so they still evaluate at the
+   same point, in the same order) and splice <ops> into its own body: every
+   reference to __html_buf inside <ops> then resolves to the parent's buffer.
+
+   Returns [Some (estimated_size, bindings, ops)], or [None] when the
+   expression is not exactly this generated shape. *)
 let match_spliceable_buffer_expr (expr : expression) :
     (int * binding list * expression) option =
   let rec split_let_chain acc (e : expression) =
@@ -361,9 +389,11 @@ let generate_part_code ~loc ~buf_ident part : binding list * expression =
       let pat, ident = fresh_var ~loc () in
       ([ (pat, expr) ], [%expr JSX.escape [%e buf_ident] [%e ident]])
   | Static_analysis.Dynamic_int expr ->
+      (* Ints cannot produce escapable characters, skip JSX.escape *)
       let pat, ident = fresh_var ~loc () in
       ([ (pat, expr) ], [%expr JSX.write_int [%e buf_ident] [%e ident]])
   | Static_analysis.Dynamic_float expr ->
+      (* Float.to_string cannot produce escapable characters, skip JSX.escape *)
       let pat, ident = fresh_var ~loc () in
       ( [ (pat, expr) ],
         [%expr
@@ -390,6 +420,9 @@ let generate_part_code ~loc ~buf_ident part : binding list * expression =
           ([ (pat, expr) ], [%expr JSX.write [%e buf_ident] [%e ident]])
     )
 
+(* Extra buffer size gained by splicing children: a spliceable child
+   contributes its own estimated size instead of the [reserved] bytes the
+   caller already accounts for per dynamic part. *)
 let extra_splice_size ~reserved parts =
   List.fold_left parts ~init:0 ~f:(fun acc part ->
       match part with
@@ -431,6 +464,8 @@ let generate_buffer_code ~loc ~parts ~static_size ~dynamic_count =
   let buf_var = "__html_buf" in
   let buf_ident = pexp_ident ~loc { loc; txt = Lident buf_var } in
   let buf_pat = ppat_var ~loc { loc; txt = buf_var } in
+  (* Estimate buffer size: static + 64 bytes per dynamic part, plus the
+     estimated size of spliced children *)
   let estimated_size =
     static_size + (dynamic_count * 64) + extra_splice_size ~reserved:64 parts
   in
@@ -764,6 +799,7 @@ let rec transform_items_of_list ~loc ~mapper children =
   | tail ->
       mapper#expression tail
 
+(* Extract children from a list expression for analysis *)
 let extract_children_from_list expr =
   let rec extract acc = function
     | { pexp_desc = Pexp_construct ({ txt = Lident "[]"; _ }, None); _ } ->
@@ -808,6 +844,11 @@ let rewrite_fragment_unoptimized ~loc ~mapper children_expr =
             [%e acc]]
       )
 
+(* Analyze fragment children and generate optimized code. Each child is
+   classified with [Static_analysis.analyze_child], so constant children
+   collapse into static strings (with proper escaping for [JSX.string]) and
+   dynamic children get the same buffer codegen as element children,
+   including buffer splicing of nested generated elements. *)
 let optimize_fragment ~loc ~mapper children_expr =
   match extract_children_from_list children_expr with
   | [] -> (
@@ -815,6 +856,8 @@ let optimize_fragment ~loc ~mapper children_expr =
       | Pexp_construct ({ txt = Lident "[]"; _ }, None) ->
           [%expr JSX.list []]
       | _ ->
+          (* Not a literal list (e.g. it has an expression tail): keep the
+             runtime JSX.list *)
           let transformed_children =
             transform_items_of_list ~loc ~mapper children_expr
           in
@@ -829,6 +872,7 @@ let optimize_fragment ~loc ~mapper children_expr =
       in
       match parts with
       | [ Static_analysis.Static_str s ] ->
+          (* Fully static fragment: collapse to a constant string *)
           [%expr JSX.unsafe [%e estring ~loc s]]
       | parts ->
           let static_size = Static_analysis.static_size_of_parts parts in
@@ -850,6 +894,7 @@ let rewrite_jsx =
               split_args ~mapper:self#expression args
             in
             match tag.pexp_desc with
+            (* div() [@JSX] *)
             | Pexp_ident { txt = Lident name; loc = name_loc }
               when Html.is_html_element name || Html.is_svg_element name ->
                 if
@@ -859,19 +904,25 @@ let rewrite_jsx =
                   raise_errorf ~loc:expr.pexp_loc
                     "<%s> is a void element and cannot have children" name;
                 rewrite_node ~loc:name_loc name rest_of_args children
+            (* Reason adds `createElement` as default when an uppercase is found,
+               we change it back to make *)
+            (* Foo.createElement() [@JSX] *)
             | Pexp_ident
                 { txt = Ldot (modulePath, ("createElement" | "make")); loc } ->
                 let id = { loc; txt = Ldot (modulePath, "make") } in
                 rewrite_component ~loc:tag.pexp_loc id rest_of_args children
+            (* local_function() [@JSX] *)
             | Pexp_ident id ->
                 rewrite_component ~loc:tag.pexp_loc id rest_of_args children
             | _ ->
                 assert false
           )
+        (* div() [@JSX] *)
         | Pexp_apply (_tag, props)
           when has_jsx_attr expr.pexp_attributes && is_element_application props
           ->
             raise_errorf ~loc:expr.pexp_loc "tag should be an identifier"
+        (* <> </> is represented as a list in the Parsetree with [@JSX] *)
         | Pexp_construct
             ({ txt = Lident "::"; loc }, Some { pexp_desc = Pexp_tuple _; _ })
         | Pexp_construct ({ txt = Lident "[]"; loc }, None) -> (
@@ -887,6 +938,7 @@ let rewrite_jsx =
                 else
                   optimize_fragment ~loc ~mapper:self expr
           )
+        (* <>...xs</> is any other expression with [@JSX]: a list of elements *)
         | _ when has_jsx_attr expr.pexp_attributes ->
             let loc = expr.pexp_loc in
             let list_expr =

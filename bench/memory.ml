@@ -19,6 +19,7 @@ let () =
   Printf.printf "=== Memory Layout Benchmark ===\n\n";
   Printf.printf "--- Part 1: Static Object Sizes (reachable words) ---\n\n";
 
+  (* Use Bytes.to_string to create unique strings and avoid compiler sharing *)
   let make_string s = Bytes.to_string (Bytes.of_string s) in
   let tag1 = make_string "div" in
   let val1 = make_string "container" in
@@ -37,6 +38,7 @@ let () =
   Printf.printf
     "  Breakdown: tuple header + 2 fields + variant block + string\n\n";
 
+  (* Compare list vs array representation *)
   let attr1 : JSX.attribute = (make_string "id", `String val1) in
   let attr2 : JSX.attribute = (make_string "class", `String val2) in
 
@@ -111,6 +113,7 @@ let () =
 
   Printf.printf "--- Part 3: List vs Array Construction Cost ---\n\n";
 
+  (* Use Sys.opaque_identity to prevent compiler from optimizing away allocations *)
   let opaque = Sys.opaque_identity in
 
   let minor_list_3, _ =

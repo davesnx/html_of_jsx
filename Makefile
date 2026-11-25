@@ -85,19 +85,19 @@ create-switch: ## Create opam switch
 	opam switch create . 5.4.0 --deps-only --with-test --no-install -y
 
 .PHONY: install
-install:
+install: # Install dependencies
 	opam update
 	opam install . --deps-only --with-test --with-doc --with-dev-setup -y
 
 .PHONY: pin-list
-pin-list:
+pin-list: # list pinned dependencies, one "<name> <url>" per line
 	@echo "oniguruma https://github.com/alan-j-hu/ocaml-oniguruma.git#57c194207d2a0c3d7fbfd302d8e21dd7f17422ea"
 	@echo "textmate-language https://github.com/davesnx/ocaml-textmate-language.git#46ea3bd50d4413797e562b08eb87cb9d5694ca30"
 	@echo "tm-grammars https://github.com/davesnx/tm-grammars.git#7bc690111b6d6a9c6896bc35aa17bfb854c33a2d"
 	@echo "ochre https://github.com/davesnx/ochre.git#f367ec7b372e20fddabc065201cf696564361abe"
 
 .PHONY: pin
-pin:
+pin: # pin dependencies
 	@$(MAKE) -s pin-list | while read -r name url; do \
 		opam pin add "$$name" "$$url" --yes --no-action || exit 1; \
 	done
