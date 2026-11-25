@@ -42,6 +42,8 @@
 
   ;; Dev dependencies
   (ocaml-lsp-server :with-dev-setup)
+  ; https://github.com/ocaml/ocaml-lsp/issues/2236
+  (stdune (and :with-dev-setup (< 3.25.0)))
   (tiny_httpd :with-dev-setup)
   (yocaml :with-dev-setup)
   (yocaml_unix :with-dev-setup)
