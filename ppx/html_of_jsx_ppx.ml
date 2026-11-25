@@ -961,6 +961,10 @@ let () =
         "-htmx",
         Arg.Unit (fun () -> Extra_attributes.set Htmx)
       );
+      ( "Enable Alpine.js attributes in HTML and SVG elements",
+        "-alpinejs",
+        Arg.Unit (fun () -> Extra_attributes.set Alpinejs)
+      );
       ( "Enable react attributes in HTML and SVG elements",
         "-react",
         Arg.Unit (fun () -> Extra_attributes.set React)
